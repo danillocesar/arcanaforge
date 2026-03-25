@@ -35,6 +35,8 @@ out/
 coverage/
 
 # React specific
+node_modeles/*
+node_modeles/
 node_modules/.cache/
 *.eslintcache
 
