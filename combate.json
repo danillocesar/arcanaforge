@@ -65,5 +65,6 @@
     "jogador_Hikari": 56
   },
   "turnoIdx": 1,
-  "ordenado": true
+  "ordenado": true,
+  "rodada": 6
 }

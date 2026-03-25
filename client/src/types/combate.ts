@@ -13,6 +13,8 @@ export interface CombateData {
   iniciativas: Record<string, number>;
   turnoIdx: number;
   ordenado: boolean;
+  /** Rodada atual do combate (1-based); incrementa ao passar do último da iniciativa para o primeiro. */
+  rodada?: number;
 }
 
 export interface CombateJogador {

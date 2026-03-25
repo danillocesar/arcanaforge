@@ -37,6 +37,7 @@ const DEFAULT_COMBATE: CombateData = {
   iniciativas: {},
   turnoIdx: -1,
   ordenado: false,
+  rodada: 1,
 };
 
 const CombateContext = createContext<CombateContextValue | null>(null);
@@ -96,10 +97,11 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     useCallback(
       (msg) => {
         if (msg.type === 'combate_sync' && msg.data) {
-          setMestreData(msg.data);
-          if (msg.data.turnoIdx !== undefined) setTurnoIdx(msg.data.turnoIdx);
-          if (msg.data.ordenado) {
-            buildOrdenado(msg.data, jogadoresRef.current);
+          const d = msg.data as CombateData;
+          setMestreData({ ...d, rodada: d.rodada ?? 1 });
+          if (d.turnoIdx !== undefined) setTurnoIdx(d.turnoIdx);
+          if (d.ordenado) {
+            buildOrdenado(d, jogadoresRef.current);
           } else {
             setOrdenadoAtivo(false);
             setOrdenadoList([]);
@@ -154,8 +156,9 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
 
   const loadCombate = useCallback(async () => {
     const data = await apiLoadCombate();
-    setMestreData(data);
-    if (data.turnoIdx !== undefined) setTurnoIdx(data.turnoIdx);
+    const normalized = { ...data, rodada: data.rodada ?? 1 };
+    setMestreData(normalized);
+    if (normalized.turnoIdx !== undefined) setTurnoIdx(normalized.turnoIdx);
 
     const resumos = await apiFetchFichasResumo();
     const jogsPromises = resumos.map(async (r) => {
@@ -180,8 +183,8 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     const jogs = await Promise.all(jogsPromises);
     setJogadores(jogs);
 
-    if (data.ordenado) {
-      buildOrdenado(data, jogs);
+    if (normalized.ordenado) {
+      buildOrdenado(normalized, jogs);
     } else {
       setOrdenadoAtivo(false);
       setOrdenadoList([]);
@@ -275,7 +278,7 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
   );
 
   const ordenarIniciativa = useCallback(() => {
-    const updated = { ...mestreDataRef.current, ordenado: true, turnoIdx: 0 };
+    const updated = { ...mestreDataRef.current, ordenado: true, turnoIdx: 0, rodada: 1 };
     setMestreData(updated);
     setTurnoIdx(0);
     broadcastMestreData(updated);
@@ -291,8 +294,12 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     } else {
       next = (turnoIdx + 1) % total;
     }
+    let rodada = mestreDataRef.current.rodada ?? 1;
+    if (turnoIdx >= 0 && turnoIdx === total - 1 && next === 0) {
+      rodada += 1;
+    }
     setTurnoIdx(next);
-    const updated = { ...mestreDataRef.current, turnoIdx: next };
+    const updated = { ...mestreDataRef.current, turnoIdx: next, rodada };
     setMestreData(updated);
     broadcastMestreData(updated);
   }, [turnoIdx, broadcastMestreData]);
@@ -302,6 +309,7 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
       ...mestreDataRef.current,
       ordenado: false,
       turnoIdx: -1,
+      rodada: 1,
     };
     setMestreData(updated);
     setTurnoIdx(-1);

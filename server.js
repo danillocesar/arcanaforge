@@ -102,7 +102,13 @@ app.post('/api/fichas/:nomeAntigo/renomear/:nomeNovo', (req, res) => {
 
 // --- Combate Tracker (server-side state) ---
 const COMBATE_FILE = path.join(__dirname, 'combate.json');
-const COMBATE_DEFAULT = { inimigos: [], iniciativas: {}, turnoIdx: -1, ordenado: false };
+const COMBATE_DEFAULT = {
+  inimigos: [],
+  iniciativas: {},
+  turnoIdx: -1,
+  ordenado: false,
+  rodada: 1,
+};
 
 function loadCombateData() {
   try {
