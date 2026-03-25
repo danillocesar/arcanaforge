@@ -4,50 +4,71 @@ import { getInitials, getAvatarColor } from '../../../utils/formatters';
 import type { CombateRow } from '../../../types/combate';
 import styles from './MiniOrder.module.css';
 
-const MAX_MINI_SLOTS = 24;
+const MAX_VISIBLE = 14;
 
 interface MiniOrderProps {
   rows: CombateRow[];
 }
 
-function FlowConnector() {
+function TimelineMarker({ active }: { active: boolean }) {
   return (
-    <div className={styles.flowConnector} aria-hidden>
-      <span className={styles.flowLine} />
-      <svg className={styles.flowArrow} viewBox="0 0 12 8" aria-hidden>
-        <path
-          d="M2.75 1.75L6 5.25 9.25 1.75"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.35"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+    <div className={styles.markerWrap}>
+      {active ? (
+        <svg className={styles.chevronMarker} viewBox="0 0 10 14" aria-hidden>
+          <path
+            d="M1.5 1.5l6 5.25-6 5.25"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <span className={styles.dotMarker} aria-hidden />
+      )}
     </div>
   );
 }
 
-function renderMiniItem(row: CombateRow, isTurno: boolean) {
-  const cor = getAvatarColor(row.nome);
+function TrackUnit({
+  row,
+  isTurno,
+}: {
+  row: CombateRow;
+  isTurno: boolean;
+}) {
   const isJogador = row.tipo === 'jogador';
+  const cor = getAvatarColor(row.nome);
+
   return (
-    <div className={`${styles.item} ${isTurno ? styles.itemTurno : ''}`}>
+    <div className={styles.trackRow}>
+      <TimelineMarker active={isTurno} />
       <div
-        className={`${styles.miniAvatar} ${isJogador ? styles.miniJogador : styles.miniInimigo}`}
-        style={
-          isJogador
-            ? { background: `${cor}20`, borderColor: `${cor}55`, color: cor }
-            : undefined
-        }
+        className={`${styles.unitCard} ${isJogador ? styles.unitAlly : styles.unitEnemy} ${isTurno ? styles.unitActive : ''}`}
+        title={row.nome}
       >
-        {row.avatar ? (
-          <img className={styles.miniAvatarImg} src={row.avatar} alt={row.nome} />
-        ) : (
-          getInitials(row.nome)
-        )}
+        <span className={styles.unitRail} aria-hidden />
+        <div
+          className={styles.unitFace}
+          style={
+            isJogador
+              ? {
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${cor} 18%, transparent) 0%, rgba(15, 20, 28, 0.85) 100%)`,
+                }
+              : {
+                  background:
+                    'linear-gradient(135deg, rgba(232, 93, 93, 0.14) 0%, rgba(15, 18, 24, 0.9) 100%)',
+                }
+          }
+        >
+          {row.avatar ? (
+            <img className={styles.unitImg} src={row.avatar} alt={row.nome} />
+          ) : (
+            <span className={styles.unitInitials}>{getInitials(row.nome)}</span>
+          )}
+        </div>
       </div>
-      <span className={styles.miniName}>{row.nome}</span>
     </div>
   );
 }
@@ -61,57 +82,59 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
   const n = rows.length;
 
   if (turnoIdx < 0) {
+    const visible = rows.slice(0, MAX_VISIBLE);
     return (
-      <div className={`${styles.column} ${styles.columnLinear}`}>
-        {rows.map((row) => (
-          <Fragment key={row.id}>{renderMiniItem(row, false)}</Fragment>
-        ))}
+      <div className={styles.column}>
+        <div className={styles.track}>
+          {visible.map((row) => (
+            <TrackUnit key={row.id} row={row} isTurno={false} />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const maxSlots =
-    n <= 1 ? Math.min(MAX_MINI_SLOTS, n + 3) : Math.min(MAX_MINI_SLOTS, n * 4);
-
   const slots: { k: number; row: CombateRow }[] = [];
-  for (let k = 0; k < maxSlots; k++) {
-    const idx = (turnoIdx + k) % n;
-    slots.push({ k, row: rows[idx] });
+  for (let k = 0; k < MAX_VISIBLE; k++) {
+    slots.push({ k, row: rows[(turnoIdx + k) % n] });
   }
 
   return (
     <div className={styles.column}>
-      <div className={styles.currentRoundStrip} title="Rodada atual do combate">
-        <span className={styles.currentRoundLabel}>Rodada</span>
-        <span className={styles.currentRoundNum}>{rodadaBase}</span>
+      <div className={styles.roundTab} title="Rodada atual do combate">
+        <span className={styles.roundTabIcon} aria-hidden>◇</span>
+        <div className={styles.roundTabText}>
+          <span className={styles.roundTabLabel}>Rodada</span>
+          <span className={styles.roundTabNum}>{rodadaBase}</span>
+        </div>
       </div>
-      {slots.map(({ k, row }) => {
-        const isLapStart = k > 0 && (turnoIdx + k) % n === turnoIdx;
-        const lapNum = isLapStart ? Math.floor(k / n) : 0;
-        const rodadaNoSeparador = rodadaBase + lapNum;
-        return (
-          <Fragment key={`${row.id}__${k}`}>
-            {k > 0 && <FlowConnector />}
-            {isLapStart && (
-              <div
-                className={styles.cycleDivider}
-                role="separator"
-                aria-label={`Rodada ${rodadaNoSeparador}`}
-              >
-                <span className={styles.cycleLine} />
-                <div className={styles.cycleBadge}>
-                  <span className={styles.cycleIcon} aria-hidden>
-                    ↻
-                  </span>
-                  <span className={styles.cycleRound}>Rodada {rodadaNoSeparador}</span>
+
+      <div className={styles.track}>
+        {slots.map(({ k, row }) => {
+          const realIdx = (turnoIdx + k) % n;
+          const isRoundStart = k > 0 && realIdx === 0;
+          const rodadaNoSeparador = rodadaBase + Math.floor((turnoIdx + k) / n);
+          return (
+            <Fragment key={`${row.id}__${k}`}>
+              {isRoundStart && (
+                <div
+                  className={styles.cycleDividerRow}
+                  role="separator"
+                  aria-label={`Rodada ${rodadaNoSeparador}`}
+                >
+                  <span className={styles.cycleGapLine} />
+                  <div className={styles.cyclePill}>
+                    <span className={styles.cyclePillIcon} aria-hidden>↻</span>
+                    <span className={styles.cyclePillText}>R{rodadaNoSeparador}</span>
+                  </div>
+                  <span className={styles.cycleGapLine} />
                 </div>
-                <span className={styles.cycleLine} />
-              </div>
-            )}
-            {renderMiniItem(row, k === 0)}
-          </Fragment>
-        );
-      })}
+              )}
+              <TrackUnit row={row} isTurno={k === 0} />
+            </Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }

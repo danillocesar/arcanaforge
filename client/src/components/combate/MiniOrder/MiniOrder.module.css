@@ -1,225 +1,282 @@
+/* Action bar estilo HSR — lista fixa sem scroll */
 .column {
+  --tracker-ally: #2dd4bf;
+  --tracker-ally-glow: color-mix(in srgb, var(--tracker-ally) 55%, transparent);
+  --tracker-enemy: var(--accent-red-bar);
+  --tracker-enemy-glow: color-mix(in srgb, var(--tracker-enemy) 50%, transparent);
+
   position: fixed;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
+  left: 10px;
+  top: 88px;
+  bottom: 10px;
   z-index: 90;
-  max-height: 80vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 12px 10px;
-  background: rgba(20, 20, 30, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 8px,
-    black calc(100% - 8px),
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 8px,
-    black calc(100% - 8px),
-    transparent
-  );
-}
-
-.columnLinear {
-  gap: 6px;
-}
-
-.currentRoundStrip {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  width: 100%;
-  padding-bottom: 8px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent-gold) 22%, transparent);
-}
-
-.currentRoundLabel {
-  font-size: 0.52rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  opacity: 0.9;
-}
-
-.currentRoundNum {
-  font-size: 1.05rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent-gold);
-  line-height: 1;
-  text-shadow: 0 0 14px color-mix(in srgb, var(--accent-gold) 35%, transparent);
-}
-
-.column:hover .flowConnector {
-  opacity: 0.55;
-}
-
-.flowConnector {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  opacity: 0.35;
-  transition: opacity 0.2s ease;
-  color: var(--text-muted);
-}
-
-.flowLine {
-  width: 0;
-  min-height: 8px;
-  border-left: 1.5px dashed color-mix(in srgb, var(--text-muted) 50%, transparent);
-}
-
-.flowArrow {
-  width: 16px;
-  height: 10px;
-  flex-shrink: 0;
-  margin-top: -2px;
-  opacity: 0.95;
-}
-
-.cycleDivider {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  max-width: 108px;
-  padding: 8px 0 6px;
-  color: var(--text-muted);
-}
-
-.cycleLine {
-  flex: 1;
-  min-width: 0;
-  height: 2px;
-  border-radius: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--accent-gold) 55%, transparent) 35%,
-    color-mix(in srgb, var(--accent-gold) 35%, transparent) 65%,
-    transparent
-  );
-  opacity: 0.85;
-}
-
-.cycleBadge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-  padding: 4px 8px 5px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--accent-gold) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent-gold) 35%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-gold) 15%, transparent);
-}
-
-.cycleIcon {
-  font-size: 0.72rem;
-  line-height: 1;
-  color: color-mix(in srgb, var(--accent-gold) 85%, var(--text-muted));
-}
-
-.cycleRound {
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent-gold);
-  white-space: nowrap;
-  line-height: 1.15;
-}
-
-.item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 6px 6px;
-  border-radius: 10px;
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    background 0.25s ease,
-    box-shadow 0.25s ease;
-  border: 2px solid transparent;
-}
-
-.itemTurno {
-  border-color: var(--accent-gold);
-  background: rgba(212, 175, 55, 0.12);
-  box-shadow:
-    0 0 12px rgba(212, 175, 55, 0.28),
-    inset 0 0 0 1px rgba(212, 175, 55, 0.15);
-  transform: scale(1.05);
-}
-
-.miniAvatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 120px;
   overflow: hidden;
+  padding: 0 0 0 4px;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* ── Cabeçalho de rodada ── */
+.roundTab {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
+  margin-bottom: 6px;
+  margin-left: 18px;
+  padding: 3px 10px 4px;
+  border-radius: 6px;
+  background: rgba(18, 20, 28, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
+}
+
+.roundTabIcon {
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1;
+}
+
+.roundTabText {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.roundTabLabel {
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.roundTabNum {
+  font-size: 0.75rem;
   font-weight: 800;
-  font-size: 0.65rem;
-  border: 2px solid;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.miniJogador {
-  border-color: rgba(59, 130, 246, 0.5);
+/* ── Timeline ── */
+.track {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 2px;
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 68%,
+    rgba(0, 0, 0, 0.45) 82%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 68%,
+    rgba(0, 0, 0, 0.45) 82%,
+    transparent 100%
+  );
 }
 
-.miniInimigo {
-  border-color: rgba(232, 93, 93, 0.55);
-  background: rgba(232, 93, 93, 0.12);
-  color: #e85d5d;
+.track::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 6px;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.22) 20%,
+    rgba(255, 255, 255, 0.22) 65%,
+    rgba(255, 255, 255, 0.04)
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
-.miniAvatarImg {
+/* ── Linha de cada item ── */
+.trackRow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+}
+
+.markerWrap {
+  width: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+}
+
+.chevronMarker {
+  width: 11px;
+  height: 15px;
+  color: var(--accent-turno);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent-turno) 65%, transparent));
+}
+
+.dotMarker {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+/* ── Cartão da unidade ── */
+.unitCard {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: 0 10px 10px 0;
+  overflow: hidden;
+  background: rgba(12, 14, 20, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: none;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.unitRail {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.unitAlly .unitRail {
+  background: linear-gradient(
+    180deg,
+    var(--tracker-ally) 0%,
+    color-mix(in srgb, var(--tracker-ally) 40%, #1e3a4a) 100%
+  );
+  box-shadow:
+    0 0 10px var(--tracker-ally-glow),
+    inset 0 0 6px rgba(255, 255, 255, 0.15);
+}
+
+.unitEnemy .unitRail {
+  background: linear-gradient(
+    180deg,
+    var(--tracker-enemy) 0%,
+    color-mix(in srgb, var(--tracker-enemy) 45%, #3b1518) 100%
+  );
+  box-shadow:
+    0 0 10px var(--tracker-enemy-glow),
+    inset 0 0 6px rgba(255, 255, 255, 0.1);
+}
+
+.unitFace {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.unitImg {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  object-position: center top;
 }
 
-.miniName {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-align: center;
-  max-width: 54px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.unitInitials {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  letter-spacing: -0.02em;
 }
 
-.itemTurno .miniName {
-  color: var(--accent-gold);
+
+.unitActive {
+  border-color: color-mix(in srgb, var(--accent-turno) 45%, rgba(255, 255, 255, 0.12));
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--accent-turno) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-turno) 25%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── Separador de rodada (aparece quando a janela "vira" dentro dos 7 slots) ── */
+.cycleDividerRow {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 4px 0 2px;
+}
+
+.cycleGapLine {
+  flex: 1;
+  min-width: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+}
+
+.cyclePill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.11);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.06);
+}
+
+.cyclePillIcon {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1;
+}
+
+.cyclePillText {
+  font-size: 0.58rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 @media (max-width: 768px) {

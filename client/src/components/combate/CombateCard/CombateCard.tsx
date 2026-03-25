@@ -153,9 +153,9 @@ export default function CombateCard({ row, isTurno }: CombateCardProps) {
           className={`${styles.bars} ${!isJogador ? styles.barsInimigo : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
         >
           <div
-            className={`${styles.bar} ${styles.barHp}`}
+            className={`${styles.bar} ${styles.barHp} ${modoMestre ? styles.barClickable : ''}`}
             ref={hpBarRef}
-            onClick={() => showEnemyBars && setPopoverOpen(true)}
+            onClick={() => modoMestre && showEnemyBars && setPopoverOpen(true)}
             role="presentation"
           >
             <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
