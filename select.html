@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T20 - Selecionar Personagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/select.css">
+</head>
+<body>
+  <div class="select-page">
+    <header class="select-header">
+      <div class="select-header-left">
+        <span class="select-logo">T20</span>
+        <span class="select-title">Selecionar Personagem</span>
+      </div>
+      <a href="index.html" class="select-back">&#8592; Voltar</a>
+    </header>
+    <div class="select-content">
+      <div id="selectGrid" class="select-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const AVATAR_COLORS = ['#e57373','#64b5f6','#81c784','#ffb74d','#ce93d8','#4db6ac','#f06292','#aed581','#ff8a65','#9575cd'];
+
+    function getInitials(nome) {
+      return (nome || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    }
+
+    function getAvatarColor(nome) {
+      let hash = 0;
+      for (let i = 0; i < (nome || '').length; i++) hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+      return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    async function loadPersonagens() {
+      const grid = document.getElementById('selectGrid');
+      let resumos = [];
+      try {
+        const res = await fetch('/api/fichas-resumo');
+        resumos = await res.json();
+      } catch {}
+
+      let html = '';
+
+      resumos.forEach(r => {
+        const initials = getInitials(r.nome);
+        const bgColor = getAvatarColor(r.nome);
+        const classesStr = (r.classes || []).filter(c => c.nome).map(c => `${c.nome} ${c.nivel || 1}`).join(', ');
+        const avatarHtml = r.avatar
+          ? `<div class="select-avatar"><img src="${escapeHtml(r.avatar)}" alt=""></div>`
+          : `<div class="select-avatar" style="background:${bgColor}">${initials}</div>`;
+
+        html += `<a class="select-card" href="index.html?char=${encodeURIComponent(r.nome)}">
+          ${avatarHtml}
+          <span class="select-card-nome">${escapeHtml(r.nome)}</span>
+          <span class="select-card-classe">${escapeHtml(classesStr) || 'Sem classe'}</span>
+        </a>`;
+      });
+
+      html += `<button class="select-new-card" id="btnNovoPers">
+        <span class="select-new-icon">+</span>
+        <span class="select-new-label">Novo Personagem</span>
+      </button>`;
+
+      grid.innerHTML = html;
+
+      document.getElementById('btnNovoPers').addEventListener('click', async () => {
+        const nome = prompt('Nome do novo personagem:');
+        if (!nome || !nome.trim()) return;
+        const n = nome.trim();
+        const novaFicha = {
+          nome: n, classes: [{ nome: '', nivel: 1 }], raca: '', origem: '', divindade: '',
+          alinhamento: '', idade: '', tamanho: 'Medio', deslocamento: '9m / 6q', experiencia: 0,
+          atributos: { 'for': 0, des: 0, con: 0, 'int': 0, sab: 0, car: 0 },
+          pv: { maximo: 0, atual: 0 }, pm: { maximo: 0, atual: 0 },
+          defesa: { base: 10, itens: [] }, reducaoDeDano: '',
+          ataques: [], pericias: {}, habilidades: [], magias: [], atributoChaveMagia: 'int',
+          inventario: [], moedas: { tc: 0, tp: 0, to: 0 }, anotacoes: '',
+          efeitosTemporarios: '', proficiencias: '', progressao: [],
+          buffs: [], pvTemporario: 0, pmTemporario: 0,
+          secoesFechadas: {}, secoesOcultas: {}, animacaoAtaque: 'personagem', avatar: ''
+        };
+        await fetch(`/api/fichas/${encodeURIComponent(n)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novaFicha)
+        });
+        window.location.href = `index.html?char=${encodeURIComponent(n)}`;
+      });
+    }
+
+    loadPersonagens();
+  </script>
+</body>
+</html>

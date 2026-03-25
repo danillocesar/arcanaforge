@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T20 - Painel do Mestre</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav id="topbar">
+    <div class="topbar-left">
+      <span class="logo">T20</span>
+      <a href="index.html" class="topbar-mode-link" title="Fichas de Personagem">🛡 Personagens</a>
+    </div>
+  </nav>
+
+  <div id="mestreContainer" class="mestre-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/mestre.js"></script>
+  <script>
+    renderMestreCombate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tormenta 20 - Ficha de Personagem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR -->
+  <nav id="topbar">
+    <div class="topbar-left">
+      <span class="logo">T20</span>
+      <a href="mestre.html" class="topbar-mode-link" title="Painel do Mestre">⚔ Mestre</a>
+    </div>
+    <div class="topbar-center">
+      <select id="selectPersonagem"></select>
+      <button id="btnNovo" title="Novo Personagem">+</button>
+      <button id="btnExcluir" title="Excluir Personagem">&#128465;</button>
+      <a href="select.html" class="topbar-link-btn" title="Tela de Seleção">&#9881;</a>
+    </div>
+    <div class="topbar-right">
+      <div class="secvis-wrapper">
+        <button id="btnSecVis" class="secvis-btn" title="Seções visíveis">&#9776;</button>
+        <div id="secVisPanel" class="secvis-panel hidden"></div>
+      </div>
+      <select id="selectAnimacao" class="anim-select" title="Estilo de animação ao usar ataque">
+        <option value="personagem">⚔ Personagem</option>
+        <option value="toast">💬 Toast</option>
+        <option value="floating">✨ Flutuante</option>
+      </select>
+      <span id="saveStatus">Salvo</span>
+    </div>
+  </nav>
+
+  <div id="secNav" class="section-nav">
+    <a href="#secCabecalho">Info</a>
+    <a href="#secBuffs">Buffs</a>
+    <a href="#secAtributos">Atributos</a>
+    <a href="#secVidaMana">Vida/Mana</a>
+    <a href="#secAtaques">Ataques</a>
+    <a href="#secHabilidades">Habilidades</a>
+    <a href="#secMagias">Magias</a>
+    <a href="#" id="navPericias">Perícias</a>
+    <a href="#secInventario">Inventário</a>
+    <a href="#secProficiencias">Proficiências</a>
+    <a href="#secEfeitos">Efeitos</a>
+  </div>
+
+  <main id="fichaContainer">
+
+    <!-- TOPO: Info Básica + Progressão lado a lado -->
+    <div class="layout-topo-header">
+      <section id="secCabecalho" class="ficha-section cabecalho cabecalho-full">
+        <h2>Info Básica <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+        <div class="cabecalho-top-row">
+          <div class="cabecalho-nome-col">
+            <input type="text" id="campoNome" class="campo-nome" placeholder="Nome do Personagem" spellcheck="false">
+          </div>
+          <div class="cabecalho-classes-col">
+            <div class="classes-section">
+              <div class="classes-header">
+                <label class="classes-title">Classes</label>
+                <span class="nivel-total">Nível: <strong id="nivelTotalDisplay">1</strong></span>
+              </div>
+              <div id="classesLista" class="classes-lista"></div>
+              <button class="btn-add-classe" id="btnAddClasse">+ Classe</button>
+            </div>
+          </div>
+        </div>
+        <div class="cabecalho-grid cabecalho-grid-wide">
+          <div class="campo-info">
+            <label>Raça</label>
+            <input type="text" data-field="raca" placeholder="—">
+          </div>
+          <div class="campo-info">
+            <label>Origem</label>
+            <input type="text" data-field="origem" placeholder="—">
+          </div>
+          <div class="campo-info">
+            <label>Divindade</label>
+            <input type="text" data-field="divindade" placeholder="—">
+          </div>
+          <div class="campo-info">
+            <label>Alinhamento</label>
+            <input type="text" data-field="alinhamento" placeholder="—">
+          </div>
+          <div class="campo-info">
+            <label>Idade</label>
+            <input type="text" data-field="idade" placeholder="—">
+          </div>
+          <div class="campo-info">
+            <label>Tamanho</label>
+            <input type="text" data-field="tamanho" placeholder="Médio">
+          </div>
+          <div class="campo-info">
+            <label>Deslocamento</label>
+            <input type="text" data-field="deslocamento" placeholder="9m / 6q">
+          </div>
+          <div class="campo-info">
+            <label>XP</label>
+            <input type="number" data-field="experiencia" min="0" placeholder="0">
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ZONA 1: Atributos/Buffs (esq) + Vida/Mana/Defesa (dir) -->
+    <div class="layout-topo">
+
+      <!-- COLUNA ESQUERDA: Atributos+Defesa + Buffs -->
+      <div class="col-info">
+        <section id="secAtributos" class="ficha-section">
+          <h2>Atributos & Defesa <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <div class="attr-defesa-layout">
+            <div class="atributos-grid">
+              <div class="atributo-card" data-attr="for">
+                <span class="attr-label">FOR</span>
+                <span class="attr-value" data-display="for">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="for" title="Editar">&#9998;</button>
+              </div>
+              <div class="atributo-card" data-attr="des">
+                <span class="attr-label">DES</span>
+                <span class="attr-value" data-display="des">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="des" title="Editar">&#9998;</button>
+              </div>
+              <div class="atributo-card" data-attr="con">
+                <span class="attr-label">CON</span>
+                <span class="attr-value" data-display="con">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="con" title="Editar">&#9998;</button>
+              </div>
+              <div class="atributo-card" data-attr="int">
+                <span class="attr-label">INT</span>
+                <span class="attr-value" data-display="int">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="int" title="Editar">&#9998;</button>
+              </div>
+              <div class="atributo-card" data-attr="sab">
+                <span class="attr-label">SAB</span>
+                <span class="attr-value" data-display="sab">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="sab" title="Editar">&#9998;</button>
+              </div>
+              <div class="atributo-card" data-attr="car">
+                <span class="attr-label">CAR</span>
+                <span class="attr-value" data-display="car">+0</span>
+                <button class="btn-edit-pencil" data-edit-attr="car" title="Editar">&#9998;</button>
+              </div>
+            </div>
+            <div id="secDefesa" class="defesa-inline">
+              <div class="defesa-container">
+                <div class="defesa-total">
+                  <span class="defesa-total-label">CA Total</span>
+                  <span class="defesa-total-value" id="defesaTotalDisplay">10</span>
+                </div>
+                <div class="defesa-itens" id="defesaItens">
+                  <div class="defesa-item defesa-base">
+                    <span class="defesa-item-nome">Base</span>
+                    <span class="defesa-item-valor">10</span>
+                  </div>
+                </div>
+                <button class="btn-add" id="btnAddDefesa">+ Adicionar proteção</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="secBuffs" class="ficha-section">
+          <h2>Buffs <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <div id="buffsLista"></div>
+          <button class="btn-add" id="btnAddBuff">+ Adicionar buff</button>
+        </section>
+
+      </div>
+
+      <!-- COLUNA DIREITA: Vida/Mana + Anotações -->
+      <div class="col-stats">
+        <section id="secVidaMana" class="ficha-section">
+          <h2>Vida / Mana <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <div class="vidamana-row">
+            <div class="vm-block pv-block">
+              <div class="vm-header">
+                <span class="vm-title">Pontos de Vida (PV)</span>
+                <span class="vm-max">Máx: <span id="pvMaxDisplay">0</span> <button class="btn-edit-pencil" data-edit-vm="pv-max" title="Editar">&#9998;</button></span>
+              </div>
+              <div class="vm-bar-container">
+                <div class="vm-bar pv-bar" id="pvBar"></div>
+              </div>
+              <div class="vm-controls">
+                <button class="vm-btn" data-vm-dec="pv">−</button>
+                <span class="vm-current" id="pvAtualDisplay">0</span>
+                <button class="vm-btn" data-vm-inc="pv">+</button>
+                <button class="btn-edit-pencil" data-edit-vm="pv-atual" title="Editar">&#9998;</button>
+              </div>
+              <div class="vm-temp">
+                <span class="vm-temp-label">PV Temp:</span>
+                <input type="number" class="vm-temp-input" id="pvTempInput" value="0" min="0">
+              </div>
+            </div>
+            <div class="vm-block pm-block">
+              <div class="vm-header">
+                <span class="vm-title">Pontos de Mana (PM)</span>
+                <span class="vm-max">Máx: <span id="pmMaxDisplay">0</span> <button class="btn-edit-pencil" data-edit-vm="pm-max" title="Editar">&#9998;</button></span>
+              </div>
+              <div class="vm-bar-container">
+                <div class="vm-bar pm-bar" id="pmBar"></div>
+              </div>
+              <div class="vm-controls">
+                <button class="vm-btn" data-vm-dec="pm">−</button>
+                <span class="vm-current" id="pmAtualDisplay">0</span>
+                <button class="vm-btn" data-vm-inc="pm">+</button>
+                <button class="btn-edit-pencil" data-edit-vm="pm-atual" title="Editar">&#9998;</button>
+              </div>
+              <div class="vm-temp">
+                <span class="vm-temp-label">PM Temp:</span>
+                <input type="number" class="vm-temp-input" id="pmTempInput" value="0" min="0">
+              </div>
+            </div>
+          </div>
+          <div class="vm-footer">
+            <div class="vm-rd">
+              <label class="vm-rd-label">RD:</label>
+              <input type="text" class="vm-rd-input" data-field="reducaoDeDano" placeholder="Ex: RD 5">
+            </div>
+            <button class="vm-reset-btn" id="btnResetVidaMana" title="Restaurar PV e PM ao máximo">↻ Reset</button>
+          </div>
+          <div id="ataquesMiniLista" class="ataques-mini"></div>
+          <div id="magiasMiniLista" class="ataques-mini"></div>
+        </section>
+      <!-- EFEITOS TEMPORÁRIOS -->
+      <section id="secEfeitos" class="ficha-section">
+        <h2>Efeitos Temporários <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+        <textarea data-field="efeitosTemporarios" placeholder="Condições, penalidades, perda de vida etc." rows="3"></textarea>
+      </section>
+      </div>
+
+    </div>
+
+    <!-- ZONA 2: ATAQUES — 100% largura -->
+    <section id="secAtaques" class="ficha-section">
+      <h2>Ataques <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+      <div class="ataques-header-row">
+        <label>Resistência de Magia: <span id="resMagiaDisplay">10</span></label>
+      </div>
+      <div id="ataquesLista"></div>
+      <button class="btn-add" id="btnAddAtaque">+ Adicionar ataque</button>
+    </section>
+
+    <!-- ZONA 3: MEIO — Habilidades/Magias (esq) + Perícias (dir) -->
+    <div class="layout-meio">
+
+      <div class="col-hab-magias">
+        <section id="secMagias" class="ficha-section">
+          <h2>Magias <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <div class="magias-header-row">
+            <label>Atributo-chave:
+              <select id="atributoChaveMagia" data-field="atributoChaveMagia">
+                <option value="int">INT</option>
+                <option value="sab">SAB</option>
+                <option value="car">CAR</option>
+              </select>
+            </label>
+            <label>Teste de Resistência: <span id="testeResistenciaMagia">10</span></label>
+          </div>
+          <div id="magiasLista"></div>
+          <button class="btn-add" id="btnAddMagia">+ Adicionar magia</button>
+        </section>
+
+        <section id="secHabilidades" class="ficha-section">
+          <h2>Habilidades &amp; Poderes <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <div id="habilidadesLista"></div>
+          <button class="btn-add" id="btnAddHabilidade">+ Adicionar habilidade</button>
+        </section>
+      </div>
+    </div>
+
+    <!-- ZONA 4: BOTTOM — Full-width -->
+    <div class="ficha-full-bottom">
+
+      <!-- INVENTÁRIO -->
+      <section id="secInventario" class="ficha-section">
+        <h2>Inventário <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+        <div class="inventario-stats">
+          <span>Limite de Carga: <strong id="limiteCargaDisplay">10</strong></span>
+          <span>Carga Usada: <strong id="cargaUsadaDisplay">0</strong></span>
+          <span>Carga Máx: <strong id="cargaMaxDisplay">20</strong></span>
+          <span class="moedas-group">
+            TC: <input type="number" data-moeda="tc" min="0" value="0" class="moeda-input">
+            T$: <input type="number" data-moeda="tp" min="0" value="0" class="moeda-input">
+            TO: <input type="number" data-moeda="to" min="0" value="0" class="moeda-input">
+          </span>
+        </div>
+        <div class="inventario-grid">
+          <div class="inventario-col-esq">
+            <h3>Itens</h3>
+            <div id="inventarioLista"></div>
+            <button class="btn-add" id="btnAddItem">+ Adicionar item</button>
+          </div>
+          <div class="inventario-col-dir">
+            <h3>Equipados <span class="equip-limit">(máx 4)</span></h3>
+            <div id="equipadosLista"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="layout-prof-efeitos">
+        <!-- PROFICIÊNCIAS -->
+        <section id="secProficiencias" class="ficha-section">
+          <h2>Proficiências <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
+          <textarea data-field="proficiencias" placeholder="Armas, armaduras, imunidades, visão etc." rows="3"></textarea>
+        </section>
+
+        
+      </div>
+
+
+    </div>
+
+  </main>
+
+  <div id="drawerOverlay" class="drawer-overlay hidden"></div>
+  <div id="drawerProgressao" class="drawer-progressao">
+    <div class="drawer-header">
+      <h2>Progressão</h2>
+      <button id="btnDrawerClose" class="drawer-close-btn" title="Fechar">&times;</button>
+    </div>
+    <div id="progressaoLista"></div>
+    <button class="btn-add" id="btnAddProgressao">+ Adicionar nível</button>
+  </div>
+  <button id="btnDrawerToggle" class="drawer-toggle-btn" title="Progressão">📜</button>
+
+  <div id="drawerAnotacoes" class="drawer-anotacoes">
+    <div class="drawer-header">
+      <h2>Anotações</h2>
+      <button id="btnDrawerAnotacoesClose" class="drawer-close-btn" title="Fechar">&times;</button>
+    </div>
+    <div class="drawer-anotacoes-body">
+      <textarea data-field="anotacoes" placeholder="Combos, notas, lembretes..." rows="15"></textarea>
+    </div>
+  </div>
+  <button id="btnDrawerAnotacoesToggle" class="drawer-toggle-btn drawer-toggle-anotacoes" title="Anotações">📝</button>
+
+  <div id="drawerLogs" class="drawer-logs">
+    <div class="drawer-header">
+      <h2>Logs</h2>
+      <button id="btnDrawerLogsClose" class="drawer-close-btn" title="Fechar">&times;</button>
+    </div>
+    <div class="drawer-logs-body">
+      <div id="logsLista"></div>
+    </div>
+    <button class="btn-add" id="btnLimparLogs">Limpar logs</button>
+  </div>
+  <button id="btnDrawerLogsToggle" class="drawer-toggle-btn drawer-toggle-logs" title="Logs">📋</button>
+
+  <div id="drawerPericias" class="drawer-pericias">
+    <div class="drawer-header">
+      <h2>Perícias</h2>
+      <button id="btnDrawerPericiasClose" class="drawer-close-btn" title="Fechar">&times;</button>
+    </div>
+    <div class="drawer-pericias-body">
+      <div class="pericias-header-info">
+        ½ Nível: <strong id="metadeNivelDisplay">0</strong> &nbsp;|&nbsp;
+        Bônus de Treinamento: <strong>+2</strong>
+      </div>
+      <div id="periciaLista" class="pericias-grid"></div>
+    </div>
+  </div>
+  <button id="btnDrawerPericiasToggle" class="drawer-toggle-btn drawer-toggle-pericias" title="Perícias">🎯</button>
+
+  <div id="atkAnimOverlay" class="atk-anim-overlay"></div>
+  <div id="modalConjurar" class="modal-conjurar-overlay hidden"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
