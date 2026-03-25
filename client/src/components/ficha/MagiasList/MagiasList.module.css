@@ -1,0 +1,32 @@
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.headerRow label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.headerRow select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 4px 8px;
+}
+
+.headerRow select:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.resistencia {
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+  font-weight: 600;
+}

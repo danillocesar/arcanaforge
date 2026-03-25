@@ -1,0 +1,59 @@
+.title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+.nome {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+}
+
+.badgeDano {
+  background: rgba(244, 67, 54, 0.12);
+  color: #e57373;
+}
+
+.badgePm {
+  background: var(--accent-blue-bg);
+  color: var(--accent-blue-bar);
+}
+
+.usarBtn {
+  background: none;
+  border: none;
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.usarBtn:hover {
+  filter: brightness(1.3);
+}

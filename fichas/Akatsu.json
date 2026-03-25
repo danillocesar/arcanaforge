@@ -11,7 +11,7 @@
   },
   "pv": {
     "maximo": 59,
-    "atual": 52
+    "atual": 39
   },
   "pm": {
     "maximo": 32,
@@ -92,14 +92,26 @@
       "tipo": "Corte",
       "alcance": "Corpo",
       "alcanceTipo": "melee",
-      "bonusExtras": [],
+      "bonusExtras": [
+        {
+          "nome": "",
+          "valor": 0,
+          "pm": 0
+        }
+      ],
       "danoAtributo": "for",
       "danoExtras": [
         {
           "nome": "Estilo de duas mãos",
           "valor": 5
+        },
+        {
+          "nome": "",
+          "valor": "",
+          "pm": 0
         }
-      ]
+      ],
+      "custoPM": 0
     },
     {
       "nome": "Ataque Poderoso (Katana)",
@@ -443,8 +455,8 @@
       "nome": "Empunhadora Rubra",
       "tipo": "pericia",
       "valor": 4,
-      "pm": 1,
-      "ativo": false,
+      "pm": 0,
+      "ativo": true,
       "periciaId": "luta"
     },
     {
@@ -452,21 +464,21 @@
       "tipo": "dano_fixo",
       "valor": 4,
       "pm": 1,
-      "ativo": false
+      "ativo": true
     },
     {
       "nome": "Espada Solar",
       "tipo": "dano_extra",
       "valor": "1d6",
       "pm": 1,
-      "ativo": false
+      "ativo": true
     },
     {
       "nome": "Manopla de Força",
       "tipo": "atributo",
       "valor": "4",
       "pm": 1,
-      "ativo": false,
+      "ativo": true,
       "atributoId": "for"
     },
     {
@@ -505,294 +517,21 @@
   "animacaoAtaque": "toast",
   "secoesOcultas": {
     "secVidaMana": false,
-    "secMagias": false
+    "secMagias": false,
+    "secHabilidades": false,
+    "secCabecalho": false
   },
   "logs": [
     {
       "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 10,
-        "dano": "4d10+10",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "12:37:09"
-    },
-    {
-      "tipo": "buff_off",
-      "nome": "Empunhadora Rubra",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Perícia",
-        "alvo": "Luta",
-        "valor": 4
-      },
-      "timestamp": "08:33:02"
-    },
-    {
-      "tipo": "buff_off",
-      "nome": "Visco Rubro",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Dano Fixo",
-        "alvo": "",
-        "valor": 4
-      },
-      "timestamp": "08:33:01"
-    },
-    {
-      "tipo": "buff_off",
-      "nome": "Espada Solar",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Dano Extra",
-        "alvo": "",
-        "valor": "1d6"
-      },
-      "timestamp": "08:33:00"
-    },
-    {
-      "tipo": "buff_off",
-      "nome": "Manopla de Força",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Atributo",
-        "alvo": "FOR",
-        "valor": "4"
-      },
-      "timestamp": "08:33:00"
-    },
-    {
-      "tipo": "buff_off",
-      "nome": "buff de vida",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Vida",
-        "alvo": "",
-        "valor": "5"
-      },
-      "timestamp": "20:22:21"
-    },
-    {
-      "tipo": "buff_on",
-      "nome": "buff de vida",
-      "pmGasto": 0,
-      "detalhes": {
-        "tipoBuff": "Vida",
-        "alvo": "",
-        "valor": "5"
-      },
-      "timestamp": "20:22:14"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:54"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:53"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino Poderoso (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d12+1d6+23",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:49"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:48"
-    },
-    {
-      "tipo": "ataque",
       "nome": "Ataque Poderoso (Katana)",
       "pmGasto": 0,
+      "timestamp": 1774470663376,
       "detalhes": {
         "teste": 16,
         "dano": "4d10+1d6+23",
         "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:47"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:46"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:45"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:42"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Poderoso (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 16,
-        "dano": "4d10+1d6+23",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:41"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:38"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:37"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:25"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Poderoso (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 16,
-        "dano": "4d10+1d6+23",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:24"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:23"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:18"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:13"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Ataque Básico (Katana)",
-      "pmGasto": 0,
-      "detalhes": {
-        "teste": 18,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:05"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:21:00"
-    },
-    {
-      "tipo": "ataque",
-      "nome": "Golpe Divino (Katana)",
-      "pmGasto": 2,
-      "detalhes": {
-        "teste": 20,
-        "dano": "4d10+1d6+18",
-        "custoTipo": "Corpo a Corpo"
-      },
-      "timestamp": "20:14:40"
+      }
     }
   ],
   "equipados": [

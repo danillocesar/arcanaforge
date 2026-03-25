@@ -1,0 +1,11 @@
+.textarea {
+  width: 100%;
+  min-height: 300px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 10px 12px;
+  resize: vertical;
+}

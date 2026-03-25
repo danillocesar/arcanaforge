@@ -40,21 +40,35 @@ export interface Buff {
   tipo: BuffTipo;
   atributoId?: AtributoId;
   periciaId?: string;
-  valor: number;
+  valor: string;
   pm: number;
   ativo: boolean;
 }
 
+export interface Aprimoramento {
+  descricao: string;
+  custoPM: number;
+}
+
 export interface Magia {
   nome: string;
+  escola: string;
+  execucao: string;
+  alcance: string;
+  area: string;
+  duracao: string;
+  resistencia: string;
   custoPM: number;
   nivelMagia: number;
-  aprimoramentos: string;
+  aprimoramentos: Aprimoramento[];
   descricao: string;
 }
 
 export interface Habilidade {
   nome: string;
+  origem: string;
+  tipo: string;
+  custoPM: number;
   descricao: string;
 }
 
@@ -74,18 +88,12 @@ export interface DefesaItem {
   penalidade: number;
 }
 
-export interface Progressao {
-  nivel: number;
-  data: string;
-  notas: string;
-}
-
 export interface LogEntry {
   tipo: string;
   nome: string;
   pmGasto: number;
-  timestamp: number;
-  detalhes?: string;
+  timestamp: number | string;
+  detalhes?: string | Record<string, unknown>;
 }
 
 export interface Classe {
@@ -157,7 +165,7 @@ export interface Ficha {
   anotacoes: string;
   efeitosTemporarios: string;
   proficiencias: string;
-  progressao: Progressao[];
+  progressao: string[];
   buffs: Buff[];
   pvTemporario: number;
   pmTemporario: number;

@@ -1,0 +1,140 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--bg-topbar);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.left {
+  gap: 10px;
+}
+
+.center {
+  gap: 8px;
+}
+
+.right {
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, var(--accent-gold), #e8c95a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.modeLink {
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.modeLink:hover {
+  background: rgba(201, 168, 76, 0.12);
+  border-color: rgba(201, 168, 76, 0.3);
+  color: var(--accent-gold);
+}
+
+.select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  min-width: 200px;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.iconBtn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.iconBtn:hover {
+  border-color: var(--accent-gold);
+  background: var(--bg-card-hover);
+}
+
+.saveStatus {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  min-width: 52px;
+  text-align: center;
+}
+
+.saving {
+  color: var(--accent-gold);
+}
+
+.saved {
+  color: var(--accent-green);
+}
+
+.error {
+  color: var(--accent-red);
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 12px;
+    height: 48px;
+  }
+  .select {
+    min-width: 120px;
+    font-size: 0.82rem;
+  }
+  .left {
+    gap: 6px;
+  }
+  .logo {
+    font-size: 1.1rem;
+  }
+}

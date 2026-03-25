@@ -6,12 +6,20 @@ const multer = require('multer');
 const { WebSocketServer } = require('ws');
 
 const app = express();
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT, 10) || 3000;
 const FICHAS_DIR = path.join(__dirname, 'fichas');
 const AVATARS_DIR = path.join(__dirname, 'avatars');
 
 app.use(express.json({ limit: '5mb' }));
-app.use(express.static(__dirname));
+
+const DIST_DIR = path.join(__dirname, 'dist');
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+} else {
+  app.use(express.static(__dirname));
+}
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 if (!fs.existsSync(FICHAS_DIR)) fs.mkdirSync(FICHAS_DIR);
 if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR);
@@ -144,6 +152,14 @@ app.post('/api/avatar/:nome', uploadAvatar.single('avatar'), (req, res) => {
   files.forEach(f => fs.unlinkSync(path.join(AVATARS_DIR, f)));
   res.json({ url: `/avatars/${req.file.filename}` });
 });
+
+app.use('/avatars', express.static(AVATARS_DIR));
+
+if (fs.existsSync(DIST_DIR)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(DIST_DIR, 'index.html'));
+  });
+}
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });

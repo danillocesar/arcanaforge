@@ -1,0 +1,145 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
+}
+
+.layoutTopo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .layoutTopo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.colInfo,
+.colStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.layoutMeio {
+  display: block;
+}
+
+.fullBottom {
+  margin-top: 0;
+}
+
+.layoutProfEfeitos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .layoutProfEfeitos {
+    grid-template-columns: 1fr;
+  }
+}
+
+.secvisWrapper {
+  position: relative;
+}
+
+.secvisBtn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.secvisBtn:hover {
+  border-color: var(--accent-gold);
+}
+
+.secvisPanel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+}
+
+.secvisItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.secvisItem input {
+  cursor: pointer;
+}
+
+.animSelect {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.animSelect:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.drawerTabs {
+  position: fixed;
+  right: 0;
+  bottom: 90px;
+  z-index: 997;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawerTab {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.drawerTab:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent-gold);
+}

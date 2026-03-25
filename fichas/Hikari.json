@@ -18,11 +18,11 @@
   },
   "pv": {
     "maximo": 48,
-    "atual": 48
+    "atual": 46
   },
   "pm": {
     "maximo": 35,
-    "atual": 31
+    "atual": 29
   },
   "defesa": {
     "base": 10,
@@ -415,7 +415,7 @@
   },
   "classes": [
     {
-      "nome": "Shinkan?",
+      "nome": "Shugenja",
       "nivel": 6
     }
   ],
@@ -432,6 +432,18 @@
         "custoTotal": 1
       },
       "timestamp": "19:44:00"
+    },
+    {
+      "tipo": "magia",
+      "nome": "Bênção",
+      "pmGasto": "1",
+      "timestamp": 1774467598887
+    },
+    {
+      "tipo": "magia",
+      "nome": "Bênção",
+      "pmGasto": "1",
+      "timestamp": 1774468104695
     }
   ],
   "equipados": [

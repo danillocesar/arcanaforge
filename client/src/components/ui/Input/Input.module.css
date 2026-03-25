@@ -1,0 +1,35 @@
+.input {
+  font-family: var(--font);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.default {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.secondary {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 2px 4px;
+}
+
+.secondary:hover {
+  border-bottom-color: var(--text-muted);
+}
+
+.secondary:focus {
+  border-bottom-color: var(--accent-gold);
+}

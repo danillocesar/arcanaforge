@@ -1,0 +1,123 @@
+.card {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.active {
+  border-color: #2ecc40;
+  background: rgba(46, 204, 64, 0.08);
+}
+
+.nome {
+  flex: 1;
+  min-width: 80px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 2px 4px;
+}
+
+.nome:hover,
+.nome:focus {
+  border-bottom-color: var(--border);
+}
+
+.tipoSel,
+.extraSel {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  padding: 3px 6px;
+  cursor: pointer;
+}
+
+.valor {
+  width: 55px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 3px 4px;
+}
+
+.pmField {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pmLabel {
+  font-size: 0.7rem;
+  color: var(--accent-blue-bar);
+  font-weight: 700;
+}
+
+.pmInput {
+  width: 45px;
+  background: var(--bg-body);
+  border: 1px solid var(--accent-blue);
+  border-radius: 4px;
+  color: var(--accent-blue-bar);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 3px 4px;
+}
+
+.toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.toggle:hover {
+  border-color: #2ecc40;
+  color: #2ecc40;
+}
+
+.toggleOn {
+  border-color: #2ecc40;
+  background: #2ecc40;
+  color: #fff;
+}
+
+.removeSm {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.removeSm:hover {
+  color: var(--accent-red);
+}

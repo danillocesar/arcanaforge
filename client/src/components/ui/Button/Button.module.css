@@ -1,0 +1,89 @@
+.btn {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add {
+  display: block;
+  width: 100%;
+  background: var(--btn-add-bg);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 10px;
+  margin-top: 8px;
+}
+
+.add:hover {
+  background: var(--btn-add-hover);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+}
+
+.remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.remove:hover {
+  color: var(--accent-red);
+  opacity: 1;
+}
+
+.removeSm {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.removeSm:hover {
+  color: var(--accent-red);
+  opacity: 1;
+}
+
+.gold {
+  background: linear-gradient(135deg, var(--accent-gold), #e8c95a);
+  border: none;
+  color: #1a1d27;
+  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+}
+
+.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+}
+
+.ghost:hover {
+  border-color: var(--accent-gold);
+  color: var(--text-primary);
+}
+
+.primary {
+  background: var(--accent-gold);
+  border: none;
+  color: #1a1d27;
+  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 8px 20px;
+}
+
+.primary:hover {
+  filter: brightness(1.1);
+}
