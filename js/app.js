@@ -1,6 +1,47 @@
 let ficha = null;
 let fichaOriginalNome = '';
 let saveTimeout = null;
+let appWs = null;
+
+function connectAppWs() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  appWs = new WebSocket(`${proto}://${location.host}`);
+  appWs.addEventListener('message', (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'mestre_hp_sync' && msg.nome && ficha && msg.nome === ficha.nome) {
+        ficha.pv.atual = msg.pvAtual;
+        renderVidaMana();
+        showToast('PV atualizado pelo Mestre');
+      }
+    } catch (_) {}
+  });
+  appWs.addEventListener('close', () => { setTimeout(connectAppWs, 2000); });
+  appWs.addEventListener('error', () => { appWs.close(); });
+}
+
+function sendFichaHpUpdate() {
+  if (appWs && appWs.readyState === WebSocket.OPEN && ficha) {
+    appWs.send(JSON.stringify({
+      type: 'ficha_hp_update',
+      nome: ficha.nome,
+      pv: { atual: ficha.pv.atual, maximo: ficha.pv.maximo },
+      pm: { atual: ficha.pm.atual, maximo: ficha.pm.maximo }
+    }));
+  }
+}
+
+function showToast(text) {
+  const el = document.createElement('div');
+  el.className = 'toast-notification';
+  el.textContent = text;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    el.addEventListener('transitionend', () => el.remove());
+  }, 3000);
+}
 
 // ==================== SAVE / LOAD ====================
 function scheduleSave() {
@@ -16,6 +57,7 @@ function scheduleSave() {
       await apiSaveFicha(nomeAtual, ficha);
       setSaveStatus('saved');
       refreshSelect(nomeAtual);
+      sendFichaHpUpdate();
     } catch (e) {
       console.error('Erro ao salvar:', e);
       setSaveStatus('error');
@@ -87,6 +129,18 @@ function renderFicha() {
   if (!ficha) return;
 
   document.getElementById('campoNome').value = ficha.nome || '';
+
+  const avatarImg = document.getElementById('avatarImg');
+  const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+  if (ficha.avatar) {
+    avatarImg.src = ficha.avatar;
+    avatarImg.style.display = 'block';
+    avatarPlaceholder.style.display = 'none';
+  } else {
+    avatarImg.src = '';
+    avatarImg.style.display = 'none';
+    avatarPlaceholder.style.display = '';
+  }
 
   document.querySelectorAll('[data-field]').forEach(el => {
     const key = el.dataset.field;
@@ -210,6 +264,18 @@ function renderClasses() {
   });
 
   document.getElementById('nivelTotalDisplay').textContent = getNivelTotal(ficha);
+
+  const icone = document.getElementById('classeIcone');
+  if (icone) {
+    const primeiraClasse = ficha.classes && ficha.classes.length > 0 ? ficha.classes[0].nome : '';
+    if (primeiraClasse) {
+      icone.src = `/assets/classes/${primeiraClasse.toLowerCase()}.png`;
+      icone.style.display = '';
+      icone.onerror = () => { icone.style.display = 'none'; };
+    } else {
+      icone.style.display = 'none';
+    }
+  }
 }
 
 // ==================== ATRIBUTOS ====================
@@ -1310,6 +1376,7 @@ function renderLogs() {
 
 // ==================== EVENT DELEGATION ====================
 document.addEventListener('DOMContentLoaded', async () => {
+  connectAppWs();
   const fichas = await apiFetchFichas();
   if (fichas.length === 0) {
     ficha = criarFichaVazia('Novo Personagem');
@@ -1361,6 +1428,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     scheduleSave();
   });
 
+  // Avatar
+  document.getElementById('avatarWrapper').addEventListener('click', () => {
+    document.getElementById('avatarInput').click();
+  });
+  document.getElementById('avatarInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file || !ficha.nome) return;
+    const form = new FormData();
+    form.append('avatar', file);
+    try {
+      const resp = await fetch(`/api/avatar/${encodeURIComponent(ficha.nome)}`, { method: 'POST', body: form });
+      const result = await resp.json();
+      if (result.url) {
+        ficha.avatar = result.url + '?t=' + Date.now();
+        document.getElementById('avatarImg').src = ficha.avatar;
+        document.getElementById('avatarImg').style.display = 'block';
+        document.getElementById('avatarPlaceholder').style.display = 'none';
+        scheduleSave();
+      }
+    } catch (err) {
+      console.error('Erro ao enviar avatar:', err);
+    }
+    e.target.value = '';
+  });
+
   // Classes
   document.getElementById('btnAddClasse').addEventListener('click', () => {
     migrateClasses();
@@ -1374,6 +1466,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target.dataset.classeNome !== undefined) {
       const idx = parseInt(e.target.dataset.classeNome);
       ficha.classes[idx].nome = e.target.value;
+      if (idx === 0) {
+        const icone = document.getElementById('classeIcone');
+        if (icone) {
+          const nome = e.target.value.trim();
+          if (nome) {
+            icone.src = `/assets/classes/${nome.toLowerCase()}.png`;
+            icone.style.display = '';
+            icone.onerror = () => { icone.style.display = 'none'; };
+          } else {
+            icone.style.display = 'none';
+          }
+        }
+      }
       scheduleSave();
     }
     if (e.target.dataset.classeNivel !== undefined) {

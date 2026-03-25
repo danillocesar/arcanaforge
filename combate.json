@@ -1,0 +1,22 @@
+{
+  "inimigos": [
+    {
+      "nome": "Inimigo 1",
+      "iniciativa": 14,
+      "pvMax": 10,
+      "pvAtual": 10
+    },
+    {
+      "nome": "Inimigo 2",
+      "iniciativa": "",
+      "pvMax": 10,
+      "pvAtual": 10
+    }
+  ],
+  "iniciativas": {
+    "Akatsu": 15,
+    "Hikari": 10
+  },
+  "turnoIdx": 2,
+  "ordenado": false
+}

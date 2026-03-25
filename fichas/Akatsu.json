@@ -11,7 +11,7 @@
   },
   "pv": {
     "maximo": 59,
-    "atual": 59
+    "atual": 52
   },
   "pm": {
     "maximo": 32,
@@ -509,6 +509,17 @@
   },
   "logs": [
     {
+      "tipo": "ataque",
+      "nome": "Ataque Básico (Katana)",
+      "pmGasto": 0,
+      "detalhes": {
+        "teste": 10,
+        "dano": "4d10+10",
+        "custoTipo": "Corpo a Corpo"
+      },
+      "timestamp": "12:37:09"
+    },
+    {
       "tipo": "buff_off",
       "nome": "Empunhadora Rubra",
       "pmGasto": 0,
@@ -786,7 +797,7 @@
   ],
   "equipados": [
     {
-      "nome": ""
+      "nome": "Simbolo Sagrado"
     },
     {
       "nome": "Gibão de Peles"
@@ -797,5 +808,6 @@
     {
       "nome": "Capa Pesada (+1 em Fortitude)"
     }
-  ]
+  ],
+  "avatar": "/avatars/Akatsu.png?t=1774445422252"
 }

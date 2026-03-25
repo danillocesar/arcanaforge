@@ -27,3 +27,16 @@ async function apiRenomear(nomeAntigo, nomeNovo) {
     method: 'POST'
   });
 }
+
+async function apiLoadCombate() {
+  const res = await fetch('/api/combate');
+  return res.json();
+}
+
+async function apiSaveCombate(data) {
+  await fetch('/api/combate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+}

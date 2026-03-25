@@ -409,7 +409,7 @@
   "pmTemporario": 0,
   "secoesFechadas": {
     "secBuffs": false,
-    "secCabecalho": true,
+    "secCabecalho": false,
     "secAtaques": true
   },
   "classes": [
@@ -432,5 +432,20 @@
       },
       "timestamp": "19:44:00"
     }
-  ]
+  ],
+  "equipados": [
+    {
+      "nome": ""
+    },
+    {
+      "nome": ""
+    },
+    {
+      "nome": ""
+    },
+    {
+      "nome": ""
+    }
+  ],
+  "avatar": "/avatars/Hikari.png?t=1774450590825"
 }

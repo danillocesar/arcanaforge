@@ -1,17 +1,30 @@
 const express = require('express');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const { WebSocketServer } = require('ws');
 
 const app = express();
 const PORT = 3000;
 const FICHAS_DIR = path.join(__dirname, 'fichas');
+const AVATARS_DIR = path.join(__dirname, 'avatars');
 
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(__dirname));
 
-if (!fs.existsSync(FICHAS_DIR)) {
-  fs.mkdirSync(FICHAS_DIR);
-}
+if (!fs.existsSync(FICHAS_DIR)) fs.mkdirSync(FICHAS_DIR);
+if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR);
+
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, AVATARS_DIR),
+  filename: (req, file, cb) => {
+    const nome = sanitizeName(req.params.nome);
+    const ext = path.extname(file.originalname).toLowerCase() || '.png';
+    cb(null, `${nome}${ext}`);
+  }
+});
+const uploadAvatar = multer({ storage: avatarStorage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 function sanitizeName(name) {
   return name.replace(/[^a-zA-Z0-9À-ÿ _-]/g, '').trim();
@@ -79,7 +92,94 @@ app.post('/api/fichas/:nomeAntigo/renomear/:nomeNovo', (req, res) => {
   res.json({ ok: true });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+// --- Combate Tracker (server-side state) ---
+const COMBATE_FILE = path.join(__dirname, 'combate.json');
+const COMBATE_DEFAULT = { inimigos: [], iniciativas: {}, turnoIdx: -1, ordenado: false };
+
+function loadCombateData() {
+  try {
+    if (fs.existsSync(COMBATE_FILE)) return JSON.parse(fs.readFileSync(COMBATE_FILE, 'utf-8'));
+  } catch (_) {}
+  return { ...COMBATE_DEFAULT };
+}
+function saveCombateData(data) {
+  fs.writeFileSync(COMBATE_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+let combateData = loadCombateData();
+
+app.get('/api/combate', (req, res) => {
+  res.json(combateData);
+});
+
+app.post('/api/combate', (req, res) => {
+  combateData = req.body;
+  saveCombateData(combateData);
+  broadcastCombate();
+  res.json({ ok: true });
+});
+
+app.get('/api/avatar-sem-fundo/:nome', (req, res) => {
+  const nome = sanitizeName(req.params.nome);
+  const variants = [
+    `${nome}_sem_fundo.png`,
+    `${nome.toLowerCase()}_sem_fundo.png`,
+  ];
+  for (const v of variants) {
+    if (fs.existsSync(path.join(AVATARS_DIR, v))) {
+      return res.json({ url: `/avatars/${v}` });
+    }
+  }
+  res.json({ url: null });
+});
+
+app.post('/api/avatar/:nome', uploadAvatar.single('avatar'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+  const nome = sanitizeName(req.params.nome);
+  // Remove avatares antigos com extensao diferente
+  const files = fs.readdirSync(AVATARS_DIR).filter(f => {
+    const base = path.parse(f).name;
+    return base === nome && f !== req.file.filename;
+  });
+  files.forEach(f => fs.unlinkSync(path.join(AVATARS_DIR, f)));
+  res.json({ url: `/avatars/${req.file.filename}` });
+});
+
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+function broadcastCombate() {
+  const msg = JSON.stringify({ type: 'combate_sync', data: combateData });
+  wss.clients.forEach(client => {
+    if (client.readyState === 1) client.send(msg);
+  });
+}
+
+wss.on('connection', (ws) => {
+  ws.send(JSON.stringify({ type: 'combate_sync', data: combateData }));
+
+  ws.on('message', (raw) => {
+    try {
+      const msg = JSON.parse(raw);
+      if (msg.type === 'combate_update' && msg.data) {
+        combateData = msg.data;
+        saveCombateData(combateData);
+        const out = JSON.stringify({ type: 'combate_sync', data: combateData });
+        wss.clients.forEach(c => { if (c !== ws && c.readyState === 1) c.send(out); });
+      }
+      if (msg.type === 'ficha_hp_update' && msg.nome) {
+        const out = JSON.stringify({ type: 'ficha_hp_sync', nome: msg.nome, pv: msg.pv, pm: msg.pm });
+        wss.clients.forEach(c => { if (c !== ws && c.readyState === 1) c.send(out); });
+      }
+      if (msg.type === 'mestre_hp_update' && msg.nome) {
+        const out = JSON.stringify({ type: 'mestre_hp_sync', nome: msg.nome, pvAtual: msg.pvAtual });
+        wss.clients.forEach(c => { if (c !== ws && c.readyState === 1) c.send(out); });
+      }
+    } catch (_) {}
+  });
+});
+
+server.listen(PORT, '0.0.0.0', () => {
   const os = require('os');
   const nets = os.networkInterfaces();
   let ips = [];

@@ -14,7 +14,7 @@
   <nav id="topbar">
     <div class="topbar-left">
       <span class="logo">T20</span>
-      <a href="mestre.html" class="topbar-mode-link" title="Painel do Mestre">⚔ Mestre</a>
+      <a href="mestre.html" class="topbar-mode-link" title="Combate Tracker">⚔ Combate</a>
     </div>
     <div class="topbar-center">
       <select id="selectPersonagem"></select>
@@ -57,6 +57,13 @@
       <section id="secCabecalho" class="ficha-section cabecalho cabecalho-full">
         <h2>Info Básica <button class="section-collapse-btn" title="Encolher/Expandir">▾</button></h2>
         <div class="cabecalho-top-row">
+          <div class="cabecalho-avatar-col">
+            <div id="avatarWrapper" class="avatar-wrapper" title="Clique para alterar avatar">
+              <img id="avatarImg" class="avatar-img" src="" alt="Avatar">
+              <div class="avatar-placeholder" id="avatarPlaceholder">+</div>
+              <input type="file" id="avatarInput" accept="image/*" hidden>
+            </div>
+          </div>
           <div class="cabecalho-nome-col">
             <input type="text" id="campoNome" class="campo-nome" placeholder="Nome do Personagem" spellcheck="false">
           </div>
@@ -66,7 +73,10 @@
                 <label class="classes-title">Classes</label>
                 <span class="nivel-total">Nível: <strong id="nivelTotalDisplay">1</strong></span>
               </div>
-              <div id="classesLista" class="classes-lista"></div>
+              <div class="classes-body">
+                <div id="classesLista" class="classes-lista"></div>
+                <img id="classeIcone" class="classe-icone" src="" alt="" style="display:none">
+              </div>
               <button class="btn-add-classe" id="btnAddClasse">+ Classe</button>
             </div>
           </div>

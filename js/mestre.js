@@ -1,28 +1,83 @@
 /* ===== MESTRE MODE — Combat Tracker ===== */
 
-const MESTRE_STORAGE_KEY = 't20_mestre_combate';
-
-function loadMestreData() {
-  try {
-    const raw = localStorage.getItem(MESTRE_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (_) {}
-  return { inimigos: [], iniciativas: {}, turnoIdx: -1, ordenado: false };
+function showToast(text) {
+  const el = document.createElement('div');
+  el.className = 'toast-notification';
+  el.textContent = text;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    el.addEventListener('transitionend', () => el.remove());
+  }, 3000);
 }
+
+const COMBATE_DEFAULT = { inimigos: [], iniciativas: {}, turnoIdx: -1, ordenado: false };
 
 function saveMestreData(data) {
-  localStorage.setItem(MESTRE_STORAGE_KEY, JSON.stringify(data));
+  if (mestreWs && mestreWs.readyState === WebSocket.OPEN) {
+    mestreWs.send(JSON.stringify({ type: 'combate_update', data }));
+  } else {
+    apiSaveCombate(data).catch(() => {});
+  }
 }
 
-let mestreData = loadMestreData();
+let mestreData = { ...COMBATE_DEFAULT };
 let mestreJogadores = [];
-let mestreTurnoIdx = mestreData.turnoIdx ?? -1;
+let mestreTurnoIdx = -1;
 let mestreOrdenado = [];
 let mestreOrdenadoAtivo = false;
+let mestreModoAtivo = false;
+let mestreWs = null;
+
+function connectWebSocket() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  mestreWs = new WebSocket(`${proto}//${location.host}`);
+
+  mestreWs.addEventListener('message', (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'combate_sync' && msg.data) {
+        mestreData = msg.data;
+        mestreTurnoIdx = mestreData.turnoIdx ?? -1;
+        mestreOrdenadoAtivo = false;
+        renderCombateCards();
+      }
+      if (msg.type === 'ficha_hp_sync' && msg.nome) {
+        const j = mestreJogadores.find(x => x.nome === msg.nome);
+        if (j) {
+          if (msg.pv) { j.pvAtual = msg.pv.atual; j.pvMax = msg.pv.maximo; }
+          if (msg.pm) { j.pmAtual = msg.pm.atual; j.pmMax = msg.pm.maximo; }
+          renderCombateCards();
+          showToast(`PV/PM de ${msg.nome} atualizado`);
+        }
+      }
+      if (msg.type === 'mestre_hp_sync' && msg.nome) {
+        const j = mestreJogadores.find(x => x.nome === msg.nome);
+        if (j) {
+          j.pvAtual = msg.pvAtual;
+          renderCombateCards();
+          showToast(`PV de ${msg.nome} atualizado pelo Mestre`);
+        }
+      }
+    } catch (_) {}
+  });
+
+  mestreWs.addEventListener('close', () => {
+    setTimeout(connectWebSocket, 2000);
+  });
+
+  mestreWs.addEventListener('error', () => {
+    mestreWs.close();
+  });
+}
 
 async function renderMestreCombate() {
   const container = document.getElementById('mestreContainer');
   if (!container) return;
+
+  mestreData = await apiLoadCombate().catch(() => ({ ...COMBATE_DEFAULT }));
+  mestreTurnoIdx = mestreData.turnoIdx ?? -1;
 
   const fichas = await apiFetchFichas();
 
@@ -31,12 +86,20 @@ async function renderMestreCombate() {
     try {
       const f = await apiLoadFicha(nome);
       if (f) {
+        let avatar = f.avatar || '';
+        try {
+          const sfRes = await fetch(`/api/avatar-sem-fundo/${encodeURIComponent(f.nome)}`);
+          const sfData = await sfRes.json();
+          if (sfData.url) avatar = sfData.url;
+        } catch (_) {}
         mestreJogadores.push({
           nome: f.nome,
           pvMax: f.pv ? f.pv.maximo : 0,
           pvAtual: f.pv ? f.pv.atual : 0,
           pmMax: f.pm ? f.pm.maximo : 0,
           pmAtual: f.pm ? f.pm.atual : 0,
+          avatar,
+          classes: f.classes || [],
           tipo: 'jogador'
         });
       }
@@ -48,27 +111,35 @@ async function renderMestreCombate() {
 
   buildMestreHTML(container);
   renderCombateCards();
+
+  const btnModo = document.getElementById('btnModoMestre');
+  if (btnModo && !btnModo._listenerAttached) {
+    btnModo._listenerAttached = true;
+    btnModo.addEventListener('click', () => {
+      mestreModoAtivo = !mestreModoAtivo;
+      document.body.classList.toggle('modo-mestre-on', mestreModoAtivo);
+      btnModo.classList.toggle('active', mestreModoAtivo);
+      btnModo.innerHTML = mestreModoAtivo ? '🔓 Modo Mestre' : '🔒 Modo Mestre';
+    });
+  }
+
+  if (!mestreWs) connectWebSocket();
 }
 
 function buildMestreHTML(container) {
   container.innerHTML = `
-    <div class="mestre-header">
-      <h1>⚔ Painel do Mestre</h1>
-      <p class="mestre-subtitle">Gerencie o combate e acompanhe a iniciativa dos participantes</p>
-    </div>
-
     <div class="mestre-section">
       <div class="mestre-section-header">
         <h2>Tracker de Combate</h2>
         <div class="mestre-toolbar">
-          <button id="btnProxTurno" class="mestre-btn mestre-btn-primary" title="Próximo Turno">
-            <span class="btn-icon">▶</span> Próximo Turno
-          </button>
-          <button id="btnOrdenarIniciativa" class="mestre-btn mestre-btn-gold" title="Ordenar por Iniciativa">
-            <span class="btn-icon">↕</span> Ordenar
-          </button>
           <button id="btnResetTurno" class="mestre-btn mestre-btn-ghost" title="Resetar Turno">
             <span class="btn-icon">⟲</span> Reset
+          </button>
+          <button id="btnOrdenarIniciativa" class="mestre-btn mestre-btn-gold" title="Ordenar por Iniciativa">
+            <span class="btn-icon">↕</span> Reordenar
+          </button>
+          <button id="btnProxTurno" class="mestre-btn mestre-btn-primary" title="Próximo Turno">
+            <span class="btn-icon">▶</span> Próximo Turno
           </button>
         </div>
       </div>
@@ -101,6 +172,8 @@ function buildCombateRows() {
       pvMax: j.pvMax,
       pmAtual: j.pmAtual,
       pmMax: j.pmMax,
+      avatar: j.avatar || '',
+      classes: j.classes || [],
       tipo: 'jogador'
     });
   }
@@ -113,8 +186,11 @@ function buildCombateRows() {
       iniciativa: ini.iniciativa ?? '',
       pvAtual: ini.pvAtual || 0,
       pvMax: ini.pvMax || 0,
+      avatar: '',
       tipo: 'inimigo',
-      inimigoIdx: i
+      inimigoIdx: i,
+      limiarAlerta: ini.limiarAlerta ?? 50,
+      limiarCritico: ini.limiarCritico ?? 15
     });
   }
 
@@ -174,15 +250,33 @@ function renderCombateCards() {
     const isTurno = mestreTurnoIdx >= 0 && idx === mestreTurnoIdx;
     const pct = pvPercent(row.pvAtual, row.pvMax);
     const isJogador = row.tipo === 'jogador';
-    const cardClass = `combate-card ${isJogador ? 'combate-card-jogador' : 'combate-card-inimigo'}${isTurno ? ' combate-card-turno' : ''}`;
+    let hpStatus = '';
+    if (!isJogador) {
+      if (pct <= row.limiarCritico) hpStatus = ' combate-card-critico';
+      else if (pct <= row.limiarAlerta) hpStatus = ' combate-card-alerta';
+    }
+    const cardClass = `combate-card ${isJogador ? 'combate-card-jogador' : 'combate-card-inimigo'}${isTurno ? ' combate-card-turno' : ''}${hpStatus}`;
 
     html += `<div class="${cardClass}" data-combate-idx="${idx}">
       ${isTurno ? '<div class="combate-turno-indicator">▶ TURNO ATUAL</div>' : ''}
 
+      <div class="combate-card-avatar ${row.tipo}">
+        ${row.avatar
+          ? `<img src="${row.avatar}" class="combate-card-avatar-img">`
+          : getInitials(row.nome)}
+      </div>
+
+      ${isJogador && row.classes && row.classes.length > 0 && row.classes[0].nome
+        ? `<div class="combate-classe-strip">
+            <img src="/assets/classes/${row.classes[0].nome.toLowerCase()}.png" class="combate-classe-icon" onerror="this.parentElement.style.display='none'">
+          </div>`
+        : !isJogador
+          ? `<div class="combate-classe-strip inimigo">
+              <svg class="combate-classe-icon combate-vilao-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10c0 2.76 1.34 5.2 3.4 6.72L6 22h3l1-2h4l1 2h3l-1.4-5.28C18.66 15.2 20 12.76 20 10c0-4.42-3.58-8-8-8zm-2.5 8a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+            </div>`
+          : ''}
+
       <div class="combate-card-top">
-        <div class="combate-card-avatar ${row.tipo}" style="background:${getAvatarColor(row.nome)}20; border-color:${getAvatarColor(row.nome)}55; color:${getAvatarColor(row.nome)}">
-          ${getInitials(row.nome)}
-        </div>
         <div class="combate-card-info">
           <div class="combate-card-name-row">
             ${isJogador
@@ -192,12 +286,12 @@ function renderCombateCards() {
           <div class="combate-card-meta">
             <span class="combate-tipo-tag ${row.tipo}">${isJogador ? 'Jogador' : 'Inimigo'}</span>
             <div class="combate-card-inic">
-              <label>Iniciativa</label>
+              <label>Iniciativa:</label>
               <input type="number" value="${row.iniciativa}" data-iniciativa="${row.id}" data-tipo="${row.tipo}" placeholder="—">
             </div>
           </div>
         </div>
-        <div class="combate-bars">
+        <div class="combate-bars${!isJogador ? ' combate-bars-inimigo' : ''}">
           <div class="combate-bar combate-bar-hp" data-bar-id="${row.id}" data-tipo="${row.tipo}" data-nome="${escapeHtml(row.nome)}"${!isJogador ? ` data-inimigo-idx="${row.inimigoIdx}"` : ''} data-pv-atual="${row.pvAtual}" data-pv-max="${row.pvMax}" title="Clique para dano/cura">
             <div class="combate-bar-fill hp-fill" style="width:${pct}%"></div>
             <span class="combate-bar-label">${row.pvAtual} / ${row.pvMax}</span>
@@ -241,7 +335,9 @@ function renderMiniOrder(rows) {
     const cor = getAvatarColor(row.nome);
     html += `<div class="combate-mini-item${isTurno ? ' combate-mini-turno' : ''}">
       <div class="combate-mini-avatar ${row.tipo}" style="background:${cor}20; border-color:${cor}55; color:${cor}">
-        ${getInitials(row.nome)}
+        ${row.avatar
+          ? `<img src="${row.avatar}" class="combate-mini-avatar-img">`
+          : getInitials(row.nome)}
       </div>
       <span class="combate-mini-name">${escapeHtml(row.nome)}</span>
     </div>`;
@@ -292,12 +388,8 @@ function attachCombateEvents(wrapper) {
     if (!card) return;
     const nome = el.value || '';
     const avatar = card.querySelector('.combate-card-avatar');
-    if (avatar) {
+    if (avatar && !avatar.querySelector('.combate-card-avatar-img')) {
       avatar.textContent = getInitials(nome);
-      const cor = getAvatarColor(nome);
-      avatar.style.background = cor + '20';
-      avatar.style.borderColor = cor + '55';
-      avatar.style.color = cor;
     }
   }, true);
 
@@ -330,6 +422,16 @@ function updateCardBar(card) {
   if (fill) fill.style.width = pct + '%';
   const label = hpBar.querySelector('.combate-bar-label');
   if (label) label.textContent = `${atual} / ${max}`;
+
+  if (card.classList.contains('combate-card-inimigo')) {
+    const idx = parseInt(hpBar.dataset.inimigoIdx);
+    const ini = mestreData.inimigos[idx];
+    const limAlerta = ini ? (ini.limiarAlerta ?? 50) : 50;
+    const limCritico = ini ? (ini.limiarCritico ?? 15) : 15;
+    card.classList.remove('combate-card-alerta', 'combate-card-critico');
+    if (pct <= limCritico) card.classList.add('combate-card-critico');
+    else if (pct <= limAlerta) card.classList.add('combate-card-alerta');
+  }
 }
 
 function refreshOrdenadoRows() {
@@ -383,7 +485,9 @@ function adicionarInimigo() {
     nome: `Inimigo ${count}`,
     iniciativa: '',
     pvMax: 10,
-    pvAtual: 10
+    pvAtual: 10,
+    limiarAlerta: Math.floor(Math.random() * 21) + 40,
+    limiarCritico: Math.floor(Math.random() * 21) + 5
   });
   mestreOrdenadoAtivo = false;
   saveMestreData(mestreData);
@@ -439,6 +543,9 @@ async function aplicarHpChange(bar, delta) {
         await apiSaveFicha(nome, fichaData);
       }
     } catch (_) {}
+    if (mestreWs && mestreWs.readyState === WebSocket.OPEN) {
+      mestreWs.send(JSON.stringify({ type: 'mestre_hp_update', nome, pvAtual: novoPv }));
+    }
   } else {
     const idx = parseInt(bar.dataset.inimigoIdx);
     if (mestreData.inimigos[idx]) {
