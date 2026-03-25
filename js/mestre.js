@@ -61,11 +61,11 @@ function buildMestreHTML(container) {
       <div class="mestre-section-header">
         <h2>Tracker de Combate</h2>
         <div class="mestre-toolbar">
+          <button id="btnProxTurno" class="mestre-btn mestre-btn-primary" title="Próximo Turno">
+            <span class="btn-icon">▶</span> Próximo Turno
+          </button>
           <button id="btnOrdenarIniciativa" class="mestre-btn mestre-btn-gold" title="Ordenar por Iniciativa">
             <span class="btn-icon">↕</span> Ordenar
-          </button>
-          <button id="btnProxTurno" class="mestre-btn mestre-btn-blue" title="Próximo Turno">
-            <span class="btn-icon">▶</span> Próximo
           </button>
           <button id="btnResetTurno" class="mestre-btn mestre-btn-ghost" title="Resetar Turno">
             <span class="btn-icon">⟲</span> Reset
@@ -79,6 +79,8 @@ function buildMestreHTML(container) {
         <span class="btn-add-icon">+</span> Adicionar Inimigo
       </button>
     </div>
+
+    <div id="combateMiniOrder" class="combate-mini-order"></div>
   `;
 
   document.getElementById('btnOrdenarIniciativa').addEventListener('click', ordenarIniciativa);
@@ -124,16 +126,25 @@ function pvPercent(atual, max) {
   return Math.max(0, Math.min(100, (atual / max) * 100));
 }
 
-function pvBarColor(pct) {
-  if (pct > 60) return '#16a34a';
-  if (pct > 30) return '#eab308';
-  return '#ef4444';
-}
-
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str || '';
   return div.innerHTML;
+}
+
+const AVATAR_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#f43f5e','#84cc16','#a855f7','#14b8a6'];
+
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function getAvatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 function renderCombateCards() {
@@ -154,6 +165,7 @@ function renderCombateCards() {
       <p>Nenhum participante no combate ainda.</p>
       <p class="combate-empty-hint">Os personagens salvos aparecerão automaticamente. Use o botão abaixo para adicionar inimigos.</p>
     </div>`;
+    renderMiniOrder([]);
     return;
   }
 
@@ -161,7 +173,6 @@ function renderCombateCards() {
   rows.forEach((row, idx) => {
     const isTurno = mestreTurnoIdx >= 0 && idx === mestreTurnoIdx;
     const pct = pvPercent(row.pvAtual, row.pvMax);
-    const barColor = pvBarColor(pct);
     const isJogador = row.tipo === 'jogador';
     const cardClass = `combate-card ${isJogador ? 'combate-card-jogador' : 'combate-card-inimigo'}${isTurno ? ' combate-card-turno' : ''}`;
 
@@ -169,65 +180,73 @@ function renderCombateCards() {
       ${isTurno ? '<div class="combate-turno-indicator">▶ TURNO ATUAL</div>' : ''}
 
       <div class="combate-card-top">
-        <div class="combate-card-left">
-          <div class="combate-card-avatar ${row.tipo}">
-            ${isJogador ? '🛡' : '💀'}
+        <div class="combate-card-avatar ${row.tipo}" style="background:${getAvatarColor(row.nome)}20; border-color:${getAvatarColor(row.nome)}55; color:${getAvatarColor(row.nome)}">
+          ${getInitials(row.nome)}
+        </div>
+        <div class="combate-card-info">
+          <div class="combate-card-name-row">
+            ${isJogador
+              ? `<span class="combate-card-name">${escapeHtml(row.nome)}</span>`
+              : `<input type="text" class="combate-card-name-input" value="${escapeHtml(row.nome)}" data-inimigo-nome="${row.inimigoIdx}">`}
           </div>
-          <div class="combate-card-info">
-            <div class="combate-card-name-row">
-              ${isJogador
-                ? `<span class="combate-card-name">${escapeHtml(row.nome)}</span>`
-                : `<input type="text" class="combate-card-name-input" value="${escapeHtml(row.nome)}" data-inimigo-nome="${row.inimigoIdx}">`}
-              <span class="combate-tipo-tag ${row.tipo}">${isJogador ? 'Jogador' : 'Inimigo'}</span>
-            </div>
+          <div class="combate-card-meta">
+            <span class="combate-tipo-tag ${row.tipo}">${isJogador ? 'Jogador' : 'Inimigo'}</span>
             <div class="combate-card-inic">
               <label>Iniciativa</label>
               <input type="number" value="${row.iniciativa}" data-iniciativa="${row.id}" data-tipo="${row.tipo}" placeholder="—">
             </div>
           </div>
         </div>
-        <div class="combate-hp-icons">
-          <div class="combate-pv-heart" data-heart-id="${row.id}" data-tipo="${row.tipo}" data-nome="${escapeHtml(row.nome)}"${!isJogador ? ` data-inimigo-idx="${row.inimigoIdx}"` : ''} data-pv-atual="${row.pvAtual}" data-pv-max="${row.pvMax}" title="Clique para dano/cura">
-            <svg class="heart-svg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#f87171"/>
-                  <stop offset="100%" stop-color="#dc2626"/>
-                </linearGradient>
-              </defs>
-              <path d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z" fill="url(#heartGrad)"/>
-              <ellipse cx="180" cy="170" rx="40" ry="28" fill="rgba(255,255,255,0.18)" transform="rotate(-25 180 170)"/>
-            </svg>
-            <span class="heart-val">${row.pvAtual}<span class="heart-sep">/</span>${row.pvMax}</span>
+        <div class="combate-bars">
+          <div class="combate-bar combate-bar-hp" data-bar-id="${row.id}" data-tipo="${row.tipo}" data-nome="${escapeHtml(row.nome)}"${!isJogador ? ` data-inimigo-idx="${row.inimigoIdx}"` : ''} data-pv-atual="${row.pvAtual}" data-pv-max="${row.pvMax}" title="Clique para dano/cura">
+            <div class="combate-bar-fill hp-fill" style="width:${pct}%"></div>
+            <span class="combate-bar-label">${row.pvAtual} / ${row.pvMax}</span>
           </div>
           ${isJogador ? `
-          <div class="combate-pm-drop">
-            <svg class="drop-svg" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="dropGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#60a5fa"/>
-                  <stop offset="100%" stop-color="#2563eb"/>
-                </linearGradient>
-              </defs>
-              <path d="M192 512C86 512 0 426 0 320c0-77.4 27-99 172.3-309.7c9.5-13.8 29.9-13.8 39.5 0C357 221 384 242.6 384 320c0 106-86 192-192 192z" fill="url(#dropGrad)"/>
-              <ellipse cx="140" cy="280" rx="35" ry="50" fill="rgba(255,255,255,0.12)" transform="rotate(-15 140 280)"/>
-            </svg>
-            <span class="drop-val">${row.pmAtual}<span class="drop-sep">/</span>${row.pmMax}</span>
+          <div class="combate-bar combate-bar-pm">
+            <div class="combate-bar-fill pm-fill" style="width:${row.pmMax > 0 ? Math.round((row.pmAtual / row.pmMax) * 100) : 0}%"></div>
+            <span class="combate-bar-label">${row.pmAtual} / ${row.pmMax}</span>
           </div>` : ''}
         </div>
-        <div class="combate-card-right">
-          ${!isJogador ? `<button class="combate-card-remove" data-remove-inimigo="${row.inimigoIdx}" title="Remover">✕</button>` : ''}
-        </div>
-      </div>
-
-      <div class="combate-hp-bar-track">
-        <div class="combate-hp-bar-fill" style="width:${pct}%; background:${barColor}"></div>
+        ${!isJogador ? `<button class="combate-card-remove" data-remove-inimigo="${row.inimigoIdx}" title="Remover">✕</button>` : ''}
       </div>
     </div>`;
   });
 
   wrapper.innerHTML = html;
   attachCombateEvents(wrapper);
+
+  renderMiniOrder(rows);
+
+  if (mestreTurnoIdx >= 0) {
+    const turnoCard = wrapper.querySelector('.combate-card-turno');
+    if (turnoCard) setTimeout(() => turnoCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
+
+function renderMiniOrder(rows) {
+  const mini = document.getElementById('combateMiniOrder');
+  if (!mini) return;
+
+  if (!rows || rows.length === 0) {
+    mini.innerHTML = '';
+    mini.style.display = 'none';
+    return;
+  }
+
+  mini.style.display = '';
+  let html = '';
+  rows.forEach((row, idx) => {
+    const isTurno = mestreTurnoIdx >= 0 && idx === mestreTurnoIdx;
+    const cor = getAvatarColor(row.nome);
+    html += `<div class="combate-mini-item${isTurno ? ' combate-mini-turno' : ''}">
+      <div class="combate-mini-avatar ${row.tipo}" style="background:${cor}20; border-color:${cor}55; color:${cor}">
+        ${getInitials(row.nome)}
+      </div>
+      <span class="combate-mini-name">${escapeHtml(row.nome)}</span>
+    </div>`;
+  });
+  mini.innerHTML = html;
 }
 
 function attachCombateEvents(wrapper) {
@@ -260,6 +279,28 @@ function attachCombateEvents(wrapper) {
     }
   });
 
+  wrapper.addEventListener('blur', (e) => {
+    const el = e.target;
+
+    if (el.dataset.iniciativa) {
+      ordenarIniciativa();
+      return;
+    }
+
+    if (el.dataset.inimigoNome === undefined) return;
+    const card = el.closest('.combate-card');
+    if (!card) return;
+    const nome = el.value || '';
+    const avatar = card.querySelector('.combate-card-avatar');
+    if (avatar) {
+      avatar.textContent = getInitials(nome);
+      const cor = getAvatarColor(nome);
+      avatar.style.background = cor + '20';
+      avatar.style.borderColor = cor + '55';
+      avatar.style.color = cor;
+    }
+  }, true);
+
   wrapper.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-remove-inimigo]');
     if (btn) {
@@ -271,27 +312,24 @@ function attachCombateEvents(wrapper) {
       return;
     }
 
-    const heart = e.target.closest('.combate-pv-heart');
-    if (heart) {
-      abrirDanoPopover(heart);
+    const hpBar = e.target.closest('.combate-bar-hp');
+    if (hpBar) {
+      abrirDanoPopover(hpBar);
     }
   });
 }
 
 function updateCardBar(card) {
   if (!card) return;
-  const heart = card.querySelector('.combate-pv-heart');
-  if (!heart) return;
-  const atual = parseInt(heart.dataset.pvAtual) || 0;
-  const max = parseInt(heart.dataset.pvMax) || 0;
+  const hpBar = card.querySelector('.combate-bar-hp');
+  if (!hpBar) return;
+  const atual = parseInt(hpBar.dataset.pvAtual) || 0;
+  const max = parseInt(hpBar.dataset.pvMax) || 0;
   const pct = pvPercent(atual, max);
-  const bar = card.querySelector('.combate-hp-bar-fill');
-  if (bar) {
-    bar.style.width = pct + '%';
-    bar.style.background = pvBarColor(pct);
-  }
-  const valSpan = heart.querySelector('.heart-val');
-  if (valSpan) valSpan.innerHTML = `${atual}<span class="heart-sep">/</span>${max}`;
+  const fill = hpBar.querySelector('.hp-fill');
+  if (fill) fill.style.width = pct + '%';
+  const label = hpBar.querySelector('.combate-bar-label');
+  if (label) label.textContent = `${atual} / ${max}`;
 }
 
 function refreshOrdenadoRows() {
@@ -341,16 +379,11 @@ function ordenarIniciativa() {
 
 function adicionarInimigo() {
   const count = mestreData.inimigos.length + 1;
-  const nomeInput = prompt('Nome do inimigo:', `Inimigo ${count}`);
-  if (nomeInput === null) return;
-  const pvInput = prompt('PV Máximo:', '10');
-  if (pvInput === null) return;
-  const pvMax = Math.max(1, parseInt(pvInput) || 10);
   mestreData.inimigos.push({
-    nome: nomeInput || `Inimigo ${count}`,
+    nome: `Inimigo ${count}`,
     iniciativa: '',
-    pvMax: pvMax,
-    pvAtual: pvMax
+    pvMax: 10,
+    pvAtual: 10
   });
   mestreOrdenadoAtivo = false;
   saveMestreData(mestreData);
@@ -386,15 +419,15 @@ function fecharDanoPopover() {
   if (oldOverlay) oldOverlay.remove();
 }
 
-async function aplicarHpChange(heart, delta) {
-  const pvAtual = parseInt(heart.dataset.pvAtual) || 0;
-  const pvMax = parseInt(heart.dataset.pvMax) || 0;
+async function aplicarHpChange(bar, delta) {
+  const pvAtual = parseInt(bar.dataset.pvAtual) || 0;
+  const pvMax = parseInt(bar.dataset.pvMax) || 0;
   const novoPv = Math.max(0, Math.min(pvMax, pvAtual + delta));
-  heart.dataset.pvAtual = novoPv;
+  bar.dataset.pvAtual = novoPv;
 
-  const tipo = heart.dataset.tipo;
-  const nome = heart.dataset.nome;
-  const card = heart.closest('.combate-card');
+  const tipo = bar.dataset.tipo;
+  const nome = bar.dataset.nome;
+  const card = bar.closest('.combate-card');
 
   if (tipo === 'jogador') {
     const jogador = mestreJogadores.find(j => j.nome === nome);
@@ -407,7 +440,7 @@ async function aplicarHpChange(heart, delta) {
       }
     } catch (_) {}
   } else {
-    const idx = parseInt(heart.dataset.inimigoIdx);
+    const idx = parseInt(bar.dataset.inimigoIdx);
     if (mestreData.inimigos[idx]) {
       mestreData.inimigos[idx].pvAtual = novoPv;
       saveMestreData(mestreData);
@@ -417,10 +450,10 @@ async function aplicarHpChange(heart, delta) {
   updateCardBar(card);
 }
 
-function abrirDanoPopover(heart) {
+function abrirDanoPopover(bar) {
   fecharDanoPopover();
 
-  const rect = heart.getBoundingClientRect();
+  const rect = bar.getBoundingClientRect();
 
   const overlay = document.createElement('div');
   overlay.className = 'combate-dano-overlay';
@@ -457,14 +490,14 @@ function abrirDanoPopover(heart) {
   const aplicarDano = async () => {
     const val = parseInt(input.value) || 0;
     if (val <= 0) { fecharDanoPopover(); return; }
-    await aplicarHpChange(heart, -val);
+    await aplicarHpChange(bar, -val);
     fecharDanoPopover();
   };
 
   const aplicarCura = async () => {
     const val = parseInt(input.value) || 0;
     if (val <= 0) { fecharDanoPopover(); return; }
-    await aplicarHpChange(heart, +val);
+    await aplicarHpChange(bar, +val);
     fecharDanoPopover();
   };
 

@@ -2768,18 +2768,22 @@ html { scroll-behavior: smooth; }
   transition: all 0.2s;
 }
 .mestre-btn .btn-icon { font-size: 0.95rem; }
+.mestre-btn-primary {
+  background: linear-gradient(135deg, var(--accent-gold), #e8c95a);
+  color: #1a1a24;
+  border-color: var(--accent-gold);
+  font-size: 0.88rem;
+  padding: 9px 20px;
+  font-weight: 700;
+}
+.mestre-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.mestre-btn-primary:active { transform: translateY(0); }
 .mestre-btn-gold {
   background: rgba(201,168,76,0.15);
   color: var(--accent-gold);
   border-color: rgba(201,168,76,0.3);
 }
 .mestre-btn-gold:hover { background: rgba(201,168,76,0.25); }
-.mestre-btn-blue {
-  background: rgba(59,130,246,0.15);
-  color: var(--accent-blue-bar);
-  border-color: rgba(59,130,246,0.3);
-}
-.mestre-btn-blue:hover { background: rgba(59,130,246,0.25); }
 .mestre-btn-ghost {
   background: transparent;
   color: var(--text-secondary);
@@ -2791,34 +2795,40 @@ html { scroll-behavior: smooth; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 14px;
-  margin-top: 18px;
-  background: var(--btn-add-bg);
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 22px;
+  background: transparent;
+  border: 2px dashed rgba(255,255,255,0.12);
+  border-radius: 12px;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
 }
 .mestre-btn-add:hover {
-  background: var(--btn-add-hover);
+  background: rgba(201,168,76,0.06);
   border-color: var(--accent-gold-dim);
   color: var(--accent-gold);
+  transform: translateY(-1px);
 }
+.mestre-btn-add:active { transform: translateY(0); }
 .mestre-btn-add .btn-add-icon {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  transition: transform 0.25s;
+}
+.mestre-btn-add:hover .btn-add-icon {
+  transform: rotate(90deg);
 }
 
 /* ===== COMBATE CARDS ===== */
 .combate-cards-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 
 .combate-empty {
@@ -2834,19 +2844,31 @@ html { scroll-behavior: smooth; }
   position: relative;
   background: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
+  border-radius: 12px;
+  padding: 22px 24px;
   transition: all 0.2s;
 }
 .combate-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06); transform: translateY(-1px); }
 
-.combate-card-jogador { border-left: 4px solid var(--accent-blue-bar); }
-.combate-card-inimigo { border-left: 4px solid #e85d5d; }
+.combate-card-jogador {
+  border-left: 4px solid var(--accent-blue-bar);
+  background: linear-gradient(135deg, rgba(59,130,246,0.04), var(--bg-input));
+}
+.combate-card-inimigo {
+  border-left: 4px solid #e85d5d;
+  background: linear-gradient(135deg, rgba(232,93,93,0.04), var(--bg-input));
+}
 
+@keyframes turnoPulse {
+  0% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+  50% { box-shadow: 0 0 24px 4px rgba(201,168,76,0.2); }
+  100% { box-shadow: 0 0 20px rgba(201,168,76,0.12); }
+}
 .combate-card-turno {
   border-color: var(--accent-gold) !important;
   border-left-color: var(--accent-gold) !important;
   background: rgba(201,168,76,0.06);
+  animation: turnoPulse 0.6s ease-out;
   box-shadow: 0 0 20px rgba(201,168,76,0.12);
 }
 
@@ -2869,19 +2891,6 @@ html { scroll-behavior: smooth; }
   align-items: center;
   gap: 14px;
 }
-.combate-card-left {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-.combate-card-right {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-  min-width: 0;
-}
 
 .combate-card-avatar {
   width: 48px;
@@ -2890,25 +2899,27 @@ html { scroll-behavior: smooth; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   flex-shrink: 0;
-}
-.combate-card-avatar.jogador {
-  background: rgba(59,130,246,0.15);
-  border: 2px solid rgba(59,130,246,0.3);
-}
-.combate-card-avatar.inimigo {
-  background: rgba(232,93,93,0.15);
-  border: 2px solid rgba(232,93,93,0.3);
+  border: 2px solid;
+  text-transform: uppercase;
 }
 
-.combate-card-info { flex: 1; min-width: 0; }
+.combate-card-info { min-width: 0; }
 
 .combate-card-name-row {
   display: flex;
   align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.combate-card-meta {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 6px;
 }
 .combate-card-name {
   font-weight: 700;
@@ -2987,78 +2998,153 @@ html { scroll-behavior: smooth; }
 }
 .combate-card-remove:hover { color: #e85d5d; background: rgba(232,93,93,0.12); border-color: rgba(232,93,93,0.3); }
 
-/* HP bar & fields */
-/* Icones PV/PM */
-.combate-hp-icons {
+/* Barras MMORPG HP/PM */
+.combate-bars {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
 }
 
-.combate-pv-heart,
-.combate-pm-drop {
+.combate-bar {
   position: relative;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.combate-bar-hp {
+  cursor: pointer;
+  transition: filter 0.18s, box-shadow 0.18s;
+}
+.combate-bar-hp:hover {
+  filter: brightness(1.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(239, 68, 68, 0.35);
+}
+.combate-bar-hp:active {
+  filter: brightness(0.9);
+}
+
+.combate-bar-pm {
+  cursor: default;
+}
+
+.combate-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 11px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.combate-bar-fill.hp-fill {
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 60%, #991b1b 100%);
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+.combate-bar-fill.pm-fill {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.4);
+}
+
+.combate-bar-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.18s, filter 0.18s;
-}
-.combate-pv-heart:hover {
-  transform: scale(1.1);
-  filter: brightness(1.15);
-}
-.combate-pv-heart:active { transform: scale(0.93); }
-.combate-pm-drop { cursor: default; }
-
-.heart-svg {
-  width: 68px;
-  height: 62px;
-  filter: drop-shadow(0 2px 6px rgba(220, 38, 38, 0.4));
-}
-.drop-svg {
-  width: 46px;
-  height: 60px;
-  filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.4));
-}
-
-.heart-val,
-.drop-val {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
-  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.5px;
   pointer-events: none;
-  text-align: center;
-  line-height: 1.1;
-  letter-spacing: 0.3px;
-}
-.heart-val { padding-top: 4px; }
-.drop-val { padding-top: 6px; }
-.heart-sep, .drop-sep {
-  font-weight: 600;
-  opacity: 0.65;
-  margin: 0 1px;
+  z-index: 1;
 }
 
-.combate-hp-bar-track {
-  width: 100%;
-  height: 6px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 8px;
+/* Mini Ordem Flutuante */
+.combate-mini-order {
+  position: fixed;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 900;
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 8px;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
-.combate-hp-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.3s, background 0.3s;
+
+.combate-mini-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 6px;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+}
+
+.combate-mini-turno {
+  border-color: var(--accent-gold);
+  background: rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+}
+
+.combate-mini-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.combate-mini-avatar.jogador { border-color: rgba(59,130,246,0.5); }
+.combate-mini-avatar.inimigo { border-color: rgba(232,93,93,0.5); }
+
+.combate-mini-name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 54px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.combate-mini-turno .combate-mini-name {
+  color: var(--accent-gold);
+}
+
+@media (max-width: 768px) {
+  .combate-mini-order { display: none !important; }
 }
 
 /* Popover de dano */
@@ -3144,18 +3230,14 @@ html { scroll-behavior: smooth; }
   .mestre-section { padding: 16px 14px; }
   .mestre-section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .combate-card { padding: 14px 14px; }
-  .combate-card-top { gap: 8px; }
-  .combate-card-left { gap: 8px; }
+  .combate-card-top { flex-wrap: wrap; gap: 8px; }
   .combate-card-avatar { width: 36px; height: 36px; font-size: 1.05rem; }
   .combate-card-name { font-size: 0.88rem; }
   .combate-card-name-input { font-size: 0.88rem; }
-  .combate-hp-bar-track { height: 5px; margin-top: 6px; }
-  .combate-hp-icons { gap: 8px; }
-  .heart-svg { width: 54px; height: 50px; }
-  .drop-svg { width: 38px; height: 50px; }
-  .heart-val, .drop-val { font-size: 0.65rem; }
-  .heart-val { padding-top: 3px; }
-  .drop-val { padding-top: 5px; }
+  .combate-bars { gap: 4px; flex-basis: 100%; }
+  .combate-bar { height: 18px; border-radius: 9px; }
+  .combate-bar-fill { border-radius: 9px; }
+  .combate-bar-label { font-size: 0.65rem; }
   .combate-card-inic input { width: 50px; font-size: 0.88rem; padding: 4px 6px; }
   .mestre-btn { padding: 6px 12px; font-size: 0.78rem; }
 }
