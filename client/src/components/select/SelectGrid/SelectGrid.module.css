@@ -6,6 +6,7 @@
 }
 
 .card {
+  position: relative;
   background: var(--bg-card);
   border: 2px solid var(--border);
   border-radius: 12px;
@@ -19,6 +20,36 @@
   text-align: center;
   text-decoration: none;
   color: inherit;
+}
+
+.sistemaBadge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: 4px;
+  font-family: var(--font);
+}
+
+.deleteBtn:hover {
+  color: var(--accent-red);
 }
 
 .card:hover,

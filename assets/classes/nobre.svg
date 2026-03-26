@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Crown -->
+  <path d="M12 44h40v6H12z" fill="#fff" opacity="0.15"/>
+  <path d="M12 44h40v6H12z"/>
+  <polyline points="12,44 16,24 24,34 32,18 40,34 48,24 52,44"/>
+  <!-- Jewels -->
+  <circle cx="32" cy="38" r="2" fill="#fff" opacity="0.5"/>
+  <circle cx="22" cy="40" r="1.5" fill="#fff" opacity="0.3"/>
+  <circle cx="42" cy="40" r="1.5" fill="#fff" opacity="0.3"/>
+</svg>

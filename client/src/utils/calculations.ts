@@ -9,6 +9,8 @@ export function criarFichaVazia(nome?: string): Ficha {
   });
 
   return {
+    _id: crypto.randomUUID(),
+    sistema: 'tormenta',
     nome: nome || 'Novo Personagem',
     classes: [{ nome: '', nivel: 1 }],
     raca: '',
@@ -42,6 +44,48 @@ export function criarFichaVazia(nome?: string): Ficha {
     secoesFechadas: {},
     secoesOcultas: {},
     animacaoAtaque: 'personagem',
+    avatar: '',
+    logs: [],
+  };
+}
+
+export function criarFichaNarutoVazia(nome?: string): Ficha {
+  return {
+    _id: crypto.randomUUID(),
+    sistema: 'naruto',
+    nome: nome || 'Novo Personagem',
+    classes: [{ nome: '', nivel: 1 }],
+    raca: '',
+    origem: '',
+    divindade: '',
+    alinhamento: '',
+    idade: '',
+    tamanho: '',
+    deslocamento: '',
+    experiencia: 0,
+    atributos: { for: 0, des: 0, con: 0, int: 0, sab: 0, car: 0 },
+    pv: { maximo: 0, atual: 0 },
+    pm: { maximo: 0, atual: 0 },
+    defesa: { base: 10, itens: [] },
+    reducaoDeDano: '',
+    ataques: [],
+    pericias: {},
+    habilidades: [],
+    magias: [],
+    atributoChaveMagia: 'int',
+    inventario: [],
+    equipados: [],
+    moedas: { tc: 0, tp: 0, to: 0 },
+    anotacoes: '',
+    efeitosTemporarios: '',
+    proficiencias: '',
+    progressao: [],
+    buffs: [],
+    pvTemporario: 0,
+    pmTemporario: 0,
+    secoesFechadas: {},
+    secoesOcultas: {},
+    animacaoAtaque: '',
     avatar: '',
     logs: [],
   };

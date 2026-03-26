@@ -1,6 +1,6 @@
 /* Action bar estilo HSR — lista fixa sem scroll */
 .column {
-  --tracker-ally: #2dd4bf;
+  --tracker-ally: var(--accent-turno);
   --tracker-ally-glow: color-mix(in srgb, var(--tracker-ally) 55%, transparent);
   --tracker-enemy: var(--accent-red-bar);
   --tracker-enemy-glow: color-mix(in srgb, var(--tracker-enemy) 50%, transparent);

@@ -130,10 +130,34 @@
 }
 
 .classeNomeInput {
-  flex: 0 1 90px;
-  min-width: 50px;
+  flex: 0 1 120px;
+  min-width: 80px;
   font-size: 0.78rem;
   font-weight: 600;
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 2px 4px;
+  font-family: var(--font);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.classeNomeInput:hover {
+  border-bottom-color: var(--text-muted);
+}
+
+.classeNomeInput:focus {
+  outline: none;
+  border-bottom-color: var(--accent-gold);
+}
+
+.classeNomeInput option {
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .classeLvlLabel {

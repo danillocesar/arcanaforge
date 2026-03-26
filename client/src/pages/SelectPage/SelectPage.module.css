@@ -7,57 +7,6 @@
   flex-direction: column;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo {
-  font-weight: 800;
-  font-size: 1.3rem;
-  background: linear-gradient(135deg, var(--accent-gold), #e6c44d);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.back {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  border-radius: var(--radius);
-  padding: 6px 14px;
-  font-family: var(--font);
-  font-size: 0.85rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.back:hover {
-  border-color: var(--accent-gold);
-  background: var(--bg-card-hover);
-}
-
 .content {
   flex: 1;
   padding: 30px 24px;
@@ -66,12 +15,86 @@
   width: 100%;
 }
 
+/* New character modal */
+.newModal {
+  background: rgba(20, 22, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+  min-width: 340px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.newModalTitle {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.newModalLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.newModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Sistema selector */
+.sistemaSelector {
+  display: flex;
+  gap: 10px;
+}
+
+.sistemaOption {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+}
+
+.sistemaOption:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-card-hover);
+}
+
+.sistemaActive {
+  border-color: var(--accent-gold);
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--accent-gold);
+  box-shadow: 0 0 12px rgba(201, 168, 76, 0.15);
+}
+
+.sistemaIcon {
+  font-size: 1.6rem;
+}
+
+.sistemaName {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 @media (max-width: 550px) {
   .content {
     padding: 16px 12px;
   }
 
-  .header {
-    padding: 12px 14px;
-  }
 }

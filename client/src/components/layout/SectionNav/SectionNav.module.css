@@ -1,9 +1,10 @@
 .nav {
   position: sticky;
-  top: 56px;
+  top: 76px;
   z-index: 99;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 0;
   padding: 0 16px;
@@ -42,9 +43,49 @@
   display: none;
 }
 
+.secvisWrapper {
+  position: relative;
+  margin-left: 4px;
+}
+
+.secvisBtn {
+  font-size: 0.85rem !important;
+  padding: 6px 10px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.secvisPanel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+}
+
+.secvisItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.secvisItem input {
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
   .nav {
     padding: 0 8px;
+    top: 66px;
   }
   .link {
     padding: 6px 6px;

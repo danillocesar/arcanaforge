@@ -68,10 +68,6 @@ export default function AtributosDefesa() {
 
   const caTotal = calcDefesaTotal(ficha);
 
-  const updateDefesaBase = (val: number) => {
-    updateFicha((f) => ({ ...f, defesa: { ...f.defesa, base: val } }));
-  };
-
   const updateDefesaItem = (idx: number, field: string, value: string | number) => {
     updateFicha((f) => {
       const itens = [...f.defesa.itens];

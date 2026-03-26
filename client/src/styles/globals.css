@@ -109,14 +109,14 @@ a:hover { color: var(--accent-gold); }
   top: 120px;
   right: -320px;
   z-index: 10000;
-  background: rgba(30, 110, 200, 0.92);
+  background: color-mix(in srgb, var(--accent-blue-bar) 92%, transparent);
   color: #fff;
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-family: var(--font);
   font-size: 0.9rem;
   font-weight: 600;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-lg);
   pointer-events: none;
   animation: toastSlide 2.5s ease forwards;
 }

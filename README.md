@@ -76,13 +76,29 @@ Desenvolvido para uso em mesa (presencial ou online), permitindo que jogadores e
 
 ---
 
+## Dados em disco
+
+Em produção e em desenvolvimento, o servidor grava tudo sob **`data/`** na raiz do repositório:
+
+| Caminho | Conteúdo |
+|---------|----------|
+| `data/fichas/` | Um arquivo JSON por personagem (`<uuid>.json`) |
+| `data/avatars/` | Imagens de avatar e variantes `_sem_fundo` |
+| `data/parties/` | Grupos (`<partyId>.json`) |
+| `data/combate/` | Estado do tracker por grupo (`<partyId>.json`) |
+| `data/combate.json` | Endpoint legado `/api/combate` (sem party) |
+
+Na **primeira subida** após esta organização, se ainda existirem pastas antigas na raiz (`fichas/`, `avatars/`, `parties/`) ou arquivos `combate-*.json` / `combate.json`, o servidor **move** automaticamente para `data/`.
+
+---
+
 ## Estrutura do Projeto
 
 ```
 arcanaforge/
 ├── server.js              # Servidor Node: Express + WebSocket + API REST
 ├── package.json           # Dependências do backend
-├── combate.json           # Estado persistido do combate (gerado automaticamente)
+├── data/                  # Persistência (JSON + avatares); ver tabela acima
 │
 ├── client/                # Frontend React (SPA)
 │   ├── package.json       # Dependências do frontend
@@ -94,7 +110,11 @@ arcanaforge/
 │       ├── App.tsx         # Definição de rotas
 │       │
 │       ├── api/
-│       │   └── api.ts              # Wrappers fetch tipados para a API REST
+│       │   ├── index.ts            # Reexport das funções da API REST
+│       │   ├── http.ts             # assertOk / ApiError
+│       │   ├── fichas.ts
+│       │   ├── parties.ts
+│       │   └── combate.ts
 │       │
 │       ├── contexts/
 │       │   ├── FichaContext.tsx     # Estado global da ficha (Provider + hook)

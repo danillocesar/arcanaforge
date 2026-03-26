@@ -1,3 +1,10 @@
+import type { SistemaRPG } from '../types/ficha';
+
+export const SISTEMA_ROUTE: Record<SistemaRPG, string> = {
+  tormenta: '/tormenta/char',
+  naruto: '/naruto/char',
+};
+
 export const BUFF_TIPOS: Record<string, string> = {
   teste_ataque: 'Teste de Ataque',
   dano_extra: 'Dano Extra',

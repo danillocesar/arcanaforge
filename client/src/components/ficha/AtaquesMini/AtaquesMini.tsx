@@ -18,7 +18,7 @@ export default function AtaquesMini({ type, onConjurar }: AtaquesMiniProps) {
   const { ficha, updateFicha } = useFichaContext();
   if (!ficha) return null;
 
-  const estilo = (ficha.animacaoAtaque || 'personagem') as AnimacaoEstilo;
+  const estilo = 'toast' as AnimacaoEstilo;
 
   const usarAtaque = (idx: number) => {
     const atk = ficha.ataques[idx];

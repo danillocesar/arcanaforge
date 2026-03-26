@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Sword -->
+  <line x1="40" y1="8" x2="22" y2="42"/>
+  <line x1="16" y1="34" x2="28" y2="42"/>
+  <line x1="22" y1="42" x2="18" y2="52"/>
+  <!-- Shield -->
+  <path d="M36 24c6-2 14 0 18 4v8c0 10-8 16-14 20c-2-1-4-3-6-6" fill="#fff" opacity="0.1"/>
+  <path d="M36 24c6-2 14 0 18 4v8c0 10-8 16-14 20c-2-1-4-3-6-6"/>
+</svg>

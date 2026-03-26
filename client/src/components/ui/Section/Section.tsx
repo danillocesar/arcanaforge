@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useFichaContextOptional } from '../../../contexts/FichaContext';
 import styles from './Section.module.css';
 
 interface SectionProps {
@@ -18,7 +19,25 @@ export default function Section({
   children,
   className,
 }: SectionProps) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const fichaCtx = useFichaContextOptional();
+  const isControlled = fichaCtx?.ficha != null;
+
+  const [localCollapsed, setLocalCollapsed] = useState(defaultCollapsed);
+
+  const collapsed = isControlled
+    ? !!fichaCtx!.ficha!.secoesFechadas?.[id]
+    : localCollapsed;
+
+  const toggleCollapse = () => {
+    if (isControlled) {
+      fichaCtx!.updateFicha((f) => ({
+        ...f,
+        secoesFechadas: { ...f.secoesFechadas, [id]: !f.secoesFechadas?.[id] },
+      }));
+    } else {
+      setLocalCollapsed((c) => !c);
+    }
+  };
 
   const cls = [
     styles.section,
@@ -31,7 +50,7 @@ export default function Section({
 
   return (
     <div id={id} className={cls}>
-      <h2 onClick={() => setCollapsed(c => !c)}>
+      <h2 onClick={toggleCollapse}>
         {title}
         <button type="button" className={styles.collapseBtn}>▼</button>
       </h2>

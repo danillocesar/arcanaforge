@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { CombateProvider, useCombateContext } from '../../contexts/CombateContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
-import Topbar, { topbarStyles } from '../../components/layout/Topbar/Topbar';
+import { apiFetchParties } from '../../api';
+import Topbar from '../../components/layout/Topbar/Topbar';
 import CombateToolbar from '../../components/combate/CombateToolbar/CombateToolbar';
 import CombateCard from '../../components/combate/CombateCard/CombateCard';
 import MiniOrder from '../../components/combate/MiniOrder/MiniOrder';
@@ -11,7 +12,7 @@ import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import styles from './MestrePage.module.css';
 
-function MestreContent() {
+function MestreContent({ partyNome }: { partyNome: string }) {
   const {
     ordenado,
     ordenadoAtivo,
@@ -56,9 +57,10 @@ function MestreContent() {
     : [
         ...jogadores.map((j) => ({
           tipo: 'jogador' as const,
-          id: `jogador_${j.nome}`,
+          id: `jogador_${j._id}`,
+          fichaId: j._id,
           nome: j.nome,
-          iniciativa: Number(mestreData.iniciativas[`jogador_${j.nome}`]) || 0,
+          iniciativa: Number(mestreData.iniciativas[`jogador_${j._id}`]) || 0,
           pvMax: j.pvMax,
           pvAtual: j.pvAtual,
           pmMax: j.pmMax,
@@ -84,14 +86,7 @@ function MestreContent() {
     <>
       {modoMestre && <div className={styles.mestreStrip} aria-hidden />}
       <Topbar
-        left={
-          <>
-            <span className={topbarStyles.logo}>ArcanaForge</span>
-            <Link to="/" className={topbarStyles.modeLink} title="Fichas de Personagem">
-              Personagens
-            </Link>
-          </>
-        }
+        title={partyNome ? `Grupo - ${partyNome}` : 'Grupo'}
         right={
           <button
             type="button"
@@ -174,10 +169,29 @@ function MestreContent() {
 }
 
 export default function MestrePage() {
+  const { partyId } = useParams<{ partyId: string }>();
+  const navigate = useNavigate();
+  const [partyNome, setPartyNome] = useState('');
+
+  useEffect(() => {
+    if (!partyId) {
+      navigate('/grupos', { replace: true });
+      return;
+    }
+    apiFetchParties()
+      .then((parties) => {
+        const found = parties.find((p) => p.id === partyId);
+        if (found) setPartyNome(found.nome);
+      })
+      .catch(console.error);
+  }, [partyId, navigate]);
+
+  if (!partyId) return null;
+
   return (
     <ToastProvider>
-      <CombateProvider>
-        <MestreContent />
+      <CombateProvider partyId={partyId}>
+        <MestreContent partyNome={partyNome} />
       </CombateProvider>
     </ToastProvider>
   );

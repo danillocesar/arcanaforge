@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -40,6 +41,15 @@ let nextId = 0;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const timersRef = useRef<Set<number>>(new Set());
+  const rafsRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((t) => clearTimeout(t));
+      rafsRef.current.forEach((r) => cancelAnimationFrame(r));
+    };
+  }, []);
 
   const showToastImpl = useCallback(
     (text: string, variant: ToastVariant = 'default', pmCusto?: number) => {
@@ -50,15 +60,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         { id, text, visible: false, variant, pmCusto },
       ]);
 
-      requestAnimationFrame(() => {
+      const raf = requestAnimationFrame(() => {
+        rafsRef.current.delete(raf);
         setToasts((prev) =>
           prev.map((t) => (t.id === id ? { ...t, visible: true } : t)),
         );
       });
+      rafsRef.current.add(raf);
 
-      setTimeout(() => {
+      const timer = window.setTimeout(() => {
+        timersRef.current.delete(timer);
         setToasts((prev) => prev.filter((t) => t.id !== id));
       }, 2600);
+      timersRef.current.add(timer);
     },
     [],
   );
@@ -88,7 +102,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           >
             {t.text}
             {typeof t.pmCusto === 'number' && t.pmCusto > 0 ? (
-              <span className={styles.toastPm}>-${t.pmCusto} PM</span>
+              <span className={styles.toastPm}>-{t.pmCusto} PM</span>
             ) : null}
           </div>
         ))}

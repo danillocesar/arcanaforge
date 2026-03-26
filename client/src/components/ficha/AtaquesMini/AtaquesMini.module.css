@@ -31,13 +31,13 @@
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 6px;
-  background: rgba(76, 175, 80, 0.15);
-  color: #81c784;
+  background: color-mix(in srgb, var(--accent-success) 15%, transparent);
+  color: var(--accent-success);
 }
 
 .badgeDano {
-  background: rgba(244, 67, 54, 0.12);
-  color: #e57373;
+  background: color-mix(in srgb, var(--accent-red-bar) 12%, transparent);
+  color: var(--accent-red-bar);
 }
 
 .badgePm {

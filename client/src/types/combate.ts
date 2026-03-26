@@ -1,3 +1,12 @@
+import type { SistemaRPG } from './ficha';
+
+export interface Party {
+  id: string;
+  nome: string;
+  sistema: SistemaRPG;
+  membros: string[];
+}
+
 export interface Inimigo {
   id: string;
   nome: string;
@@ -18,6 +27,7 @@ export interface CombateData {
 }
 
 export interface CombateJogador {
+  _id: string;
   nome: string;
   avatar: string;
   classes: { nome: string; nivel: number }[];
@@ -30,6 +40,7 @@ export interface CombateJogador {
 export interface CombateRow {
   tipo: 'jogador' | 'inimigo';
   id: string;
+  fichaId?: string;
   nome: string;
   iniciativa: number;
   pvMax?: number;

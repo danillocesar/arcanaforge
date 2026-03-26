@@ -12,8 +12,8 @@
 }
 
 .active {
-  border-color: #2ecc40;
-  background: rgba(46, 204, 64, 0.08);
+  border-color: var(--accent-success);
+  background: color-mix(in srgb, var(--accent-success) 8%, transparent);
 }
 
 .nome {
@@ -100,13 +100,13 @@
 }
 
 .toggle:hover {
-  border-color: #2ecc40;
-  color: #2ecc40;
+  border-color: var(--accent-success);
+  color: var(--accent-success);
 }
 
 .toggleOn {
-  border-color: #2ecc40;
-  background: #2ecc40;
+  border-color: var(--accent-success);
+  background: var(--accent-success);
   color: #fff;
 }
 

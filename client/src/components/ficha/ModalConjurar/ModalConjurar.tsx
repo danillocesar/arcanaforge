@@ -56,7 +56,7 @@ export default function ModalConjurar({ magiaIdx, onClose }: ModalConjurarProps)
       ],
     }));
     playMagicSound();
-    const estilo = (ficha?.animacaoAtaque || 'personagem') as AnimacaoEstilo;
+    const estilo = 'toast' as AnimacaoEstilo;
     triggerAttackAnim(estilo, {
       tipo: 'magic',
       nome: magia.nome || 'Magia',

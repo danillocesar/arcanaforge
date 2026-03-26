@@ -6,21 +6,20 @@ import {
   apiLoadFicha,
   apiSaveFicha,
   apiDeleteFicha,
-  apiRenomear,
-} from '../api/api';
+} from '../api';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useWebSocket } from '../hooks/useWebSocket';
 import type { ToastVariant } from '../components/ui/Toast/Toast';
 
 interface FichaContextValue {
   ficha: Ficha | null;
-  fichaOriginalNome: string;
+  fichaOriginalId: string;
   fichasList: string[];
   saveStatus: 'saved' | 'saving' | 'error';
 
   updateFicha: (updater: (prev: Ficha) => Ficha) => void;
-  loadFicha: (nome: string) => Promise<void>;
-  novoPersonagem: (nome: string) => Promise<void>;
+  loadFicha: (id: string) => Promise<void>;
+  novoPersonagem: (ficha: Ficha) => Promise<void>;
   excluirPersonagem: () => Promise<void>;
   refreshList: () => Promise<string[]>;
   sendHpUpdate: () => void;
@@ -35,34 +34,35 @@ interface FichaProviderProps {
 
 export function FichaProvider({ children, showToast }: FichaProviderProps) {
   const [ficha, setFicha] = useState<Ficha | null>(null);
-  const [fichaOriginalNome, setFichaOriginalNome] = useState('');
+  const [fichaOriginalId, setFichaOriginalId] = useState('');
   const [fichasList, setFichasList] = useState<string[]>([]);
   const fichaRef = useRef<Ficha | null>(null);
   fichaRef.current = ficha;
 
-  /** Evita reenviar ficha_hp_update após auto-save causado só por sync WS (eco no mestre). */
   const skipHpBroadcastAfterSaveRef = useRef(false);
 
   const { send } = useWebSocket((msg) => {
     if (!fichaRef.current) return;
 
-    if (msg.type === 'ficha_hp_sync' && msg.nome === fichaRef.current.nome) {
+    if (msg.type === 'ficha_hp_sync' && msg.fichaId === fichaRef.current._id) {
       skipHpBroadcastAfterSaveRef.current = true;
+      const pv = msg.pv as { atual?: number; maximo?: number } | undefined;
+      const pm = msg.pm as { atual?: number; maximo?: number } | undefined;
       setFicha((prev) => {
         if (!prev) return prev;
         const next = { ...prev };
-        if (msg.pv) {
+        if (pv) {
           next.pv = {
             ...prev.pv,
-            atual: msg.pv.atual ?? prev.pv.atual,
-            maximo: msg.pv.maximo ?? prev.pv.maximo,
+            atual: pv.atual ?? prev.pv.atual,
+            maximo: pv.maximo ?? prev.pv.maximo,
           };
         }
-        if (msg.pm) {
+        if (pm) {
           next.pm = {
             ...prev.pm,
-            atual: msg.pm.atual ?? prev.pm.atual,
-            maximo: msg.pm.maximo ?? prev.pm.maximo,
+            atual: pm.atual ?? prev.pm.atual,
+            maximo: pm.maximo ?? prev.pm.maximo,
           };
         }
         return next;
@@ -70,13 +70,14 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
       showToast?.('PV/PM sincronizados de outra aba', 'sync');
     }
 
-    if (msg.type === 'mestre_hp_sync' && msg.nome === fichaRef.current.nome) {
+    if (msg.type === 'mestre_hp_sync' && msg.fichaId === fichaRef.current._id) {
       skipHpBroadcastAfterSaveRef.current = true;
+      const pvAtual = msg.pvAtual as number;
       setFicha((prev) => {
         if (!prev) return prev;
-        return { ...prev, pv: { ...prev.pv, atual: msg.pvAtual } };
+        return { ...prev, pv: { ...prev.pv, atual: pvAtual } };
       });
-      showToast?.(`PV atualizado pelo mestre: ${msg.pvAtual}`, 'info');
+      showToast?.(`PV atualizado pelo mestre: ${pvAtual}`, 'info');
     }
   });
 
@@ -85,6 +86,7 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
     if (!f) return;
     send({
       type: 'ficha_hp_update',
+      fichaId: f._id,
       nome: f.nome,
       pv: f.pv,
       pm: f.pm,
@@ -94,9 +96,9 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
   const sendHpUpdateRef = useRef(sendHpUpdate);
   sendHpUpdateRef.current = sendHpUpdate;
 
-  const { status: saveStatus } = useAutoSave(ficha, fichaOriginalNome, () => {
+  const { status: saveStatus } = useAutoSave(ficha, fichaOriginalId, () => {
     if (fichaRef.current) {
-      setFichaOriginalNome(fichaRef.current.nome);
+      setFichaOriginalId(fichaRef.current._id);
     }
     if (skipHpBroadcastAfterSaveRef.current) {
       skipHpBroadcastAfterSaveRef.current = false;
@@ -111,28 +113,26 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
     return list;
   }, []);
 
-  const loadFicha = useCallback(async (nome: string) => {
-    const data = await apiLoadFicha(nome);
+  const loadFicha = useCallback(async (id: string) => {
+    const data = await apiLoadFicha(id);
     if (data) {
       setFicha(data);
-      setFichaOriginalNome(data.nome);
-      history.replaceState(null, '', `?char=${encodeURIComponent(data.nome)}`);
+      setFichaOriginalId(data._id);
+      history.replaceState(null, '', `?id=${encodeURIComponent(data._id)}`);
     }
   }, []);
 
-  const novoPersonagem = useCallback(async (nome: string) => {
-    const nova = criarFichaVazia(nome);
-    await apiSaveFicha(nome, nova);
+  const novoPersonagem = useCallback(async (nova: Ficha) => {
+    await apiSaveFicha(nova._id, nova);
     setFicha(nova);
-    setFichaOriginalNome(nome);
-    history.replaceState(null, '', `?char=${encodeURIComponent(nome)}`);
+    setFichaOriginalId(nova._id);
+    history.replaceState(null, '', `?id=${encodeURIComponent(nova._id)}`);
     await refreshList();
   }, [refreshList]);
 
   const excluirPersonagem = useCallback(async () => {
     if (!fichaRef.current) return;
-    const nomeAtual = fichaRef.current.nome;
-    await apiDeleteFicha(nomeAtual);
+    await apiDeleteFicha(fichaRef.current._id);
     const list = await apiFetchFichas();
     setFichasList(list);
 
@@ -140,9 +140,9 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
       await loadFicha(list[0]);
     } else {
       const nova = criarFichaVazia('Novo Personagem');
-      await apiSaveFicha('Novo Personagem', nova);
+      await apiSaveFicha(nova._id, nova);
       setFicha(nova);
-      setFichaOriginalNome('Novo Personagem');
+      setFichaOriginalId(nova._id);
       const updatedList = await apiFetchFichas();
       setFichasList(updatedList);
     }
@@ -158,7 +158,7 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
 
   const value = useMemo<FichaContextValue>(() => ({
     ficha,
-    fichaOriginalNome,
+    fichaOriginalId,
     fichasList,
     saveStatus,
     updateFicha,
@@ -167,7 +167,7 @@ export function FichaProvider({ children, showToast }: FichaProviderProps) {
     excluirPersonagem,
     refreshList,
     sendHpUpdate,
-  }), [ficha, fichaOriginalNome, fichasList, saveStatus, updateFicha, loadFicha, novoPersonagem, excluirPersonagem, refreshList, sendHpUpdate]);
+  }), [ficha, fichaOriginalId, fichasList, saveStatus, updateFicha, loadFicha, novoPersonagem, excluirPersonagem, refreshList, sendHpUpdate]);
 
   return <FichaContext.Provider value={value}>{children}</FichaContext.Provider>;
 }
@@ -176,4 +176,8 @@ export function useFichaContext(): FichaContextValue {
   const ctx = useContext(FichaContext);
   if (!ctx) throw new Error('useFichaContext must be used within FichaProvider');
   return ctx;
+}
+
+export function useFichaContextOptional(): FichaContextValue | null {
+  return useContext(FichaContext);
 }

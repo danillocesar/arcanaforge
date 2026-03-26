@@ -6,13 +6,13 @@ export default function CombateToolbar() {
 
   return (
     <div className={styles.toolbar}>
-      <h2>Tracker de Combate</h2>
+      <h2>Combate</h2>
       <div className={styles.buttons}>
         <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={resetTurno} title="Resetar Turno">
           <span className={styles.btnIcon}>⟲</span> Reset
         </button>
         <button type="button" className={`${styles.btn} ${styles.btnGold}`} onClick={ordenarIniciativa} title="Ordenar por Iniciativa">
-          <span className={styles.btnIcon}>↕</span> Reordenar
+          <span className={styles.btnIcon}>↕</span> Iniciar Combate
         </button>
         <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={proximoTurno} title="Próximo Turno">
           <span className={styles.btnIcon}>▶</span> Próximo Turno

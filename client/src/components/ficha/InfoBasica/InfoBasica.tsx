@@ -1,13 +1,12 @@
 import { useRef } from 'react';
 import { useFichaContext } from '../../../contexts/FichaContext';
-import { apiUploadAvatar } from '../../../api/api';
+import { apiUploadAvatar } from '../../../api';
 import { getNivelTotal } from '../../../utils/calculations';
 import { getInitials } from '../../../utils/formatters';
+import { CLASSES_TORMENTA, getClasseIconUrl } from '../../../features/tormenta/data/classesTormenta';
 import Section from '../../ui/Section/Section';
 import Input from '../../ui/Input/Input';
 import styles from './InfoBasica.module.css';
-
-const CLASS_ICON_FALLBACK = '';
 
 export default function InfoBasica() {
   const { ficha, updateFicha } = useFichaContext();
@@ -22,7 +21,7 @@ export default function InfoBasica() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const { url } = await apiUploadAvatar(ficha.nome, file);
+    const { url } = await apiUploadAvatar(ficha._id, file);
     updateFicha((f) => ({ ...f, avatar: url }));
   };
 
@@ -50,9 +49,7 @@ export default function InfoBasica() {
   };
 
   const primeiraClasse = ficha.classes[0]?.nome || '';
-  const classeIconSrc = primeiraClasse
-    ? `/assets/classes/${primeiraClasse.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_')}.png`
-    : '';
+  const classeIconSrc = getClasseIconUrl(primeiraClasse);
 
   return (
     <Section id="secCabecalho" title="Info Básica">
@@ -96,13 +93,16 @@ export default function InfoBasica() {
             <div className={styles.classesLista}>
               {ficha.classes.map((c, i) => (
                 <div key={i} className={styles.classeItem}>
-                  <Input
-                    variant="secondary"
+                  <select
                     className={styles.classeNomeInput}
                     value={c.nome}
                     onChange={(e) => updateClasse(i, 'nome', e.target.value)}
-                    placeholder="Classe"
-                  />
+                  >
+                    <option value="">Selecione...</option>
+                    {CLASSES_TORMENTA.map((cl) => (
+                      <option key={cl.id} value={cl.nome}>{cl.nome}</option>
+                    ))}
+                  </select>
                   <span className={styles.classeLvlLabel}>Nv</span>
                   <Input
                     variant="secondary"

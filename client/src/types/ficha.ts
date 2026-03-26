@@ -1,3 +1,13 @@
+export type SistemaRPG = 'tormenta' | 'naruto';
+
+export interface FichaResumo {
+  _id: string;
+  nome: string;
+  avatar: string;
+  classes: { nome: string; nivel: number }[];
+  sistema: SistemaRPG;
+}
+
 export type AtributoId = 'for' | 'des' | 'con' | 'int' | 'sab' | 'car';
 
 export type BuffTipo =
@@ -139,6 +149,8 @@ export interface Atributos {
 }
 
 export interface Ficha {
+  _id: string;
+  sistema: SistemaRPG;
   nome: string;
   classes: Classe[];
   raca: string;

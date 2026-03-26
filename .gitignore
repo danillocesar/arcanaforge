@@ -1,55 +1,37 @@
-# =========================
 # Node.js
-# =========================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
-client/node_modules/*
-client/node_modules/
-# =========================
+
 # Logs
-# =========================
 logs/
 *.log
 
-# =========================
 # Environment variables
-# =========================
 .env
 .env.*
 !.env.example
 
-# =========================
 # Build / Dist
-# =========================
 build/
 dist/
 out/
-.next/
-.cache/
 coverage/
 
-# React specific
-node_modeles/*
-node_modeles/
-node_modules/.cache/
+# Cache
+.cache/
 *.eslintcache
 
-# =========================
 # Express / Backend
-# =========================
 uploads/
 tmp/
 temp/
 
-# =========================
 # OS / Editor files
-# =========================
 .DS_Store
 Thumbs.db
 
@@ -60,51 +42,8 @@ Thumbs.db
 # JetBrains
 .idea/
 
-# =========================
-# Testing
-# =========================
-coverage/
-jest-cache/
-
-# =========================
 # Misc
-# =========================
 *.tgz
 *.swp
 *.swo
-
-# =========================
-# TypeScript
-# =========================
 *.tsbuildinfo
-
-# =========================
-# Docker (se usar)
-# =========================
-.dockerignore
-
-# =========================
-# Firebase / Vercel / Netlify (se usar)
-# =========================
-.vercel/
-.netlify/
-.firebase/
-
-# =========================
-# Cache
-# =========================
-.cache/
-.parcel-cache/
-
-# =========================
-# Storybook
-# =========================
-storybook-static/
-
-# =========================
-# Optional: ignore local configs
-# =========================
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local

@@ -1,18 +1,20 @@
 {
-  "name": "tormenta20-ficha",
+  "name": "arcanaforge",
   "version": "1.0.0",
-  "description": "Sistema web para fichas de personagem de Tormenta 20",
+  "description": "Sistema web multi-RPG para fichas de personagem e gerenciamento de combate",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently -n server,client -c blue,green \"set PORT=3001 && node server.js\" \"cd client && set BACKEND_PORT=3001 && npx vite\""
+    "dev": "concurrently -n server,client -c blue,green \"set PORT=3001 && nodemon server.js\" \"cd client && set BACKEND_PORT=3001 && npx vite\""
   },
   "dependencies": {
     "express": "^4.21.0",
+    "helmet": "^8.1.0",
     "multer": "^2.1.1",
     "ws": "^8.20.0"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14"
   }
 }

@@ -1,14 +1,16 @@
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { CombateData, CombateJogador, CombateRow, Inimigo } from '../types/combate';
 import {
   apiLoadCombate,
   apiSaveCombate,
+  apiFetchParties,
   apiFetchFichasResumo,
   apiLoadFicha,
   apiSaveFicha,
   apiAvatarSemFundo,
-} from '../api/api';
+} from '../api';
 import { useWebSocket } from '../hooks/useWebSocket';
+import type { WsMessage } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/Toast/Toast';
 
 interface CombateContextValue {
@@ -28,7 +30,7 @@ interface CombateContextValue {
   ordenarIniciativa: () => void;
   proximoTurno: () => void;
   resetTurno: () => void;
-  aplicarHpChange: (tipo: string, nome: string, inimigoIdx: number | undefined, delta: number) => Promise<void>;
+  aplicarHpChange: (tipo: string, fichaId: string, inimigoIdx: number | undefined, delta: number) => Promise<void>;
   loadCombate: () => Promise<void>;
 }
 
@@ -42,7 +44,7 @@ const DEFAULT_COMBATE: CombateData = {
 
 const CombateContext = createContext<CombateContextValue | null>(null);
 
-export function CombateProvider({ children }: { children: React.ReactNode }) {
+export function CombateProvider({ children, partyId }: { children: React.ReactNode; partyId?: string }) {
   const [mestreData, setMestreData] = useState<CombateData>({ ...DEFAULT_COMBATE });
   const [jogadores, setJogadores] = useState<CombateJogador[]>([]);
   const [turnoIdx, setTurnoIdx] = useState(-1);
@@ -63,9 +65,10 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     jogs.forEach((j) => {
       rows.push({
         tipo: 'jogador',
-        id: `jogador_${j.nome}`,
+        id: `jogador_${j._id}`,
+        fichaId: j._id,
         nome: j.nome,
-        iniciativa: Number(data.iniciativas[`jogador_${j.nome}`]) || 0,
+        iniciativa: Number(data.iniciativas[`jogador_${j._id}`]) || 0,
         pvMax: j.pvMax,
         pvAtual: j.pvAtual,
         pmMax: j.pmMax,
@@ -95,8 +98,9 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
 
   const { send } = useWebSocket(
     useCallback(
-      (msg) => {
+      (msg: WsMessage) => {
         if (msg.type === 'combate_sync' && msg.data) {
+          if (partyId && msg.partyId && msg.partyId !== partyId) return;
           const d = msg.data as CombateData;
           setMestreData({ ...d, rodada: d.rodada ?? 1 });
           if (d.turnoIdx !== undefined) setTurnoIdx(d.turnoIdx);
@@ -107,14 +111,17 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
             setOrdenadoList([]);
           }
         }
-        if (msg.type === 'ficha_hp_sync' && msg.nome) {
+        if (msg.type === 'ficha_hp_sync' && msg.fichaId) {
+          const fichaId = msg.fichaId as string;
+          const pv = msg.pv as { atual?: number; maximo?: number } | undefined;
+          const pm = msg.pm as { atual?: number; maximo?: number } | undefined;
           setJogadores((prev) => {
             const next = prev.map((j) =>
-              j.nome === msg.nome
+              j._id === fichaId
                 ? {
                     ...j,
-                    pvAtual: msg.pv?.atual ?? j.pvAtual,
-                    pmAtual: msg.pm?.atual ?? j.pmAtual,
+                    pvAtual: pv?.atual ?? j.pvAtual,
+                    pmAtual: pm?.atual ?? j.pmAtual,
                   }
                 : j,
             );
@@ -125,12 +132,14 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
             });
             return next;
           });
-          showToast(`PV/PM de ${msg.nome} atualizado`, 'sync');
+          showToast(`PV/PM de ${(msg.nome as string) || 'jogador'} atualizado`, 'sync');
         }
-        if (msg.type === 'mestre_hp_sync' && msg.nome) {
+        if (msg.type === 'mestre_hp_sync' && msg.fichaId) {
+          const fichaId = msg.fichaId as string;
+          const pvAtual = msg.pvAtual as number;
           setJogadores((prev) => {
             const next = prev.map((j) =>
-              j.nome === msg.nome ? { ...j, pvAtual: msg.pvAtual } : j,
+              j._id === fichaId ? { ...j, pvAtual } : j,
             );
             queueMicrotask(() => {
               if (mestreDataRef.current.ordenado) {
@@ -139,37 +148,49 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
             });
             return next;
           });
-          showToast(`PV de ${msg.nome} atualizado pelo Mestre`, 'info');
+          showToast(`PV de ${(msg.nome as string) || 'jogador'} atualizado pelo Mestre`, 'info');
         }
       },
-      [buildOrdenado, showToast],
+      [buildOrdenado, showToast, partyId],
     ),
   );
 
   const broadcastMestreData = useCallback(
     (data: CombateData) => {
-      send({ type: 'combate_update', data });
-      apiSaveCombate(data);
+      send({ type: 'combate_update', data, partyId });
+      apiSaveCombate(data, partyId);
     },
-    [send],
+    [send, partyId],
   );
 
   const loadCombate = useCallback(async () => {
-    const data = await apiLoadCombate();
+    const data = await apiLoadCombate(partyId);
     const normalized = { ...data, rodada: data.rodada ?? 1 };
     setMestreData(normalized);
     if (normalized.turnoIdx !== undefined) setTurnoIdx(normalized.turnoIdx);
 
+    let membrosSet: Set<string> | null = null;
+    if (partyId) {
+      const parties = await apiFetchParties();
+      const party = parties.find((p) => p.id === partyId);
+      if (party) membrosSet = new Set(party.membros);
+    }
+
     const resumos = await apiFetchFichasResumo();
-    const jogsPromises = resumos.map(async (r) => {
-      const ficha = await apiLoadFicha(r.nome);
+    const filteredResumos = membrosSet
+      ? resumos.filter((r) => membrosSet!.has(r._id))
+      : resumos;
+
+    const jogsPromises = filteredResumos.map(async (r) => {
+      const ficha = await apiLoadFicha(r._id);
       let avatar = r.avatar || '';
       try {
-        const semFundo = await apiAvatarSemFundo(r.nome);
+        const semFundo = await apiAvatarSemFundo(r._id);
         if (semFundo) avatar = semFundo;
       } catch { /* keep original */ }
 
       return {
+        _id: r._id,
         nome: r.nome,
         avatar,
         classes: r.classes,
@@ -189,7 +210,7 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
       setOrdenadoAtivo(false);
       setOrdenadoList([]);
     }
-  }, [buildOrdenado]);
+  }, [buildOrdenado, partyId]);
 
   const adicionarInimigo = useCallback((nome: string, pvMax: number) => {
     const max = Math.max(1, Math.floor(Number(pvMax)) || 1);
@@ -319,20 +340,21 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
   }, [broadcastMestreData]);
 
   const aplicarHpChange = useCallback(
-    async (tipo: string, nome: string, inimigoIdx: number | undefined, delta: number) => {
+    async (tipo: string, fichaId: string, inimigoIdx: number | undefined, delta: number) => {
       if (tipo === 'jogador') {
-        const ficha = await apiLoadFicha(nome);
+        const ficha = await apiLoadFicha(fichaId);
         if (!ficha) return;
         ficha.pv.atual = Math.max(0, Math.min(ficha.pv.maximo, ficha.pv.atual + delta));
-        await apiSaveFicha(nome, ficha);
+        await apiSaveFicha(fichaId, ficha);
         send({
           type: 'mestre_hp_update',
-          nome,
+          fichaId,
+          nome: ficha.nome,
           pvAtual: ficha.pv.atual,
         });
         setJogadores((prev) => {
           const next = prev.map((j) =>
-            j.nome === nome ? { ...j, pvAtual: ficha.pv.atual } : j,
+            j._id === fichaId ? { ...j, pvAtual: ficha.pv.atual } : j,
           );
           queueMicrotask(() => {
             if (mestreDataRef.current.ordenado) {
@@ -360,7 +382,7 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     [send, broadcastMestreData, buildOrdenado],
   );
 
-  const value: CombateContextValue = {
+  const value = useMemo<CombateContextValue>(() => ({
     mestreData,
     jogadores,
     turnoIdx,
@@ -378,7 +400,7 @@ export function CombateProvider({ children }: { children: React.ReactNode }) {
     resetTurno,
     aplicarHpChange,
     loadCombate,
-  };
+  }), [mestreData, jogadores, turnoIdx, ordenadoList, ordenadoAtivo, modoMestre, setModoMestre, adicionarInimigo, removerInimigo, updateIniciativa, updateInimigoNome, updateInimigoPvMax, ordenarIniciativa, proximoTurno, resetTurno, aplicarHpChange, loadCombate]);
 
   return <CombateContext.Provider value={value}>{children}</CombateContext.Provider>;
 }

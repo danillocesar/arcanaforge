@@ -72,7 +72,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
       playSwordSound();
     }
 
-    const estilo = (ficha?.animacaoAtaque || 'personagem') as AnimacaoEstilo;
+    const estilo = 'toast' as AnimacaoEstilo;
     triggerAttackAnim(estilo, {
       tipo: atk.alcanceTipo === 'ranged' ? 'ranged' : 'melee',
       nome: atk.nome || 'Ataque',

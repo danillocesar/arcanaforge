@@ -2,14 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useCombateContext } from '../../../contexts/CombateContext';
 import { getInitials } from '../../../utils/formatters';
 import { pvPercent } from '../../../utils/calculations';
+import { getClasseIconUrl } from '../../../features/tormenta/data/classesTormenta';
 import DanoPopover from '../DanoPopover/DanoPopover';
 import type { CombateRow } from '../../../types/combate';
 import styles from './CombateCard.module.css';
-
-function classeToSrc(nome: string): string {
-  if (!nome) return '';
-  return `/assets/classes/${nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_')}.png`;
-}
 
 const VILAO_ICON = (
   <svg className={styles.vilaoIcon} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -58,7 +54,7 @@ export default function CombateCard({ row, isTurno }: CombateCardProps) {
     : undefined;
 
   const primeiraClasse = row.classes?.[0]?.nome;
-  const classeIconSrc = primeiraClasse ? classeToSrc(primeiraClasse) : '';
+  const classeIconSrc = primeiraClasse ? getClasseIconUrl(primeiraClasse) : '';
 
   const cardCls = [
     styles.card,
@@ -69,7 +65,7 @@ export default function CombateCard({ row, isTurno }: CombateCardProps) {
   ].filter(Boolean).join(' ');
 
   const handleHpApply = async (delta: number) => {
-    await aplicarHpChange(row.tipo, row.nome, inimigoIdx, delta);
+    await aplicarHpChange(row.tipo, row.fichaId || row.id, inimigoIdx, delta);
     setPopoverOpen(false);
   };
 
@@ -222,11 +218,6 @@ export default function CombateCard({ row, isTurno }: CombateCardProps) {
       {popoverOpen && showEnemyBars && (
         <DanoPopover
           barRef={hpBarRef}
-          tipo={row.tipo}
-          nome={row.nome}
-          inimigoIdx={inimigoIdx}
-          pvAtual={pvAtual}
-          pvMax={pvMax}
           onApply={handleHpApply}
           onClose={() => setPopoverOpen(false)}
         />

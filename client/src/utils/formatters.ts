@@ -1,3 +1,12 @@
+export function formatClassesStr(classes: { nome: string; nivel: number }[]): string {
+  return (
+    classes
+      ?.filter((c) => c.nome)
+      .map((c) => `${c.nome} ${c.nivel || 1}`)
+      .join(', ') || 'Sem classe'
+  );
+}
+
 export function getInitials(name: string): string {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/);

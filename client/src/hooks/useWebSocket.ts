@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+
+export interface WsMessage {
+  type: string;
+  [key: string]: unknown;
+}
 
 function getWsUrl(): string {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -9,17 +14,15 @@ function getWsUrl(): string {
   return `${proto}//${location.host}`;
 }
 
-export function useWebSocket(onMessage: (msg: any) => void): {
-  send: (data: any) => void;
-  connected: boolean;
+export function useWebSocket(onMessage: (msg: WsMessage) => void): {
+  send: (data: WsMessage) => void;
 } {
-  const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
   useEffect(() => {
-    let reconnectTimer: ReturnType<typeof setTimeout>;
+    let reconnectTimer: number | undefined;
     let unmounted = false;
 
     function connect() {
@@ -27,13 +30,9 @@ export function useWebSocket(onMessage: (msg: any) => void): {
       const ws = new WebSocket(getWsUrl());
       wsRef.current = ws;
 
-      ws.onopen = () => {
-        if (!unmounted) setConnected(true);
-      };
-
       ws.onmessage = (ev) => {
         try {
-          const msg = JSON.parse(ev.data);
+          const msg = JSON.parse(ev.data) as WsMessage;
           onMessageRef.current(msg);
         } catch {
           /* ignore malformed */
@@ -42,8 +41,7 @@ export function useWebSocket(onMessage: (msg: any) => void): {
 
       ws.onclose = () => {
         if (!unmounted) {
-          setConnected(false);
-          reconnectTimer = setTimeout(connect, 2000);
+          reconnectTimer = window.setTimeout(connect, 2000);
         }
       };
 
@@ -56,16 +54,16 @@ export function useWebSocket(onMessage: (msg: any) => void): {
 
     return () => {
       unmounted = true;
-      clearTimeout(reconnectTimer);
+      if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };
   }, []);
 
-  const send = useCallback((data: any) => {
+  const send = useCallback((data: WsMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(data));
     }
   }, []);
 
-  return { send, connected };
+  return { send };
 }

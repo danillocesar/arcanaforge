@@ -1,0 +1,233 @@
+.page {
+  min-height: 100vh;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: var(--font);
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  padding: 30px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card {
+  position: relative;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font);
+}
+
+.card:hover,
+.card:focus {
+  text-decoration: none;
+  border-color: var(--accent-gold);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--accent-gold) 25%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.cardIcon {
+  font-size: 2rem;
+  margin-bottom: 2px;
+}
+
+.cardNome {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cardMeta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.sistemaBadge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: 4px;
+  font-family: var(--font);
+}
+
+.deleteBtn:hover {
+  color: var(--accent-red);
+}
+
+.newCard {
+  background: transparent;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 22px 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 140px;
+  font-family: var(--font);
+  color: var(--text-muted);
+}
+
+.newCard:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.newIcon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.newLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Modal */
+.newModal {
+  background: rgba(20, 22, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+  min-width: 340px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.newModalTitle {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.newModalLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.newModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sistemaSelector {
+  display: flex;
+  gap: 10px;
+}
+
+.sistemaOption {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+}
+
+.sistemaOption:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-card-hover);
+}
+
+.sistemaActive {
+  border-color: var(--accent-gold);
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--accent-gold);
+  box-shadow: 0 0 12px rgba(201, 168, 76, 0.15);
+}
+
+.sistemaIcon {
+  font-size: 1.6rem;
+}
+
+.sistemaName {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 550px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .content {
+    padding: 16px 12px;
+  }
+}
+
+@media (max-width: 350px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

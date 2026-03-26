@@ -4,11 +4,6 @@ import styles from './DanoPopover.module.css';
 
 interface DanoPopoverProps {
   barRef: RefObject<HTMLDivElement | null>;
-  tipo: string;
-  nome: string;
-  inimigoIdx?: number;
-  pvAtual: number;
-  pvMax: number;
   onApply: (delta: number) => void;
   onClose: () => void;
 }
