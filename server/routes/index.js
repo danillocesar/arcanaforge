@@ -2,199 +2,187 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
-const combateState = require('../combateState');
-const {
-  getUserFichasDir,
-  resolveFichaFilePath,
-  ownerFieldsFromReq,
-} = require('../fichas/userFichasDir');
+const combatState = require('../combatState');
+const Character = require('../db/models/Character');
+const Party = require('../db/models/Party');
+const { ownerFieldsFromReq } = require('../characters/userCharactersDir');
 
 /**
  * @param {import('express').Express} app
- * @param {{ uploadAvatar: import('multer').Multer, refs: { broadcastCombate: (partyId?: string) => void } }} opts
+ * @param {{ uploadAvatar: import('multer').Multer, refs: { broadcastCombat: (partyId?: string) => void } }} opts
  */
 function registerRoutes(app, opts) {
   const { uploadAvatar, refs } = opts;
-  const {
-    FICHAS_DIR,
-    AVATARS_DIR,
-    PARTIES_DIR,
-    COMBATE_DIR,
-    DIST_DIR,
-    ROOT_DIR,
-  } = paths;
+  const { AVATARS_DIR, DIST_DIR } = paths;
 
-  app.get('/api/fichas', (req, res) => {
-    const userDir = getUserFichasDir(req, FICHAS_DIR);
-    const files = fs
-      .readdirSync(userDir)
-      .filter((f) => f.endsWith('.json'))
-      .map((f) => f.replace('.json', ''));
-    res.json(files);
-  });
-
-  app.get('/api/fichas-resumo', (req, res) => {
-    const userDir = getUserFichasDir(req, FICHAS_DIR);
-    const files = fs.readdirSync(userDir).filter((f) => f.endsWith('.json'));
-    const resumos = files
-      .map((f) => {
-        try {
-          const data = JSON.parse(fs.readFileSync(path.join(userDir, f), 'utf-8'));
-          return {
-            _id: data._id || f.replace('.json', ''),
-            nome: data.nome || 'Sem nome',
-            avatar: data.avatar || '',
-            classes: data.classes || [],
-            sistema: data.sistema || 'tormenta',
-            ownerUid: data.ownerUid,
-            ownerEmail: data.ownerEmail,
-          };
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
-    res.json(resumos);
-  });
-
-  app.get('/api/fichas/:id', (req, res) => {
-    const userDir = getUserFichasDir(req, FICHAS_DIR);
-    let filePath;
+  // Characters
+  app.get('/api/characters', async (req, res) => {
     try {
-      filePath = resolveFichaFilePath(userDir, req.params.id);
-    } catch {
-      return res.status(400).json({ error: 'ID inválido' });
+      const docs = await Character.find({ ownerUid: req.user.uid }).select('_id');
+      res.json(docs.map((d) => d._id));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Ficha não encontrada' });
-    }
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-    res.json(data);
   });
 
-  app.post('/api/fichas/:id', (req, res) => {
+  function cleanMongoFields(doc) {
+    if (!doc) return doc;
+    const { __v, createdAt, updatedAt, ...rest } = doc;
+    return rest;
+  }
+
+  app.get('/api/characters/summary', async (req, res) => {
+    try {
+      const docs = await Character.find({ ownerUid: req.user.uid })
+        .select('_id name avatar classes system ownerUid ownerEmail')
+        .lean();
+      res.json(docs.map(cleanMongoFields));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/characters/:id', async (req, res) => {
+    try {
+      const doc = await Character.findOne({ _id: req.params.id, ownerUid: req.user.uid }).lean();
+      if (!doc) return res.status(404).json({ error: 'Character not found' });
+      res.json(cleanMongoFields(doc));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/characters/:id', async (req, res) => {
     const id = req.params.id;
-    if (!req.body || typeof req.body !== 'object' || !req.body.nome) {
-      return res.status(400).json({ error: 'Corpo inválido: campo "nome" é obrigatório' });
+    if (!req.body || typeof req.body !== 'object' || !req.body.name) {
+      return res.status(400).json({ error: 'Invalid body: "name" field is required' });
     }
-    const userDir = getUserFichasDir(req, FICHAS_DIR);
-    let filePath;
     try {
-      filePath = resolveFichaFilePath(userDir, id);
-    } catch {
-      return res.status(400).json({ error: 'ID inválido' });
+      const owners = ownerFieldsFromReq(req);
+      const body = { ...req.body, _id: id, ...owners };
+      await Character.findByIdAndUpdate(id, body, { upsert: true, setDefaultsOnInsert: true });
+      res.json({ ok: true, _id: id });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-    const owners = ownerFieldsFromReq(req);
-    const body = { ...req.body, _id: id, ...owners };
-    fs.writeFileSync(filePath, JSON.stringify(body, null, 2), 'utf-8');
-    res.json({ ok: true, _id: id });
   });
 
-  app.delete('/api/fichas/:id', (req, res) => {
-    const userDir = getUserFichasDir(req, FICHAS_DIR);
-    let filePath;
+  app.delete('/api/characters/:id', async (req, res) => {
     try {
-      filePath = resolveFichaFilePath(userDir, req.params.id);
-    } catch {
-      return res.status(400).json({ error: 'ID inválido' });
+      await Character.findOneAndDelete({ _id: req.params.id, ownerUid: req.user.uid });
+      const avatarFiles = fs
+        .readdirSync(AVATARS_DIR)
+        .filter(
+          (f) =>
+            path.parse(f).name === req.params.id ||
+            path.parse(f).name === `${req.params.id}_transparent` ||
+            path.parse(f).name === `${req.params.id}_sem_fundo`,
+        );
+      avatarFiles.forEach((f) => fs.unlinkSync(path.join(AVATARS_DIR, f)));
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-    const avatarFiles = fs
-      .readdirSync(AVATARS_DIR)
-      .filter(
-        (f) =>
-          path.parse(f).name === req.params.id ||
-          path.parse(f).name === `${req.params.id}_sem_fundo`,
-      );
-    avatarFiles.forEach((f) => fs.unlinkSync(path.join(AVATARS_DIR, f)));
-    res.json({ ok: true });
   });
 
+  // Parties
   function generatePartyId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  app.get('/api/parties', (req, res) => {
-    if (!fs.existsSync(PARTIES_DIR)) return res.json([]);
-    const files = fs.readdirSync(PARTIES_DIR).filter((f) => f.endsWith('.json'));
-    const parties = files
-      .map((f) => {
-        try {
-          return JSON.parse(fs.readFileSync(path.join(PARTIES_DIR, f), 'utf-8'));
-        } catch {
-          return null;
-        }
-      })
-      .filter(Boolean);
-    res.json(parties);
-  });
+  function toPartyJson(doc) {
+    const { _id, __v, createdAt, updatedAt, ...rest } = doc;
+    return { id: _id, ...rest };
+  }
 
-  app.post('/api/parties', (req, res) => {
-    const { nome, sistema, membros } = req.body || {};
-    if (!nome || typeof nome !== 'string' || !nome.trim()) {
-      return res.status(400).json({ error: 'Campo "nome" é obrigatório' });
+  app.get('/api/parties', async (req, res) => {
+    try {
+      const docs = await Party.find({ ownerUid: req.user.uid }).lean();
+      res.json(docs.map(toPartyJson));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
-    const validSistemas = ['tormenta', 'naruto'];
-    if (sistema && !validSistemas.includes(sistema)) {
-      return res.status(400).json({ error: 'Sistema inválido' });
+  });
+
+  app.post('/api/parties', async (req, res) => {
+    const { name, system, members } = req.body || {};
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: '"name" field is required' });
     }
-    const id = generatePartyId();
-    const party = { id, nome: nome.trim(), sistema: sistema || 'tormenta', membros: membros || [] };
-    fs.writeFileSync(path.join(PARTIES_DIR, `${id}.json`), JSON.stringify(party, null, 2), 'utf-8');
-    res.json(party);
-  });
-
-  app.put('/api/parties/:id', (req, res) => {
-    const filePath = path.join(PARTIES_DIR, `${req.params.id}.json`);
-    if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Party não encontrada' });
-    const party = { ...req.body, id: req.params.id };
-    fs.writeFileSync(filePath, JSON.stringify(party, null, 2), 'utf-8');
-    res.json(party);
-  });
-
-  app.delete('/api/parties/:id', (req, res) => {
-    const partyFile = path.join(PARTIES_DIR, `${req.params.id}.json`);
-    const combateFile = path.join(COMBATE_DIR, `${req.params.id}.json`);
-    const combateLegacy = path.join(ROOT_DIR, `combate-${req.params.id}.json`);
-    if (fs.existsSync(partyFile)) fs.unlinkSync(partyFile);
-    if (fs.existsSync(combateFile)) fs.unlinkSync(combateFile);
-    if (fs.existsSync(combateLegacy)) fs.unlinkSync(combateLegacy);
-    delete combateState.combateCache[req.params.id];
-    res.json({ ok: true });
-  });
-
-  app.get('/api/combate/:partyId', (req, res) => {
-    const { partyId } = req.params;
-    if (!combateState.combateCache[partyId]) {
-      combateState.combateCache[partyId] = combateState.loadCombateForParty(partyId);
+    const validSystems = ['tormenta', 'naruto'];
+    if (system && !validSystems.includes(system)) {
+      return res.status(400).json({ error: 'Invalid system' });
     }
-    res.json(combateState.combateCache[partyId]);
+    try {
+      const owners = ownerFieldsFromReq(req);
+      const id = generatePartyId();
+      const party = await Party.create({
+        _id: id,
+        name: name.trim(),
+        system: system || 'tormenta',
+        members: members || [],
+        ...owners,
+      });
+      res.json(toPartyJson(party.toObject()));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.post('/api/combate/:partyId', (req, res) => {
-    const { partyId } = req.params;
-    combateState.combateCache[partyId] = req.body;
-    combateState.saveCombateForParty(partyId, req.body);
-    refs.broadcastCombate(partyId);
-    res.json({ ok: true });
+  app.put('/api/parties/:id', async (req, res) => {
+    try {
+      const party = await Party.findOneAndUpdate(
+        { _id: req.params.id, ownerUid: req.user.uid },
+        { ...req.body, _id: req.params.id },
+        { new: true },
+      ).lean();
+      if (!party) return res.status(404).json({ error: 'Party not found' });
+      res.json(toPartyJson(party));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/combate', (req, res) => {
-    res.json(combateState.combateData);
+  app.delete('/api/parties/:id', async (req, res) => {
+    try {
+      await Party.findOneAndDelete({ _id: req.params.id, ownerUid: req.user.uid });
+      await combatState.deleteCombat(req.params.id);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.post('/api/combate', (req, res) => {
-    combateState.combateData = req.body;
-    fs.writeFileSync(paths.COMBATE_FILE, JSON.stringify(combateState.combateData, null, 2), 'utf-8');
-    refs.broadcastCombate();
-    res.json({ ok: true });
+  // Combat (nested under parties)
+  app.get('/api/parties/:id/combat', async (req, res) => {
+    try {
+      const data = await combatState.loadCombat(req.params.id);
+      const { _id, __v, createdAt, updatedAt, ...clean } = data;
+      res.json(clean);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
-  app.get('/api/avatar-sem-fundo/:id', (req, res) => {
+  app.post('/api/parties/:id/combat', async (req, res) => {
+    try {
+      const { id } = req.params;
+      combatState.combatCache[id] = req.body;
+      await combatState.saveCombat(id, req.body);
+      refs.broadcastCombat(id);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Avatars (still filesystem-based)
+  app.get('/api/avatar-transparent/:id', (req, res) => {
     const id = req.params.id;
-    const variants = [`${id}_sem_fundo.png`, `${id}_sem_fundo.jpg`, `${id}_sem_fundo.webp`];
+    const variants = [
+      `${id}_transparent.png`, `${id}_transparent.jpg`, `${id}_transparent.webp`,
+      `${id}_sem_fundo.png`, `${id}_sem_fundo.jpg`, `${id}_sem_fundo.webp`,
+    ];
     for (const v of variants) {
       if (fs.existsSync(path.join(AVATARS_DIR, v))) {
         return res.json({ url: `/avatars/${v}` });
@@ -204,7 +192,7 @@ function registerRoutes(app, opts) {
   });
 
   app.post('/api/avatar/:id', uploadAvatar.single('avatar'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const id = req.params.id;
     const files = fs.readdirSync(AVATARS_DIR).filter((f) => {
       const base = path.parse(f).name;

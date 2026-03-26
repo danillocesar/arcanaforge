@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetchFichasResumo, apiSaveFicha, apiDeleteFicha } from '../../api';
-import { criarFichaVazia, criarFichaNarutoVazia } from '../../utils/calculations';
-import type { SistemaRPG, FichaResumo } from '../../types/ficha';
-import { SISTEMA_ROUTE } from '../../data/constants';
+import { apiFetchCharacterSummaries, apiSaveCharacter, apiDeleteCharacter } from '../../api';
+import { createEmptyCharacter, createEmptyNarutoCharacter } from '../../utils/calculations';
+import type { RPGSystem, CharacterSummary } from '../../types/character';
+import { SYSTEM_ROUTES } from '../../data/constants';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import SistemaFilter from '../../components/ui/SistemaFilter/SistemaFilter';
+import SistemaFilter from '../../components/ui/SystemFilter/SystemFilter';
 import SelectGrid from '../../components/select/SelectGrid/SelectGrid';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
@@ -16,19 +16,19 @@ import styles from './SelectPage.module.css';
 type TabFilter = 'todos' | 'tormenta' | 'naruto';
 
 export default function SelectPage() {
-  const [resumos, setResumos] = useState<FichaResumo[]>([]);
+  const [resumos, setResumos] = useState<CharacterSummary[]>([]);
   const [tab, setTab] = useState<TabFilter>('todos');
   const [modalOpen, setModalOpen] = useState(false);
   const [novoNome, setNovoNome] = useState('');
-  const [novoSistema, setNovoSistema] = useState<SistemaRPG>('tormenta');
-  const [deleteTarget, setDeleteTarget] = useState<FichaResumo | null>(null);
+  const [novoSistema, setNovoSistema] = useState<RPGSystem>('tormenta');
+  const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    apiFetchFichasResumo().then(setResumos).catch(console.error);
+    apiFetchCharacterSummaries().then(setResumos).catch(console.error);
   }, []);
 
-  const filtered = tab === 'todos' ? resumos : resumos.filter((r) => r.sistema === tab);
+  const filtered = tab === 'todos' ? resumos : resumos.filter((r) => r.system === tab);
 
   const openNewModal = () => {
     setNovoNome('');
@@ -42,15 +42,15 @@ export default function SelectPage() {
     if (!nome) return;
 
     const ficha =
-      novoSistema === 'naruto' ? criarFichaNarutoVazia(nome) : criarFichaVazia(nome);
-    await apiSaveFicha(ficha._id, ficha);
+      novoSistema === 'naruto' ? createEmptyNarutoCharacter(nome) : createEmptyCharacter(nome);
+    await apiSaveCharacter(ficha._id, ficha);
     setModalOpen(false);
-    navigate(`${SISTEMA_ROUTE[novoSistema]}?id=${encodeURIComponent(ficha._id)}`);
+    navigate(`${SYSTEM_ROUTES[novoSistema]}?id=${encodeURIComponent(ficha._id)}`);
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
-    await apiDeleteFicha(deleteTarget._id);
+    await apiDeleteCharacter(deleteTarget._id);
     setResumos((prev) => prev.filter((r) => r._id !== deleteTarget._id));
   };
 
@@ -69,22 +69,22 @@ export default function SelectPage() {
           <h3 className={styles.newModalTitle}>Novo Personagem</h3>
 
           <span className={styles.newModalLabel}>Sistema de RPG</span>
-          <div className={styles.sistemaSelector}>
+          <div className={styles.systemSelector}>
             <button
               type="button"
-              className={`${styles.sistemaOption} ${novoSistema === 'tormenta' ? styles.sistemaActive : ''}`}
+              className={`${styles.systemOption} ${novoSistema === 'tormenta' ? styles.systemActive : ''}`}
               onClick={() => setNovoSistema('tormenta')}
             >
-              <span className={styles.sistemaIcon}>⚔️</span>
-              <span className={styles.sistemaName}>Tormenta 20</span>
+              <span className={styles.systemIcon}>⚔️</span>
+              <span className={styles.systemName}>Tormenta 20</span>
             </button>
             <button
               type="button"
-              className={`${styles.sistemaOption} ${novoSistema === 'naruto' ? styles.sistemaActive : ''}`}
+              className={`${styles.systemOption} ${novoSistema === 'naruto' ? styles.systemActive : ''}`}
               onClick={() => setNovoSistema('naruto')}
             >
-              <span className={styles.sistemaIcon}>🍥</span>
-              <span className={styles.sistemaName}>Naruto: SnS</span>
+              <span className={styles.systemIcon}>🍥</span>
+              <span className={styles.systemName}>Naruto: SnS</span>
             </button>
           </div>
 
@@ -116,10 +116,10 @@ export default function SelectPage() {
         onConfirm={handleDeleteConfirm}
         variant="danger"
         icon="🗑️"
-        title={`Excluir "${deleteTarget?.nome}"?`}
+        title={`Excluir "${deleteTarget?.name}"?`}
         message="Esta ação é irreversível. Todos os dados deste personagem serão perdidos."
         confirmLabel="Excluir"
-        requireText={deleteTarget?.nome}
+        requireText={deleteTarget?.name}
         requireTextLabel="Digite o nome do personagem para confirmar:"
       />
     </div>

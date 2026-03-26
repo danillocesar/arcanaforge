@@ -1,8 +1,8 @@
-export function formatClassesStr(classes: { nome: string; nivel: number }[]): string {
+export function formatClassesStr(classes: { name: string; level: number }[]): string {
   return (
     classes
-      ?.filter((c) => c.nome)
-      .map((c) => `${c.nome} ${c.nivel || 1}`)
+      ?.filter((c) => c.name)
+      .map((c) => `${c.name} ${c.level || 1}`)
       .join(', ') || 'Sem classe'
   );
 }

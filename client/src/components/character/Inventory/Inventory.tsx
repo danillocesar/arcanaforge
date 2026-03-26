@@ -1,0 +1,134 @@
+import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { calcCarryCapacity, calcUsedLoad } from '../../../utils/calculations';
+import { EQUIP_ICONS } from '../../../data/constants';
+import Section from '../../ui/Section/Section';
+import Button from '../../ui/Button/Button';
+import styles from './Inventory.module.css';
+
+export default function Inventory() {
+  const { character, updateCharacter } = useCharacterContext();
+
+  if (!character) return null;
+
+  const carryCapacity = calcCarryCapacity(character);
+  const usedLoad = calcUsedLoad(character);
+  const maxLoad = carryCapacity * 2;
+
+  const setCoin = (key: 'copper' | 'silver' | 'gold', val: number) => {
+    updateCharacter((f) => ({ ...f, coins: { ...f.coins, [key]: val } }));
+  };
+
+  const addItem = () => {
+    updateCharacter((f) => ({
+      ...f,
+      inventory: [...f.inventory, { name: '', quantity: 1, weight: 0 }],
+    }));
+  };
+
+  const removeItem = (idx: number) => {
+    updateCharacter((f) => ({
+      ...f,
+      inventory: f.inventory.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const updateItem = (idx: number, key: string, value: string | number) => {
+    updateCharacter((f) => {
+      const inventory = [...f.inventory];
+      inventory[idx] = { ...inventory[idx], [key]: value };
+      return { ...f, inventory };
+    });
+  };
+
+  const updateEquip = (idx: number, name: string) => {
+    updateCharacter((f) => {
+      const equipped = [...f.equipped];
+      equipped[idx] = { name };
+      return { ...f, equipped };
+    });
+  };
+
+  return (
+    <Section id="secInventario" title="Inventário">
+      <div className={styles.stats}>
+        <span>Limite de Carga: <strong>{carryCapacity}</strong></span>
+        <span>Carga Usada: <strong>{usedLoad}</strong></span>
+        <span>Carga Máx: <strong>{maxLoad}</strong></span>
+        <div className={styles.coins}>
+          <label>TC</label>
+          <input
+            type="number"
+            className={styles.coinInput}
+            value={character.coins.copper}
+            onChange={(e) => setCoin('copper', Number(e.target.value) || 0)}
+          />
+          <label>T$</label>
+          <input
+            type="number"
+            className={styles.coinInput}
+            value={character.coins.silver}
+            onChange={(e) => setCoin('silver', Number(e.target.value) || 0)}
+          />
+          <label>TO</label>
+          <input
+            type="number"
+            className={styles.coinInput}
+            value={character.coins.gold}
+            onChange={(e) => setCoin('gold', Number(e.target.value) || 0)}
+          />
+        </div>
+      </div>
+
+      <div className={styles.grid}>
+        <div className={styles.colLeft}>
+          <div className={styles.itemHeader}>
+            <span>Itens</span>
+            <span>Qtd</span>
+            <span>Espaço</span>
+            <span></span>
+          </div>
+          {character.inventory.map((item, i) => (
+            <div key={i} className={styles.item}>
+              <input
+                type="text"
+                value={item.name}
+                onChange={(e) => updateItem(i, 'name', e.target.value)}
+                placeholder="Nome do item"
+              />
+              <input
+                type="number"
+                value={item.quantity}
+                onChange={(e) => updateItem(i, 'quantity', Number(e.target.value) || 1)}
+              />
+              <input
+                type="number"
+                value={item.weight}
+                onChange={(e) => updateItem(i, 'weight', Number(e.target.value) || 0)}
+              />
+              <Button variant="remove-sm" onClick={() => removeItem(i)}>✕</Button>
+            </div>
+          ))}
+          <Button variant="add" onClick={addItem}>+ Item</Button>
+        </div>
+
+        <div className={styles.colRight}>
+          <h3>Equipados <span className={styles.equipLimit}>(máx 4)</span></h3>
+          {character.equipped.slice(0, 4).map((eq, i) => (
+            <div
+              key={i}
+              className={`${styles.equipSlot} ${eq.name ? styles.filled : ''}`}
+            >
+              <span className={styles.equipIcon}>{EQUIP_ICONS[i]}</span>
+              <input
+                type="text"
+                value={eq.name}
+                onChange={(e) => updateEquip(i, e.target.value)}
+                placeholder="Vazio"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}

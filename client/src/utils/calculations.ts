@@ -1,234 +1,234 @@
-import type { Ficha, AtributoId } from '../types/ficha';
-import { PERICIAS_CONFIG } from '../data/pericias';
+import type { Character, AttributeId } from '../types/character';
+import { SKILLS_CONFIG } from '../data/pericias';
 
-export function criarFichaVazia(nome?: string): Ficha {
-  const pericias: Ficha['pericias'] = {};
-  PERICIAS_CONFIG.forEach((p) => {
-    pericias[p.id] = { treinado: false, outros: 0 };
-    if (p.customLabel) pericias[p.id].label = '';
+export function createEmptyCharacter(name?: string): Character {
+  const skills: Character['skills'] = {};
+  SKILLS_CONFIG.forEach((p) => {
+    skills[p.id] = { trained: false, misc: 0 };
+    if (p.customLabel) skills[p.id].label = '';
   });
 
   return {
     _id: crypto.randomUUID(),
-    sistema: 'tormenta',
-    nome: nome || 'Novo Personagem',
-    classes: [{ nome: '', nivel: 1 }],
-    raca: '',
-    origem: '',
-    divindade: '',
-    alinhamento: '',
-    idade: '',
-    tamanho: 'Médio',
-    deslocamento: '9m / 6q',
-    experiencia: 0,
-    atributos: { for: 0, des: 0, con: 0, int: 0, sab: 0, car: 0 },
-    pv: { maximo: 0, atual: 0 },
-    pm: { maximo: 0, atual: 0 },
-    defesa: { base: 10, itens: [] },
-    reducaoDeDano: '',
-    ataques: [],
-    pericias,
-    habilidades: [],
-    magias: [],
-    atributoChaveMagia: 'int',
-    inventario: [],
-    equipados: [{ nome: '' }, { nome: '' }, { nome: '' }, { nome: '' }],
-    moedas: { tc: 0, tp: 0, to: 0 },
-    anotacoes: '',
-    efeitosTemporarios: '',
-    proficiencias: '',
-    progressao: [],
+    system: 'tormenta',
+    name: name || 'Novo Personagem',
+    classes: [{ name: '', level: 1 }],
+    race: '',
+    origin: '',
+    deity: '',
+    alignment: '',
+    age: '',
+    size: 'Médio',
+    speed: '9m / 6q',
+    experience: 0,
+    attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+    hp: { max: 0, current: 0 },
+    mp: { max: 0, current: 0 },
+    defense: { base: 10, items: [] },
+    damageReduction: '',
+    attacks: [],
+    skills,
+    abilities: [],
+    spells: [],
+    spellcastingAttribute: 'int',
+    inventory: [],
+    equipped: [{ name: '' }, { name: '' }, { name: '' }, { name: '' }],
+    coins: { copper: 0, silver: 0, gold: 0 },
+    notes: '',
+    temporaryEffects: '',
+    proficiencies: '',
+    progression: [],
     buffs: [],
-    pvTemporario: 0,
-    pmTemporario: 0,
-    secoesFechadas: {},
-    secoesOcultas: {},
-    animacaoAtaque: 'personagem',
+    temporaryHp: 0,
+    temporaryMp: 0,
+    collapsedSections: {},
+    hiddenSections: {},
+    attackAnimation: 'personagem',
     avatar: '',
     logs: [],
   };
 }
 
-export function criarFichaNarutoVazia(nome?: string): Ficha {
+export function createEmptyNarutoCharacter(name?: string): Character {
   return {
     _id: crypto.randomUUID(),
-    sistema: 'naruto',
-    nome: nome || 'Novo Personagem',
-    classes: [{ nome: '', nivel: 1 }],
-    raca: '',
-    origem: '',
-    divindade: '',
-    alinhamento: '',
-    idade: '',
-    tamanho: '',
-    deslocamento: '',
-    experiencia: 0,
-    atributos: { for: 0, des: 0, con: 0, int: 0, sab: 0, car: 0 },
-    pv: { maximo: 0, atual: 0 },
-    pm: { maximo: 0, atual: 0 },
-    defesa: { base: 10, itens: [] },
-    reducaoDeDano: '',
-    ataques: [],
-    pericias: {},
-    habilidades: [],
-    magias: [],
-    atributoChaveMagia: 'int',
-    inventario: [],
-    equipados: [],
-    moedas: { tc: 0, tp: 0, to: 0 },
-    anotacoes: '',
-    efeitosTemporarios: '',
-    proficiencias: '',
-    progressao: [],
+    system: 'naruto',
+    name: name || 'Novo Personagem',
+    classes: [{ name: '', level: 1 }],
+    race: '',
+    origin: '',
+    deity: '',
+    alignment: '',
+    age: '',
+    size: '',
+    speed: '',
+    experience: 0,
+    attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+    hp: { max: 0, current: 0 },
+    mp: { max: 0, current: 0 },
+    defense: { base: 10, items: [] },
+    damageReduction: '',
+    attacks: [],
+    skills: {},
+    abilities: [],
+    spells: [],
+    spellcastingAttribute: 'int',
+    inventory: [],
+    equipped: [],
+    coins: { copper: 0, silver: 0, gold: 0 },
+    notes: '',
+    temporaryEffects: '',
+    proficiencies: '',
+    progression: [],
     buffs: [],
-    pvTemporario: 0,
-    pmTemporario: 0,
-    secoesFechadas: {},
-    secoesOcultas: {},
-    animacaoAtaque: '',
+    temporaryHp: 0,
+    temporaryMp: 0,
+    collapsedSections: {},
+    hiddenSections: {},
+    attackAnimation: '',
     avatar: '',
     logs: [],
   };
 }
 
-export function getNivelTotal(ficha: Ficha): number {
-  if (ficha.classes && ficha.classes.length > 0) {
-    return ficha.classes.reduce((sum, c) => sum + (Number(c.nivel) || 0), 0);
+export function getTotalLevel(character: Character): number {
+  if (character.classes && character.classes.length > 0) {
+    return character.classes.reduce((sum, c) => sum + (Number(c.level) || 0), 0);
   }
-  return Number(ficha.nivel) || 1;
+  return Number(character.level) || 1;
 }
 
-export function getAtributoEfetivo(ficha: Ficha, attr: AtributoId): number {
-  let val = ficha.atributos[attr] || 0;
-  if (ficha.buffs) {
-    ficha.buffs.forEach((b) => {
-      if (b.ativo && b.tipo === 'atributo' && b.atributoId === attr) {
-        val += Number(b.valor) || 0;
+export function getEffectiveAttribute(character: Character, attr: AttributeId): number {
+  let val = character.attributes[attr] || 0;
+  if (character.buffs) {
+    character.buffs.forEach((b) => {
+      if (b.active && b.type === 'attribute' && b.attributeId === attr) {
+        val += Number(b.value) || 0;
       }
     });
   }
   return val;
 }
 
-export function calcPenArmadura(ficha: Ficha): number {
+export function calcArmorPenalty(character: Character): number {
   let pen = 0;
-  if (ficha.defesa?.itens) {
-    ficha.defesa.itens.forEach((item) => {
-      if (item.penalidade) pen += item.penalidade;
+  if (character.defense?.items) {
+    character.defense.items.forEach((item) => {
+      if (item.penalty) pen += item.penalty;
     });
   }
   return pen;
 }
 
-export function calcTotalPericia(ficha: Ficha, periciaId: string): number {
-  const cfg = PERICIAS_CONFIG.find((p) => p.id === periciaId);
+export function calcTotalSkill(character: Character, skillId: string): number {
+  const cfg = SKILLS_CONFIG.find((p) => p.id === skillId);
   if (!cfg) return 0;
-  const per = ficha.pericias[periciaId];
-  if (!per) return 0;
+  const skill = character.skills[skillId];
+  if (!skill) return 0;
 
-  const metadeNivel = Math.floor(getNivelTotal(ficha) / 2);
-  const atributoUsado = (per.atributo || cfg.atributo) as AtributoId;
-  const modAtributo = getAtributoEfetivo(ficha, atributoUsado);
-  const treino = per.treinado ? 2 : 0;
-  const outros = per.outros || 0;
-  let penArmadura = 0;
-  if (cfg.penArmadura) {
-    penArmadura = calcPenArmadura(ficha);
+  const halfLevel = Math.floor(getTotalLevel(character) / 2);
+  const usedAttribute = (skill.attribute || cfg.attribute) as AttributeId;
+  const attributeMod = getEffectiveAttribute(character, usedAttribute);
+  const trainingBonus = skill.trained ? 2 : 0;
+  const miscBonus = skill.misc || 0;
+  let armorPenalty = 0;
+  if (cfg.armorPenalty) {
+    armorPenalty = calcArmorPenalty(character);
   }
   let buffBonus = 0;
-  if (ficha.buffs) {
-    ficha.buffs.forEach((b) => {
-      if (b.ativo && b.tipo === 'pericia' && b.periciaId === periciaId) {
-        buffBonus += Number(b.valor) || 0;
+  if (character.buffs) {
+    character.buffs.forEach((b) => {
+      if (b.active && b.type === 'skill' && b.skillId === skillId) {
+        buffBonus += Number(b.value) || 0;
       }
     });
   }
-  return metadeNivel + modAtributo + treino + outros + penArmadura + buffBonus;
+  return halfLevel + attributeMod + trainingBonus + miscBonus + armorPenalty + buffBonus;
 }
 
-export function calcDefesaTotal(ficha: Ficha): number {
-  let total = ficha.defesa.base || 10;
-  if (ficha.defesa.itens) {
-    ficha.defesa.itens.forEach((item) => {
-      total += item.valor || 0;
+export function calcTotalDefense(character: Character): number {
+  let total = character.defense.base || 10;
+  if (character.defense.items) {
+    character.defense.items.forEach((item) => {
+      total += item.value || 0;
     });
   }
   return total;
 }
 
-export function calcLimiteCarga(ficha: Ficha): number {
-  const forca = getAtributoEfetivo(ficha, 'for');
-  if (forca < 0) return 10 + forca;
-  return 10 + 2 * forca;
+export function calcCarryCapacity(character: Character): number {
+  const strength = getEffectiveAttribute(character, 'str');
+  if (strength < 0) return 10 + strength;
+  return 10 + 2 * strength;
 }
 
-export function calcCargaUsada(ficha: Ficha): number {
+export function calcUsedLoad(character: Character): number {
   let total = 0;
-  if (ficha.inventario) {
-    ficha.inventario.forEach((item) => {
-      total += (item.carga || 0) * (item.quantidade || 1);
+  if (character.inventory) {
+    character.inventory.forEach((item) => {
+      total += (item.weight || 0) * (item.quantity || 1);
     });
   }
   return total;
 }
 
-export function calcResistenciaMagia(ficha: Ficha): number {
-  const attrKey = ficha.atributoChaveMagia || 'int';
-  const mod = getAtributoEfetivo(ficha, attrKey);
-  return 10 + Math.floor(getNivelTotal(ficha) / 2) + mod;
+export function calcSpellResistance(character: Character): number {
+  const attrKey = character.spellcastingAttribute || 'int';
+  const mod = getEffectiveAttribute(character, attrKey);
+  return 10 + Math.floor(getTotalLevel(character) / 2) + mod;
 }
 
-export function calcTesteAtaque(ficha: Ficha, atk: Ficha['ataques'][number]): number {
-  const periciaId = atk.alcanceTipo === 'ranged' ? 'pontaria' : 'luta';
-  let total = calcTotalPericia(ficha, periciaId);
-  if (atk.bonusExtras) atk.bonusExtras.forEach((b) => { total += Number(b.valor) || 0; });
-  if (ficha.buffs) ficha.buffs.forEach((b) => {
-    if (b.ativo && b.tipo === 'teste_ataque') total += Number(b.valor) || 0;
+export function calcAttackRoll(character: Character, atk: Character['attacks'][number]): number {
+  const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
+  let total = calcTotalSkill(character, skillId);
+  if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.value) || 0; });
+  if (character.buffs) character.buffs.forEach((b) => {
+    if (b.active && b.type === 'attack_roll') total += Number(b.value) || 0;
   });
   return total;
 }
 
-export function calcDanoBonus(ficha: Ficha, atk: Ficha['ataques'][number]): number {
-  const attrKey = (atk.danoAtributo || 'for') as AtributoId;
-  let total = getAtributoEfetivo(ficha, attrKey);
-  if (atk.danoExtras) atk.danoExtras.forEach((b) => { total += Number(b.valor) || 0; });
-  if (ficha.buffs) ficha.buffs.forEach((b) => {
-    if (b.ativo && b.tipo === 'dano_fixo') total += Number(b.valor) || 0;
+export function calcDamageBonus(character: Character, atk: Character['attacks'][number]): number {
+  const attrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
+  let total = getEffectiveAttribute(character, attrKey);
+  if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.value) || 0; });
+  if (character.buffs) character.buffs.forEach((b) => {
+    if (b.active && b.type === 'fixed_damage') total += Number(b.value) || 0;
   });
   return total;
 }
 
-export function buildDanoResumo(ficha: Ficha, atk: Ficha['ataques'][number]): string {
+export function buildDamageSummary(character: Character, atk: Character['attacks'][number]): string {
   const parts: string[] = [];
-  const danoDados = atk.dano || '';
-  if (danoDados) parts.push(danoDados);
+  const damageDice = atk.damage || '';
+  if (damageDice) parts.push(damageDice);
 
-  const danoBonus = calcDanoBonus(ficha, atk);
+  const damageBonus = calcDamageBonus(character, atk);
 
   const extraDice: string[] = [];
-  if (atk.danoExtras) atk.danoExtras.forEach((b) => {
-    const v = String(b.valor || '');
+  if (atk.extraDamage) atk.extraDamage.forEach((b) => {
+    const v = String(b.value || '');
     if (v && isNaN(Number(v))) extraDice.push(v);
   });
-  if (ficha.buffs) ficha.buffs.forEach((b) => {
-    if (b.ativo && b.tipo === 'dano_extra') {
-      const v = String(b.valor || '');
+  if (character.buffs) character.buffs.forEach((b) => {
+    if (b.active && b.type === 'extra_damage') {
+      const v = String(b.value || '');
       if (v) extraDice.push(v);
     }
   });
   extraDice.forEach((d) => parts.push(d));
 
-  if (danoBonus !== 0 || parts.length === 0) {
-    parts.push(danoBonus >= 0 && parts.length > 0 ? `+${danoBonus}` : formatMod(danoBonus));
+  if (damageBonus !== 0 || parts.length === 0) {
+    parts.push(damageBonus >= 0 && parts.length > 0 ? `+${damageBonus}` : formatMod(damageBonus));
   }
 
   return parts.join('+').replace(/\+\+/g, '+').replace(/\+-/g, '-');
 }
 
-export function calcPMTotal(atk: Ficha['ataques'][number]): number {
-  let total = Number(atk.custoPM) || 0;
-  if (atk.bonusExtras) atk.bonusExtras.forEach((b) => { total += Number(b.pm) || 0; });
-  if (atk.danoExtras) atk.danoExtras.forEach((b) => { total += Number(b.pm) || 0; });
+export function calcTotalMp(atk: Character['attacks'][number]): number {
+  let total = Number(atk.mpCost) || 0;
+  if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.mp) || 0; });
+  if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.mp) || 0; });
   return total;
 }
 
@@ -237,7 +237,7 @@ export function formatMod(val: number | string): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
-export function pvPercent(atual: number, max: number): number {
+export function hpPercent(current: number, max: number): number {
   if (!max || max <= 0) return 0;
-  return Math.max(0, Math.min(100, (atual / max) * 100));
+  return Math.max(0, Math.min(100, (current / max) * 100));
 }

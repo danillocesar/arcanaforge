@@ -1,0 +1,339 @@
+.card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.topRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.campoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campoInfo label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.campoInfo input,
+.campoInfo select {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  padding: 6px 8px;
+}
+
+.campoInfo input:focus,
+.campoInfo select:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.nomeField {
+  flex: 1;
+  min-width: 120px;
+}
+
+.sectionsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .sectionsRow {
+    grid-template-columns: 1fr;
+  }
+  .topRow {
+    gap: 6px;
+  }
+}
+
+.checkSection {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.checkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.checkHeader label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.checkTotal {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.damageTotal {
+  color: var(--accent-red);
+}
+
+.bonusList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bonusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.bonusRow input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 2px 4px;
+  width: 50px;
+  text-align: right;
+}
+
+.bonusRow input:focus {
+  outline: none;
+  border-bottom-color: var(--accent-gold);
+}
+
+.bonusRow input:first-of-type {
+  flex: 1;
+  width: auto;
+  text-align: left;
+}
+
+.bonusRow input[placeholder="PM"] {
+  width: 38px;
+  background: var(--accent-blue-bg);
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--accent-blue-bar);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 1px 3px;
+}
+
+.bonusRow input[placeholder="PM"]:focus {
+  border-color: var(--accent-blue);
+}
+
+.bonusRow select {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+}
+
+.bonusRow input.damageDice {
+  flex: 0 0 70px;
+  width: 70px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.bonusRow select.damageAttrSel {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent-gold);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 1px 4px;
+  cursor: pointer;
+  min-width: 45px;
+}
+
+.bonusRow select.damageAttrSel:focus {
+  outline: none;
+  border-bottom-color: var(--accent-gold);
+  background: var(--bg-input);
+}
+
+.bonusBase {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 2px;
+}
+
+.bonusFixed {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.bonusValorFixed {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.buffRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(46, 204, 64, 0.07);
+  border-left: 2px solid #2ecc40;
+  padding: 3px 0 3px 8px;
+  opacity: 0.85;
+}
+
+.addBonus {
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 6px;
+  align-self: flex-start;
+}
+
+.addBonus:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+}
+
+.buffNome {
+  flex: 1;
+  font-size: 0.78rem;
+  color: #2ecc40;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.buffValor {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #2ecc40;
+  min-width: 40px;
+  text-align: right;
+}
+
+.pmBadgeWrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+}
+
+.pmBadge {
+  background: var(--accent-blue-bg);
+  color: var(--accent-blue-bar);
+  border: 1px solid var(--accent-blue);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.usar {
+  position: absolute;
+  top: 8px;
+  right: 52px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.usar:hover {
+  color: var(--accent-blue-bar);
+}
+
+.duplicate {
+  position: absolute;
+  top: 8px;
+  right: 30px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.duplicate:hover {
+  color: var(--accent-gold);
+}
+
+.remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.remove:hover {
+  color: var(--accent-red);
+}
+
+.removeSm {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 2px;
+  transition: color 0.2s;
+}
+
+.removeSm:hover {
+  color: var(--accent-red);
+}
+
+.damageSection {
+  border-left: 2px solid var(--accent-red);
+}

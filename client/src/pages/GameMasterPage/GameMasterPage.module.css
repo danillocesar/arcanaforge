@@ -1,0 +1,211 @@
+.gmContainer {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.gmSection {
+  background: rgba(15, 17, 28, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 28px;
+}
+
+.cardsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty {
+  text-align: center;
+  padding: 50px 24px;
+  color: var(--text-secondary);
+}
+
+.emptyIcon {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.empty p {
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.emptyHint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.gmToggle {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: var(--font);
+}
+
+.gmToggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.gmToggleActive {
+  background: color-mix(in srgb, var(--accent-gm) 18%, transparent);
+  border-color: var(--accent-gm);
+  color: var(--accent-gm);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-gm) 25%, transparent);
+}
+
+.gmToggleActive:hover {
+  background: color-mix(in srgb, var(--accent-gm) 24%, transparent);
+  color: var(--accent-gm);
+}
+
+.addEnemy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 18px;
+  margin-top: 22px;
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: var(--font);
+}
+
+.addEnemy:hover {
+  background: rgba(201, 168, 76, 0.06);
+  border-color: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  transform: translateY(-1px);
+}
+
+.addEnemy:active {
+  transform: translateY(0);
+}
+
+.addIcon {
+  font-size: 1.5rem;
+  font-weight: 700;
+  transition: transform 0.25s;
+}
+
+.addEnemy:hover .addIcon {
+  transform: rotate(90deg);
+}
+
+@media (max-width: 600px) {
+  .gmContainer {
+    padding: 18px 10px;
+  }
+
+  .gmSection {
+    padding: 16px 14px;
+  }
+}
+
+.newEnemyModal {
+  background: rgba(20, 22, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+  min-width: 300px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.newEnemyTitle {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.newEnemyLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.newEnemyActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.gmStrip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-gm) 60%, transparent),
+    var(--accent-gm) 30%,
+    var(--accent-gm) 70%,
+    color-mix(in srgb, var(--accent-gm) 60%, transparent)
+  );
+  z-index: 101;
+  pointer-events: none;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-gm) 40%, transparent);
+}
+
+.gmBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: var(--font);
+  color: var(--accent-gm);
+  background: color-mix(in srgb, var(--accent-gm) 8%, rgba(15, 17, 23, 0.7));
+  border: 1px solid color-mix(in srgb, var(--accent-gm) 25%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-gm) 15%, transparent);
+}
+
+.gmBadgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-gm);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-gm) 60%, transparent);
+  animation: gmDotPulse 2s ease-in-out infinite;
+}
+
+@keyframes gmDotPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}

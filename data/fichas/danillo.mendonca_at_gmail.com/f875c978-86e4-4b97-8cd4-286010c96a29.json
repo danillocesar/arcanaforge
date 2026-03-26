@@ -12,7 +12,7 @@
   },
   "pv": {
     "maximo": 59,
-    "atual": 38
+    "atual": 37
   },
   "pm": {
     "maximo": 32,
@@ -616,5 +616,7 @@
     }
   ],
   "avatar": "/avatars/f875c978-86e4-4b97-8cd4-286010c96a29.png",
-  "_id": "f875c978-86e4-4b97-8cd4-286010c96a29"
+  "_id": "f875c978-86e4-4b97-8cd4-286010c96a29",
+  "ownerUid": "Y143zGMximZT46QFjhHOmXlT9AN2",
+  "ownerEmail": "danillo.mendonca@gmail.com"
 }

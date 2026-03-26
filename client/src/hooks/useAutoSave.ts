@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Ficha } from '../types/ficha';
-import { apiSaveFicha } from '../api';
+import type { Character } from '../types/character';
+import { apiSaveCharacter } from '../api';
 
 export function useAutoSave(
-  ficha: Ficha | null,
+  character: Character | null,
   originalId: string,
   onSaved?: () => void,
 ): {
@@ -12,22 +12,22 @@ export function useAutoSave(
 } {
   const [status, setStatus] = useState<'saved' | 'saving' | 'error'>('saved');
   const timerRef = useRef<number | undefined>(undefined);
-  const fichaRef = useRef(ficha);
+  const characterRef = useRef(character);
   const originalIdRef = useRef(originalId);
   const onSavedRef = useRef(onSaved);
   const isInitialRef = useRef(true);
 
-  fichaRef.current = ficha;
+  characterRef.current = character;
   originalIdRef.current = originalId;
   onSavedRef.current = onSaved;
 
   const doSave = useCallback(async () => {
-    const f = fichaRef.current;
-    if (!f) return;
+    const c = characterRef.current;
+    if (!c) return;
 
     setStatus('saving');
     try {
-      await apiSaveFicha(f._id, f);
+      await apiSaveCharacter(c._id, c);
       setStatus('saved');
       onSavedRef.current?.();
     } catch {
@@ -36,7 +36,7 @@ export function useAutoSave(
   }, []);
 
   useEffect(() => {
-    if (!ficha) return;
+    if (!character) return;
 
     if (isInitialRef.current) {
       isInitialRef.current = false;
@@ -47,7 +47,7 @@ export function useAutoSave(
     timerRef.current = setTimeout(doSave, 800);
 
     return () => clearTimeout(timerRef.current);
-  }, [ficha, doSave]);
+  }, [character, doSave]);
 
   const triggerSave = useCallback(() => {
     clearTimeout(timerRef.current);

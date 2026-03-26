@@ -107,13 +107,13 @@
   object-fit: cover;
 }
 
-.cardNome {
+.cardName {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.cardClasse {
+.cardClass {
   font-size: 0.72rem;
   color: var(--text-muted);
   line-height: 1.3;

@@ -1,9 +1,10 @@
 {
   "id": "mn6saknpe53ud",
-  "nome": "piri",
-  "sistema": "tormenta",
-  "membros": [
+  "name": "piri",
+  "system": "tormenta",
+  "members": [
     "4596068d-4c4c-4e51-bbd6-c8d709697a43",
     "f875c978-86e4-4b97-8cd4-286010c96a29"
-  ]
+  ],
+  "_migrated_v2": true
 }

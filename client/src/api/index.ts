@@ -1,17 +1,18 @@
 export { ApiError, apiFetch, assertOk, setAuthConfig } from './http';
 export {
-  apiFetchFichas,
-  apiFetchFichasResumo,
-  apiLoadFicha,
-  apiSaveFicha,
-  apiDeleteFicha,
+  apiFetchCharacters,
+  apiFetchCharacterSummaries,
+  apiLoadCharacter,
+  apiSaveCharacter,
+  apiDeleteCharacter,
   apiUploadAvatar,
-  apiAvatarSemFundo,
-} from './fichas';
+  apiAvatarTransparent,
+} from './characters';
 export {
   apiFetchParties,
   apiCreateParty,
   apiUpdateParty,
   apiDeleteParty,
+  apiLoadCombat,
+  apiSaveCombat,
 } from './parties';
-export { apiLoadCombate, apiSaveCombate } from './combate';

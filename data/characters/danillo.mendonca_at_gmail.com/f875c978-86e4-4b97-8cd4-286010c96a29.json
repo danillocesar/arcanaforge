@@ -1,0 +1,633 @@
+{
+  "classes": [
+    {
+      "name": "Onimusha",
+      "level": 4
+    },
+    {
+      "name": "Paladino",
+      "level": 2
+    }
+  ],
+  "buffs": [
+    {
+      "name": "Empunhadora Rubra",
+      "type": "skill",
+      "skillId": "luta",
+      "value": 4,
+      "mp": 0,
+      "active": true
+    },
+    {
+      "name": "Visco Rubro",
+      "type": "fixed_damage",
+      "value": 4,
+      "mp": 1,
+      "active": true
+    },
+    {
+      "name": "Espada Solar",
+      "type": "extra_damage",
+      "value": "1d6",
+      "mp": 1,
+      "active": true
+    },
+    {
+      "name": "Manopla de Força",
+      "type": "attribute",
+      "attributeId": "str",
+      "value": "4",
+      "mp": 1,
+      "active": true
+    },
+    {
+      "name": "Marca da Presa",
+      "type": "extra_damage",
+      "value": "1d4",
+      "mp": 1,
+      "active": false
+    },
+    {
+      "name": "Marca da Presa 2",
+      "type": "extra_damage",
+      "value": "1d8",
+      "mp": 2,
+      "active": false
+    }
+  ],
+  "logs": [
+    {
+      "type": "ataque",
+      "name": "Ataque Poderoso (Katana)",
+      "mpSpent": 0,
+      "timestamp": 1774470663376,
+      "details": {
+        "teste": 16,
+        "dano": "4d10+1d6+23",
+        "custoTipo": "Corpo a Corpo"
+      }
+    },
+    {
+      "type": "ataque",
+      "name": "Ataque Básico (Katana)",
+      "mpSpent": 0,
+      "timestamp": 1774489622981,
+      "details": {
+        "teste": 18,
+        "dano": "4d10+1d6+18",
+        "custoTipo": "Corpo a Corpo"
+      }
+    },
+    {
+      "type": "ataque",
+      "name": "Golpe Divino (Katana)",
+      "mpSpent": 2,
+      "timestamp": 1774489626566,
+      "details": {
+        "teste": 20,
+        "dano": "4d10+1d6+18",
+        "custoTipo": "Corpo a Corpo"
+      }
+    },
+    {
+      "type": "ataque",
+      "name": "Golpe Divino Poderoso (Katana)",
+      "mpSpent": 2,
+      "timestamp": 1774489629918,
+      "details": {
+        "teste": 18,
+        "dano": "4d10+1d12+1d6+23",
+        "custoTipo": "Corpo a Corpo"
+      }
+    },
+    {
+      "type": "ataque",
+      "name": "Golpe Divino (Katana)",
+      "mpSpent": 2,
+      "timestamp": 1774489658083,
+      "details": {
+        "teste": 20,
+        "dano": "4d10+1d6+18",
+        "custoTipo": "Corpo a Corpo"
+      }
+    },
+    {
+      "type": "magia",
+      "name": "Cura pelas mãos",
+      "mpSpent": 1,
+      "timestamp": 1774489701451,
+      "details": {
+        "custoPMBase": 1,
+        "aprimoramentos": [],
+        "custoTotal": 1
+      }
+    },
+    {
+      "type": "ataque",
+      "name": "Ataque Básico (Katana)",
+      "mpSpent": 0,
+      "timestamp": 1774524685246,
+      "details": {
+        "teste": 18,
+        "dano": "4d10+1d6+18",
+        "custoTipo": "Corpo a Corpo"
+      }
+    }
+  ],
+  "avatar": "/avatars/f875c978-86e4-4b97-8cd4-286010c96a29.png",
+  "_id": "f875c978-86e4-4b97-8cd4-286010c96a29",
+  "ownerUid": "Y143zGMximZT46QFjhHOmXlT9AN2",
+  "ownerEmail": "danillo.mendonca@gmail.com",
+  "name": "Akatsu",
+  "system": "tormenta",
+  "race": "Kaijin",
+  "origin": "Estandarte Vivo",
+  "deity": "Azgher",
+  "alignment": "",
+  "age": "",
+  "size": "Médio",
+  "speed": "9m / 6q",
+  "experience": 0,
+  "damageReduction": "2",
+  "notes": "Simbolo Sagrado: +1 em testes de resistencia \n",
+  "temporaryEffects": "",
+  "proficiencies": "Armas marciais, armaduras\npesadas e escudos.",
+  "progression": [
+    "Abençoado, código do herói, golpe divino",
+    "Cura pelas mãos (1d8+1 PV), poder de paladino (Arma sagrada)",
+    "Caminhos Aberrantes, Faro para Monstros",
+    "poder de classe (Ataque Poderoso)",
+    "Demônio Caçador (Empunhadora rubra), poder de classe (Estilo de Duas Mãos)",
+    "poder de classe (Carapaça)"
+  ],
+  "temporaryHp": 0,
+  "temporaryMp": 0,
+  "attackAnimation": "toast",
+  "attributes": {
+    "str": 5,
+    "dex": 1,
+    "con": 3,
+    "int": -3,
+    "wis": -2,
+    "cha": 2
+  },
+  "spellcastingAttribute": "int",
+  "hp": {
+    "max": 59,
+    "current": 38
+  },
+  "mp": {
+    "max": 32,
+    "current": 25
+  },
+  "defense": {
+    "base": 10,
+    "items": [
+      {
+        "name": "Destreza",
+        "value": 1,
+        "penalty": 0
+      },
+      {
+        "name": "Gibão de Peles",
+        "value": 4,
+        "penalty": -1
+      },
+      {
+        "name": "Carapaça",
+        "value": 4,
+        "penalty": 0
+      }
+    ]
+  },
+  "attacks": [
+    {
+      "name": "Ataque Básico (Katana)",
+      "damage": "4d10",
+      "critical": "19",
+      "type": "Corte",
+      "rangeType": "melee",
+      "mpCost": 0,
+      "attributeDamageBonus": "for",
+      "extraBonuses": [
+        {
+          "name": "",
+          "value": 0,
+          "mp": 0
+        }
+      ],
+      "extraDamage": [
+        {
+          "name": "Estilo de duas mãos",
+          "value": 5,
+          "mp": 0
+        },
+        {
+          "name": "",
+          "value": "",
+          "mp": 0
+        }
+      ]
+    },
+    {
+      "name": "Ataque Poderoso (Katana)",
+      "damage": "4d10",
+      "critical": "",
+      "type": "",
+      "rangeType": "melee",
+      "mpCost": 0,
+      "attributeDamageBonus": "for",
+      "extraBonuses": [
+        {
+          "name": "Ataque Poderoso",
+          "value": -2,
+          "mp": 0
+        }
+      ],
+      "extraDamage": [
+        {
+          "name": "Estilo de duas mãos",
+          "value": 5,
+          "mp": 0
+        },
+        {
+          "name": "Ataque Poderoso",
+          "value": 5,
+          "mp": 0
+        }
+      ]
+    },
+    {
+      "name": "Golpe Divino (Katana)",
+      "damage": "4d10",
+      "critical": "19/x2",
+      "type": "Corte",
+      "rangeType": "melee",
+      "mpCost": 2,
+      "attributeDamageBonus": "for",
+      "extraBonuses": [
+        {
+          "name": "Carisma",
+          "value": 2,
+          "mp": 0
+        }
+      ],
+      "extraDamage": [
+        {
+          "name": "Estilo de duas mãos",
+          "value": "5",
+          "mp": 0
+        }
+      ]
+    },
+    {
+      "name": "Golpe Divino Poderoso (Katana)",
+      "damage": "4d10+1d12",
+      "critical": "19/x2",
+      "type": "Corte",
+      "rangeType": "melee",
+      "mpCost": 2,
+      "attributeDamageBonus": "for",
+      "extraBonuses": [
+        {
+          "name": "Ataque Poderoso",
+          "value": -2,
+          "mp": 0
+        },
+        {
+          "name": "Carima",
+          "value": 2,
+          "mp": 0
+        }
+      ],
+      "extraDamage": [
+        {
+          "name": "Estilo de duas mãos",
+          "value": 5,
+          "mp": 0
+        },
+        {
+          "name": "Ataque Poderoso",
+          "value": "5",
+          "mp": 0
+        }
+      ]
+    }
+  ],
+  "skills": {
+    "acrobacia": {
+      "trained": false,
+      "misc": 0
+    },
+    "atletismo": {
+      "trained": true,
+      "misc": 0
+    },
+    "luta": {
+      "trained": true,
+      "misc": 0
+    },
+    "adestramento": {
+      "trained": false,
+      "misc": 0
+    },
+    "sobrevivencia": {
+      "trained": true,
+      "misc": 4
+    },
+    "fortitude": {
+      "trained": true,
+      "misc": 0
+    },
+    "iniciativa": {
+      "trained": true,
+      "misc": 0
+    },
+    "investigacao": {
+      "trained": true,
+      "misc": 0
+    },
+    "percepacao": {
+      "trained": true,
+      "misc": 0
+    },
+    "reflexos": {
+      "trained": true,
+      "misc": 0
+    },
+    "vontade": {
+      "trained": false,
+      "misc": 1
+    }
+  },
+  "abilities": [
+    {
+      "name": "Couraça Rubra",
+      "source": "Raça",
+      "type": "Tormenta",
+      "mpCost": "0",
+      "description": "Você recebe redução de dano 2. Sua couraça conta como um poder da Tormenta, exceto para perda de Carisma."
+    },
+    {
+      "name": "Cria da Tormenta",
+      "source": "Raça",
+      "type": "Raça",
+      "mpCost": "0",
+      "description": "Você é uma criatura do tipo monstro e recebe +5 em testes de resistência contra efeitos causados por lefeu e pela Tormenta. Além disso, efeitos da Tormenta que não afetem lefou também não afetam você."
+    },
+    {
+      "name": "Disforme",
+      "source": "Raça",
+      "type": "Tormenta",
+      "mpCost": "",
+      "description": "Por sua anatomia anômala, você não pode empunhar ou vestir itens mundanos, a menos que sejam especialmente adaptados para você (isso demora um dia e custa 50% do valor do item, sem contar melhorias). Os itens recebidos por sua origem ou habilidade são adaptados para você. Essa habilidade conta como um poder da Tormenta, exceto para perda de Carisma."
+    },
+    {
+      "name": "Terror Vivo",
+      "source": "Raça",
+      "type": "",
+      "mpCost": "",
+      "description": "Você pode usar Força como atributo-chave de Intimidação (em vez de Carisma) e recebe um poder da Tormenta à sua escolha, que não conta para perda de Carisma."
+    },
+    {
+      "name": "Visco Rubro",
+      "source": "Terror Vivo",
+      "type": "Tormenta",
+      "mpCost": "1",
+      "description": "Até o final da cena, recebe +1 nas rolagens de dano corpo a corpo. (+1 a cada 2 poderes de \ntormenta)"
+    },
+    {
+      "name": "Arma simbionte",
+      "source": "Onimusha 1",
+      "type": "Tormenta",
+      "mpCost": "",
+      "description": "não pode ser desarmada ou roubada\nO dano da arma aumenta em um passo para cada dois outros poderes da Tormenta que você possui"
+    },
+    {
+      "name": "Faro para monstros",
+      "source": "Onimusha 1",
+      "type": "",
+      "mpCost": "",
+      "description": " Você recebe faro. Além disso, está permanentemente sob o efeito da magia Detectar Ameaças\nOrigem: Onimusha Level 1"
+    },
+    {
+      "name": "Ataque Poderoso",
+      "source": "Onimusha 2",
+      "type": "Poder de Combate",
+      "mpCost": "",
+      "description": "Sempre que faz um ataque corpo a corpo, você pode sofrer –2 no teste de ataque para receber +5 na rolagem de dano."
+    },
+    {
+      "name": "Demônio Caçador",
+      "source": "Onimusha 3",
+      "type": "Classe",
+      "mpCost": "",
+      "description": "Você recebe um poder da Tormenta. Além disso, pode perder outro atributo em vez de Carisma por poderes da Tormenta."
+    },
+    {
+      "name": "Carapaça",
+      "source": "Demonio Caçador",
+      "type": "Tormenta",
+      "mpCost": "",
+      "description": "Recebe +1 na Defesa.  (+1 a cada 2 poderes de tormenta) (Penalidade -1 int)"
+    },
+    {
+      "name": "Empunhadura Rubra",
+      "source": "Onimusha 3",
+      "type": "Tormenta",
+      "mpCost": "1",
+      "description": "Até o final da cena, você recebe +1 em Luta. (+1 a cada 2 poderes de tormenta)"
+    },
+    {
+      "name": " Estilo de Duas Mãos",
+      "source": "Onimusha 4",
+      "type": "Poder de Combate",
+      "mpCost": "",
+      "description": "Recebe +5 nas rolagens de dano. "
+    },
+    {
+      "name": "Abençoado",
+      "source": "Paladino 1",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "Origem: Paladino Level 1\nSoma seu Carisma no seu total de pontos de mana no 1º nível \nRecebe dois poderes concedidos por se tornar devoto, em vez de apenas um."
+    },
+    {
+      "name": "Código do Herói",
+      "source": "Paladino 1",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "Você deve sempre manter sua palavra e nunca pode recusar um pedido de ajuda de alguém inocente"
+    },
+    {
+      "name": "Golpe Divino",
+      "source": "Paladino 1",
+      "type": "Poder de Classe",
+      "mpCost": "2",
+      "description": "Adiciona Carisma no ataque, +1d12\nA cada 4 niveis +1d12"
+    },
+    {
+      "name": "Espada Solar",
+      "source": "Azgher",
+      "type": "Poder Concedido",
+      "mpCost": "",
+      "description": "Você pode gastar 1 PM para fazer uma arma corpo a corpo de corte que esteja empunhando causar +1d6 de dano por fogo até o fim da cena."
+    },
+    {
+      "name": "Inimigo de Tenebra",
+      "source": "Azgher",
+      "type": "Poder Concedido",
+      "mpCost": "",
+      "description": "Seus ataques e habilidades causam +1d6 pontos de dano contra mortos-vivos. Quando você usa um efeito que gera luz, o alcance da iluminação dobra."
+    },
+    {
+      "name": "Cura pelas Mãos",
+      "source": "Paladino 2",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "você pode gastar uma ação de movimento e 1 PM para curar 1d8+1 pontos de vida por luz em um alvo em alcance corpo a corpo (incluindo você). A cada quatro níveis, você pode gastar +1 PM para aumentar os PV curados em +1d8+1. Esta habilidade causa dano de luz a mortos-vivos (CD Car)."
+    },
+    {
+      "name": "Arma Sagrada",
+      "source": "Paladino 2",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "Quando usa Golpe Divino para atacar com a arma preferida de sua divindade, o dado de dano que você rola por Golpe Divino aumenta para d12. "
+    },
+    {
+      "name": "Marca da presa",
+      "source": "Onimusha 1",
+      "type": "Poder de Classe",
+      "mpCost": "1",
+      "description": "Você pode gastar uma ação de movimento e 1 PM para analisar uma criatura em alcance curto. Até o fim da cena, você recebe +1d4 nas rolagens de dano contra essa criatura. A cada quatro níveis, você pode gastar +1 PM para aumentar o bônus de dano (veja a tabela da classe)."
+    },
+    {
+      "name": "Rastreador",
+      "source": "Onimusha 1",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "Você recebe +2 em Sobrevivência. Além disso, pode se mover com seu deslocamento normal enquanto rastreia sem sofrer penalidades no teste de Sobrevivência."
+    },
+    {
+      "name": "Explorador",
+      "source": "Onimusha 2",
+      "type": "Poder de Classe",
+      "mpCost": "",
+      "description": "Escolha um tipo de terreno entre aquático, ártico, colina, deserto, floresta, montanha, pântano, planície, subterrâneo ou urbano. A partir do 11º nível, você também pode escolher área de Tormenta. \nQuando estiver no tipo de terreno escolhido, você soma sua Sabedoria (mínimo +1) na Defesa e nos testes de Acrobacia, Atletismo, Furtividade, Percepção e Sobrevivência. \nA cada quatro níveis, escolha outro tipo de terreno para receber o bônus ou aumente o bônus em um tipo de terreno já escolhido em +2"
+    }
+  ],
+  "spells": [
+    {
+      "name": "Cura pelas mãos",
+      "school": "",
+      "castingTime": "Movimento",
+      "range": "Curto",
+      "area": "1",
+      "duration": "",
+      "resistance": "",
+      "mpCost": "1",
+      "spellLevel": 0,
+      "enhancements": [
+        {
+          "description": "A cada quatro níveis, você pode gastar +1 PM para +1d8+1",
+          "mpCost": "1"
+        }
+      ],
+      "description": ""
+    }
+  ],
+  "inventory": [
+    {
+      "name": "Katana",
+      "quantity": 1,
+      "weight": 2
+    },
+    {
+      "name": "Simbolo Sagrado (+1 teste de resistencia)",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Fragmento do estandarte da tribo (+1 de vontade)",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Bandoleira de Poções",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Saco de Dormir",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Gibão de Peles",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Manopla de Força (1PM +4 FOR para 1 ataque, 2PM +2 de FOR 1 rodada)",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Capa Pesada",
+      "quantity": 1,
+      "weight": 0
+    },
+    {
+      "name": "Batata Valkariana (1d6 em um teste a sua escolha)",
+      "quantity": 20,
+      "weight": 0
+    },
+    {
+      "name": "Ração de Viagem",
+      "quantity": 20,
+      "weight": 0
+    }
+  ],
+  "equipped": [
+    {
+      "name": "Simbolo Sagrado"
+    },
+    {
+      "name": "Gibão de Peles"
+    },
+    {
+      "name": "Manopla de Força"
+    },
+    {
+      "name": "Capa Pesada (+1 em Fortitude)"
+    }
+  ],
+  "coins": {
+    "copper": 0,
+    "silver": 500,
+    "gold": 0
+  },
+  "collapsedSections": {
+    "secBuffs": false,
+    "secSpells": true,
+    "secAbilities": true,
+    "secAttacks": true,
+    "secPericias": false,
+    "secHeader": false,
+    "secProgressao": true,
+    "secAttributes": false,
+    "secHpMp": false,
+    "secDefesa": false,
+    "secAnotacoes": false,
+    "secInventory": false,
+    "secProficiencies": true,
+    "secEffects": false
+  },
+  "hiddenSections": {
+    "secHpMp": false,
+    "secSpells": false,
+    "secAbilities": false,
+    "secHeader": false
+  },
+  "_migrated_v2": true
+}

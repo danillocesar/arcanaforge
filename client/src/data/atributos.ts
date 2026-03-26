@@ -1,19 +1,19 @@
-import type { AtributoId } from '../types/ficha';
+import type { AttributeId } from '../types/character';
 
-export const ATRIBUTOS_NOME: Record<AtributoId, string> = {
-  for: 'For',
-  des: 'Des',
+export const ATTRIBUTE_LABELS: Record<AttributeId, string> = {
+  str: 'For',
+  dex: 'Des',
   con: 'Con',
   int: 'Int',
-  sab: 'Sab',
-  car: 'Car',
+  wis: 'Sab',
+  cha: 'Car',
 };
 
-export const ATRIBUTOS_COMPLETO: Record<AtributoId, string> = {
-  for: 'Força',
-  des: 'Destreza',
+export const ATTRIBUTE_FULL_NAMES: Record<AttributeId, string> = {
+  str: 'Força',
+  dex: 'Destreza',
   con: 'Constituição',
   int: 'Inteligência',
-  sab: 'Sabedoria',
-  car: 'Carisma',
+  wis: 'Sabedoria',
+  cha: 'Carisma',
 };

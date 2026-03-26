@@ -1,6 +1,7 @@
 {
   "id": "mn7qezhbxghq9",
-  "nome": "teste",
-  "sistema": "tormenta",
-  "membros": []
+  "name": "teste",
+  "system": "tormenta",
+  "members": [],
+  "_migrated_v2": true
 }

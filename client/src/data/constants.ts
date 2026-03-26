@@ -1,45 +1,45 @@
-import type { SistemaRPG } from '../types/ficha';
+import type { RPGSystem } from '../types/character';
 
-export const SISTEMA_ROUTE: Record<SistemaRPG, string> = {
+export const SYSTEM_ROUTES: Record<RPGSystem, string> = {
   tormenta: '/tormenta/char',
   naruto: '/naruto/char',
 };
 
-export const BUFF_TIPOS: Record<string, string> = {
-  teste_ataque: 'Teste de Ataque',
-  dano_extra: 'Dano Extra',
-  dano_fixo: 'Dano Fixo',
-  atributo: 'Atributo',
-  vida: 'Vida',
-  mana: 'Mana',
-  pericia: 'Perícia',
+export const BUFF_TYPES: Record<string, string> = {
+  attack_roll: 'Teste de Ataque',
+  extra_damage: 'Dano Extra',
+  fixed_damage: 'Dano Fixo',
+  attribute: 'Atributo',
+  hp: 'Vida',
+  mp: 'Mana',
+  skill: 'Perícia',
 };
 
-export const SEC_NOMES: Record<string, string> = {
-  secCabecalho: 'Info Básica',
-  secAtributos: 'Atributos & Defesa',
-  secVidaMana: 'Vida / Mana',
+export const SECTION_LABELS: Record<string, string> = {
+  secHeader: 'Info Básica',
+  secAttributes: 'Atributos & Defesa',
+  secHpMp: 'Vida / Mana',
   secBuffs: 'Buffs',
-  secAtaques: 'Ataques',
-  secHabilidades: 'Habilidades & Poderes',
-  secMagias: 'Magias',
-  secInventario: 'Inventário',
-  secProficiencias: 'Proficiências',
-  secEfeitos: 'Efeitos Temporários',
+  secAttacks: 'Ataques',
+  secAbilities: 'Habilidades & Poderes',
+  secSpells: 'Magias',
+  secInventory: 'Inventário',
+  secProficiencies: 'Proficiências',
+  secEffects: 'Efeitos Temporários',
 };
 
 export const EQUIP_ICONS = ['🛡️', '⚔️', '🧥', '💍'];
 
 export const LOG_ICONS: Record<string, string> = {
-  ataque: '⚔',
-  magia: '✨',
+  attack: '⚔',
+  spell: '✨',
   buff_on: '▲',
   buff_off: '▼',
 };
 
-export const COMBATE_DEFAULT = {
-  inimigos: [] as { nome: string; iniciativa: number | string; pvMax: number; pvAtual: number; limiarAlerta: number; limiarCritico: number }[],
-  iniciativas: {} as Record<string, number | string>,
-  turnoIdx: -1,
-  ordenado: false,
+export const COMBAT_DEFAULT = {
+  enemies: [] as { name: string; initiative: number | string; maxHp: number; currentHp: number; woundThreshold: number; criticalThreshold: number }[],
+  initiatives: {} as Record<string, number | string>,
+  turnIndex: -1,
+  ordered: false,
 };

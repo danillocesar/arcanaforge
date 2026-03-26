@@ -15,13 +15,13 @@ export default function Topbar({ title, right }: TopbarProps) {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const isPersonagens =
-    pathname === '/personagens' ||
+    pathname === '/characters' ||
     pathname.endsWith('/char');
 
   const isGrupos =
-    pathname === '/grupos' ||
-    pathname.startsWith('/grupos/') ||
-    pathname.includes('/grupo/');
+    pathname === '/parties' ||
+    pathname.startsWith('/parties/') ||
+    pathname.includes('/party/');
 
   const displayName = useMemo(() => {
     if (!user) return 'Conta';
@@ -125,13 +125,13 @@ export default function Topbar({ title, right }: TopbarProps) {
       </div>
       <div className={styles.navRow}>
         <Link
-          to="/personagens"
+          to="/characters"
           className={`${styles.navLink} ${isPersonagens ? styles.navLinkActive : ''}`}
         >
           Personagens
         </Link>
         <Link
-          to="/grupos"
+          to="/parties"
           className={`${styles.navLink} ${isGrupos ? styles.navLinkActive : ''}`}
         >
           Grupos

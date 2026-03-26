@@ -1,0 +1,207 @@
+{
+  "_id": "48e7e07a-5a03-466c-835b-1584987a6e67",
+  "classes": [
+    {
+      "name": "",
+      "level": 1
+    }
+  ],
+  "buffs": [],
+  "avatar": "",
+  "logs": [],
+  "name": "teste",
+  "system": "tormenta",
+  "race": "",
+  "origin": "",
+  "deity": "",
+  "alignment": "",
+  "age": "",
+  "size": "Médio",
+  "speed": "9m / 6q",
+  "experience": 0,
+  "damageReduction": "",
+  "notes": "",
+  "temporaryEffects": "",
+  "proficiencies": "",
+  "progression": [],
+  "temporaryHp": 0,
+  "temporaryMp": 0,
+  "attackAnimation": "personagem",
+  "attributes": {
+    "str": 0,
+    "dex": 0,
+    "con": 0,
+    "int": 0,
+    "wis": 0,
+    "cha": 0
+  },
+  "spellcastingAttribute": "int",
+  "hp": {
+    "max": 0,
+    "current": 0
+  },
+  "mp": {
+    "max": 0,
+    "current": 0
+  },
+  "defense": {
+    "base": 10,
+    "items": [
+      {
+        "name": "",
+        "value": 0,
+        "penalty": 0
+      }
+    ]
+  },
+  "attacks": [],
+  "skills": {
+    "acrobacia": {
+      "trained": false,
+      "misc": 0
+    },
+    "adestramento": {
+      "trained": false,
+      "misc": 0
+    },
+    "atletismo": {
+      "trained": false,
+      "misc": 0
+    },
+    "atuacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "cavalgar": {
+      "trained": false,
+      "misc": 0
+    },
+    "conhecimento": {
+      "trained": false,
+      "misc": 0
+    },
+    "cura": {
+      "trained": false,
+      "misc": 0
+    },
+    "diplomacia": {
+      "trained": false,
+      "misc": 0
+    },
+    "enganacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "fortitude": {
+      "trained": false,
+      "misc": 0
+    },
+    "furtividade": {
+      "trained": false,
+      "misc": 0
+    },
+    "guerra": {
+      "trained": false,
+      "misc": 0
+    },
+    "iniciativa": {
+      "trained": false,
+      "misc": 0
+    },
+    "intimidacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "intuicao": {
+      "trained": false,
+      "misc": 0
+    },
+    "investigacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "jogatina": {
+      "trained": false,
+      "misc": 0
+    },
+    "ladinagem": {
+      "trained": false,
+      "misc": 0
+    },
+    "luta": {
+      "trained": false,
+      "misc": 0
+    },
+    "misticismo": {
+      "trained": false,
+      "misc": 0
+    },
+    "nobreza": {
+      "trained": false,
+      "misc": 0
+    },
+    "oficio1": {
+      "trained": false,
+      "misc": 0,
+      "label": ""
+    },
+    "oficio2": {
+      "trained": false,
+      "misc": 0,
+      "label": ""
+    },
+    "percepacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "pilotagem": {
+      "trained": false,
+      "misc": 0
+    },
+    "pontaria": {
+      "trained": false,
+      "misc": 0
+    },
+    "reflexos": {
+      "trained": false,
+      "misc": 0
+    },
+    "religiao": {
+      "trained": false,
+      "misc": 0
+    },
+    "sobrevivencia": {
+      "trained": false,
+      "misc": 0
+    },
+    "vontade": {
+      "trained": false,
+      "misc": 0
+    }
+  },
+  "abilities": [],
+  "spells": [],
+  "inventory": [],
+  "equipped": [
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    }
+  ],
+  "coins": {
+    "copper": 0,
+    "silver": 0,
+    "gold": 0
+  },
+  "collapsedSections": {},
+  "hiddenSections": {},
+  "_migrated_v2": true
+}

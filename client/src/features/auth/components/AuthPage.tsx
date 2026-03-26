@@ -44,7 +44,7 @@ export default function AuthPage() {
     } catch {
       /* ignore */
     }
-    return '/personagens';
+    return '/characters';
   }, [state.returnTo]);
 
   const [mode, setMode] = useState<Mode>('login');

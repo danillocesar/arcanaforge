@@ -1,58 +1,64 @@
-# ArcanaForge — Ficha Digital & Combat Tracker (Tormenta 20)
+# ArcanaForge — Digital Character Sheet & Combat Tracker
 
-Sistema web completo para gerenciar fichas de personagem do RPG **Tormenta 20**, com tracker de combate em tempo real e sincronização entre múltiplos dispositivos via WebSocket.
+Sistema web multi-RPG para gerenciar fichas de personagem e combate em tempo real, com sincronização entre múltiplos dispositivos via WebSocket.
 
-Desenvolvido para uso em mesa (presencial ou online), permitindo que jogadores editem suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente na rede local.
+Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente.
 
 ---
 
 ## Funcionalidades
 
-### Ficha de Personagem (`/`)
+### Character Sheet (`/tormenta/char`, `/naruto/char`)
 
-- **Info Básica** — nome, avatar (upload), múltiplas classes com nível total, raça, origem, divindade, alinhamento, idade, tamanho, deslocamento, XP
-- **Atributos** — FOR, DES, CON, INT, SAB, CAR com cálculo de modificadores e edição inline
-- **Buffs** — lista de buffs ativáveis que alteram atributos e perícias em tempo real, com custo PM
-- **PV / PM** — barras visuais estilo MMO, edição incremental (±), temporários, reset, redução de dano
-- **Defesa** — cálculo automático com itens de proteção e penalidade de armadura
-- **Ataques** — corpo-a-corpo e à distância, bônus customizáveis, custo em PM, botões "Usar" e "Duplicar" com animações visuais e efeitos sonoros (Web Audio API)
-- **Magias** — lista com custo PM, aprimoramentos, modal de conjurar com cálculo dinâmico de custo
-- **Perícias** — todas as perícias do T20 com cálculo automático (atributo + treino + buffs - penalidade de armadura), exibidas em drawer lateral
-- **Habilidades & Poderes** — lista editável com origem, tipo e custo PM
-- **Inventário** — itens, 4 slots de equipamento, moedas (TC, T$, TO), cálculo de carga
-- **Proficiências e Efeitos Temporários** — campos de texto livre
-- **Progressão** — histórico de progressão do personagem (drawer)
-- **Anotações** — bloco de notas (drawer)
-- **Logs** — registro de ações com tipo, PM gasto e timestamp (drawer)
-- **Navegação por Seções** — barra sticky com IntersectionObserver e destaque da seção ativa
-- **Seções Ocultáveis** — painel para mostrar/esconder seções conforme preferência
+- **Basic Info** — nome, avatar (upload), múltiplas classes com nível total, raça, origem, divindade, alinhamento, idade, tamanho, deslocamento, XP
+- **Attributes** — STR, DEX, CON, INT, WIS, CHA com cálculo de modificadores e edição inline
+- **Buffs** — lista de buffs ativáveis que alteram atributos e perícias em tempo real, com custo MP
+- **HP / MP** — barras visuais estilo MMO, edição incremental (±), temporários, reset, redução de dano
+- **Defense** — cálculo automático com itens de proteção e penalidade de armadura
+- **Attacks** — corpo-a-corpo e à distância, bônus customizáveis, custo em MP, botões "Usar" e "Duplicar" com animações visuais e efeitos sonoros (Web Audio API)
+- **Spells** — lista com custo MP, aprimoramentos, modal de conjurar com cálculo dinâmico de custo
+- **Skills** — todas as perícias do T20 com cálculo automático (atributo + treino + buffs - penalidade de armadura), exibidas em drawer lateral
+- **Abilities** — lista editável com origem, tipo e custo MP
+- **Inventory** — itens, 4 slots de equipamento, moedas (copper, silver, gold), cálculo de carga
+- **Proficiencies & Temporary Effects** — campos de texto livre
+- **Progression** — histórico de progressão do personagem (drawer)
+- **Notes** — bloco de notas (drawer)
+- **Logs** — registro de ações com tipo, MP gasto e timestamp (drawer)
+- **Section Navigation** — barra sticky com IntersectionObserver e destaque da seção ativa
+- **Hideable Sections** — painel para mostrar/esconder seções conforme preferência
 - **Auto-save** — salvamento automático com debounce (800ms) após cada alteração
-- **Persistência na URL** — parâmetro `?char=` mantém o personagem selecionado
+- **URL Persistence** — parâmetro `?char=` mantém o personagem selecionado
 
-### Combat Tracker (`/mestre`)
+### Combat Tracker (`/tormenta/party/:partyId`, `/naruto/party/:partyId`)
 
-- **Jogadores** carregados automaticamente das fichas salvas (PV, PM, avatar, classes)
-- **Inimigos** adicionáveis dinamicamente com nome editável e PV customizável
-- **Iniciativa** — campo numérico por participante com reordenação automática
-- **Sistema de Turnos** — próximo turno, reset, indicador visual dourado no card ativo
-- **Dano / Cura** — popover com input numérico ao clicar na barra de HP
-- **Modo Mestre** (toggle) — esconde/mostra controles exclusivos do mestre (HP de inimigos, botões de adicionar/remover)
-- **Feedback Visual de HP** — brilho amarelado (alerta) e avermelhado (crítico) nos cards de inimigos com limiares aleatórios para esconder a % exata dos jogadores
-- **Ícones** — ícone da classe ao lado do nome dos jogadores, ícone de vilão para inimigos
-- **Avatares** — faixa lateral com imagem do personagem (prioriza versão sem fundo)
-- **Mini-ordem** — barra inferior fixa com avatares miniatura na ordem de iniciativa
-- **Sincronização em tempo real** — todas as alterações (HP, turno, iniciativa, inimigos) são sincronizadas entre todos os clientes conectados
+- **Players** carregados automaticamente das fichas salvas (HP, MP, avatar, classes)
+- **Enemies** adicionáveis dinamicamente com nome editável e HP customizável
+- **Initiative** — campo numérico por participante com reordenação automática
+- **Turn System** — próximo turno, reset, indicador visual dourado no card ativo
+- **Damage / Heal** — popover com input numérico ao clicar na barra de HP
+- **GM Mode** (toggle) — esconde/mostra controles exclusivos do mestre (HP de inimigos, botões de adicionar/remover)
+- **Visual HP Feedback** — brilho amarelado (alerta) e avermelhado (crítico) com limiares aleatórios para esconder a % exata dos jogadores
+- **Icons** — ícone da classe ao lado do nome dos jogadores, ícone de vilão para inimigos
+- **Avatars** — faixa lateral com imagem do personagem (prioriza versão transparent)
+- **Mini Order** — barra inferior fixa com avatares miniatura na ordem de iniciativa
+- **Real-time Sync** — todas as alterações (HP, turno, iniciativa, inimigos) são sincronizadas entre todos os clientes conectados
 
-### Seleção de Personagem (`/select`)
+### Character Selection (`/characters`)
 
-- **Grid visual** de personagens salvos com avatar, nome e classes
-- **Criar novo personagem** diretamente pela tela
+- Grid visual de personagens salvos com avatar, nome e classes
+- Criar novo personagem diretamente pela tela
 - Redirecionamento para a ficha ao clicar no card
 
-### Sincronização em Tempo Real (WebSocket)
+### Party Management (`/parties`, `/parties/new/:partyId`)
 
-- **Mestre → Ficha**: quando o mestre altera o PV de um jogador no tracker, a ficha do jogador atualiza automaticamente com toast de notificação
-- **Ficha → Tracker**: quando o jogador altera PV/PM na sua ficha, o tracker do mestre reflete a mudança
+- Criar e gerenciar grupos de personagens
+- Selecionar membros do grupo a partir das fichas existentes
+- Iniciar sessão de combate com o grupo selecionado
+
+### Real-time Sync (WebSocket)
+
+- **GM → Sheet**: quando o mestre altera o HP de um jogador no tracker, a ficha do jogador atualiza automaticamente com toast de notificação
+- **Sheet → Tracker**: quando o jogador altera HP/MP na sua ficha, o tracker do mestre reflete a mudança
 - **Tracker → Tracker**: todas as alterações de combate (HP, iniciativa, turnos, inimigos) são sincronizadas entre todos os clientes conectados
 - Reconexão automática em caso de desconexão
 
@@ -62,186 +68,115 @@ Desenvolvido para uso em mesa (presencial ou online), permitindo que jogadores e
 
 | Camada | Tecnologia |
 |--------|------------|
-| **Runtime** | Node.js |
+| **Runtime** | Node.js 22 |
 | **Backend HTTP** | Express 4 |
 | **WebSocket** | `ws` (WebSocketServer) |
 | **Upload de arquivos** | Multer |
-| **Frontend** | React 19, TypeScript, Vite |
-| **Roteamento** | React Router v7 (SPA com 3 rotas) |
+| **Autenticação** | Firebase Auth (Google + Email/Senha) |
+| **Frontend** | React 19, TypeScript, Vite 8 |
+| **Roteamento** | React Router v7 |
 | **Estado** | React Context + useState |
-| **Estilização** | CSS Modules (`.module.css`) com variáveis CSS |
-| **Persistência** | Sistema de arquivos (JSON) — sem banco de dados |
-| **Fontes** | Google Fonts (Inter) |
-| **Estilo visual** | Dark mode, glassmorphism, acento dourado (temática fantasia/RPG) |
+| **Estilização** | CSS Modules com variáveis CSS |
+| **Persistência** | Sistema de arquivos (JSON) + MongoDB (em migração) |
+| **Infra** | Docker Compose, Cloudflare Tunnel |
+| **Estilo visual** | Dark mode, glassmorphism, acento dourado |
 
 ---
 
-## Dados em disco
+## Como Rodar
 
-Em produção e em desenvolvimento, o servidor grava tudo sob **`data/`** na raiz do repositório:
+### Com Docker (recomendado)
 
-| Caminho | Conteúdo |
-|---------|----------|
-| `data/fichas/` | Um arquivo JSON por personagem (`<uuid>.json`) |
-| `data/avatars/` | Imagens de avatar e variantes `_sem_fundo` |
-| `data/parties/` | Grupos (`<partyId>.json`) |
-| `data/combate/` | Estado do tracker por grupo (`<partyId>.json`) |
-| `data/combate.json` | Endpoint legado `/api/combate` (sem party) |
+Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-Na **primeira subida** após esta organização, se ainda existirem pastas antigas na raiz (`fichas/`, `avatars/`, `parties/`) ou arquivos `combate-*.json` / `combate.json`, o servidor **move** automaticamente para `data/`.
+```bash
+# 1 - Somente MongoDB
+docker compose up mongo -d
+
+# 2 - MongoDB + App (backend + frontend built)
+docker compose up -d
+
+# 3 - MongoDB + App + Cloudflare Tunnel (expor publicamente)
+docker compose --profile tunnel up -d
+
+# Ver logs
+docker compose logs -f
+
+# Parar tudo
+docker compose --profile tunnel down
+```
+
+A app fica acessível em `http://localhost:3000`. O MongoDB fica em `localhost:27017`.
+
+> Para expor publicamente, preencha `CLOUDFLARE_TUNNEL_TOKEN` no `.env` antes de usar a opção 3.
+
+### Sem Docker (desenvolvimento)
+
+Pré-requisitos: [Node.js](https://nodejs.org/) v18+
+
+```bash
+# Instalar dependências
+npm install
+cd client && npm install && cd ..
+
+# Desenvolvimento (backend :3001 + frontend :5173 com hot-reload)
+npm run dev
+
+# Produção (build + serve na porta 3000)
+npm run public
+```
+
+Acesse `http://localhost:5173` em desenvolvimento. O Vite faz proxy automático de `/api`, `/avatars` e `/assets` para o backend.
 
 ---
 
-## Estrutura do Projeto
+## Variáveis de Ambiente
 
+Todas as variáveis ficam no `.env` na raiz do projeto:
+
+```env
+# Firebase (frontend)
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_APP_ID=...
+
+# Firebase Admin (backend)
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+
+# Server
+PORT=3000
+
+# MongoDB
+MONGODB_URI=mongodb://mongo:27017/arcanaforge
+
+# Cloudflare Tunnel (opcional)
+CLOUDFLARE_TUNNEL_TOKEN=
 ```
-arcanaforge/
-├── server.js              # Servidor Node: Express + WebSocket + API REST
-├── package.json           # Dependências do backend
-├── data/                  # Persistência (JSON + avatares); ver tabela acima
-│
-├── client/                # Frontend React (SPA)
-│   ├── package.json       # Dependências do frontend
-│   ├── vite.config.ts     # Config do Vite (proxy para :3000 em dev)
-│   ├── tsconfig.json      # Config TypeScript
-│   ├── index.html         # Entry point do Vite
-│   └── src/
-│       ├── main.tsx        # Bootstrap React + BrowserRouter
-│       ├── App.tsx         # Definição de rotas
-│       │
-│       ├── api/
-│       │   ├── index.ts            # Reexport das funções da API REST
-│       │   ├── http.ts             # assertOk / ApiError
-│       │   ├── fichas.ts
-│       │   ├── parties.ts
-│       │   └── combate.ts
-│       │
-│       ├── contexts/
-│       │   ├── FichaContext.tsx     # Estado global da ficha (Provider + hook)
-│       │   └── CombateContext.tsx   # Estado global do combate (Provider + hook)
-│       │
-│       ├── hooks/
-│       │   ├── useWebSocket.ts     # Conexão WS com auto-reconnect
-│       │   └── useAutoSave.ts      # Debounce save (800ms)
-│       │
-│       ├── utils/
-│       │   ├── calculations.ts     # Cálculos T20 (atributos, perícias, defesa, etc.)
-│       │   ├── sounds.ts           # Efeitos sonoros via Web Audio API
-│       │   ├── animations.ts       # Animações de ataque (shake, flash, floating)
-│       │   └── formatters.ts       # Utilitários de formatação (iniciais, cor de avatar)
-│       │
-│       ├── data/
-│       │   ├── atributos.ts        # Constantes de atributos T20
-│       │   ├── pericias.ts         # Config de perícias T20
-│       │   └── constants.ts        # BUFF_TIPOS, SEC_NOMES, EQUIP_ICONS, etc.
-│       │
-│       ├── types/
-│       │   ├── ficha.ts            # Interfaces TypeScript da ficha
-│       │   └── combate.ts          # Interfaces TypeScript do combate
-│       │
-│       ├── styles/
-│       │   ├── tokens.css          # Variáveis CSS (cores, fontes, sombras)
-│       │   └── globals.css         # Reset e estilos base
-│       │
-│       ├── components/
-│       │   ├── ui/                 # Componentes reutilizáveis de design
-│       │   │   ├── Button/         # Botão com 7 variantes
-│       │   │   ├── Section/        # Seção colapsável com título
-│       │   │   ├── Modal/          # Overlay modal
-│       │   │   ├── Drawer/         # Drawer lateral deslizante
-│       │   │   ├── Toast/          # Sistema de notificações (Provider + hook)
-│       │   │   ├── Badge/          # Badge inline (default, pm, gold)
-│       │   │   └── BarraVida/      # Barra de HP/PM reutilizável
-│       │   │
-│       │   ├── layout/
-│       │   │   ├── Topbar/         # Barra superior (genérica, usada em ficha e combate)
-│       │   │   └── SectionNav/     # Navegação por seções com IntersectionObserver
-│       │   │
-│       │   ├── ficha/              # Componentes da ficha de personagem
-│       │   │   ├── InfoBasica/     # Avatar + nome + classes + campos de info
-│       │   │   ├── AtributosDefesa/# Grid de atributos + painel de defesa
-│       │   │   ├── VidaMana/       # PV/PM com barras, controles e temporários
-│       │   │   ├── BuffsList/      # Lista de buffs ativáveis
-│       │   │   ├── AtaqueCard/     # Card de ataque com teste e dano
-│       │   │   ├── AtaquesList/    # Seção de ataques
-│       │   │   ├── AtaquesMini/    # Lista compacta de ataques/magias (quick-use)
-│       │   │   ├── MagiaCard/      # Card de magia com aprimoramentos
-│       │   │   ├── MagiasList/     # Seção de magias
-│       │   │   ├── ModalConjurar/  # Modal de conjuração com custo dinâmico
-│       │   │   ├── HabilidadesList/# Seção de habilidades e poderes
-│       │   │   ├── PericiasList/   # Lista de perícias (drawer)
-│       │   │   ├── Inventario/     # Inventário com carga e moedas
-│       │   │   ├── Proficiencias/  # Textarea de proficiências
-│       │   │   ├── EfeitosTemporarios/ # Textarea de efeitos
-│       │   │   ├── ProgressaoDrawer/   # Drawer de progressão
-│       │   │   ├── AnotacoesDrawer/    # Drawer de anotações
-│       │   │   └── LogsDrawer/         # Drawer de logs de combate
-│       │   │
-│       │   ├── combate/            # Componentes do combat tracker
-│       │   │   ├── CombateToolbar/ # Barra de ações (reset, ordenar, próximo turno)
-│       │   │   ├── CombateCard/    # Card de participante (jogador ou inimigo)
-│       │   │   ├── DanoPopover/    # Popover de dano/cura
-│       │   │   └── MiniOrder/      # Barra de ordem de iniciativa (bottom bar)
-│       │   │
-│       │   └── select/
-│       │       └── SelectGrid/     # Grid de seleção de personagens
-│       │
-│       └── pages/
-│           ├── FichaPage/          # Rota / — ficha de personagem
-│           ├── MestrePage/         # Rota /mestre — combat tracker
-│           └── SelectPage/         # Rota /select — seleção de personagens
-│
-├── dist/                  # Build de produção do frontend (gerado por `npm run build`)
-│
-├── fichas/                # Um arquivo JSON por personagem (gerado automaticamente)
-│   ├── Personagem1.json
-│   └── Personagem2.json
-│
-├── avatars/               # Imagens de avatar enviadas pelos jogadores
-│   ├── Personagem1.png
-│   └── Personagem1_sem_fundo.png   # Variante sem fundo (opcional, usada no tracker)
-│
-└── assets/
-    └── classes/           # Ícones de classe (PNG) — ex: guerreiro.png, mago.png
-```
+
+### Configuração no Firebase Console
+
+1. Criar projeto Firebase
+2. Em **Authentication > Sign-in method**, habilitar Google e Email/Password
+3. Em **Authentication > Settings**, configurar domínio autorizado
+4. Em **Project settings > Service accounts**, gerar chave privada para o backend
 
 ---
 
-## Arquitetura
+## Rotas da Aplicação
 
-```mermaid
-flowchart LR
-  subgraph browser [Navegadores - React SPA]
-    ficha["FichaPage\n(Rota /)"]
-    tracker["MestrePage\n(Rota /mestre)"]
-    selecao["SelectPage\n(Rota /select)"]
-  end
-
-  subgraph server ["Node.js (server.js)"]
-    express["Express\nREST API"]
-    static["Static Files\n(dist/ em prod)"]
-    wss["WebSocket\nServer"]
-  end
-
-  subgraph storage [Persistência]
-    fichasDir["fichas/*.json"]
-    combateJson["combate.json"]
-    avatarsDir["avatars/"]
-  end
-
-  ficha <-->|HTTP| express
-  tracker <-->|HTTP| express
-  selecao -->|HTTP| express
-
-  ficha <-->|WS| wss
-  tracker <-->|WS| wss
-
-  express --> fichasDir
-  express --> combateJson
-  express --> avatarsDir
-  wss --> combateJson
-  static --> browser
-```
+| Página | URL |
+|--------|-----|
+| Auth (login) | `/auth` |
+| Character Selection | `/characters` |
+| Party Selection | `/parties` |
+| Party Members | `/parties/new/:partyId` |
+| Tormenta 20 Sheet | `/tormenta/char?char=<id>` |
+| Naruto d20 Sheet | `/naruto/char?char=<id>` |
+| Combat Tracker (Tormenta) | `/tormenta/party/:partyId` |
+| Combat Tracker (Naruto) | `/naruto/party/:partyId` |
 
 ---
 
@@ -249,110 +184,238 @@ flowchart LR
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `GET` | `/api/fichas` | Lista nomes de todos os personagens |
-| `GET` | `/api/fichas-resumo` | Resumo de cada ficha (nome, avatar, classes) para o grid de seleção |
-| `GET` | `/api/fichas/:nome` | Carrega a ficha completa de um personagem |
-| `POST` | `/api/fichas/:nome` | Salva/atualiza a ficha de um personagem |
-| `DELETE` | `/api/fichas/:nome` | Exclui um personagem |
-| `POST` | `/api/fichas/:nomeAntigo/renomear/:nomeNovo` | Renomeia um personagem |
-| `GET` | `/api/combate` | Retorna o estado atual do combate |
-| `POST` | `/api/combate` | Salva o estado do combate e notifica clientes via WebSocket |
-| `POST` | `/api/avatar/:nome` | Upload de avatar (multipart, até 5 MB) |
-| `GET` | `/api/avatar-sem-fundo/:nome` | URL do avatar sem fundo (se existir) |
+| `GET` | `/api/characters` | Lista IDs de todos os personagens do usuário |
+| `GET` | `/api/characters/summary` | Resumo de cada personagem (nome, avatar, classes) |
+| `GET` | `/api/characters/:id` | Carrega um personagem completo |
+| `POST` | `/api/characters/:id` | Salva/atualiza um personagem |
+| `DELETE` | `/api/characters/:id` | Exclui um personagem |
+| `GET` | `/api/parties` | Lista todos os grupos do usuário |
+| `POST` | `/api/parties` | Cria um novo grupo |
+| `PUT` | `/api/parties/:id` | Atualiza um grupo |
+| `DELETE` | `/api/parties/:id` | Exclui um grupo |
+| `GET` | `/api/parties/:id/combat` | Retorna o estado de combate de um grupo |
+| `POST` | `/api/parties/:id/combat` | Salva estado de combate e notifica via WebSocket |
+| `POST` | `/api/avatar/:id` | Upload de avatar (multipart, até 5 MB) |
+| `GET` | `/api/avatar-transparent/:id` | URL do avatar sem fundo (se existir) |
+
+Rotas protegidas exigem `Authorization: Bearer <idToken>`. Rotas públicas: `/health`, `/assets/*`, `/avatars/*`.
 
 ---
 
-## Mensagens WebSocket
+## WebSocket Messages
 
-| Mensagem (enviada) | Mensagem (recebida) | Descrição |
-|--------------------|----------------------|-----------|
-| `combate_update` | `combate_sync` | Atualiza estado completo do combate (inimigos, iniciativa, turno) |
-| `ficha_hp_update` | `ficha_hp_sync` | Jogador alterou PV/PM na ficha → reflete no tracker do mestre |
-| `mestre_hp_update` | `mestre_hp_sync` | Mestre alterou PV de jogador no tracker → reflete na ficha do jogador |
+| Sent | Received | Description |
+|------|----------|-------------|
+| `combat_update` | `combat_sync` | Atualiza estado completo do combate (enemies, initiative, turn) |
+| `character_hp_update` | `character_hp_sync` | Jogador alterou HP/MP na ficha → reflete no tracker |
+| `master_hp_update` | `master_hp_sync` | Mestre alterou HP no tracker → reflete na ficha do jogador |
 
-Na conexão inicial, o servidor envia `combate_sync` com o estado atual para o novo cliente.
+Na conexão inicial, o servidor envia `combat_sync` com o estado atual para o novo cliente.
 
 ---
 
-## Como Rodar
+## Estrutura do Projeto
 
-### Pré-requisitos
+```
+arcanaforge/
+├── server.js                 # Entry point (require server/index.js)
+├── package.json
+├── Dockerfile                # Multi-stage build (frontend + backend)
+├── docker-compose.yml        # MongoDB + App + Cloudflare Tunnel
+├── .env                      # Variáveis de ambiente
+│
+├── server/
+│   ├── index.js              # Express + WebSocket + Helmet + static files
+│   ├── paths.js              # Caminhos do sistema de arquivos
+│   ├── websocket.js          # WebSocket server (combat sync, HP sync)
+│   ├── combatState.js        # Estado de combate em memória + disco
+│   ├── multerAvatar.js       # Configuração do Multer para avatars
+│   ├── migrateData.js        # Migração de dados PT → EN
+│   ├── migrateCharacters.js  # Migração de fichas legadas
+│   ├── routes/
+│   │   └── index.js          # Todas as rotas REST
+│   ├── auth/
+│   │   └── firebaseAdmin.js  # Firebase Admin SDK
+│   ├── characters/
+│   │   └── userCharactersDir.js  # Resolução de diretório por usuário
+│   └── middleware/
+│       ├── requireAuth.js    # Middleware de autenticação
+│       └── validateId.js     # Validação de IDs nas rotas
+│
+├── client/
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tsconfig.json
+│   ├── index.html
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx               # Definição de rotas
+│       │
+│       ├── api/
+│       │   ├── index.ts          # Re-export das funções API
+│       │   ├── http.ts           # assertOk / ApiError
+│       │   ├── characters.ts     # CRUD de personagens
+│       │   └── parties.ts        # CRUD de grupos
+│       │
+│       ├── types/
+│       │   ├── character.ts      # Character, Attack, Spell, Ability, etc.
+│       │   ├── combat.ts         # CombatData, CombatRow, Enemy
+│       │   └── party.ts          # Party
+│       │
+│       ├── contexts/
+│       │   ├── CharacterContext.tsx   # Estado da ficha + auto-save + WS
+│       │   └── CombatContext.tsx      # Estado do combate + WS
+│       │
+│       ├── hooks/
+│       │   ├── useWebSocket.ts       # Conexão WS com auto-reconnect
+│       │   └── useAutoSave.ts        # Debounce save (800ms)
+│       │
+│       ├── utils/
+│       │   ├── calculations.ts       # Cálculos RPG (attributes, skills, defense, etc.)
+│       │   ├── sounds.ts             # Efeitos sonoros via Web Audio API
+│       │   ├── animations.ts         # Animações de ataque
+│       │   └── formatters.ts         # Utilitários de formatação
+│       │
+│       ├── data/
+│       │   ├── atributos.ts          # ATTRIBUTE_LABELS, ATTRIBUTE_FULL_NAMES
+│       │   ├── pericias.ts           # SKILLS_CONFIG
+│       │   └── constants.ts          # BUFF_TYPES, SECTION_LABELS, COMBAT_DEFAULT
+│       │
+│       ├── services/
+│       │   └── toastService.ts       # Serviço de notificações
+│       │
+│       ├── styles/
+│       │   ├── tokens.css            # Variáveis CSS (cores, fontes, sombras)
+│       │   └── globals.css           # Reset e estilos base
+│       │
+│       ├── features/
+│       │   ├── auth/                 # Autenticação (Firebase)
+│       │   │   ├── AuthContext.tsx
+│       │   │   ├── firebase.ts
+│       │   │   ├── useAuth.ts
+│       │   │   ├── components/
+│       │   │   │   ├── AuthPage.tsx
+│       │   │   │   ├── RequireAuth.tsx
+│       │   │   │   └── VerifyEmailNotice.tsx
+│       │   │   └── services/
+│       │   │       └── authService.ts
+│       │   └── tormenta/
+│       │       ├── data/tormentaClasses.ts
+│       │       └── pages/TormentaSheetPage.tsx
+│       │
+│       ├── components/
+│       │   ├── ui/                   # Componentes reutilizáveis
+│       │   │   ├── Button/
+│       │   │   ├── Badge/
+│       │   │   ├── Modal/
+│       │   │   ├── ConfirmModal/
+│       │   │   ├── Drawer/
+│       │   │   ├── Input/
+│       │   │   ├── Section/
+│       │   │   ├── Toast/
+│       │   │   ├── HealthBar/
+│       │   │   └── SystemFilter/
+│       │   │
+│       │   ├── layout/
+│       │   │   ├── Topbar/
+│       │   │   └── SectionNav/
+│       │   │
+│       │   ├── character/
+│       │   │   ├── BasicInfo/
+│       │   │   ├── AttributesDefense/
+│       │   │   ├── HpMp/
+│       │   │   ├── BuffsList/
+│       │   │   ├── AttackCard/
+│       │   │   ├── AttacksList/
+│       │   │   ├── AttacksMini/
+│       │   │   ├── SpellCard/
+│       │   │   ├── SpellsList/
+│       │   │   ├── CastSpellModal/
+│       │   │   ├── AbilitiesList/
+│       │   │   ├── SkillsList/
+│       │   │   ├── Inventory/
+│       │   │   ├── Proficiencies/
+│       │   │   ├── TemporaryEffects/
+│       │   │   ├── ProgressionDrawer/
+│       │   │   ├── NotesDrawer/
+│       │   │   └── LogsDrawer/
+│       │   │
+│       │   ├── combat/
+│       │   │   ├── CombatCard/
+│       │   │   ├── CombatToolbar/
+│       │   │   ├── DamagePopover/
+│       │   │   └── MiniOrder/
+│       │   │
+│       │   └── select/
+│       │       └── SelectGrid/
+│       │
+│       └── pages/
+│           ├── SelectPage/
+│           ├── PartySelectPage/
+│           ├── PartyMembersPage/
+│           ├── TormentaSheetPage/
+│           ├── NarutoSheetPage/
+│           └── GameMasterPage/
+│
+├── data/                     # Persistência (JSON + avatares)
+│   ├── characters/<uid>/     # Um JSON por personagem, organizado por usuário
+│   ├── parties/              # Grupos (<partyId>.json)
+│   ├── avatars/              # Imagens de avatar + variantes _transparent
+│   └── .migrated-v2          # Sentinela de migração PT→EN
+│
+├── assets/
+│   └── classes/              # Ícones SVG de classes (guerreiro, arcanista, etc.)
+│
+└── dist/                     # Build de produção do frontend (gerado pelo Vite)
+```
 
-- [Node.js](https://nodejs.org/) (v18 ou superior recomendado)
+---
 
-### Instalação
+## Dados em Disco
+
+| Caminho | Conteúdo |
+|---------|----------|
+| `data/characters/<uid>/` | Um JSON por personagem, organizado por usuário Firebase |
+| `data/avatars/` | Imagens de avatar e variantes `_transparent` |
+| `data/parties/` | Grupos (`<partyId>.json`) |
+
+Com Docker, o diretório `data/` é mapeado para o volume `arcanaforge-data`, persistindo entre restarts.
+
+---
+
+## Docker
+
+### Arquitetura
+
+```mermaid
+graph LR
+  Internet -->|HTTPS| Tunnel[cloudflared]
+  Tunnel -->|"http://app:3000"| App[app - Node.js]
+  App -->|"mongodb://mongo:27017"| Mongo[mongo]
+  App -->|"/data/avatars"| Volume[arcanaforge-data]
+  Mongo --> MongoVol[mongo-data]
+```
+
+### Serviços
+
+| Serviço | Imagem | Porta | Descrição |
+|---------|--------|-------|-----------|
+| `mongo` | `mongo:7` | 27017 | MongoDB sem autenticação (local dev) |
+| `app` | build local | 3000 | Backend Express + frontend built |
+| `tunnel` | `cloudflare/cloudflared` | — | Cloudflare Tunnel (profile: `tunnel`) |
+
+### Volumes
+
+| Volume | Mount | Conteúdo |
+|--------|-------|----------|
+| `mongo-data` | `/data/db` | Dados do MongoDB |
+| `arcanaforge-data` | `/app/data` | Characters, parties, avatars |
+
+### Rebuild após alterações
 
 ```bash
-# Clone ou copie o projeto
-cd arcanaforge
-
-# Instale as dependências do backend
-npm install
-
-# Instale as dependências do frontend
-cd client
-npm install
+docker compose build && docker compose up -d
 ```
-
-### Desenvolvimento
-
-Dois terminais são necessários:
-
-```bash
-# Terminal 1 — Backend (porta 3001 para não conflitar com ngrok)
-npm run dev
-
-# Terminal 2 — Frontend com hot-reload (porta 5173)
-cd client
-set BACKEND_PORT=3001 && npm run dev
-```
-
-Acesse `http://localhost:5173` no navegador. O Vite faz proxy automático de `/api`, `/avatars` e `/assets` para o backend.
-
-> **Porta customizada:** A porta do backend é configurável via variável de ambiente `PORT`. O script `npm run dev` usa a porta 3001 por padrão. Para outra porta: `set PORT=4000 && node server.js`. O Vite usa `BACKEND_PORT` para saber onde o backend está rodando (padrão: 3000).
-
-### Produção
-
-```bash
-# Build do frontend
-cd client
-npm run build
-
-# Inicia o servidor (serve o build estático + API)
-cd ..
-npm start        # porta 3000 (padrão)
-# ou com porta custom:
-# set PORT=3001 && npm start
-```
-
-O servidor inicia na porta configurada (padrão **3000**) e serve tanto a SPA React quanto a API. Exibe no console:
-
-```
-Servidor rodando em http://localhost:3000
-Acesso na rede: http://192.168.x.x:3000
-```
-
-### Rotas
-
-| Página | URL |
-|--------|-----|
-| Ficha de Personagem | `http://localhost:3000/` |
-| Combat Tracker | `http://localhost:3000/mestre` |
-| Seleção de Personagem | `http://localhost:3000/select` |
-
-### Acesso na Rede Local
-
-Qualquer dispositivo na mesma rede pode acessar usando o IP exibido no console. Ideal para mesas presenciais onde cada jogador usa seu celular/tablet.
-
-### Acesso Externo (opcional)
-
-Para jogar com pessoas fora da rede local, use [ngrok](https://ngrok.com/):
-
-```bash
-ngrok http 3000
-```
-
-O ngrok fornecerá uma URL pública temporária que qualquer pessoa pode acessar.
 
 ---
 
@@ -360,110 +423,31 @@ O ngrok fornecerá uma URL pública temporária que qualquer pessoa pode acessar
 
 ### Componentes UI Reutilizáveis
 
-Padrões visuais recorrentes foram centralizados em componentes reutilizáveis em `components/ui/`:
-
 | Componente | Uso |
 |------------|-----|
 | `Button` | 7 variantes: `default`, `add`, `remove`, `remove-sm`, `gold`, `ghost`, `primary` |
-| `Section` | Seção colapsável com título h2 e botão de toggle |
-| `Modal` | Overlay com backdrop blur e click-outside para fechar |
-| `Drawer` | Painel lateral deslizante (perícias, progressão, anotações, logs) |
-| `Toast` | Sistema de notificações com auto-dismiss (Provider + `useToast` hook) |
-| `Badge` | Badge inline com variantes `default`, `pm` e `gold` |
-| `BarraVida` | Barra de HP/PM com gradiente, usada tanto na ficha quanto no combate |
+| `Section` | Seção colapsável com título e toggle |
+| `Modal` | Overlay com backdrop blur e click-outside |
+| `ConfirmModal` | Modal de confirmação (delete, etc.) |
+| `Drawer` | Painel lateral deslizante |
+| `Toast` | Notificações com auto-dismiss |
+| `Badge` | Badge inline (`default`, `pm`, `gold`) |
+| `HealthBar` | Barra de HP/MP reutilizável |
+| `SystemFilter` | Filtro por sistema de RPG |
+| `Input` | Input estilizado |
 
-### Estado e Contextos
+### Contexts
 
-| Contexto | Escopo | Descrição |
-|----------|--------|-----------|
-| `FichaContext` | Ficha de personagem | Estado da ficha, auto-save, WebSocket (HP sync), CRUD de personagem |
-| `CombateContext` | Combat tracker | Estado do combate, jogadores, turnos, WebSocket (combate sync) |
-| `ToastProvider` | Notificações | Sistema de toasts com `showToast()` |
-
-### Hooks Customizados
-
-| Hook | Descrição |
-|------|-----------|
-| `useWebSocket` | Conexão WebSocket com auto-reconnect a cada 2s |
-| `useAutoSave` | Debounce save de 800ms com suporte a renomear |
+| Context | Escopo | Descrição |
+|---------|--------|-----------|
+| `CharacterContext` | Character sheet | Estado da ficha, auto-save, WebSocket (HP sync) |
+| `CombatContext` | Combat tracker | Estado do combate, jogadores, turnos, WebSocket |
+| `AuthContext` | App-wide | Autenticação Firebase |
+| `ToastProvider` | App-wide | Sistema de notificações |
 
 ### Estilização
 
 - **CSS Modules** (`.module.css`) para escopo por componente
 - **Variáveis CSS** em `tokens.css` para temas e consistência
-- **Sem frameworks CSS** — estilos custom para manter a identidade visual dark/dourada
-- **Responsividade** — media queries nos módulos relevantes (breakpoints: 900px, 700px, 600px, 450px)
-
----
-
-## Dependências
-
-### Backend (`package.json`)
-
-| Pacote | Versão | Uso |
-|--------|--------|-----|
-| `express` | ^4.21.0 | Servidor HTTP e API REST |
-| `helmet` | ^8.1.0 | Headers de segurança HTTP |
-| `express-rate-limit` | ^8.3.1 | Limite básico de requisições |
-| `multer` | ^2.1.1 | Upload de avatares (multipart/form-data) |
-| `firebase-admin` | ^13.7.0 | Validação de tokens Firebase no backend |
-| `ws` | ^8.20.0 | WebSocket para sincronização em tempo real |
-
-### Frontend (`client/package.json`)
-
-| Pacote | Versão | Uso |
-|--------|--------|-----|
-| `react` | ^19.2.4 | Biblioteca UI |
-| `react-dom` | ^19.2.4 | Renderização DOM |
-| `react-router-dom` | ^7.13.2 | Roteamento SPA |
-| `firebase` | ^12.11.0 | Autenticação Google + Email/Senha |
-| `typescript` | ^6.0.2 | Tipagem estática |
-| `vite` | ^8.0.2 | Bundler e dev server |
-| `@vitejs/plugin-react` | ^6.0.1 | Plugin React para Vite |
-
----
-
-## Autenticação (Google + Email/Senha)
-
-O app usa **Firebase Authentication** no frontend e validação de token via **Firebase Admin** no backend.
-
-### Fluxo
-
-- Usuário não autenticado entra pela rota `/auth`.
-- É possível entrar/cadastrar com Google ou Email/Senha.
-- Contas Email/Senha exigem verificação de e-mail antes de acessar o app.
-- As rotas `/api/*` exigem `Authorization: Bearer <idToken>`.
-
-### Variáveis de ambiente
-
-#### Frontend (`client/.env`)
-
-```env
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_APP_ID=...
-```
-
-#### Backend (`.env`)
-
-```env
-FIREBASE_PROJECT_ID=...
-FIREBASE_CLIENT_EMAIL=...
-FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
-PORT=3000
-```
-
-### Configuração no Firebase Console
-
-1. Criar projeto Firebase.
-2. Em **Authentication > Sign-in method**, habilitar:
-   - Google
-   - Email/Password
-3. Em **Authentication > Settings**, configurar domínio autorizado da aplicação.
-4. Em **Project settings > Service accounts**, gerar chave privada para o backend.
-
-### Rotas públicas e protegidas
-
-- Públicas: `/health`, `/assets/*`, `/avatars/*`.
-- Protegidas: `/api/*` (exigem token válido).
+- **Sem frameworks CSS** — estilos custom com identidade visual dark/dourada
+- **Responsividade** — media queries (breakpoints: 900px, 700px, 600px, 450px)

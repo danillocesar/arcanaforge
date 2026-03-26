@@ -1,20 +1,20 @@
 import { showToast } from '../services/toastService';
 
-export type AnimacaoEstilo = 'personagem' | 'toast' | 'floating';
+export type AnimationStyle = 'personagem' | 'toast' | 'floating';
 
 interface AnimOpts {
-  tipo?: string;
-  nome?: string;
-  pmCusto?: number;
+  type?: string;
+  name?: string;
+  mpCost?: number;
 }
 
 export function triggerAttackAnim(
-  estilo: AnimacaoEstilo,
+  style: AnimationStyle,
   opts: AnimOpts = {},
 ): void {
-  switch (estilo) {
+  switch (style) {
     case 'personagem':
-      playPersonagemAnim(opts);
+      playCharacterAnim(opts);
       break;
     case 'toast':
       playToastAnim(opts);
@@ -25,7 +25,7 @@ export function triggerAttackAnim(
   }
 }
 
-function playPersonagemAnim(opts: AnimOpts) {
+function playCharacterAnim(opts: AnimOpts) {
   let overlay = document.getElementById('atkAnimOverlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -36,10 +36,10 @@ function playPersonagemAnim(opts: AnimOpts) {
 
   let emoji: string;
   let animClass: string;
-  if (opts.tipo === 'ranged') {
+  if (opts.type === 'ranged') {
     emoji = '🏹';
     animClass = 'anim-arrow';
-  } else if (opts.tipo === 'magic' || (opts.pmCusto && opts.pmCusto > 0 && opts.tipo === 'magic')) {
+  } else if (opts.type === 'magic' || (opts.mpCost && opts.mpCost > 0 && opts.type === 'magic')) {
     emoji = '✨';
     animClass = 'anim-magic';
   } else {
@@ -47,9 +47,9 @@ function playPersonagemAnim(opts: AnimOpts) {
     animClass = 'anim-slash';
   }
 
-  const label = opts.pmCusto && opts.pmCusto > 0
-    ? `${opts.nome || 'Ataque'} — ${opts.pmCusto} PM`
-    : opts.nome || 'Ataque';
+  const label = opts.mpCost && opts.mpCost > 0
+    ? `${opts.name || 'Ataque'} — ${opts.mpCost} PM`
+    : opts.name || 'Ataque';
 
   overlay.innerHTML = `<div class="atk-anim-char ${animClass}">${emoji}</div><div class="atk-anim-label">${label}</div>`;
   overlay.classList.add('active');
@@ -61,14 +61,14 @@ function playPersonagemAnim(opts: AnimOpts) {
 }
 
 function playToastAnim(opts: AnimOpts) {
-  const pmCusto = opts.pmCusto && opts.pmCusto > 0 ? opts.pmCusto : undefined;
-  showToast(`${opts.nome || 'Ataque'} usado!`, 'attack', pmCusto);
+  const mpCost = opts.mpCost && opts.mpCost > 0 ? opts.mpCost : undefined;
+  showToast(`${opts.name || 'Ataque'} usado!`, 'attack', mpCost);
 }
 
 function playFloatingAnim(opts: AnimOpts) {
   const el = document.createElement('div');
   el.className = 'atk-floating';
-  el.textContent = opts.pmCusto && opts.pmCusto > 0 ? `-${opts.pmCusto} PM` : 'Hit!';
+  el.textContent = opts.mpCost && opts.mpCost > 0 ? `-${opts.mpCost} PM` : 'Hit!';
   document.body.appendChild(el);
 
   const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f1c40f', '#9b59b6'];

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiFetchParties, apiFetchFichasResumo, apiUpdateParty } from '../../api';
-import type { Party } from '../../types/combate';
-import type { FichaResumo } from '../../types/ficha';
+import { apiFetchParties, apiFetchCharacterSummaries, apiUpdateParty } from '../../api';
+import type { Party } from '../../types/party';
+import type { CharacterSummary } from '../../types/character';
 import { getInitials, getAvatarColor, formatClassesStr } from '../../utils/formatters';
 import Topbar from '../../components/layout/Topbar/Topbar';
 import Button from '../../components/ui/Button/Button';
@@ -12,7 +12,7 @@ export default function PartyMembersPage() {
   const { partyId } = useParams<{ partyId: string }>();
   const navigate = useNavigate();
   const [party, setParty] = useState<Party | null>(null);
-  const [resumos, setResumos] = useState<FichaResumo[]>([]);
+  const [resumos, setResumos] = useState<CharacterSummary[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -22,18 +22,18 @@ export default function PartyMembersPage() {
       try {
         const [parties, allResumos] = await Promise.all([
           apiFetchParties(),
-          apiFetchFichasResumo(),
+          apiFetchCharacterSummaries(),
         ]);
 
         const found = parties.find((p) => p.id === partyId);
         if (!found) {
-          navigate('/grupos', { replace: true });
+          navigate('/parties', { replace: true });
           return;
         }
 
         setParty(found);
-        setResumos(allResumos.filter((r) => r.sistema === found.sistema));
-        setSelected(new Set(found.membros));
+        setResumos(allResumos.filter((r) => r.system === found.system));
+        setSelected(new Set(found.members));
       } catch (err) {
         console.error('Erro ao carregar membros:', err);
       }
@@ -51,9 +51,9 @@ export default function PartyMembersPage() {
 
   const handleConfirm = async () => {
     if (!party) return;
-    const membros = Array.from(selected);
-    await apiUpdateParty(party.id, { ...party, membros });
-    navigate(`/${party.sistema}/grupo/${party.id}`);
+    const members = Array.from(selected);
+    await apiUpdateParty(party.id, { ...party, members });
+    navigate(`/${party.system}/party/${party.id}`);
   };
 
   if (!party) {
@@ -70,10 +70,10 @@ export default function PartyMembersPage() {
 
   return (
     <div className={styles.page}>
-      <Topbar title={`Grupo - ${party.nome}`} />
+      <Topbar title={`Grupo - ${party.name}`} />
 
       <div className={styles.content}>
-        <h2 className={styles.pageTitle}>{party.nome} — Selecionar Membros</h2>
+        <h2 className={styles.pageTitle}>{party.name} — Selecionar Membros</h2>
         <p className={styles.subtitle}>
           Selecione os personagens que participarão desta party. Apenas personagens do sistema selecionado são exibidos.
         </p>
@@ -98,12 +98,12 @@ export default function PartyMembersPage() {
                   <span className={styles.checkbox}>{isSelected ? '✓' : ''}</span>
                   <div
                     className={styles.avatar}
-                    style={r.avatar ? undefined : { background: getAvatarColor(r.nome) }}
+                    style={r.avatar ? undefined : { background: getAvatarColor(r.name) }}
                   >
-                    {r.avatar ? <img src={r.avatar} alt="" /> : getInitials(r.nome)}
+                    {r.avatar ? <img src={r.avatar} alt="" /> : getInitials(r.name)}
                   </div>
-                  <span className={styles.cardNome}>{r.nome}</span>
-                  <span className={styles.cardClasse}>{classesStr}</span>
+                  <span className={styles.cardName}>{r.name}</span>
+                  <span className={styles.cardClass}>{classesStr}</span>
                 </button>
               );
             })}
@@ -111,7 +111,7 @@ export default function PartyMembersPage() {
         )}
 
         <div className={styles.actions}>
-          <Button variant="ghost" onClick={() => navigate('/grupos')}>
+          <Button variant="ghost" onClick={() => navigate('/parties')}>
             Cancelar
           </Button>
           <Button variant="primary" onClick={handleConfirm} disabled={selected.size === 0}>

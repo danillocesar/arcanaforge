@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { useFichaContextOptional } from '../../../contexts/FichaContext';
+import { useCharacterContextOptional } from '../../../contexts/CharacterContext';
 import styles from './Section.module.css';
 
 interface SectionProps {
@@ -19,20 +19,20 @@ export default function Section({
   children,
   className,
 }: SectionProps) {
-  const fichaCtx = useFichaContextOptional();
-  const isControlled = fichaCtx?.ficha != null;
+  const charCtx = useCharacterContextOptional();
+  const isControlled = charCtx?.character != null;
 
   const [localCollapsed, setLocalCollapsed] = useState(defaultCollapsed);
 
   const collapsed = isControlled
-    ? !!fichaCtx!.ficha!.secoesFechadas?.[id]
+    ? !!charCtx!.character!.collapsedSections?.[id]
     : localCollapsed;
 
   const toggleCollapse = () => {
     if (isControlled) {
-      fichaCtx!.updateFicha((f) => ({
+      charCtx!.updateCharacter((f) => ({
         ...f,
-        secoesFechadas: { ...f.secoesFechadas, [id]: !f.secoesFechadas?.[id] },
+        collapsedSections: { ...f.collapsedSections, [id]: !f.collapsedSections?.[id] },
       }));
     } else {
       setLocalCollapsed((c) => !c);

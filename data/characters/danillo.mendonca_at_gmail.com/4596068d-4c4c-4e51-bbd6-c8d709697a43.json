@@ -1,0 +1,483 @@
+{
+  "buffs": [
+    {
+      "name": "Missa: Elevação do Espírito",
+      "type": "mp",
+      "value": "8",
+      "mp": 0,
+      "active": false
+    },
+    {
+      "name": "Mente Vazia",
+      "type": "attribute",
+      "attributeId": "wis",
+      "value": "2",
+      "mp": 0,
+      "active": true
+    }
+  ],
+  "classes": [
+    {
+      "name": "Shugenja",
+      "level": 6
+    }
+  ],
+  "logs": [
+    {
+      "type": "magia",
+      "name": "Bênção",
+      "mpSpent": 1,
+      "timestamp": "19:44:00",
+      "details": {
+        "custoPMBase": 1,
+        "aprimoramentos": [],
+        "custoTotal": 1
+      }
+    },
+    {
+      "type": "magia",
+      "name": "Bênção",
+      "mpSpent": "1",
+      "timestamp": 1774467598887
+    },
+    {
+      "type": "magia",
+      "name": "Bênção",
+      "mpSpent": "1",
+      "timestamp": 1774468104695
+    }
+  ],
+  "avatar": "/avatars/4596068d-4c4c-4e51-bbd6-c8d709697a43.png",
+  "_id": "4596068d-4c4c-4e51-bbd6-c8d709697a43",
+  "name": "Hikari",
+  "system": "tormenta",
+  "race": "Aggelus",
+  "origin": "Curandeiro",
+  "deity": "Lin-Wu",
+  "alignment": "",
+  "age": "",
+  "size": "Médio",
+  "speed": "9m / 6q",
+  "experience": 0,
+  "damageReduction": "",
+  "notes": "",
+  "temporaryEffects": "",
+  "proficiencies": "",
+  "progression": [
+    "Aprendiz Celestial; Devoto Fiel | Medicina; Médico de Campo | Benção; Curar Ferimentos; Santuário |",
+    "Defesa da Honra, Comando",
+    "Missa: Elevação do Espírito, Consagrar",
+    "Aumento de Sab, Escudo da Fé",
+    "Conhecimento Mágico, Mente Divina, Oração, Runa de Proteção",
+    "Magia Ilimitada?",
+    "Aumento de Sab;",
+    "Fortaleza da Honra"
+  ],
+  "temporaryHp": 0,
+  "temporaryMp": 0,
+  "attackAnimation": "personagem",
+  "attributes": {
+    "str": 1,
+    "dex": 2,
+    "con": 2,
+    "int": 2,
+    "wis": 6,
+    "cha": 3
+  },
+  "spellcastingAttribute": "wis",
+  "hp": {
+    "max": 48,
+    "current": 46
+  },
+  "mp": {
+    "max": 35,
+    "current": 29
+  },
+  "defense": {
+    "base": 10,
+    "items": [
+      {
+        "name": "Defesa da Honra",
+        "value": 6,
+        "penalty": 0
+      },
+      {
+        "name": "Couraça",
+        "value": 5,
+        "penalty": -4
+      }
+    ]
+  },
+  "attacks": [],
+  "skills": {
+    "acrobacia": {
+      "trained": false,
+      "misc": 0
+    },
+    "adestramento": {
+      "trained": false,
+      "misc": 0
+    },
+    "atletismo": {
+      "trained": false,
+      "misc": 0
+    },
+    "atuacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "cavalgar": {
+      "trained": false,
+      "misc": 0
+    },
+    "conhecimento": {
+      "trained": false,
+      "misc": 0
+    },
+    "cura": {
+      "trained": true,
+      "misc": 0
+    },
+    "diplomacia": {
+      "trained": false,
+      "misc": 2
+    },
+    "enganacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "fortitude": {
+      "trained": true,
+      "misc": 0
+    },
+    "furtividade": {
+      "trained": false,
+      "misc": 0
+    },
+    "guerra": {
+      "trained": false,
+      "misc": 0
+    },
+    "iniciativa": {
+      "trained": true,
+      "misc": 2
+    },
+    "intimidacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "intuicao": {
+      "trained": false,
+      "misc": 2
+    },
+    "investigacao": {
+      "trained": false,
+      "misc": 0
+    },
+    "jogatina": {
+      "trained": false,
+      "misc": 0
+    },
+    "ladinagem": {
+      "trained": false,
+      "misc": 0
+    },
+    "luta": {
+      "trained": false,
+      "misc": 0
+    },
+    "misticismo": {
+      "trained": false,
+      "misc": 0
+    },
+    "nobreza": {
+      "trained": true,
+      "misc": 0
+    },
+    "oficio1": {
+      "trained": false,
+      "misc": 0,
+      "label": ""
+    },
+    "oficio2": {
+      "trained": false,
+      "misc": 0,
+      "label": ""
+    },
+    "percepacao": {
+      "trained": true,
+      "misc": 2
+    },
+    "pilotagem": {
+      "trained": false,
+      "misc": 0
+    },
+    "pontaria": {
+      "trained": false,
+      "misc": 0
+    },
+    "reflexos": {
+      "trained": false,
+      "misc": 0
+    },
+    "religiao": {
+      "trained": true,
+      "misc": 0
+    },
+    "sobrevivencia": {
+      "trained": true,
+      "misc": 0
+    },
+    "vontade": {
+      "trained": true,
+      "misc": 2
+    }
+  },
+  "abilities": [
+    {
+      "name": "Herança Divina",
+      "source": "Raça",
+      "type": "",
+      "mpCost": "",
+      "description": "Você é uma criatura do tipo espírito e recebe visão no escuro."
+    },
+    {
+      "name": "Luz Sagrada ",
+      "source": "Raça",
+      "type": "",
+      "mpCost": "",
+      "description": "Você recebe +2 em Diplomacia e Intuição. Além disso, pode lançar Luz (como uma magia divina; atributo-chave Carisma). Caso aprenda novamente esta magia, o custo para lançá-la diminui em –1 PM.*"
+    },
+    {
+      "name": "Coração Heroico",
+      "source": "Herói camponês",
+      "type": "",
+      "mpCost": "",
+      "description": ""
+    },
+    {
+      "name": "Surto Heroico",
+      "source": "Herói camponês",
+      "type": "",
+      "mpCost": "",
+      "description": ""
+    },
+    {
+      "name": "Mente Vazia",
+      "source": "Lin-Wu",
+      "type": "",
+      "mpCost": "",
+      "description": ""
+    },
+    {
+      "name": "Coragem Total",
+      "source": "Lin-Wu",
+      "type": "",
+      "mpCost": "",
+      "description": "Imune a Medo"
+    },
+    {
+      "name": "Defesa da Honra",
+      "source": "Shugenja",
+      "type": "",
+      "mpCost": "",
+      "description": "Você soma sua sabedoria na Defesa, limitado pelo seu nível. Esta habilidade exige liberdade de movimentos; você não pode usá-la se estiver de armadura pesada ou na condição imóvel.\n\nNo 5° Nível quando sofre dano, você pode gastar 2 PM para receber uma redução de dano contra esse efeito igual a sua sabedoria."
+    },
+    {
+      "name": "Missa: Elevação do Espírito",
+      "source": "Shugenja",
+      "type": "",
+      "mpCost": "",
+      "description": "Os participantes recebem pontos de mana temporários em um valor igual a sua Sabedoria."
+    },
+    {
+      "name": "Conhecimento Mágico",
+      "source": "Shugenja",
+      "type": "",
+      "mpCost": "",
+      "description": "Você aprende duas magias divinas de qualquer círculo que possa lançar. Você pode escolher este poder quantas vezes quiser."
+    }
+  ],
+  "spells": [
+    {
+      "name": "Bênção",
+      "school": "Encantamento",
+      "castingTime": "Padrão",
+      "range": "Curto",
+      "area": "",
+      "duration": "Cena",
+      "resistance": "-",
+      "mpCost": "1",
+      "spellLevel": 0,
+      "enhancements": [
+        {
+          "description": "Muda o alvo para 1 cadáver e a duração para 1 semana. O cadáver não se decompõe nem pode ser transformado em morto-vivo.",
+          "mpCost": "1"
+        },
+        {
+          "description": "Aumenta os bônus em +1 (bônus máximo limitado pelo círculo máximo de magia que você pode lançar).",
+          "mpCost": "2"
+        },
+        {
+          "description": "Também deixa o alvo abençoado.",
+          "mpCost": "1"
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "Curar Ferimentos",
+      "school": "Evocação",
+      "castingTime": "Padrão",
+      "range": "Toque",
+      "area": "1 criatura",
+      "duration": "Instantânea",
+      "resistance": "-",
+      "mpCost": "1",
+      "spellLevel": 0,
+      "enhancements": [
+        {
+          "description": "Aumenta a cura em +1d8+1.",
+          "mpCost": "1"
+        },
+        {
+          "description": "Também remove uma condição de fadiga do alvo.",
+          "mpCost": "1"
+        },
+        {
+          "description": "Muda o alcance para curto.",
+          "mpCost": "2"
+        },
+        {
+          "description": "Muda o alcance para curto e o alvo para criaturas escolhidas.",
+          "mpCost": "5"
+        },
+        {
+          "description": "Muda o alvo para 1 morto-vivo. Em vez do normal, causa 1d8 pontos de dano de luz (Vontade reduz à metade)",
+          "mpCost": "0"
+        }
+      ],
+      "description": ""
+    },
+    {
+      "name": "Santuário ",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": "1",
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Comando",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Escudo da Fé",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Consagrar",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Mente Divina",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Oração",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    },
+    {
+      "name": "Runa de Proteção",
+      "school": "",
+      "castingTime": "",
+      "range": "",
+      "area": "",
+      "duration": "",
+      "resistance": "",
+      "mpCost": 0,
+      "spellLevel": 0,
+      "enhancements": [],
+      "description": ""
+    }
+  ],
+  "inventory": [],
+  "equipped": [
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    }
+  ],
+  "coins": {
+    "copper": 0,
+    "silver": 0,
+    "gold": 0
+  },
+  "collapsedSections": {
+    "secBuffs": false,
+    "secHeader": false,
+    "secAttacks": true,
+    "secAbilities": false,
+    "secHpMp": false
+  },
+  "hiddenSections": {},
+  "_migrated_v2": true
+}

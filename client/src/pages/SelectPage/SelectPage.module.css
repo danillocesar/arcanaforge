@@ -50,12 +50,12 @@
 }
 
 /* Sistema selector */
-.sistemaSelector {
+.systemSelector {
   display: flex;
   gap: 10px;
 }
 
-.sistemaOption {
+.systemOption {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -71,23 +71,23 @@
   font-family: var(--font);
 }
 
-.sistemaOption:hover {
+.systemOption:hover {
   border-color: var(--text-muted);
   background: var(--bg-card-hover);
 }
 
-.sistemaActive {
+.systemActive {
   border-color: var(--accent-gold);
   background: rgba(201, 168, 76, 0.08);
   color: var(--accent-gold);
   box-shadow: 0 0 12px rgba(201, 168, 76, 0.15);
 }
 
-.sistemaIcon {
+.systemIcon {
   font-size: 1.6rem;
 }
 
-.sistemaName {
+.systemName {
   font-size: 0.78rem;
   font-weight: 700;
 }

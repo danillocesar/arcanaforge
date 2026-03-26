@@ -1,75 +1,57 @@
-const fs = require('fs');
 const { WebSocketServer } = require('ws');
-const paths = require('./paths');
-const combateState = require('./combateState');
+const combatState = require('./combatState');
 
 /**
  * @param {import('http').Server} server
- * @param {{ refs: { broadcastCombate: (partyId?: string) => void } }} opts
+ * @param {{ refs: { broadcastCombat: (partyId?: string) => void } }} opts
  */
 function attachWebSocket(server, opts) {
   const { refs } = opts;
   const wss = new WebSocketServer({ server });
 
-  refs.broadcastCombate = function broadcastCombate(partyId) {
-    if (partyId) {
-      const data = combateState.combateCache[partyId] || combateState.COMBATE_DEFAULT;
-      const msg = JSON.stringify({ type: 'combate_sync', partyId, data });
-      wss.clients.forEach((client) => {
-        if (client.readyState === 1) client.send(msg);
-      });
-    } else {
-      const msg = JSON.stringify({ type: 'combate_sync', data: combateState.combateData });
-      wss.clients.forEach((client) => {
-        if (client.readyState === 1) client.send(msg);
-      });
-    }
+  refs.broadcastCombat = function broadcastCombat(partyId) {
+    const data = combatState.combatCache[partyId] || combatState.COMBAT_DEFAULT;
+    const msg = JSON.stringify({ type: 'combat_sync', partyId, data });
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) client.send(msg);
+    });
   };
 
   wss.on('connection', (ws) => {
     ws.on('message', (raw) => {
       try {
         const msg = JSON.parse(raw);
-        if (msg.type === 'combate_update' && msg.data) {
+        if (msg.type === 'combat_update' && msg.data) {
           const pid = msg.partyId;
           if (pid) {
-            combateState.combateCache[pid] = msg.data;
-            combateState.saveCombateForParty(pid, msg.data);
-            const out = JSON.stringify({ type: 'combate_sync', partyId: pid, data: msg.data });
-            wss.clients.forEach((c) => {
-              if (c !== ws && c.readyState === 1) c.send(out);
-            });
-          } else {
-            combateState.combateData = msg.data;
-            fs.writeFileSync(
-              paths.COMBATE_FILE,
-              JSON.stringify(combateState.combateData, null, 2),
-              'utf-8',
+            combatState.combatCache[pid] = msg.data;
+            combatState.saveCombat(pid, msg.data).catch((e) =>
+              console.error('WS combat save error:', e.message),
             );
-            const out = JSON.stringify({ type: 'combate_sync', data: combateState.combateData });
+            const out = JSON.stringify({ type: 'combat_sync', partyId: pid, data: msg.data });
             wss.clients.forEach((c) => {
               if (c !== ws && c.readyState === 1) c.send(out);
             });
           }
         }
-        if (msg.type === 'ficha_hp_update' && msg.fichaId) {
+        if (msg.type === 'character_hp_update' && msg.characterId) {
           const out = JSON.stringify({
-            type: 'ficha_hp_sync',
-            fichaId: msg.fichaId,
-            nome: msg.nome,
-            pv: msg.pv,
-            pm: msg.pm,
+            type: 'character_hp_sync',
+            characterId: msg.characterId,
+            name: msg.name,
+            hp: msg.hp,
+            mp: msg.mp,
           });
           wss.clients.forEach((c) => {
             if (c !== ws && c.readyState === 1) c.send(out);
           });
         }
-        if (msg.type === 'mestre_hp_update' && msg.fichaId) {
+        if (msg.type === 'master_hp_update' && msg.characterId) {
           const out = JSON.stringify({
-            type: 'mestre_hp_sync',
-            fichaId: msg.fichaId,
-            nome: msg.nome,
-            pvAtual: msg.pvAtual,
+            type: 'master_hp_sync',
+            characterId: msg.characterId,
+            name: msg.name,
+            currentHp: msg.currentHp,
           });
           wss.clients.forEach((c) => {
             if (c !== ws && c.readyState === 1) c.send(out);

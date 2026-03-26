@@ -1,0 +1,79 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
+}
+
+.layoutTop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .layoutTop {
+    grid-template-columns: 1fr;
+  }
+}
+
+.colInfo,
+.colStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.layoutMiddle {
+  display: block;
+}
+
+.fullBottom {
+  margin-top: 0;
+}
+
+.layoutProfEffects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .layoutProfEffects {
+    grid-template-columns: 1fr;
+  }
+}
+
+.drawerTabs {
+  position: fixed;
+  right: 0;
+  bottom: 90px;
+  z-index: 997;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawerTab {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.drawerTab:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent-gold);
+}
