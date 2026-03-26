@@ -1,6 +1,55 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { emailToFolderSegment } = require('./fichas/userFichasDir');
+
+/**
+ * Move fichas JSON ainda na raiz de data/fichas/ para data/fichas/<segmento>/.
+ * Defina FICHAS_MIGRATION_OWNER_EMAIL (e opcionalmente FICHAS_MIGRATION_OWNER_UID) no .env.
+ * @param {{ FICHAS_DIR: string }} dirs
+ */
+function migrateFlatFichasToUserFolder({ FICHAS_DIR }) {
+  let entries;
+  try {
+    entries = fs.readdirSync(FICHAS_DIR, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  const flatJson = entries.filter((e) => e.isFile() && e.name.endsWith('.json')).map((e) => e.name);
+  if (flatJson.length === 0) return;
+
+  const email = process.env.FICHAS_MIGRATION_OWNER_EMAIL;
+  if (!email || !String(email).trim()) {
+    console.warn(
+      '[migrate] Existem fichas JSON na raiz de data/fichas. Defina FICHAS_MIGRATION_OWNER_EMAIL no .env para movê-las para a pasta do utilizador.'
+    );
+    return;
+  }
+
+  const segment = emailToFolderSegment(email.trim());
+  const destDir = path.join(FICHAS_DIR, segment);
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+
+  const uidMigration = process.env.FICHAS_MIGRATION_OWNER_UID;
+
+  for (const f of flatJson) {
+    const src = path.join(FICHAS_DIR, f);
+    const dest = path.join(destDir, f);
+    try {
+      const raw = fs.readFileSync(src, 'utf-8');
+      const data = JSON.parse(raw);
+      data.ownerEmail = String(email).trim().toLowerCase();
+      if (uidMigration && String(uidMigration).trim()) {
+        data.ownerUid = String(uidMigration).trim();
+      }
+      fs.writeFileSync(dest, JSON.stringify(data, null, 2), 'utf-8');
+      fs.unlinkSync(src);
+      console.log(`  Migrated ficha to user folder: ${f} -> ${segment}/`);
+    } catch (err) {
+      console.error(`  Error migrating ${f} to user folder:`, err.message);
+    }
+  }
+}
 
 /**
  * @param {{ FICHAS_DIR: string, AVATARS_DIR: string, PARTIES_DIR: string }} dirs
@@ -74,6 +123,8 @@ function run(dirs) {
       }
     }
   }
+
+  migrateFlatFichasToUserFolder({ FICHAS_DIR });
 }
 
 module.exports = { run };

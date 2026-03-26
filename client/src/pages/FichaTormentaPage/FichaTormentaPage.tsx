@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
 import { FichaProvider, useFichaContext } from '../../contexts/FichaContext';
 import { SEC_NOMES } from '../../data/constants';
-import Topbar, { topbarStyles } from '../../components/layout/Topbar/Topbar';
+import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import Drawer from '../../components/ui/Drawer/Drawer';
 import InfoBasica from '../../components/ficha/InfoBasica/InfoBasica';
@@ -25,7 +25,6 @@ import styles from './FichaTormentaPage.module.css';
 function FichaTormentaInner() {
   const {
     ficha,
-    saveStatus,
     updateFicha,
     loadFicha,
     refreshList,
@@ -81,15 +80,6 @@ function FichaTormentaInner() {
 
   const isHidden = (id: string) => !!ficha?.secoesOcultas?.[id];
 
-  const saveStatusText =
-    saveStatus === 'saving' ? 'Salvando...' : saveStatus === 'error' ? 'Erro!' : 'Salvo';
-  const saveStatusClass =
-    saveStatus === 'saving'
-      ? topbarStyles.saving
-      : saveStatus === 'error'
-        ? topbarStyles.error
-        : topbarStyles.saved;
-
   if (!ficha) {
     return (
       <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
@@ -102,9 +92,6 @@ function FichaTormentaInner() {
     <>
       <Topbar
         title={`Tormenta - ${ficha.nome}`}
-        right={
-          <span className={`${topbarStyles.saveStatus} ${saveStatusClass}`}>{saveStatusText}</span>
-        }
       />
 
       <SectionNav

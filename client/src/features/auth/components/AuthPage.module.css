@@ -1,0 +1,154 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--accent-gold) 10%, transparent), transparent 40%),
+    var(--bg-body);
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+}
+
+.logo {
+  height: 36px;
+  width: auto;
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.title {
+  font-size: 1.4rem;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.googleBtn {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  background: #fff;
+  color: #3c4043;
+  font-size: 0.92rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+.googleBtn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #d2d6db;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.12);
+}
+
+.googleBtn:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+.googleBtn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.googleIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 14px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.divider span {
+  color: var(--text-muted);
+}
+
+.authFooter {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.linkInline {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: inherit;
+  color: var(--accent-blue-bar);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.linkInline:hover {
+  color: var(--accent-blue);
+}
+
+.linkInline:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent-blue-bar) 45%, transparent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+}
+
+.error {
+  color: var(--accent-red);
+  font-size: 0.9rem;
+}
+
+.notice {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}

@@ -46,6 +46,7 @@
   gap: 10px;
   font-size: 0.8rem;
   color: var(--text-muted);
+  position: relative;
 }
 
 .navRow {
@@ -56,13 +57,12 @@
   height: 34px;
 }
 
-.logo {
-  font-weight: 800;
-  font-size: 1.3rem;
-  background: linear-gradient(135deg, var(--accent-gold), #e8c95a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.logoImage {
+  height: 26px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .navLink {
@@ -107,6 +107,146 @@
   color: var(--accent-red);
 }
 
+.userMenuWrap {
+  position: relative;
+}
+
+/* Gatilho neutro (sem “caixa” de botão): integra ao header */
+.userMenuButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 0 2px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+  max-width: 280px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.userMenuButton:hover .userName {
+  color: var(--text-primary);
+}
+
+.userMenuButton:hover .userEmail {
+  opacity: 0.95;
+}
+
+.userMenuButton:focus {
+  outline: none;
+}
+
+.userMenuButton:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.userAvatar,
+.userAvatarImg {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.userAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent-gold) 24%, var(--bg-card));
+  color: var(--accent-gold);
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+.userAvatarImg {
+  object-fit: cover;
+}
+
+.userMeta {
+  display: grid;
+  min-width: 0;
+  text-align: left;
+}
+
+.userName {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 40;
+}
+
+.dropdownUserInfo {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+}
+
+.dropdownUserName {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownUserEmail {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  padding: 10px;
+  font-size: 0.78rem;
+}
+
+.dropdownItem:hover {
+  background: var(--bg-card-hover);
+}
+
+.dropdownDanger {
+  color: #f87171;
+}
+
 @media (max-width: 600px) {
   .topRow {
     padding: 0 12px;
@@ -116,11 +256,17 @@
     padding: 0 12px;
     height: 30px;
   }
-  .logo {
-    font-size: 1.1rem;
+  .logoImage {
+    height: 22px;
   }
   .navLink {
     font-size: 0.72rem;
     padding: 4px 10px;
+  }
+  .userMenuButton {
+    max-width: 180px;
+  }
+  .userEmail {
+    display: none;
   }
 }

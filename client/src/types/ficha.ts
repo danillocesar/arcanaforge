@@ -6,6 +6,8 @@ export interface FichaResumo {
   avatar: string;
   classes: { nome: string; nivel: number }[];
   sistema: SistemaRPG;
+  ownerUid?: string;
+  ownerEmail?: string;
 }
 
 export type AtributoId = 'for' | 'des' | 'con' | 'int' | 'sab' | 'car';
@@ -150,6 +152,10 @@ export interface Atributos {
 
 export interface Ficha {
   _id: string;
+  /** Firebase Auth UID do dono (gravado pelo servidor) */
+  ownerUid?: string;
+  /** E-mail do dono no momento do último save (gravado pelo servidor) */
+  ownerEmail?: string;
   sistema: SistemaRPG;
   nome: string;
   classes: Classe[];

@@ -3,6 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
 const combateState = require('../combateState');
+const {
+  getUserFichasDir,
+  resolveFichaFilePath,
+  ownerFieldsFromReq,
+} = require('../fichas/userFichasDir');
 
 /**
  * @param {import('express').Express} app
@@ -20,25 +25,29 @@ function registerRoutes(app, opts) {
   } = paths;
 
   app.get('/api/fichas', (req, res) => {
+    const userDir = getUserFichasDir(req, FICHAS_DIR);
     const files = fs
-      .readdirSync(FICHAS_DIR)
+      .readdirSync(userDir)
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.replace('.json', ''));
     res.json(files);
   });
 
   app.get('/api/fichas-resumo', (req, res) => {
-    const files = fs.readdirSync(FICHAS_DIR).filter((f) => f.endsWith('.json'));
+    const userDir = getUserFichasDir(req, FICHAS_DIR);
+    const files = fs.readdirSync(userDir).filter((f) => f.endsWith('.json'));
     const resumos = files
       .map((f) => {
         try {
-          const data = JSON.parse(fs.readFileSync(path.join(FICHAS_DIR, f), 'utf-8'));
+          const data = JSON.parse(fs.readFileSync(path.join(userDir, f), 'utf-8'));
           return {
             _id: data._id || f.replace('.json', ''),
             nome: data.nome || 'Sem nome',
             avatar: data.avatar || '',
             classes: data.classes || [],
             sistema: data.sistema || 'tormenta',
+            ownerUid: data.ownerUid,
+            ownerEmail: data.ownerEmail,
           };
         } catch {
           return null;
@@ -49,7 +58,13 @@ function registerRoutes(app, opts) {
   });
 
   app.get('/api/fichas/:id', (req, res) => {
-    const filePath = path.join(FICHAS_DIR, `${req.params.id}.json`);
+    const userDir = getUserFichasDir(req, FICHAS_DIR);
+    let filePath;
+    try {
+      filePath = resolveFichaFilePath(userDir, req.params.id);
+    } catch {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Ficha não encontrada' });
     }
@@ -62,14 +77,27 @@ function registerRoutes(app, opts) {
     if (!req.body || typeof req.body !== 'object' || !req.body.nome) {
       return res.status(400).json({ error: 'Corpo inválido: campo "nome" é obrigatório' });
     }
-    const body = { ...req.body, _id: id };
-    const filePath = path.join(FICHAS_DIR, `${id}.json`);
+    const userDir = getUserFichasDir(req, FICHAS_DIR);
+    let filePath;
+    try {
+      filePath = resolveFichaFilePath(userDir, id);
+    } catch {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
+    const owners = ownerFieldsFromReq(req);
+    const body = { ...req.body, _id: id, ...owners };
     fs.writeFileSync(filePath, JSON.stringify(body, null, 2), 'utf-8');
     res.json({ ok: true, _id: id });
   });
 
   app.delete('/api/fichas/:id', (req, res) => {
-    const filePath = path.join(FICHAS_DIR, `${req.params.id}.json`);
+    const userDir = getUserFichasDir(req, FICHAS_DIR);
+    let filePath;
+    try {
+      filePath = resolveFichaFilePath(userDir, req.params.id);
+    } catch {
+      return res.status(400).json({ error: 'ID inválido' });
+    }
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }

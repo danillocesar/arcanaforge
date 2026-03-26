@@ -1,11 +1,23 @@
+const dotenv = require('dotenv');
+const dotenvResult = dotenv.config();
+if (dotenvResult.parsed) {
+  for (const [key, value] of Object.entries(dotenvResult.parsed)) {
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
+
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const paths = require('./paths');
 const { register: registerValidateId } = require('./middleware/validateId');
+const { requireAuth } = require('./middleware/requireAuth');
 const { run: runMigrateFichas } = require('./migrateFichas');
 const { createUploadAvatar } = require('./multerAvatar');
 const { registerRoutes } = require('./routes');
@@ -23,8 +35,30 @@ runMigrateFichas({
 });
 
 const app = express();
-app.use(helmet({ contentSecurityPolicy: false }));
+// Necessário para identificar IP real atrás de proxy (ex.: ngrok)
+app.set('trust proxy', 1);
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    // COOP default do Helmet quebra OAuth em popup; login Google usa redirect no cliente.
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+  }),
+);
 app.use(express.json({ limit: '5mb' }));
+
+const healthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 900,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 registerValidateId(app);
 
@@ -35,6 +69,11 @@ if (fs.existsSync(paths.DIST_DIR)) {
 }
 
 app.use('/assets', express.static(path.join(paths.ROOT_DIR, 'assets')));
+app.get('/health', healthLimiter, (req, res) => {
+  res.json({ ok: true });
+});
+
+app.use('/api', apiLimiter, requireAuth);
 
 const uploadAvatar = createUploadAvatar(paths.AVATARS_DIR);
 

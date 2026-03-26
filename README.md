@@ -403,7 +403,10 @@ Padrões visuais recorrentes foram centralizados em componentes reutilizáveis e
 | Pacote | Versão | Uso |
 |--------|--------|-----|
 | `express` | ^4.21.0 | Servidor HTTP e API REST |
+| `helmet` | ^8.1.0 | Headers de segurança HTTP |
+| `express-rate-limit` | ^8.3.1 | Limite básico de requisições |
 | `multer` | ^2.1.1 | Upload de avatares (multipart/form-data) |
+| `firebase-admin` | ^13.7.0 | Validação de tokens Firebase no backend |
 | `ws` | ^8.20.0 | WebSocket para sincronização em tempo real |
 
 ### Frontend (`client/package.json`)
@@ -413,6 +416,54 @@ Padrões visuais recorrentes foram centralizados em componentes reutilizáveis e
 | `react` | ^19.2.4 | Biblioteca UI |
 | `react-dom` | ^19.2.4 | Renderização DOM |
 | `react-router-dom` | ^7.13.2 | Roteamento SPA |
+| `firebase` | ^12.11.0 | Autenticação Google + Email/Senha |
 | `typescript` | ^6.0.2 | Tipagem estática |
 | `vite` | ^8.0.2 | Bundler e dev server |
 | `@vitejs/plugin-react` | ^6.0.1 | Plugin React para Vite |
+
+---
+
+## Autenticação (Google + Email/Senha)
+
+O app usa **Firebase Authentication** no frontend e validação de token via **Firebase Admin** no backend.
+
+### Fluxo
+
+- Usuário não autenticado entra pela rota `/auth`.
+- É possível entrar/cadastrar com Google ou Email/Senha.
+- Contas Email/Senha exigem verificação de e-mail antes de acessar o app.
+- As rotas `/api/*` exigem `Authorization: Bearer <idToken>`.
+
+### Variáveis de ambiente
+
+#### Frontend (`client/.env`)
+
+```env
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_APP_ID=...
+```
+
+#### Backend (`.env`)
+
+```env
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+PORT=3000
+```
+
+### Configuração no Firebase Console
+
+1. Criar projeto Firebase.
+2. Em **Authentication > Sign-in method**, habilitar:
+   - Google
+   - Email/Password
+3. Em **Authentication > Settings**, configurar domínio autorizado da aplicação.
+4. Em **Project settings > Service accounts**, gerar chave privada para o backend.
+
+### Rotas públicas e protegidas
+
+- Públicas: `/health`, `/assets/*`, `/avatars/*`.
+- Protegidas: `/api/*` (exigem token válido).

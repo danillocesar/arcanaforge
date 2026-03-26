@@ -1,4 +1,4 @@
-export { ApiError, assertOk } from './http';
+export { ApiError, apiFetch, assertOk, setAuthConfig } from './http';
 export {
   apiFetchFichas,
   apiFetchFichasResumo,
