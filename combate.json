@@ -4,7 +4,7 @@
       "nome": "Inimigo 1",
       "iniciativa": 0,
       "pvMax": 10,
-      "pvAtual": 2
+      "pvAtual": 10
     },
     {
       "nome": "Inimigo 2",
@@ -16,7 +16,7 @@
       "id": "inimigo_1774473261500",
       "nome": "Novo Inimigo",
       "pvMax": 20,
-      "pvAtual": 5,
+      "pvAtual": 20,
       "iniciativa": 0,
       "limiarAlerta": 41,
       "limiarCritico": 23
@@ -65,6 +65,6 @@
     "jogador_Hikari": 56
   },
   "turnoIdx": 0,
-  "ordenado": true,
-  "rodada": 10
+  "ordenado": false,
+  "rodada": 1
 }

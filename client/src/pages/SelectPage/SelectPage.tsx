@@ -29,7 +29,7 @@ export default function SelectPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.logo}>T20</span>
+          <span className={styles.logo}>ArcanaForge</span>
           <span className={styles.title}>Selecionar Personagem</span>
         </div>
         <Link to="/" className={styles.back}>

@@ -21,11 +21,20 @@
   color: inherit;
 }
 
-.card:hover {
+.card:hover,
+.card:focus {
+  text-decoration: none;
   border-color: var(--accent-gold);
   background: var(--bg-card-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--accent-gold) 25%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.card:hover *,
+.card:focus * {
+  text-decoration: none;
 }
 
 .avatar {

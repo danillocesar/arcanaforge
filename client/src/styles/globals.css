@@ -34,7 +34,7 @@ input[type="number"] {
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
 
 a { color: var(--accent-gold); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { color: var(--accent-gold); }
 
 /* ========== ATTACK ANIMATION OVERLAY ========== */
 .atk-anim-overlay {

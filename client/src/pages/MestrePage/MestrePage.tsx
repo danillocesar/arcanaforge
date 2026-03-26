@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CombateProvider, useCombateContext } from '../../contexts/CombateContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
@@ -82,6 +82,7 @@ function MestreContent() {
 
   return (
     <>
+      {modoMestre && <div className={styles.mestreStrip} aria-hidden />}
       <Topbar
         left={
           <>
@@ -103,6 +104,12 @@ function MestreContent() {
         }
       />
       <div className={styles.mestreContainer}>
+        {modoMestre && (
+          <div className={styles.mestreBadge}>
+            <span className={styles.mestreBadgeDot} aria-hidden />
+            MODO MESTRE
+          </div>
+        )}
         <div className={styles.mestreSection}>
           {modoMestre && <CombateToolbar />}
           {rows.length === 0 ? (

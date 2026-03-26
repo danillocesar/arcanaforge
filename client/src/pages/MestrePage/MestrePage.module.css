@@ -61,9 +61,15 @@
 }
 
 .mestreToggleActive {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
+  background: color-mix(in srgb, var(--accent-mestre) 18%, transparent);
+  border-color: var(--accent-mestre);
+  color: var(--accent-mestre);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-mestre) 25%, transparent);
+}
+
+.mestreToggleActive:hover {
+  background: color-mix(in srgb, var(--accent-mestre) 24%, transparent);
+  color: var(--accent-mestre);
 }
 
 .addInimigo {
@@ -147,4 +153,59 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 16px;
+}
+
+.mestreStrip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent-mestre) 60%, transparent),
+    var(--accent-mestre) 30%,
+    var(--accent-mestre) 70%,
+    color-mix(in srgb, var(--accent-mestre) 60%, transparent)
+  );
+  z-index: 101;
+  pointer-events: none;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-mestre) 40%, transparent);
+}
+
+.mestreBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: var(--font);
+  color: var(--accent-mestre);
+  background: color-mix(in srgb, var(--accent-mestre) 8%, rgba(15, 17, 23, 0.7));
+  border: 1px solid color-mix(in srgb, var(--accent-mestre) 25%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-mestre) 15%, transparent);
+}
+
+.mestreBadgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-mestre);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-mestre) 60%, transparent);
+  animation: mestreDotPulse 2s ease-in-out infinite;
+}
+
+@keyframes mestreDotPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
 }
