@@ -39,7 +39,7 @@ Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto 
 - **GM Mode** (toggle) — esconde/mostra controles exclusivos do mestre (HP de inimigos, botões de adicionar/remover)
 - **Visual HP Feedback** — brilho amarelado (alerta) e avermelhado (crítico) com limiares aleatórios para esconder a % exata dos jogadores
 - **Icons** — ícone da classe ao lado do nome dos jogadores, ícone de vilão para inimigos
-- **Avatars** — faixa lateral com imagem do personagem (prioriza versão transparent)
+- **Avatars** — faixa lateral com imagem do personagem (URL pública R2 / HTTPS)
 - **Mini Order** — barra inferior fixa com avatares miniatura na ordem de iniciativa
 - **Real-time Sync** — todas as alterações (HP, turno, iniciativa, inimigos) são sincronizadas entre todos os clientes conectados
 
@@ -71,7 +71,7 @@ Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto 
 | **Runtime** | Node.js 22 |
 | **Backend HTTP** | Express 4 |
 | **WebSocket** | `ws` (WebSocketServer) |
-| **Upload de arquivos** | Multer |
+| **Armazenamento de avatares** | Cloudflare R2 (upload via API, servidor grava no bucket) |
 | **Autenticação** | Firebase Auth (Google + Email/Senha) |
 | **Frontend** | React 19, TypeScript, Vite 8 |
 | **Roteamento** | React Router v7 |
@@ -105,6 +105,8 @@ docker compose logs -f
 # Parar tudo
 docker compose --profile tunnel down
 ```
+# Buildar e rodar denovo
+docker compose build app && docker compose up -d app
 
 A app fica acessível em `http://localhost:3000`. O MongoDB fica em `localhost:27017`.
 
@@ -126,7 +128,7 @@ npm run dev
 npm run public
 ```
 
-Acesse `http://localhost:5173` em desenvolvimento. O Vite faz proxy automático de `/api`, `/avatars` e `/assets` para o backend.
+Acesse `http://localhost:5173` em desenvolvimento. O Vite faz proxy automático de `/api` e `/assets` para o backend.
 
 ---
 
@@ -135,16 +137,24 @@ Acesse `http://localhost:5173` em desenvolvimento. O Vite faz proxy automático 
 Todas as variáveis ficam no `.env` na raiz do projeto:
 
 ```env
-# Firebase (frontend)
+# Firebase (frontend — só Auth)
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_AUTH_DOMAIN=...
 VITE_FIREBASE_PROJECT_ID=...
 VITE_FIREBASE_APP_ID=...
 
-# Firebase Admin (backend)
+# Firebase Admin (backend — Auth / verificação de tokens)
 FIREBASE_PROJECT_ID=...
 FIREBASE_CLIENT_EMAIL=...
 FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
+
+# Cloudflare R2 (avatares — API S3 compatível)
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=...
+# URL pública de leitura (subdomínio r2.dev ou domínio customizado ligado ao bucket)
+R2_PUBLIC_BASE_URL=https://pub-xxxxx.r2.dev
 
 # Server
 PORT=3000
@@ -156,12 +166,23 @@ MONGODB_URI=mongodb://mongo:27017/arcanaforge
 CLOUDFLARE_TUNNEL_TOKEN=
 ```
 
-### Configuração no Firebase Console
+### Firebase (só login)
 
 1. Criar projeto Firebase
 2. Em **Authentication > Sign-in method**, habilitar Google e Email/Password
 3. Em **Authentication > Settings**, configurar domínio autorizado
 4. Em **Project settings > Service accounts**, gerar chave privada para o backend
+
+### Cloudflare R2 (avatares)
+
+1. No dashboard **R2**, criar um bucket (ex.: `arcanaforge-avatars`).
+2. **Manage R2 API tokens** → criar token com permissão de leitura/escrita nesse bucket; guardar **Access Key ID** e **Secret Access Key**.
+3. Copiar **Account ID** (visível na página R2).
+4. Activar acesso público de leitura: no bucket → **Settings** → **Public access** → permitir o subdomínio **r2.dev** ou ligar um **Custom domain**; o valor de `R2_PUBLIC_BASE_URL` é a base pública (ex.: `https://pub-abc123.r2.dev`, sem barra no fim). Os objectos ficam em `<email_sanitizado>/avatars/<nome-original>_<nome-personagem>_<uuid>.<ext>` (ex.: `user_at_gmail.com/avatars/foto_arcanista_5fe8916c-....png`). O email vem do token Firebase, da ficha (`ownerEmail`) ou do **Firebase Admin** (`getUser(uid)`).
+
+O browser envia o ficheiro em **multipart** para a API Node, que grava no R2 — não é preciso configurar **CORS** no bucket para uploads directos a partir da página (o que antes causava `Failed to fetch` no PUT para o endpoint S3).
+
+Personagens guardam o campo `avatar` como URL HTTPS absoluta. Fichas antigas com `/avatars/...` local deixam de resolver até novo upload.
 
 ---
 
@@ -188,6 +209,7 @@ CLOUDFLARE_TUNNEL_TOKEN=
 | `GET` | `/api/characters/summary` | Resumo de cada personagem (nome, avatar, classes) |
 | `GET` | `/api/characters/:id` | Carrega um personagem completo |
 | `POST` | `/api/characters/:id` | Salva/atualiza um personagem |
+| `POST` | `/api/characters/:id/avatar` | Upload de avatar (multipart, campo `avatar`, máx. 5 MB) → R2 |
 | `DELETE` | `/api/characters/:id` | Exclui um personagem |
 | `GET` | `/api/parties` | Lista todos os grupos do usuário |
 | `POST` | `/api/parties` | Cria um novo grupo |
@@ -195,10 +217,8 @@ CLOUDFLARE_TUNNEL_TOKEN=
 | `DELETE` | `/api/parties/:id` | Exclui um grupo |
 | `GET` | `/api/parties/:id/combat` | Retorna o estado de combate de um grupo |
 | `POST` | `/api/parties/:id/combat` | Salva estado de combate e notifica via WebSocket |
-| `POST` | `/api/avatar/:id` | Upload de avatar (multipart, até 5 MB) |
-| `GET` | `/api/avatar-transparent/:id` | URL do avatar sem fundo (se existir) |
 
-Rotas protegidas exigem `Authorization: Bearer <idToken>`. Rotas públicas: `/health`, `/assets/*`, `/avatars/*`.
+Rotas protegidas exigem `Authorization: Bearer <idToken>`. Rotas públicas: `/health`, `/assets/*`.
 
 ---
 
@@ -229,13 +249,14 @@ arcanaforge/
 │   ├── paths.js              # Caminhos do sistema de arquivos
 │   ├── websocket.js          # WebSocket server (combat sync, HP sync)
 │   ├── combatState.js        # Estado de combate em memória + disco
-│   ├── multerAvatar.js       # Configuração do Multer para avatars
 │   ├── migrateData.js        # Migração de dados PT → EN
 │   ├── migrateCharacters.js  # Migração de fichas legadas
 │   ├── routes/
 │   │   └── index.js          # Todas as rotas REST
 │   ├── auth/
-│   │   └── firebaseAdmin.js  # Firebase Admin SDK
+│   │   └── firebaseAdmin.js  # Firebase Admin (Auth)
+│   ├── storage/
+│   │   └── r2.js             # Cloudflare R2 (S3) — upload e delete
 │   ├── characters/
 │   │   └── userCharactersDir.js  # Resolução de diretório por usuário
 │   └── middleware/
@@ -357,10 +378,9 @@ arcanaforge/
 │           ├── NarutoSheetPage/
 │           └── GameMasterPage/
 │
-├── data/                     # Persistência (JSON + avatares)
+├── data/                     # Persistência JSON (avatares em Cloudflare R2)
 │   ├── characters/<uid>/     # Um JSON por personagem, organizado por usuário
 │   ├── parties/              # Grupos (<partyId>.json)
-│   ├── avatars/              # Imagens de avatar + variantes _transparent
 │   └── .migrated-v2          # Sentinela de migração PT→EN
 │
 ├── assets/
@@ -376,8 +396,9 @@ arcanaforge/
 | Caminho | Conteúdo |
 |---------|----------|
 | `data/characters/<uid>/` | Um JSON por personagem, organizado por usuário Firebase |
-| `data/avatars/` | Imagens de avatar e variantes `_transparent` |
 | `data/parties/` | Grupos (`<partyId>.json`) |
+
+Imagens de avatar ficam no **Cloudflare R2** (`<email>/avatars/<ficheiro>_<personagem>_<uuid>.<ext>`); o campo `avatar` no MongoDB é uma URL HTTPS pública.
 
 Com Docker, o diretório `data/` é mapeado para o volume `arcanaforge-data`, persistindo entre restarts.
 
@@ -392,7 +413,8 @@ graph LR
   Internet -->|HTTPS| Tunnel[cloudflared]
   Tunnel -->|"http://app:3000"| App[app - Node.js]
   App -->|"mongodb://mongo:27017"| Mongo[mongo]
-  App -->|"/data/avatars"| Volume[arcanaforge-data]
+  App -->|"/app/data"| Volume[arcanaforge-data]
+  App --> R2[Cloudflare R2]
   Mongo --> MongoVol[mongo-data]
 ```
 
@@ -409,7 +431,7 @@ graph LR
 | Volume | Mount | Conteúdo |
 |--------|-------|----------|
 | `mongo-data` | `/data/db` | Dados do MongoDB |
-| `arcanaforge-data` | `/app/data` | Characters, parties, avatars |
+| `arcanaforge-data` | `/app/data` | Characters, parties (JSON) |
 
 ### Rebuild após alterações
 

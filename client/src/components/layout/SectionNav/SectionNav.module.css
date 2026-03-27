@@ -43,19 +43,19 @@
   display: none;
 }
 
-.secvisWrapper {
+.visibilityWrapper {
   position: relative;
   margin-left: 4px;
 }
 
-.secvisBtn {
+.visibilityBtn {
   font-size: 0.85rem !important;
   padding: 6px 10px !important;
   text-transform: none !important;
   letter-spacing: 0 !important;
 }
 
-.secvisPanel {
+.visibilityPanel {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
@@ -68,7 +68,7 @@
   z-index: 200;
 }
 
-.secvisItem {
+.visibilityItem {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -78,8 +78,17 @@
   cursor: pointer;
 }
 
-.secvisItem input {
+.visibilityItem input {
   cursor: pointer;
+}
+
+.rightSlot {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
 }
 
 @media (max-width: 600px) {
@@ -90,5 +99,8 @@
   .link {
     padding: 6px 6px;
     font-size: 0.6rem;
+  }
+  .rightSlot {
+    right: 8px;
   }
 }

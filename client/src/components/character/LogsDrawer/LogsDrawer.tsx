@@ -6,8 +6,8 @@ import styles from './LogsDrawer.module.css';
 function typeClass(type: string): string {
   if (type === 'attack') return styles.typeAttack;
   if (type === 'spell') return styles.typeSpell;
-  if (type === 'buff_on') return styles.tipoBuffOn;
-  if (type === 'buff_off') return styles.tipoBuffOff;
+  if (type === 'buff_on') return styles.typeBuffOn;
+  if (type === 'buff_off') return styles.typeBuffOff;
   return '';
 }
 
@@ -17,9 +17,13 @@ function formatDetails(details: unknown): string | null {
   if (typeof details === 'object') {
     const d = details as Record<string, unknown>;
     const parts: string[] = [];
-    if (d.custoTipo) parts.push(String(d.custoTipo));
-    if (d.teste != null) parts.push(`Teste: ${d.teste}`);
-    if (d.dano) parts.push(`Dano: ${d.dano}`);
+    // Support both new EN keys and legacy PT keys
+    const rangeType = d.rangeType ?? d.custoTipo;
+    const attackRoll = d.attackRoll ?? d.teste;
+    const damage = d.damage ?? d.dano;
+    if (rangeType) parts.push(String(rangeType));
+    if (attackRoll != null) parts.push(`Teste: ${attackRoll}`);
+    if (damage) parts.push(`Dano: ${damage}`);
     return parts.join(' · ') || null;
   }
   return String(details);
@@ -55,7 +59,7 @@ export default function LogsDrawer() {
               <span className={`${styles.icon} ${typeClass(log.type)}`}>
                 {LOG_ICONS[log.type] || '•'}
               </span>
-              <span className={styles.nome}>{log.name}</span>
+              <span className={styles.name}>{log.name}</span>
               {log.mpSpent > 0 && (
                 <span className={styles.pm}>-{log.mpSpent} PM</span>
               )}

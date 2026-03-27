@@ -31,13 +31,13 @@ export default function AbilitiesList() {
   };
 
   return (
-    <Section id="secHabilidades" title="Habilidades & Poderes">
+    <Section id="secAbilities" title="Habilidades & Poderes">
       {character.abilities.map((ab, idx) => (
         <div key={idx} className={styles.card}>
           <button className={styles.remove} onClick={() => removeAbility(idx)}>✕</button>
           <div className={styles.header}>
             <input
-              className={styles.nomeInput}
+              className={styles.nameInput}
               value={ab.name}
               onChange={e => updateAbility(idx, { name: e.target.value })}
               placeholder="Nome"

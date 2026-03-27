@@ -1,24 +1,24 @@
 import type { MouseEventHandler } from 'react';
 import styles from './HealthBar.module.css';
 
-interface BarraVidaProps {
-  atual: number;
-  maximo: number;
-  tipo: 'hp' | 'pm';
+interface HealthBarProps {
+  current: number;
+  max: number;
+  variant: 'hp' | 'pm';
   showLabel?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   className?: string;
 }
 
-export default function BarraVida({
-  atual,
-  maximo,
-  tipo,
+export default function HealthBar({
+  current,
+  max,
+  variant,
   showLabel = true,
   onClick,
   className,
-}: BarraVidaProps) {
-  const pct = maximo > 0 ? Math.max(0, Math.min(100, (atual / maximo) * 100)) : 0;
+}: HealthBarProps) {
+  const pct = max > 0 ? Math.max(0, Math.min(100, (current / max) * 100)) : 0;
 
   const cls = [
     styles.container,
@@ -31,12 +31,12 @@ export default function BarraVida({
   return (
     <div className={cls} onClick={onClick}>
       <div
-        className={`${styles.fill} ${tipo === 'hp' ? styles.hp : styles.pm}`}
+        className={`${styles.fill} ${variant === 'hp' ? styles.hp : styles.pm}`}
         style={{ width: `${pct}%` }}
       />
       {showLabel && (
         <div className={styles.label}>
-          {atual}/{maximo}
+          {current}/{max}
         </div>
       )}
     </div>

@@ -74,7 +74,7 @@ export default function BuffsList() {
           className={[styles.card, buff.active && styles.active].filter(Boolean).join(' ')}
         >
           <input
-            className={styles.nome}
+            className={styles.name}
             value={buff.name}
             onChange={e => updateBuff(idx, { name: e.target.value })}
             placeholder="Nome"

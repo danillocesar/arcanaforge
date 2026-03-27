@@ -33,7 +33,7 @@ export default function ProgressionDrawer() {
     <div>
       {character.progression.map((p, i) => (
         <div key={i} className={styles.item}>
-          <span className={styles.nivel}>{i + 1}.</span>
+          <span className={styles.levelNumber}>{i + 1}.</span>
           <input
             className={styles.desc}
             value={p}

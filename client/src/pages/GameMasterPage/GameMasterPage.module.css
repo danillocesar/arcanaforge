@@ -1,3 +1,29 @@
+.inviteCode {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.15em;
+  color: var(--accent-gold);
+  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.inviteCode:hover {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: rgba(201, 168, 76, 0.4);
+}
+
+.inviteCodeCopied {
+  color: var(--text-primary);
+  background: rgba(100, 200, 100, 0.12);
+  border-color: rgba(100, 200, 100, 0.3);
+}
+
 .gmContainer {
   max-width: 960px;
   margin: 0 auto;
@@ -39,37 +65,6 @@
 .emptyHint {
   font-size: 0.82rem;
   color: var(--text-muted);
-}
-
-.gmToggle {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  font-family: var(--font);
-}
-
-.gmToggle:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.gmToggleActive {
-  background: color-mix(in srgb, var(--accent-gm) 18%, transparent);
-  border-color: var(--accent-gm);
-  color: var(--accent-gm);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent-gm) 25%, transparent);
-}
-
-.gmToggleActive:hover {
-  background: color-mix(in srgb, var(--accent-gm) 24%, transparent);
-  color: var(--accent-gm);
 }
 
 .addEnemy {

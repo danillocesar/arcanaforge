@@ -15,6 +15,7 @@ export const BUFF_TYPES: Record<string, string> = {
   skill: 'Perícia',
 };
 
+/** Keys = English `id` on `<Section>`; values = nav labels (PT UI). */
 export const SECTION_LABELS: Record<string, string> = {
   secHeader: 'Info Básica',
   secAttributes: 'Atributos & Defesa',
@@ -27,6 +28,36 @@ export const SECTION_LABELS: Record<string, string> = {
   secProficiencies: 'Proficiências',
   secEffects: 'Efeitos Temporários',
 };
+
+/** Old Portuguese section ids → English (migrate saved hiddenSections / collapsedSections). */
+export const SECTION_ID_LEGACY_PT: Record<string, string> = {
+  secCabecalho: 'secHeader',
+  secAtributos: 'secAttributes',
+  secVidaMana: 'secHpMp',
+  secAtaques: 'secAttacks',
+  secHabilidades: 'secAbilities',
+  secMagias: 'secSpells',
+  secInventario: 'secInventory',
+  secProficiencias: 'secProficiencies',
+  secEfeitos: 'secEffects',
+};
+
+export function isSectionKeyActive(
+  map: Record<string, boolean> | undefined,
+  sectionId: string,
+): boolean {
+  if (!map) return false;
+  if (map[sectionId]) return true;
+  const ptKey = Object.entries(SECTION_ID_LEGACY_PT).find(([, en]) => en === sectionId)?.[0];
+  return ptKey ? !!map[ptKey] : false;
+}
+
+export function isSectionHidden(
+  hidden: Record<string, boolean> | undefined,
+  sectionId: string,
+): boolean {
+  return isSectionKeyActive(hidden, sectionId);
+}
 
 export const EQUIP_ICONS = ['🛡️', '⚔️', '🧥', '💍'];
 

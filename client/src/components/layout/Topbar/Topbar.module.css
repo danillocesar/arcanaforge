@@ -149,10 +149,11 @@
 
 .userAvatar,
 .userAvatarImg {
-  width: 24px;
-  height: 24px;
+  width: 35px;
+  height: 35px;
   border-radius: 999px;
   flex-shrink: 0;
+  margin-top: 8px;
 }
 
 .userAvatar {

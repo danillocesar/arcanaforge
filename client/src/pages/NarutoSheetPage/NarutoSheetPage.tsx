@@ -1,21 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiLoadCharacter } from '../../api';
 import Topbar from '../../components/layout/Topbar/Topbar';
+import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './NarutoSheetPage.module.css';
 
-export default function FichaNarutoPage() {
+export default function NarutoSheetPage() {
   const navigate = useNavigate();
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (!params.get('id')) {
+    const idParam = params.get('id');
+    if (!idParam) {
       navigate('/characters', { replace: true });
+      return;
     }
+    apiLoadCharacter(idParam)
+      .then((data) => { if (!data) setAccessDenied(true); })
+      .catch(() => setAccessDenied(true));
   }, [navigate]);
 
   useEffect(() => {
     document.title = 'Naruto: Shinobi no Sho — ArcanaForge';
   }, []);
+
+  if (accessDenied) return <AccessDeniedPage />;
 
   return (
     <>

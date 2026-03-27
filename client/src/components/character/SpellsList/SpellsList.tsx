@@ -39,7 +39,7 @@ export default function SpellsList() {
   };
 
   return (
-    <Section id="secMagias" title="Magias">
+    <Section id="secSpells" title="Magias">
       <div className={styles.headerRow}>
         <label>Atributo-chave</label>
         <select

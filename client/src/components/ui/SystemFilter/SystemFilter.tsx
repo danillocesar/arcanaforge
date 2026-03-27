@@ -2,7 +2,7 @@ import styles from './SystemFilter.module.css';
 
 type TabFilter = 'todos' | 'tormenta' | 'naruto';
 
-interface SistemaFilterProps {
+interface SystemFilterProps {
   value: TabFilter;
   onChange: (tab: TabFilter) => void;
 }
@@ -13,7 +13,7 @@ const TABS: { key: TabFilter; label: string }[] = [
   { key: 'naruto', label: '🍥 Naruto' },
 ];
 
-export default function SistemaFilter({ value, onChange }: SistemaFilterProps) {
+export default function SystemFilter({ value, onChange }: SystemFilterProps) {
   return (
     <div className={styles.tabs}>
       {TABS.map((t) => (

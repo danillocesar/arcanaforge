@@ -17,6 +17,13 @@ function attachWebSocket(server, opts) {
     });
   };
 
+  refs.broadcastPartyRoster = function broadcastPartyRoster(partyId) {
+    const msg = JSON.stringify({ type: 'party_roster_sync', partyId });
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) client.send(msg);
+    });
+  };
+
   wss.on('connection', (ws) => {
     ws.on('message', (raw) => {
       try {

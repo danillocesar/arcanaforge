@@ -13,18 +13,18 @@ import { triggerAttackAnim, type AnimationStyle } from '../../../utils/animation
 import type { AttributeId, ExtraBonus, ExtraDamage } from '../../../types/character';
 import styles from './AttackCard.module.css';
 
-interface AtaqueCardProps {
+interface AttackCardProps {
   index: number;
 }
 
-export default function AtaqueCard({ index }: AtaqueCardProps) {
+export default function AttackCard({ index }: AttackCardProps) {
   const { character, updateCharacter } = useCharacterContext();
   if (!character) return null;
 
   const atk = character.attacks[index];
   if (!atk) return null;
 
-  const updateAtaque = (updates: Partial<typeof atk>) => {
+  const updateAttack = (updates: Partial<typeof atk>) => {
     updateCharacter(f => {
       const attacks = [...f.attacks];
       attacks[index] = { ...attacks[index], ...updates };
@@ -32,11 +32,11 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
     });
   };
 
-  const removeAtaque = () => {
+  const removeAttack = () => {
     updateCharacter(f => ({ ...f, attacks: f.attacks.filter((_, i) => i !== index) }));
   };
 
-  const duplicateAtaque = () => {
+  const duplicateAttack = () => {
     updateCharacter(f => {
       const attacks = [...f.attacks];
       attacks.splice(index + 1, 0, {
@@ -48,7 +48,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
     });
   };
 
-  const usarAtaque = () => {
+  const useAttack = () => {
     const pm = calcTotalMp(atk);
     updateCharacter(f => ({
       ...f,
@@ -59,9 +59,9 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
         mpSpent: pm,
         timestamp: Date.now(),
         details: {
-          teste: testeTotal,
-          dano: danoResumo,
-          custoTipo: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
+          attackRoll: attackRollTotal,
+          damage: damageSummary,
+          rangeType: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
         },
       }],
     }));
@@ -72,8 +72,8 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
       playSwordSound();
     }
 
-    const estilo = 'toast' as AnimationStyle;
-    triggerAttackAnim(estilo, {
+    const animationStyle = 'toast' as AnimationStyle;
+    triggerAttackAnim(animationStyle, {
       type: atk.rangeType === 'ranged' ? 'ranged' : 'melee',
       name: atk.name || 'Ataque',
       mpCost: pm,
@@ -83,83 +83,83 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
   const updateBonusTeste = (bIdx: number, updates: Partial<ExtraBonus>) => {
     const extraBonuses = [...atk.extraBonuses];
     extraBonuses[bIdx] = { ...extraBonuses[bIdx], ...updates };
-    updateAtaque({ extraBonuses });
+    updateAttack({ extraBonuses });
   };
 
   const removeBonusTeste = (bIdx: number) => {
-    updateAtaque({ extraBonuses: atk.extraBonuses.filter((_, i) => i !== bIdx) });
+    updateAttack({ extraBonuses: atk.extraBonuses.filter((_, i) => i !== bIdx) });
   };
 
   const addBonusTeste = () => {
-    updateAtaque({ extraBonuses: [...atk.extraBonuses, { name: '', value: 0, mp: 0 }] });
+    updateAttack({ extraBonuses: [...atk.extraBonuses, { name: '', value: 0, mp: 0 }] });
   };
 
   const updateBonusDano = (dIdx: number, updates: Partial<ExtraDamage>) => {
     const extraDamage = [...atk.extraDamage];
     extraDamage[dIdx] = { ...extraDamage[dIdx], ...updates };
-    updateAtaque({ extraDamage });
+    updateAttack({ extraDamage });
   };
 
   const removeBonusDano = (dIdx: number) => {
-    updateAtaque({ extraDamage: atk.extraDamage.filter((_, i) => i !== dIdx) });
+    updateAttack({ extraDamage: atk.extraDamage.filter((_, i) => i !== dIdx) });
   };
 
   const addBonusDano = () => {
-    updateAtaque({ extraDamage: [...atk.extraDamage, { name: '', value: '', mp: 0 }] });
+    updateAttack({ extraDamage: [...atk.extraDamage, { name: '', value: '', mp: 0 }] });
   };
 
-  const periciaId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
-  const periciaBase = calcTotalSkill(character, periciaId);
-  const testeTotal = calcAttackRoll(character, atk);
-  const danoResumo = buildDamageSummary(character, atk);
-  const danoAttrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
-  const danoAttrVal = getEffectiveAttribute(character, danoAttrKey);
+  const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
+  const skillBase = calcTotalSkill(character, skillId);
+  const attackRollTotal = calcAttackRoll(character, atk);
+  const damageSummary = buildDamageSummary(character, atk);
+  const damageAttrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
+  const damageAttrVal = getEffectiveAttribute(character, damageAttrKey);
   const pmTotal = calcTotalMp(atk);
-  const activeTesteBuffs = character.buffs.filter(b =>
+  const activeRollBuffs = character.buffs.filter(b =>
     b.active && (
       b.type === 'attack_roll' ||
-      (b.type === 'skill' && b.skillId === periciaId)
+      (b.type === 'skill' && b.skillId === skillId)
     )
   );
-  const activeDanoBuffs = character.buffs.filter(
+  const activeDamageBuffs = character.buffs.filter(
     b => b.active && (b.type === 'fixed_damage' || b.type === 'extra_damage'),
   );
 
   return (
     <div className={styles.card}>
-      <button className={styles.usar} onClick={usarAtaque} title="Usar">⚔</button>
-      <button className={styles.duplicate} onClick={duplicateAtaque} title="Duplicar">⧉</button>
-      <button className={styles.remove} onClick={removeAtaque} title="Remover">✕</button>
+      <button className={styles.use} onClick={useAttack} title="Usar">⚔</button>
+      <button className={styles.duplicate} onClick={duplicateAttack} title="Duplicar">⧉</button>
+      <button className={styles.remove} onClick={removeAttack} title="Remover">✕</button>
 
       <div className={styles.topRow}>
-        <div className={`${styles.campoInfo} ${styles.nomeField}`}>
+        <div className={`${styles.infoField} ${styles.nomeField}`}>
           <label>Nome</label>
-          <input value={atk.name ?? ''} onChange={e => updateAtaque({ name: e.target.value })} />
+          <input value={atk.name ?? ''} onChange={e => updateAttack({ name: e.target.value })} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Alcance</label>
           <select
             value={atk.rangeType ?? 'melee'}
-            onChange={e => updateAtaque({ rangeType: e.target.value })}
+            onChange={e => updateAttack({ rangeType: e.target.value })}
           >
             <option value="melee">Corpo a corpo</option>
             <option value="ranged">À distância</option>
           </select>
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Crítico</label>
-          <input value={atk.critical ?? ''} onChange={e => updateAtaque({ critical: e.target.value })} />
+          <input value={atk.critical ?? ''} onChange={e => updateAttack({ critical: e.target.value })} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Tipo Dano</label>
-          <input value={atk.type ?? ''} onChange={e => updateAtaque({ type: e.target.value })} />
+          <input value={atk.type ?? ''} onChange={e => updateAttack({ type: e.target.value })} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Custo PM</label>
           <input
             type="number"
             value={atk.mpCost ?? 0}
-            onChange={e => updateAtaque({ mpCost: Number(e.target.value) || 0 })}
+            onChange={e => updateAttack({ mpCost: Number(e.target.value) || 0 })}
           />
         </div>
         <div className={styles.pmBadgeWrap}>
@@ -171,14 +171,14 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
         <div className={styles.checkSection}>
           <div className={styles.checkHeader}>
             <label>Teste de Ataque</label>
-            <span className={styles.checkTotal}>{formatMod(testeTotal)}</span>
+            <span className={styles.checkTotal}>{formatMod(attackRollTotal)}</span>
           </div>
           <div className={styles.bonusList}>
             <div className={styles.bonusRow}>
               <span className={styles.bonusFixed}>
                 {atk.rangeType === 'ranged' ? 'Pontaria' : 'Luta'}
               </span>
-              <span className={styles.bonusValorFixed}>{formatMod(periciaBase)}</span>
+              <span className={styles.bonusValorFixed}>{formatMod(skillBase)}</span>
             </div>
             {atk.extraBonuses.map((b, bIdx) => (
               <div key={bIdx} className={styles.bonusRow}>
@@ -203,7 +203,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
                 </button>
               </div>
             ))}
-            {activeTesteBuffs.map((b, i) => (
+            {activeRollBuffs.map((b, i) => (
               <div key={`buff-${i}`} className={styles.buffRow}>
                 <span className={styles.buffNome}>{b.name}</span>
                 <span className={styles.buffValor}>{formatMod(Number(b.value) || 0)}</span>
@@ -216,7 +216,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
         <div className={`${styles.checkSection} ${styles.damageSection}`}>
           <div className={styles.checkHeader}>
             <label>Dano</label>
-            <span className={`${styles.checkTotal} ${styles.damageTotal}`}>{danoResumo}</span>
+            <span className={`${styles.checkTotal} ${styles.damageTotal}`}>{damageSummary}</span>
           </div>
           <div className={styles.bonusList}>
             <div className={styles.bonusRow}>
@@ -224,7 +224,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
               <input
                 className={styles.damageDice}
                 value={atk.damage ?? ''}
-                onChange={e => updateAtaque({ damage: e.target.value })}
+                onChange={e => updateAttack({ damage: e.target.value })}
                 placeholder="2d8"
               />
             </div>
@@ -232,13 +232,13 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
               <select
                 className={styles.damageAttrSel}
                 value={atk.attributeDamageBonus || 'str'}
-                onChange={e => updateAtaque({ attributeDamageBonus: e.target.value })}
+                onChange={e => updateAttack({ attributeDamageBonus: e.target.value })}
               >
                 {(Object.entries(ATTRIBUTE_LABELS) as [AttributeId, string][]).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
               </select>
-              <span className={styles.bonusValorFixed}>{formatMod(danoAttrVal)}</span>
+              <span className={styles.bonusValorFixed}>{formatMod(damageAttrVal)}</span>
             </div>
             {atk.extraDamage.map((d, dIdx) => (
               <div key={dIdx} className={styles.bonusRow}>
@@ -263,7 +263,7 @@ export default function AtaqueCard({ index }: AtaqueCardProps) {
                 </button>
               </div>
             ))}
-            {activeDanoBuffs.map((b, i) => (
+            {activeDamageBuffs.map((b, i) => (
               <div key={`buff-${i}`} className={styles.buffRow}>
                 <span className={styles.buffNome}>{b.name}</span>
                 <span className={styles.buffValor}>{String(b.value)}</span>

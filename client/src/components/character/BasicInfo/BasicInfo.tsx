@@ -8,13 +8,13 @@ import Section from '../../ui/Section/Section';
 import Input from '../../ui/Input/Input';
 import styles from './BasicInfo.module.css';
 
-export default function InfoBasica() {
+export default function BasicInfo() {
   const { character, updateCharacter } = useCharacterContext();
   const fileRef = useRef<HTMLInputElement>(null);
 
   if (!character) return null;
 
-  const nivel = getTotalLevel(character);
+  const totalLevel = getTotalLevel(character);
 
   const handleAvatarClick = () => fileRef.current?.click();
 
@@ -29,7 +29,7 @@ export default function InfoBasica() {
     updateCharacter((f) => ({ ...f, [field]: value }));
   };
 
-  const updateClasse = (idx: number, key: 'name' | 'level', value: string | number) => {
+  const updateClassRow = (idx: number, key: 'name' | 'level', value: string | number) => {
     updateCharacter((f) => {
       const classes = [...f.classes];
       classes[idx] = { ...classes[idx], [key]: value };
@@ -37,22 +37,22 @@ export default function InfoBasica() {
     });
   };
 
-  const addClasse = () => {
+  const addClassRow = () => {
     updateCharacter((f) => ({ ...f, classes: [...f.classes, { name: '', level: 1 }] }));
   };
 
-  const removeClasse = (idx: number) => {
+  const removeClassRow = (idx: number) => {
     updateCharacter((f) => {
       const classes = f.classes.filter((_, i) => i !== idx);
       return { ...f, classes: classes.length ? classes : [{ name: '', level: 1 }] };
     });
   };
 
-  const primeiraClasse = character.classes[0]?.name || '';
-  const classeIconSrc = getClassIconUrl(primeiraClasse);
+  const firstClassName = character.classes[0]?.name || '';
+  const classIconSrc = getClassIconUrl(firstClassName);
 
   return (
-    <Section id="secCabecalho" title="Info Básica">
+    <Section id="secHeader" title="Info Básica">
       <div className={styles.topRow}>
         <div className={styles.avatarCol}>
           <div className={styles.avatarWrapper} onClick={handleAvatarClick}>
@@ -65,86 +65,86 @@ export default function InfoBasica() {
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatarUpload} />
         </div>
 
-        <div className={styles.nomeCol}>
+        <div className={styles.nameCol}>
           <input
-            className={styles.campoNome}
+            className={styles.nameField}
             value={character.name}
             onChange={(e) => setField('name', e.target.value)}
             placeholder="Nome do Personagem"
           />
         </div>
 
-        <div className={styles.classesCol}>
-          <div className={styles.classesHeader}>
-            <span className={styles.classesTitle}>Classes</span>
-            <span className={styles.nivelTotal}>
-              Nível <strong>{nivel}</strong>
+        <div className={styles.classCol}>
+          <div className={styles.classHeader}>
+            <span className={styles.classTitle}>Classes</span>
+            <span className={styles.totalLevel}>
+              Nível <strong>{totalLevel}</strong>
             </span>
           </div>
-          <div className={styles.classesBody}>
-            {classeIconSrc && (
+          <div className={styles.classBody}>
+            {classIconSrc && (
               <img
-                className={styles.classeIcone}
-                src={classeIconSrc}
+                className={styles.classIcon}
+                src={classIconSrc}
                 alt=""
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             )}
-            <div className={styles.classesLista}>
+            <div className={styles.classList}>
               {character.classes.map((c, i) => (
-                <div key={i} className={styles.classeItem}>
+                <div key={i} className={styles.classItem}>
                   <select
-                    className={styles.classeNomeInput}
+                    className={styles.classNameInput}
                     value={c.name}
-                    onChange={(e) => updateClasse(i, 'name', e.target.value)}
+                    onChange={(e) => updateClassRow(i, 'name', e.target.value)}
                   >
                     <option value="">Selecione...</option>
                     {TORMENTA_CLASSES.map((cl) => (
                       <option key={cl.id} value={cl.name}>{cl.name}</option>
                     ))}
                   </select>
-                  <span className={styles.classeLvlLabel}>Nv</span>
+                  <span className={styles.classLevelLabel}>Nv</span>
                   <Input
                     variant="secondary"
-                    className={styles.classeNivelInput}
+                    className={styles.classLevelInput}
                     type="number"
                     min={1}
                     value={c.level}
-                    onChange={(e) => updateClasse(i, 'level', Number(e.target.value) || 1)}
+                    onChange={(e) => updateClassRow(i, 'level', Number(e.target.value) || 1)}
                   />
                   {character.classes.length > 1 && (
-                    <button type="button" className={styles.classeRemove} onClick={() => removeClasse(i)}>✕</button>
+                    <button type="button" className={styles.classRemove} onClick={() => removeClassRow(i)}>✕</button>
                   )}
                 </div>
               ))}
-              <button type="button" className={styles.addClasse} onClick={addClasse}>+ Classe</button>
+              <button type="button" className={styles.addClass} onClick={addClassRow}>+ Classe</button>
             </div>
           </div>
         </div>
       </div>
 
       <div className={styles.infoGrid}>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Raça</label>
           <input value={character.race} onChange={(e) => setField('race', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Origem</label>
           <input value={character.origin} onChange={(e) => setField('origin', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Divindade</label>
           <input value={character.deity} onChange={(e) => setField('deity', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Alinhamento</label>
           <input value={character.alignment} onChange={(e) => setField('alignment', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Idade</label>
           <input value={character.age} onChange={(e) => setField('age', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Tamanho</label>
           <select value={character.size} onChange={(e) => setField('size', e.target.value)}>
             <option value="Minúsculo">Minúsculo</option>
@@ -155,11 +155,11 @@ export default function InfoBasica() {
             <option value="Colossal">Colossal</option>
           </select>
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>Desloc.</label>
           <input value={character.speed} onChange={(e) => setField('speed', e.target.value)} />
         </div>
-        <div className={styles.campoInfo}>
+        <div className={styles.infoField}>
           <label>XP</label>
           <input
             type="number"

@@ -13,21 +13,21 @@
   gap: 6px;
 }
 
-.campo {
+.field {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.campo label {
+.field label {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
-.campo input,
-.campo select {
+.field input,
+.field select {
   background: var(--bg-body);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -39,13 +39,13 @@
   box-sizing: border-box;
 }
 
-.campo input:focus,
-.campo select:focus {
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: var(--accent-gold);
 }
 
-.campo textarea {
+.field textarea {
   width: 100%;
   background: transparent;
   border: 1px solid var(--border);
@@ -59,7 +59,7 @@
   box-sizing: border-box;
 }
 
-.campo textarea:focus {
+.field textarea:focus {
   outline: none;
   border-color: var(--accent-gold);
 }
@@ -68,7 +68,7 @@
   grid-column: 1 / -1;
 }
 
-.aprimoramentos {
+.enhancements {
   margin-top: 8px;
   border-top: 1px solid var(--border);
   padding-top: 8px;
@@ -88,7 +88,7 @@
   letter-spacing: 0.4px;
 }
 
-.aprRow {
+.enhRow {
   display: flex;
   gap: 8px;
   align-items: center;
@@ -111,7 +111,7 @@
   border-bottom-color: var(--accent-gold);
 }
 
-.aprPm {
+.enhMp {
   width: 50px;
   background: var(--accent-blue-bg);
   border: 1px solid transparent;
@@ -124,12 +124,12 @@
   padding: 3px 4px;
 }
 
-.aprPm:focus {
+.enhMp:focus {
   outline: none;
   border-color: var(--accent-blue);
 }
 
-.aprPm::placeholder {
+.enhMp::placeholder {
   color: var(--accent-blue-bar);
   opacity: 0.4;
 }
@@ -157,7 +157,7 @@
   color: var(--accent-blue-bar);
 }
 
-.conjurar {
+.cast {
   position: absolute;
   top: 8px;
   right: 30px;
@@ -171,7 +171,7 @@
   transition: color 0.2s;
 }
 
-.conjurar:hover {
+.cast:hover {
   color: var(--accent-gold);
 }
 

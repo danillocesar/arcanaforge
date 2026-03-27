@@ -13,11 +13,10 @@ export default function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/characters" element={<RequireAuth><SelectPage /></RequireAuth>} />
       <Route path="/parties" element={<RequireAuth><PartySelectPage /></RequireAuth>} />
-      <Route path="/parties/new/:partyId" element={<RequireAuth><PartyMembersPage /></RequireAuth>} />
       <Route path="/tormenta/char" element={<RequireAuth><TormentaSheetPage /></RequireAuth>} />
       <Route path="/naruto/char" element={<RequireAuth><NarutoSheetPage /></RequireAuth>} />
-      <Route path="/tormenta/party/:partyId" element={<RequireAuth><GameMasterPage /></RequireAuth>} />
-      <Route path="/naruto/party/:partyId" element={<RequireAuth><GameMasterPage /></RequireAuth>} />
+      <Route path="/:system/party/:partyId" element={<RequireAuth><GameMasterPage /></RequireAuth>} />
+      <Route path="/:system/party/:partyId/members" element={<RequireAuth><PartyMembersPage /></RequireAuth>} />
       <Route path="/" element={<Navigate to="/auth" replace />} />
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>

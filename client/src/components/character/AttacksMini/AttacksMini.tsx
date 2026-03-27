@@ -9,18 +9,18 @@ import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim, type AnimationStyle } from '../../../utils/animations';
 import styles from './AttacksMini.module.css';
 
-interface AtaquesMiniProps {
+interface AttacksMiniProps {
   type: 'attacks' | 'spells';
   onCast?: (idx: number) => void;
 }
 
-export default function AtaquesMini({ type, onCast }: AtaquesMiniProps) {
+export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
   const { character, updateCharacter } = useCharacterContext();
   if (!character) return null;
 
-  const estilo = 'toast' as AnimationStyle;
+  const animationStyle = 'toast' as AnimationStyle;
 
-  const usarAtaque = (idx: number) => {
+  const useAttack = (idx: number) => {
     const atk = character.attacks[idx];
     const pm = calcTotalMp(atk);
     updateCharacter(f => ({
@@ -32,9 +32,9 @@ export default function AtaquesMini({ type, onCast }: AtaquesMiniProps) {
         mpSpent: pm,
         timestamp: Date.now(),
         details: {
-          teste: calcAttackRoll(f, atk),
-          dano: buildDamageSummary(f, atk),
-          custoTipo: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
+          attackRoll: calcAttackRoll(f, atk),
+          damage: buildDamageSummary(f, atk),
+          rangeType: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
         },
       }],
     }));
@@ -44,7 +44,7 @@ export default function AtaquesMini({ type, onCast }: AtaquesMiniProps) {
     } else {
       playSwordSound();
     }
-    triggerAttackAnim(estilo, {
+    triggerAttackAnim(animationStyle, {
       type: atk.rangeType === 'ranged' ? 'ranged' : 'melee',
       name: atk.name || 'Ataque',
       mpCost: pm,
@@ -57,18 +57,18 @@ export default function AtaquesMini({ type, onCast }: AtaquesMiniProps) {
       <div>
         <div className={styles.title}>Ataques</div>
         {character.attacks.map((atk, idx) => {
-          const teste = calcAttackRoll(character, atk);
-          const dano = buildDamageSummary(character, atk);
+          const roll = calcAttackRoll(character, atk);
+          const damage = buildDamageSummary(character, atk);
           const pm = calcTotalMp(atk);
           return (
             <div key={idx} className={styles.row}>
               <span className={styles.nome}>{atk.name || '—'}</span>
-              <span className={styles.badge}>{formatMod(teste)}</span>
-              <span className={`${styles.badge} ${styles.badgeDano}`}>{dano}</span>
+              <span className={styles.badge}>{formatMod(roll)}</span>
+              <span className={`${styles.badge} ${styles.badgeDamage}`}>{damage}</span>
               {pm > 0 && (
                 <span className={`${styles.badge} ${styles.badgePm}`}>{pm} PM</span>
               )}
-              <button className={styles.useBtn} onClick={() => usarAtaque(idx)}>⚔</button>
+              <button className={styles.useBtn} onClick={() => useAttack(idx)}>⚔</button>
             </div>
           );
         })}
@@ -80,10 +80,10 @@ export default function AtaquesMini({ type, onCast }: AtaquesMiniProps) {
   return (
     <div>
       <div className={styles.title}>Magias</div>
-      {character.spells.map((mag, idx) => (
+      {character.spells.map((spell, idx) => (
         <div key={idx} className={styles.row}>
-          <span className={styles.nome}>{mag.name || '—'}</span>
-          <span className={`${styles.badge} ${styles.badgePm}`}>{mag.mpCost} PM</span>
+          <span className={styles.nome}>{spell.name || '—'}</span>
+          <span className={`${styles.badge} ${styles.badgePm}`}>{spell.mpCost} PM</span>
           <button className={styles.useBtn} onClick={() => onCast?.(idx)}>✨</button>
         </div>
       ))}

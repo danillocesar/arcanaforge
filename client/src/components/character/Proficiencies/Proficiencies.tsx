@@ -8,7 +8,7 @@ export default function Proficiencies() {
   if (!character) return null;
 
   return (
-    <Section id="secProficiencias" title="Proficiências">
+    <Section id="secProficiencies" title="Proficiências">
       <textarea
         className={styles.textarea}
         value={character.proficiencies}

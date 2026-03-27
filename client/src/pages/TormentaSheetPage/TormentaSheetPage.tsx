@@ -2,27 +2,28 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
-import { SECTION_LABELS } from '../../data/constants';
+import { SECTION_LABELS, isSectionHidden, SECTION_ID_LEGACY_PT } from '../../data/constants';
 import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import Drawer from '../../components/ui/Drawer/Drawer';
-import InfoBasica from '../../components/character/BasicInfo/BasicInfo';
-import AtributosDefesa from '../../components/character/AttributesDefense/AttributesDefense';
+import BasicInfo from '../../components/character/BasicInfo/BasicInfo';
+import AttributesDefense from '../../components/character/AttributesDefense/AttributesDefense';
 import BuffsList from '../../components/character/BuffsList/BuffsList';
-import VidaMana from '../../components/character/HpMp/HpMp';
-import EfeitosTemporarios from '../../components/character/TemporaryEffects/TemporaryEffects';
-import AtaquesList from '../../components/character/AttacksList/AttacksList';
-import MagiasList from '../../components/character/SpellsList/SpellsList';
-import HabilidadesList from '../../components/character/AbilitiesList/AbilitiesList';
-import Inventario from '../../components/character/Inventory/Inventory';
-import Proficiencias from '../../components/character/Proficiencies/Proficiencies';
-import PericiasList from '../../components/character/SkillsList/SkillsList';
-import ProgressaoDrawer from '../../components/character/ProgressionDrawer/ProgressionDrawer';
-import AnotacoesDrawer from '../../components/character/NotesDrawer/NotesDrawer';
+import HpMp from '../../components/character/HpMp/HpMp';
+import TemporaryEffects from '../../components/character/TemporaryEffects/TemporaryEffects';
+import AttacksList from '../../components/character/AttacksList/AttacksList';
+import SpellsList from '../../components/character/SpellsList/SpellsList';
+import AbilitiesList from '../../components/character/AbilitiesList/AbilitiesList';
+import Inventory from '../../components/character/Inventory/Inventory';
+import Proficiencies from '../../components/character/Proficiencies/Proficiencies';
+import SkillsList from '../../components/character/SkillsList/SkillsList';
+import ProgressionDrawer from '../../components/character/ProgressionDrawer/ProgressionDrawer';
+import NotesDrawer from '../../components/character/NotesDrawer/NotesDrawer';
 import LogsDrawer from '../../components/character/LogsDrawer/LogsDrawer';
+import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './TormentaSheetPage.module.css';
 
-function FichaTormentaInner() {
+function TormentaSheetInner() {
   const {
     character,
     updateCharacter,
@@ -31,7 +32,8 @@ function FichaTormentaInner() {
   } = useCharacterContext();
 
   const navigate = useNavigate();
-  const [drawerOpen, setDrawerOpen] = useState<'progressao' | 'anotacoes' | 'logs' | 'pericias' | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState<'progression' | 'notes' | 'logs' | 'skills' | null>(null);
+  const [loadDone, setLoadDone] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -48,37 +50,41 @@ function FichaTormentaInner() {
         await loadCharacter(idParam);
       } catch (err) {
         console.error('Erro ao carregar personagem:', err);
+      } finally {
+        setLoadDone(true);
       }
     })();
   }, []);
 
   const sections = useMemo(() => {
-    const ocultas = character?.hiddenSections || {};
     return Object.entries(SECTION_LABELS).map(([id, label]) => ({
       id,
       label,
-      hidden: !!ocultas[id],
+      hidden: isSectionHidden(character?.hiddenSections, id),
     }));
   }, [character?.hiddenSections]);
 
-  const toggleOculta = useCallback(
+  const toggleHiddenSection = useCallback(
     (id: string) => {
-      updateCharacter((f) => ({
-        ...f,
-        hiddenSections: {
-          ...f.hiddenSections,
-          [id]: !f.hiddenSections?.[id],
-        },
-      }));
+      updateCharacter((f) => {
+        const wasHidden = isSectionHidden(f.hiddenSections, id);
+        const next = { ...f.hiddenSections };
+        const legacyPtKey = Object.entries(SECTION_ID_LEGACY_PT).find(([, en]) => en === id)?.[0];
+        if (legacyPtKey) delete next[legacyPtKey];
+        next[id] = !wasHidden;
+        return { ...f, hiddenSections: next };
+      });
     },
     [updateCharacter],
   );
 
-  const handlePericiasClick = useCallback(() => {
-    setDrawerOpen('pericias');
+  const handleSkillsClick = useCallback(() => {
+    setDrawerOpen('skills');
   }, []);
 
-  const isHidden = (id: string) => !!character?.hiddenSections?.[id];
+  const isHidden = (id: string) => isSectionHidden(character?.hiddenSections, id);
+
+  if (loadDone && !character) return <AccessDeniedPage />;
 
   if (!character) {
     return (
@@ -95,21 +101,23 @@ function FichaTormentaInner() {
       />
 
       <SectionNav
-        sections={sections}
-        onPericiasClick={handlePericiasClick}
-        secoesOcultas={character.hiddenSections}
-        onToggleOculta={toggleOculta}
+        items={sections.map((s) =>
+          s.id === 'secSkills' ? { ...s, onClick: handleSkillsClick } : s,
+        )}
+        useScrollObserver
+        hiddenSections={character.hiddenSections}
+        onToggleHidden={toggleHiddenSection}
       />
 
       <main className={styles.container}>
         {!isHidden('secHeader') && (
-          <InfoBasica />
+          <BasicInfo />
         )}
 
         <div className={styles.layoutTop}>
           <div className={styles.colInfo}>
             {!isHidden('secAttributes') && (
-              <AtributosDefesa />
+              <AttributesDefense />
             )}
             {!isHidden('secBuffs') && (
               <BuffsList />
@@ -117,52 +125,52 @@ function FichaTormentaInner() {
           </div>
           <div className={styles.colStats}>
             {!isHidden('secHpMp') && (
-              <VidaMana />
+              <HpMp />
             )}
             {!isHidden('secEffects') && (
-              <EfeitosTemporarios />
+              <TemporaryEffects />
             )}
           </div>
         </div>
 
         {!isHidden('secAttacks') && (
-          <AtaquesList />
+          <AttacksList />
         )}
 
         <div className={styles.layoutMiddle}>
           {!isHidden('secSpells') && (
-            <MagiasList />
+            <SpellsList />
           )}
           {!isHidden('secAbilities') && (
-            <HabilidadesList />
+            <AbilitiesList />
           )}
         </div>
 
         {!isHidden('secInventory') && (
-          <Inventario />
+          <Inventory />
         )}
 
         {!isHidden('secProficiencies') && (
-          <Proficiencias />
+          <Proficiencies />
         )}
 
       </main>
 
       <div className={styles.drawerTabs}>
-        <button className={styles.drawerTab} onClick={() => setDrawerOpen('pericias')} title="Perícias">🎯</button>
-        <button className={styles.drawerTab} onClick={() => setDrawerOpen('progressao')} title="Progressão">📜</button>
-        <button className={styles.drawerTab} onClick={() => setDrawerOpen('anotacoes')} title="Anotações">📝</button>
+        <button className={styles.drawerTab} onClick={() => setDrawerOpen('skills')} title="Perícias">🎯</button>
+        <button className={styles.drawerTab} onClick={() => setDrawerOpen('progression')} title="Progressão">📜</button>
+        <button className={styles.drawerTab} onClick={() => setDrawerOpen('notes')} title="Anotações">📝</button>
         <button className={styles.drawerTab} onClick={() => setDrawerOpen('logs')} title="Logs">📋</button>
       </div>
 
-      <Drawer open={drawerOpen === 'pericias'} onClose={() => setDrawerOpen(null)} title="Perícias">
-        <PericiasList />
+      <Drawer open={drawerOpen === 'skills'} onClose={() => setDrawerOpen(null)} title="Perícias">
+        <SkillsList />
       </Drawer>
-      <Drawer open={drawerOpen === 'progressao'} onClose={() => setDrawerOpen(null)} title="Progressão">
-        <ProgressaoDrawer />
+      <Drawer open={drawerOpen === 'progression'} onClose={() => setDrawerOpen(null)} title="Progressão">
+        <ProgressionDrawer />
       </Drawer>
-      <Drawer open={drawerOpen === 'anotacoes'} onClose={() => setDrawerOpen(null)} title="Anotações">
-        <AnotacoesDrawer />
+      <Drawer open={drawerOpen === 'notes'} onClose={() => setDrawerOpen(null)} title="Anotações">
+        <NotesDrawer />
       </Drawer>
       <Drawer open={drawerOpen === 'logs'} onClose={() => setDrawerOpen(null)} title="Logs de Combate">
         <LogsDrawer />
@@ -172,17 +180,17 @@ function FichaTormentaInner() {
   );
 }
 
-export default function FichaTormentaPage() {
+export default function TormentaSheetPage() {
   return (
     <ToastProvider>
-      <FichaTormentaProviderWrapper>
-        <FichaTormentaInner />
-      </FichaTormentaProviderWrapper>
+      <TormentaSheetProviderWrapper>
+        <TormentaSheetInner />
+      </TormentaSheetProviderWrapper>
     </ToastProvider>
   );
 }
 
-function FichaTormentaProviderWrapper({ children }: { children: React.ReactNode }) {
+function TormentaSheetProviderWrapper({ children }: { children: React.ReactNode }) {
   const { showToast } = useToast();
   return <CharacterProvider showToast={showToast}>{children}</CharacterProvider>;
 }

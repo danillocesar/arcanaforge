@@ -1,23 +1,16 @@
 import {
   createUserWithEmailAndPassword,
-  getRedirectResult,
   reload,
   sendEmailVerification,
   signInWithEmailAndPassword,
-  signInWithRedirect,
+  signInWithPopup,
   signOut,
   type User,
-  type UserCredential,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 
-/** Redireciona para o Google (sem popup). Evita COOP/window.closed e erros em alguns browsers. */
-export function signInWithGoogle(): Promise<void> {
-  return signInWithRedirect(auth, googleProvider);
-}
-
-export function getGoogleRedirectResult(): Promise<UserCredential | null> {
-  return getRedirectResult(auth);
+export function signInWithGoogle() {
+  return signInWithPopup(auth, googleProvider);
 }
 
 export function signInWithEmail(email: string, password: string) {

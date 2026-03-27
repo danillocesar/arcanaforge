@@ -11,7 +11,6 @@ import { setAuthConfig } from '../../api/http';
 import { auth } from './firebase';
 import {
   getCurrentUserToken,
-  getGoogleRedirectResult,
   refreshUser,
   resendVerification,
   signInWithEmail,
@@ -25,7 +24,7 @@ interface AuthContextValue {
   loading: boolean;
   isAuthenticated: boolean;
   requiresEmailVerification: boolean;
-  signInGoogle: () => Promise<void>;
+  signInGoogle: () => Promise<unknown>;
   signInPassword: (email: string, password: string) => Promise<void>;
   signUpPassword: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -37,6 +36,8 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 
 function userRequiresEmailVerification(user: User | null): boolean {
   if (!user) return false;
+  const hasGoogleProvider = user.providerData.some((p) => p.providerId === 'google.com');
+  if (hasGoogleProvider) return false;
   const hasPasswordProvider = user.providerData.some((p) => p.providerId === 'password');
   return hasPasswordProvider && !user.emailVerified;
 }
@@ -51,10 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
     return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    getGoogleRedirectResult().catch(() => undefined);
   }, []);
 
   useEffect(() => {

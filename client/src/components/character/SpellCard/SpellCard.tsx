@@ -44,7 +44,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
     updateSpell({ enhancements: enhancements.filter((_, i) => i !== aIdx) });
   };
 
-  const campos = [
+  const fields = [
     { key: 'name' as const, label: 'Nome' },
     { key: 'school' as const, label: 'Escola' },
     { key: 'castingTime' as const, label: 'Execução' },
@@ -56,22 +56,22 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
 
   return (
     <div className={styles.card}>
-      <button className={styles.conjurar} onClick={() => onCast(index)} title="Conjurar">
+      <button className={styles.cast} onClick={() => onCast(index)} title="Conjurar">
         ✨
       </button>
       <button className={styles.remove} onClick={removeSpell} title="Remover">✕</button>
 
       <div className={styles.grid}>
-        {campos.map(c => (
-          <div key={c.key} className={styles.campo}>
-            <label>{c.label}</label>
+        {fields.map(f => (
+          <div key={f.key} className={styles.field}>
+            <label>{f.label}</label>
             <input
-              value={spell[c.key] || ''}
-              onChange={e => updateSpell({ [c.key]: e.target.value })}
+              value={spell[f.key] || ''}
+              onChange={e => updateSpell({ [f.key]: e.target.value })}
             />
           </div>
         ))}
-        <div className={`${styles.campo} ${styles.pmField}`}>
+        <div className={`${styles.field} ${styles.pmField}`}>
           <label>Custo PM</label>
           <input
             type="number"
@@ -79,7 +79,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
             onChange={e => updateSpell({ mpCost: Number(e.target.value) || 0 })}
           />
         </div>
-        <div className={`${styles.campo} ${styles.fullWidth}`}>
+        <div className={`${styles.field} ${styles.fullWidth}`}>
           <label>Efeito</label>
           <textarea
             rows={3}
@@ -89,12 +89,12 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
         </div>
       </div>
 
-      <div className={styles.aprimoramentos}>
+      <div className={styles.enhancements}>
         <div className={styles.aprHeader}>
           <span className={styles.aprTitle}>Aprimoramentos</span>
         </div>
         {enhancements.map((enh, aIdx) => (
-          <div key={aIdx} className={styles.aprRow}>
+          <div key={aIdx} className={styles.enhRow}>
             <input
               className={styles.enhDesc}
               value={enh.description}
@@ -102,7 +102,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
               placeholder="Descrição"
             />
             <input
-              className={styles.aprPm}
+              className={styles.enhMp}
               type="number"
               value={enh.mpCost}
               onChange={e => updateEnhancement(aIdx, { mpCost: Number(e.target.value) || 0 })}

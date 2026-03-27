@@ -35,7 +35,7 @@
   color: var(--accent-success);
 }
 
-.badgeDano {
+.badgeDamage {
   background: color-mix(in srgb, var(--accent-red-bar) 12%, transparent);
   color: var(--accent-red-bar);
 }

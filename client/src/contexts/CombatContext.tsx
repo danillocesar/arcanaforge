@@ -3,15 +3,14 @@ import type { CombatData, CombatPlayer, CombatRow, Enemy } from '../types/combat
 import {
   apiLoadCombat,
   apiSaveCombat,
-  apiFetchParties,
-  apiFetchCharacterSummaries,
+  apiFetchPartyCharacters,
   apiLoadCharacter,
   apiSaveCharacter,
-  apiAvatarTransparent,
 } from '../api';
 import { useWebSocket } from '../hooks/useWebSocket';
 import type { WsMessage } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/Toast/Toast';
+import { useAuth } from '../features/auth';
 
 interface CombatContextValue {
   combatData: CombatData;
@@ -19,9 +18,8 @@ interface CombatContextValue {
   turnIndex: number;
   ordered: CombatRow[];
   orderActive: boolean;
-  masterMode: boolean;
+  isMaster: boolean;
 
-  setMasterMode: (v: boolean) => void;
   addEnemy: (name: string, maxHp: number) => void;
   removeEnemy: (idx: number) => void;
   updateInitiative: (id: string, type: string, val: number | string) => void;
@@ -44,13 +42,23 @@ const DEFAULT_COMBAT: CombatData = {
 
 const CombatContext = createContext<CombatContextValue | null>(null);
 
-export function CombatProvider({ children, partyId }: { children: React.ReactNode; partyId?: string }) {
+export function CombatProvider({
+  children,
+  partyId,
+  ownerUid,
+}: {
+  children: React.ReactNode;
+  partyId?: string;
+  ownerUid?: string;
+}) {
+  const { user } = useAuth();
+  const isMaster = Boolean(ownerUid && user?.uid && ownerUid === user.uid);
+
   const [combatData, setCombatData] = useState<CombatData>({ ...DEFAULT_COMBAT });
   const [players, setPlayers] = useState<CombatPlayer[]>([]);
   const [turnIndex, setTurnIndex] = useState(-1);
   const [orderedList, setOrderedList] = useState<CombatRow[]>([]);
   const [orderActive, setOrderActive] = useState(false);
-  const [masterMode, setMasterMode] = useState(false);
 
   const combatDataRef = useRef(combatData);
   combatDataRef.current = combatData;
@@ -58,6 +66,8 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
   playersRef.current = players;
 
   const { showToast } = useToast();
+
+  const reloadPlayersRef = useRef<() => void>(() => {});
 
   const buildOrdered = useCallback((data: CombatData, currentPlayers: CombatPlayer[]) => {
     const rows: CombatRow[] = [];
@@ -150,6 +160,10 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
           });
           showToast(`PV de ${(msg.name as string) || 'jogador'} atualizado pelo Mestre`, 'info');
         }
+        if (msg.type === 'party_roster_sync') {
+          if (partyId && msg.partyId && msg.partyId !== partyId) return;
+          reloadPlayersRef.current();
+        }
       },
       [buildOrdered, showToast, partyId],
     ),
@@ -163,6 +177,29 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
     [send, partyId],
   );
 
+  const reloadPlayers = useCallback(async () => {
+    if (!partyId) return;
+    const partyChars = await apiFetchPartyCharacters(partyId);
+
+    const loadedPlayers: CombatPlayer[] = partyChars.map((r) => ({
+      _id: r._id,
+      name: r.name,
+      avatar: r.avatar || '',
+      classes: r.classes,
+      maxHp: r.hp?.max ?? 0,
+      currentHp: r.hp?.current ?? 0,
+      maxMp: r.mp?.max ?? 0,
+      currentMp: r.mp?.current ?? 0,
+    }));
+    setPlayers(loadedPlayers);
+
+    const cd = combatDataRef.current;
+    if (cd.ordered) {
+      buildOrdered(cd, loadedPlayers);
+    }
+  }, [buildOrdered, partyId]);
+  reloadPlayersRef.current = reloadPlayers;
+
   const loadCombat = useCallback(async () => {
     if (!partyId) return;
     const data = await apiLoadCombat(partyId);
@@ -170,36 +207,18 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
     setCombatData(normalized);
     if (normalized.turnIndex !== undefined) setTurnIndex(normalized.turnIndex);
 
-    const parties = await apiFetchParties();
-    const party = parties.find((p) => p.id === partyId);
-    const memberSet = party ? new Set(party.members) : null;
+    const partyChars = await apiFetchPartyCharacters(partyId);
 
-    const summaries = await apiFetchCharacterSummaries();
-    const filtered = memberSet
-      ? summaries.filter((r) => memberSet!.has(r._id))
-      : summaries;
-
-    const playerPromises = filtered.map(async (r) => {
-      const character = await apiLoadCharacter(r._id);
-      let avatar = r.avatar || '';
-      try {
-        const transparent = await apiAvatarTransparent(r._id);
-        if (transparent) avatar = transparent;
-      } catch { /* keep original */ }
-
-      return {
-        _id: r._id,
-        name: r.name,
-        avatar,
-        classes: r.classes,
-        maxHp: character?.hp.max ?? 0,
-        currentHp: character?.hp.current ?? 0,
-        maxMp: character?.mp.max ?? 0,
-        currentMp: character?.mp.current ?? 0,
-      } satisfies CombatPlayer;
-    });
-
-    const loadedPlayers = await Promise.all(playerPromises);
+    const loadedPlayers: CombatPlayer[] = partyChars.map((r) => ({
+      _id: r._id,
+      name: r.name,
+      avatar: r.avatar || '',
+      classes: r.classes,
+      maxHp: r.hp?.max ?? 0,
+      currentHp: r.hp?.current ?? 0,
+      maxMp: r.mp?.max ?? 0,
+      currentMp: r.mp?.current ?? 0,
+    }));
     setPlayers(loadedPlayers);
 
     if (normalized.ordered) {
@@ -386,8 +405,7 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
     turnIndex,
     ordered: orderedList,
     orderActive,
-    masterMode,
-    setMasterMode,
+    isMaster,
     addEnemy,
     removeEnemy,
     updateInitiative,
@@ -398,7 +416,7 @@ export function CombatProvider({ children, partyId }: { children: React.ReactNod
     resetTurn,
     applyHpChange,
     loadCombat,
-  }), [combatData, players, turnIndex, orderedList, orderActive, masterMode, setMasterMode, addEnemy, removeEnemy, updateInitiative, updateEnemyName, updateEnemyMaxHp, sortInitiative, nextTurn, resetTurn, applyHpChange, loadCombat]);
+  }), [combatData, players, turnIndex, orderedList, orderActive, isMaster, addEnemy, removeEnemy, updateInitiative, updateEnemyName, updateEnemyMaxHp, sortInitiative, nextTurn, resetTurn, applyHpChange, loadCombat]);
 
   return <CombatContext.Provider value={value}>{children}</CombatContext.Provider>;
 }

@@ -5,7 +5,7 @@ import { createEmptyCharacter, createEmptyNarutoCharacter } from '../../utils/ca
 import type { RPGSystem, CharacterSummary } from '../../types/character';
 import { SYSTEM_ROUTES } from '../../data/constants';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import SistemaFilter from '../../components/ui/SystemFilter/SystemFilter';
+import SystemFilter from '../../components/ui/SystemFilter/SystemFilter';
 import SelectGrid from '../../components/select/SelectGrid/SelectGrid';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
@@ -19,8 +19,8 @@ export default function SelectPage() {
   const [resumos, setResumos] = useState<CharacterSummary[]>([]);
   const [tab, setTab] = useState<TabFilter>('todos');
   const [modalOpen, setModalOpen] = useState(false);
-  const [novoNome, setNovoNome] = useState('');
-  const [novoSistema, setNovoSistema] = useState<RPGSystem>('tormenta');
+  const [newName, setNewName] = useState('');
+  const [newSystem, setNewSystem] = useState<RPGSystem>('tormenta');
   const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
   const navigate = useNavigate();
 
@@ -31,21 +31,21 @@ export default function SelectPage() {
   const filtered = tab === 'todos' ? resumos : resumos.filter((r) => r.system === tab);
 
   const openNewModal = () => {
-    setNovoNome('');
-    setNovoSistema('tormenta');
+    setNewName('');
+    setNewSystem('tormenta');
     setModalOpen(true);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const nome = novoNome.trim();
-    if (!nome) return;
+    const name = newName.trim();
+    if (!name) return;
 
-    const ficha =
-      novoSistema === 'naruto' ? createEmptyNarutoCharacter(nome) : createEmptyCharacter(nome);
-    await apiSaveCharacter(ficha._id, ficha);
+    const character =
+      newSystem === 'naruto' ? createEmptyNarutoCharacter(name) : createEmptyCharacter(name);
+    await apiSaveCharacter(character._id, character);
     setModalOpen(false);
-    navigate(`${SYSTEM_ROUTES[novoSistema]}?id=${encodeURIComponent(ficha._id)}`);
+    navigate(`${SYSTEM_ROUTES[newSystem]}?id=${encodeURIComponent(character._id)}`);
   };
 
   const handleDeleteConfirm = async () => {
@@ -59,7 +59,7 @@ export default function SelectPage() {
       <Topbar title="Seleção de Personagens" />
 
       <div className={styles.content}>
-        <SistemaFilter value={tab} onChange={setTab} />
+        <SystemFilter value={tab} onChange={setTab} />
 
         <SelectGrid resumos={filtered} onNewCharacter={openNewModal} onDelete={setDeleteTarget} />
       </div>
@@ -72,29 +72,29 @@ export default function SelectPage() {
           <div className={styles.systemSelector}>
             <button
               type="button"
-              className={`${styles.systemOption} ${novoSistema === 'tormenta' ? styles.systemActive : ''}`}
-              onClick={() => setNovoSistema('tormenta')}
+              className={`${styles.systemOption} ${newSystem === 'tormenta' ? styles.systemActive : ''}`}
+              onClick={() => setNewSystem('tormenta')}
             >
               <span className={styles.systemIcon}>⚔️</span>
               <span className={styles.systemName}>Tormenta 20</span>
             </button>
             <button
               type="button"
-              className={`${styles.systemOption} ${novoSistema === 'naruto' ? styles.systemActive : ''}`}
-              onClick={() => setNovoSistema('naruto')}
+              className={`${styles.systemOption} ${newSystem === 'naruto' ? styles.systemActive : ''}`}
+              onClick={() => setNewSystem('naruto')}
             >
               <span className={styles.systemIcon}>🍥</span>
               <span className={styles.systemName}>Naruto: SnS</span>
             </button>
           </div>
 
-          <label className={styles.newModalLabel} htmlFor="novo-char-nome">
+          <label className={styles.newModalLabel} htmlFor="new-char-name">
             Nome do personagem
           </label>
           <Input
-            id="novo-char-nome"
-            value={novoNome}
-            onChange={(e) => setNovoNome(e.target.value)}
+            id="new-char-name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
             autoFocus
             placeholder="Ex: Aragorn, Naruto Uzumaki..."
           />
@@ -103,7 +103,7 @@ export default function SelectPage() {
             <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={!novoNome.trim()}>
+            <Button type="submit" variant="primary" disabled={!newName.trim()}>
               Criar
             </Button>
           </div>

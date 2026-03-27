@@ -1,17 +1,17 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import Section from '../../ui/Section/Section';
 import Button from '../../ui/Button/Button';
-import AtaqueCard from '../AttackCard/AttackCard';
+import AttackCard from '../AttackCard/AttackCard';
 import { calcSpellResistance } from '../../../utils/calculations';
 import styles from './AttacksList.module.css';
 
-export default function AtaquesList() {
+export default function AttacksList() {
   const { character, updateCharacter } = useCharacterContext();
   if (!character) return null;
 
-  const resMagia = calcSpellResistance(character);
+  const spellResistance = calcSpellResistance(character);
 
-  const addAtaque = () => {
+  const addAttack = () => {
     updateCharacter(f => ({
       ...f,
       attacks: [
@@ -32,15 +32,15 @@ export default function AtaquesList() {
   };
 
   return (
-    <Section id="secAtaques" title="Ataques">
+    <Section id="secAttacks" title="Ataques">
       <div className={styles.headerRow}>
         <label>Resistência a Magia</label>
-        <span className={styles.resistencia}>{resMagia}</span>
+        <span className={styles.resistance}>{spellResistance}</span>
       </div>
       {character.attacks.map((_, idx) => (
-        <AtaqueCard key={idx} index={idx} />
+        <AttackCard key={idx} index={idx} />
       ))}
-      <Button variant="add" onClick={addAtaque}>+ Ataque</Button>
+      <Button variant="add" onClick={addAttack}>+ Ataque</Button>
     </Section>
   );
 }

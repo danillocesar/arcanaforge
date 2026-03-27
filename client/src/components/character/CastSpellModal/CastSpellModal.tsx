@@ -51,13 +51,13 @@ export default function CastSpellModal({ spellIdx, onClose }: CastSpellModalProp
           name: spell.name || 'Magia',
           mpSpent: totalCost,
           timestamp: Date.now(),
-          details: { custoPMBase: baseCost, aprimoramentos: selectedEnhancements, custoTotal: totalCost },
+          details: { baseMpCost: baseCost, enhancements: selectedEnhancements, totalCost: totalCost },
         },
       ],
     }));
     playMagicSound();
-    const estilo = 'toast' as AnimationStyle;
-    triggerAttackAnim(estilo, {
+    const animationStyle = 'toast' as AnimationStyle;
+    triggerAttackAnim(animationStyle, {
       type: 'magic',
       name: spell.name || 'Magia',
       mpCost: totalCost,

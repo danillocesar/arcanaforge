@@ -43,12 +43,12 @@
   color: var(--text-muted);
 }
 
-.nomeCol {
+.nameCol {
   flex: 0 0 220px;
   min-width: 0;
 }
 
-.campoNome {
+.nameField {
   width: 100%;
   background: transparent;
   border: none;
@@ -60,42 +60,42 @@
   padding: 4px 0;
 }
 
-.campoNome:focus {
+.nameField:focus {
   border-bottom-color: var(--accent-gold);
   outline: none;
 }
 
-.classesCol {
+.classCol {
   flex: 1;
   min-width: 0;
   overflow: hidden;
 }
 
-.classesHeader {
+.classHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 3px;
 }
 
-.classesTitle {
+.classTitle {
   font-size: 0.62rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
-.nivelTotal {
+.totalLevel {
   font-size: 0.72rem;
   color: var(--text-secondary);
 }
 
-.nivelTotal strong {
+.totalLevel strong {
   font-size: 0.85rem;
   color: var(--accent-gold);
 }
 
-.classesBody {
+.classBody {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -104,7 +104,7 @@
   padding: 8px 12px;
 }
 
-.classesLista {
+.classList {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -113,7 +113,7 @@
   min-width: 0;
 }
 
-.classeIcone {
+.classIcon {
   width: 56px;
   height: 56px;
   object-fit: contain;
@@ -122,14 +122,14 @@
   opacity: 0.85;
 }
 
-.classeItem {
+.classItem {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 2px 0;
 }
 
-.classeNomeInput {
+.classNameInput {
   flex: 0 1 120px;
   min-width: 80px;
   font-size: 0.78rem;
@@ -146,27 +146,27 @@
   -webkit-appearance: none;
 }
 
-.classeNomeInput:hover {
+.classNameInput:hover {
   border-bottom-color: var(--text-muted);
 }
 
-.classeNomeInput:focus {
+.classNameInput:focus {
   outline: none;
   border-bottom-color: var(--accent-gold);
 }
 
-.classeNomeInput option {
+.classNameInput option {
   background: var(--bg-card);
   color: var(--text-primary);
 }
 
-.classeLvlLabel {
+.classLevelLabel {
   font-size: 0.62rem;
   color: var(--text-muted);
   font-weight: 600;
 }
 
-.classeNivelInput {
+.classLevelInput {
   width: 32px;
   color: var(--accent-gold);
   font-size: 0.78rem;
@@ -174,7 +174,7 @@
   text-align: center;
 }
 
-.classeRemove {
+.classRemove {
   background: none;
   border: none;
   color: var(--text-muted);
@@ -184,11 +184,11 @@
   line-height: 1;
 }
 
-.classeRemove:hover {
+.classRemove:hover {
   color: var(--accent-red);
 }
 
-.addClasse {
+.addClass {
   background: var(--btn-add-bg);
   border: 1px dashed var(--border);
   border-radius: 6px;
@@ -200,7 +200,7 @@
   margin-top: 3px;
 }
 
-.addClasse:hover {
+.addClass:hover {
   color: var(--accent-gold);
   border-color: var(--accent-gold-dim);
   background: var(--btn-add-hover);
@@ -212,14 +212,14 @@
   gap: 12px;
 }
 
-.campoInfo {
+.infoField {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
 }
 
-.campoInfo label {
+.infoField label {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -227,8 +227,8 @@
   letter-spacing: 0.05em;
 }
 
-.campoInfo input,
-.campoInfo select {
+.infoField input,
+.infoField select {
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -242,8 +242,8 @@
   transition: border-color 0.2s;
 }
 
-.campoInfo input:focus,
-.campoInfo select:focus {
+.infoField input:focus,
+.infoField select:focus {
   border-color: var(--accent-gold);
   outline: none;
 }
@@ -253,11 +253,11 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  .nomeCol {
+  .nameCol {
     flex: 1 1 auto;
     width: 100%;
   }
-  .classesCol {
+  .classCol {
     width: 100%;
   }
   .infoGrid {

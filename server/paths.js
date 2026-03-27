@@ -6,15 +6,12 @@ const DATA_DIR = path.join(ROOT_DIR, 'data');
 const AVATARS_DIR = path.join(DATA_DIR, 'avatars');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
-// Kept for the JSON -> MongoDB migration script
 const CHARACTERS_DIR = path.join(DATA_DIR, 'characters');
 const PARTIES_DIR = path.join(DATA_DIR, 'parties');
 const COMBAT_DIR = path.join(DATA_DIR, 'combat');
 
 function ensureDataDirs() {
-  [DATA_DIR, AVATARS_DIR].forEach((d) => {
-    if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
-  });
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 module.exports = {

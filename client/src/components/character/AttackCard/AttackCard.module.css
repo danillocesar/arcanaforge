@@ -15,13 +15,13 @@
   margin-bottom: 10px;
 }
 
-.campoInfo {
+.infoField {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.campoInfo label {
+.infoField label {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -29,8 +29,8 @@
   letter-spacing: 0.05em;
 }
 
-.campoInfo input,
-.campoInfo select {
+.infoField input,
+.infoField select {
   background: var(--bg-body);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -40,8 +40,8 @@
   padding: 6px 8px;
 }
 
-.campoInfo input:focus,
-.campoInfo select:focus {
+.infoField input:focus,
+.infoField select:focus {
   outline: none;
   border-color: var(--accent-gold);
 }
@@ -272,7 +272,7 @@
   white-space: nowrap;
 }
 
-.usar {
+.use {
   position: absolute;
   top: 8px;
   right: 52px;
@@ -284,7 +284,7 @@
   transition: color 0.2s;
 }
 
-.usar:hover {
+.use:hover {
   color: var(--accent-blue-bar);
 }
 

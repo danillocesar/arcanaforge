@@ -94,7 +94,7 @@ export default function AttributesDefense() {
   };
 
   return (
-    <Section id="secAtributos" title="Atributos & Defesa">
+    <Section id="secAttributes" title="Atributos & Defesa">
       <div className={styles.attrDefesaLayout}>
         <div className={styles.attributesGrid}>
           {ATTR_ORDER.map((attr) => (

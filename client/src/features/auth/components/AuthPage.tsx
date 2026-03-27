@@ -19,6 +19,7 @@ function firebaseMessage(err: unknown): string {
     return 'Não foi possível concluir a autenticação.';
   }
   const code = String((err as { code: string }).code);
+  if (code.includes('account-exists-with-different-credential')) return 'Este e-mail já está cadastrado com senha. Faça login com e-mail e senha primeiro.';
   if (code.includes('invalid-credential')) return 'Credenciais inválidas.';
   if (code.includes('email-already-in-use')) return 'Este e-mail já está em uso.';
   if (code.includes('weak-password')) return 'A senha deve ter no mínimo 6 caracteres.';
@@ -80,12 +81,8 @@ export default function AuthPage() {
     try {
       setBusy(true);
       setError('');
-      try {
-        sessionStorage.setItem(AUTH_RETURN_KEY, returnTo);
-      } catch {
-        /* ignore */
-      }
       await signInGoogle();
+      navigate(returnTo, { replace: true });
     } catch (err) {
       setError(firebaseMessage(err));
     } finally {

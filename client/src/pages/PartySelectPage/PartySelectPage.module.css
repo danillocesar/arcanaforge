@@ -208,6 +208,61 @@
   font-weight: 700;
 }
 
+/* Section headers */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+.sectionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Invite code badge on cards */
+.inviteCode {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 0.12em;
+  color: var(--accent-gold);
+  background: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin-top: 2px;
+  cursor: copy;
+  transition: background 0.15s;
+}
+
+.inviteCode:hover {
+  background: rgba(201, 168, 76, 0.2);
+}
+
+/* Empty hint */
+.emptyHint {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px 16px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* Join error */
+.joinError {
+  color: var(--accent-red, #e74c3c);
+  font-size: 0.8rem;
+  margin: 4px 0 0;
+}
+
 @media (max-width: 800px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);

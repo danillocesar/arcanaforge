@@ -6,7 +6,7 @@
   border-bottom: 1px solid var(--border);
 }
 
-.nivel {
+.levelNumber {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--accent-gold);

@@ -49,7 +49,7 @@ export default function Inventory() {
   };
 
   return (
-    <Section id="secInventario" title="Inventário">
+    <Section id="secInventory" title="Inventário">
       <div className={styles.stats}>
         <span>Limite de Carga: <strong>{carryCapacity}</strong></span>
         <span>Carga Usada: <strong>{usedLoad}</strong></span>

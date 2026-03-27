@@ -84,6 +84,7 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
   const sendHpUpdate = useCallback(() => {
     const c = characterRef.current;
     if (!c) return;
+    skipHpBroadcastAfterSaveRef.current = true;
     send({
       type: 'character_hp_update',
       characterId: c._id,

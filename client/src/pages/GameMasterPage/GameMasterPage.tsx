@@ -1,33 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CombatProvider, useCombatContext } from '../../contexts/CombatContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
 import { apiFetchParties } from '../../api';
+import type { Party } from '../../types/party';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import CombateToolbar from '../../components/combat/CombatToolbar/CombatToolbar';
-import CombateCard from '../../components/combat/CombatCard/CombatCard';
+import SectionNav from '../../components/layout/SectionNav/SectionNav';
+import CombatToolbar from '../../components/combat/CombatToolbar/CombatToolbar';
+import CombatCard from '../../components/combat/CombatCard/CombatCard';
 import MiniOrder from '../../components/combat/MiniOrder/MiniOrder';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
+import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './GameMasterPage.module.css';
 
-function MestreContent({ partyNome }: { partyNome: string }) {
+function GameMasterContent({ party, system }: { party: Party; system: string }) {
+  const navigate = useNavigate();
   const {
     ordered,
     orderActive,
     players,
     combatData,
     turnIndex,
-    masterMode,
-    setMasterMode,
+    isMaster,
     addEnemy,
     loadCombat,
   } = useCombatContext();
 
-  const [modalNovoInimigo, setModalNovoInimigo] = useState(false);
-  const [novoNome, setNovoNome] = useState('');
-  const [novoPv, setNovoPv] = useState('20');
+  const [newEnemyModalOpen, setNewEnemyModalOpen] = useState(false);
+  const [newEnemyName, setNewEnemyName] = useState('');
+  const [newEnemyHp, setNewEnemyHp] = useState('20');
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     loadCombat();
@@ -37,20 +41,35 @@ function MestreContent({ partyNome }: { partyNome: string }) {
     document.title = 'Combate Tracker — ArcanaForge';
   }, []);
 
-  const abrirModalNovoInimigo = () => {
+  const openNewEnemyModal = () => {
     const n = combatData.enemies.length + 1;
-    setNovoNome(`Inimigo ${n}`);
-    setNovoPv('20');
-    setModalNovoInimigo(true);
+    setNewEnemyName(`Inimigo ${n}`);
+    setNewEnemyHp('20');
+    setNewEnemyModalOpen(true);
   };
 
-  const handleSubmitNovoInimigo = (e: React.FormEvent) => {
+  const handleSubmitNewEnemy = (e: React.FormEvent) => {
     e.preventDefault();
-    const pv = Math.max(1, Math.floor(Number(novoPv) || 1));
-    const nome = novoNome.trim() || `Inimigo ${combatData.enemies.length + 1}`;
-    addEnemy(nome, pv);
-    setModalNovoInimigo(false);
+    const hp = Math.max(1, Math.floor(Number(newEnemyHp) || 1));
+    const name = newEnemyName.trim() || `Inimigo ${combatData.enemies.length + 1}`;
+    addEnemy(name, hp);
+    setNewEnemyModalOpen(false);
   };
+
+  const copyInviteCode = () => {
+    if (!party.inviteCode) return;
+    navigator.clipboard.writeText(party.inviteCode).catch(() => {});
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
+
+  const navItems = useMemo(
+    () => [
+      { id: 'members', label: 'Membros', onClick: () => navigate(`/${system}/party/${party.id}/members`) },
+      { id: 'combat', label: 'Combate', active: true },
+    ],
+    [navigate, party.id, system],
+  );
 
   const rows = orderActive
     ? ordered
@@ -80,33 +99,35 @@ function MestreContent({ partyNome }: { partyNome: string }) {
         })),
       ];
 
-  const isTurno = (i: number) => turnIndex >= 0 && i === turnIndex;
+  const isActiveTurn = (i: number) => turnIndex >= 0 && i === turnIndex;
 
   return (
     <>
-      {masterMode && <div className={styles.gmStrip} aria-hidden />}
-      <Topbar
-        title={partyNome ? `Grupo - ${partyNome}` : 'Grupo'}
-        right={
-          <button
-            type="button"
-            className={`${styles.gmToggle} ${masterMode ? styles.gmToggleActive : ''}`}
-            onClick={() => setMasterMode(!masterMode)}
-            title="Ativar/desativar visão do Mestre"
-          >
-            {masterMode ? '🔓 Modo Mestre' : '🔒 Modo Mestre'}
-          </button>
+      {isMaster && <div className={styles.gmStrip} aria-hidden />}
+      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
+      <SectionNav
+        items={navItems}
+        rightSlot={
+          isMaster && party.inviteCode ? (
+            <span
+              className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
+              onClick={copyInviteCode}
+              title="Clique para copiar"
+            >
+              {codeCopied ? 'Copiado!' : party.inviteCode}
+            </span>
+          ) : undefined
         }
       />
       <div className={styles.gmContainer}>
-        {masterMode && (
+        {isMaster && (
           <div className={styles.gmBadge}>
             <span className={styles.gmBadgeDot} aria-hidden />
-            MODO MESTRE
+            MESTRE
           </div>
         )}
         <div className={styles.gmSection}>
-          {masterMode && <CombateToolbar />}
+          {isMaster && <CombatToolbar />}
           {rows.length === 0 ? (
             <div className={styles.empty}>
               <span className={styles.emptyIcon}>🎲</span>
@@ -118,42 +139,42 @@ function MestreContent({ partyNome }: { partyNome: string }) {
           ) : (
             <div className={styles.cardsWrapper}>
               {rows.map((row, i) => (
-                <CombateCard key={row.id} row={row} isTurno={isTurno(i)} />
+                <CombatCard key={row.id} row={row} isActiveTurn={isActiveTurn(i)} />
               ))}
             </div>
           )}
-          {masterMode && (
-            <button type="button" className={styles.addEnemy} onClick={abrirModalNovoInimigo}>
+          {isMaster && (
+            <button type="button" className={styles.addEnemy} onClick={openNewEnemyModal}>
               <span className={styles.addIcon}>+</span> Adicionar Inimigo
             </button>
           )}
         </div>
       </div>
 
-      <Modal open={modalNovoInimigo} onClose={() => setModalNovoInimigo(false)}>
-        <form className={styles.newEnemyModal} onSubmit={handleSubmitNovoInimigo}>
+      <Modal open={newEnemyModalOpen} onClose={() => setNewEnemyModalOpen(false)}>
+        <form className={styles.newEnemyModal} onSubmit={handleSubmitNewEnemy}>
           <h3 className={styles.newEnemyTitle}>Novo inimigo</h3>
-          <label className={styles.newEnemyLabel} htmlFor="novo-inimigo-nome">
+          <label className={styles.newEnemyLabel} htmlFor="new-enemy-name">
             Nome
           </label>
           <Input
-            id="novo-inimigo-nome"
-            value={novoNome}
-            onChange={(e) => setNovoNome(e.target.value)}
+            id="new-enemy-name"
+            value={newEnemyName}
+            onChange={(e) => setNewEnemyName(e.target.value)}
             autoFocus
           />
-          <label className={styles.newEnemyLabel} htmlFor="novo-inimigo-pv">
+          <label className={styles.newEnemyLabel} htmlFor="new-enemy-hp">
             PV total
           </label>
           <Input
-            id="novo-inimigo-pv"
+            id="new-enemy-hp"
             type="number"
             min={1}
-            value={novoPv}
-            onChange={(e) => setNovoPv(e.target.value)}
+            value={newEnemyHp}
+            onChange={(e) => setNewEnemyHp(e.target.value)}
           />
           <div className={styles.newEnemyActions}>
-            <Button type="button" variant="ghost" onClick={() => setModalNovoInimigo(false)}>
+            <Button type="button" variant="ghost" onClick={() => setNewEnemyModalOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary">
@@ -168,10 +189,11 @@ function MestreContent({ partyNome }: { partyNome: string }) {
   );
 }
 
-export default function MestrePage() {
-  const { partyId } = useParams<{ partyId: string }>();
+export default function GameMasterPage() {
+  const { system, partyId } = useParams<{ system: string; partyId: string }>();
   const navigate = useNavigate();
-  const [partyNome, setPartyNome] = useState('');
+  const [party, setParty] = useState<Party | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     if (!partyId) {
@@ -181,17 +203,19 @@ export default function MestrePage() {
     apiFetchParties()
       .then((parties) => {
         const found = parties.find((p) => p.id === partyId);
-        if (found) setPartyNome(found.name);
+        if (found) setParty(found);
+        else setAccessDenied(true);
       })
       .catch(console.error);
   }, [partyId, navigate]);
 
-  if (!partyId) return null;
+  if (accessDenied) return <AccessDeniedPage />;
+  if (!partyId || !party) return null;
 
   return (
     <ToastProvider>
-      <CombatProvider partyId={partyId}>
-        <MestreContent partyNome={partyNome} />
+      <CombatProvider partyId={partyId} ownerUid={party.ownerUid}>
+        <GameMasterContent party={party} system={system!} />
       </CombatProvider>
     </ToastProvider>
   );

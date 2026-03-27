@@ -1,7 +1,7 @@
 import { useCombatContext } from '../../../contexts/CombatContext';
 import styles from './CombatToolbar.module.css';
 
-export default function CombateToolbar() {
+export default function CombatToolbar() {
   const { resetTurn, sortInitiative, nextTurn } = useCombatContext();
 
   return (
@@ -12,7 +12,7 @@ export default function CombateToolbar() {
           <span className={styles.btnIcon}>⟲</span> Reset
         </button>
         <button type="button" className={`${styles.btn} ${styles.btnGold}`} onClick={sortInitiative} title="Ordenar por Iniciativa">
-          <span className={styles.btnIcon}>↕</span> Iniciar Combate
+          <span className={styles.btnIcon}>⚔️</span> Iniciar Combate
         </button>
         <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={nextTurn} title="Próximo Turno">
           <span className={styles.btnIcon}>▶</span> Próximo Turno

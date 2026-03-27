@@ -1,60 +1,120 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiFetchParties, apiFetchCharacterSummaries, apiUpdateParty } from '../../api';
-import type { Party } from '../../types/party';
+import {
+  apiFetchParties,
+  apiFetchCharacterSummaries,
+  apiAddCharacterToParty,
+  apiRemoveCharacterFromParty,
+  apiRemovePartyMember,
+} from '../../api';
+import type { Party, PartyMember } from '../../types/party';
 import type { CharacterSummary } from '../../types/character';
+import { useAuth } from '../../features/auth';
+import { useWebSocket } from '../../hooks/useWebSocket';
+import type { WsMessage } from '../../hooks/useWebSocket';
 import { getInitials, getAvatarColor, formatClassesStr } from '../../utils/formatters';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import Button from '../../components/ui/Button/Button';
+import SectionNav from '../../components/layout/SectionNav/SectionNav';
+import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
+import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './PartyMembersPage.module.css';
 
 export default function PartyMembersPage() {
-  const { partyId } = useParams<{ partyId: string }>();
+  const { system, partyId } = useParams<{ system: string; partyId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [party, setParty] = useState<Party | null>(null);
-  const [resumos, setResumos] = useState<CharacterSummary[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [myCharacters, setMyCharacters] = useState<CharacterSummary[]>([]);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [removeMember, setRemoveMember] = useState<PartyMember | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+
+  const uid = user?.uid ?? '';
+  const isOwner = party?.ownerUid === uid;
+
+  const loadData = useCallback(async () => {
+    if (!partyId) return;
+    try {
+      const [parties, allSummaries] = await Promise.all([
+        apiFetchParties(),
+        apiFetchCharacterSummaries(),
+      ]);
+
+      const found = parties.find((p) => p.id === partyId);
+      if (!found) {
+        setAccessDenied(true);
+        return;
+      }
+
+      setParty(found);
+      setMyCharacters(allSummaries.filter((r) => r.system === found.system));
+    } catch (err) {
+      console.error('Erro ao carregar membros:', err);
+    }
+  }, [partyId]);
 
   useEffect(() => {
-    if (!partyId) return;
+    loadData();
+  }, [loadData]);
 
-    (async () => {
-      try {
-        const [parties, allResumos] = await Promise.all([
-          apiFetchParties(),
-          apiFetchCharacterSummaries(),
-        ]);
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
 
-        const found = parties.find((p) => p.id === partyId);
-        if (!found) {
-          navigate('/parties', { replace: true });
-          return;
+  useWebSocket(
+    useCallback(
+      (msg: WsMessage) => {
+        if (msg.type === 'party_roster_sync' && msg.partyId === partyId) {
+          loadDataRef.current();
         }
+      },
+      [partyId],
+    ),
+  );
 
-        setParty(found);
-        setResumos(allResumos.filter((r) => r.system === found.system));
-        setSelected(new Set(found.members));
-      } catch (err) {
-        console.error('Erro ao carregar membros:', err);
-      }
-    })();
-  }, [partyId, navigate]);
-
-  const toggleMember = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const handleConfirm = async () => {
+  const handleToggleCharacter = async (characterId: string) => {
     if (!party) return;
-    const members = Array.from(selected);
-    await apiUpdateParty(party.id, { ...party, members });
-    navigate(`/${party.system}/party/${party.id}`);
+    const myMember = party.members.find((m) => m.uid === uid);
+    const charIds = myMember?.characterIds ?? [];
+    const isAlready = charIds.includes(characterId);
+
+    try {
+      const updated = isAlready
+        ? await apiRemoveCharacterFromParty(party.id, characterId)
+        : await apiAddCharacterToParty(party.id, characterId);
+      setParty(updated);
+    } catch (err) {
+      console.error('Erro ao alterar personagem:', err);
+    }
   };
+
+  const handleRemoveMember = async () => {
+    if (!party || !removeMember) return;
+    try {
+      const updated = await apiRemovePartyMember(party.id, removeMember.uid);
+      setParty(updated);
+    } catch (err) {
+      console.error('Erro ao remover membro:', err);
+    }
+  };
+
+  const copyCode = () => {
+    if (!party?.inviteCode) return;
+    navigator.clipboard.writeText(party.inviteCode).catch(() => {});
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
+
+  const navItems = useMemo(
+    () => [
+      { id: 'members', label: 'Membros', active: true },
+      { id: 'combat', label: 'Combate', onClick: () => {
+        if (system && partyId) navigate(`/${system}/party/${partyId}`);
+      }},
+    ],
+    [navigate, system, partyId],
+  );
+
+  if (accessDenied) return <AccessDeniedPage />;
 
   if (!party) {
     return (
@@ -68,57 +128,134 @@ export default function PartyMembersPage() {
     );
   }
 
+  const myMember = party.members.find((m) => m.uid === uid);
+  const myCharIds = new Set(myMember?.characterIds ?? []);
+
   return (
     <div className={styles.page}>
       <Topbar title={`Grupo - ${party.name}`} />
+      <SectionNav
+        items={navItems}
+        rightSlot={
+          isOwner && party.inviteCode ? (
+            <span
+              className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
+              onClick={copyCode}
+              title="Clique para copiar"
+            >
+              {codeCopied ? 'Copiado!' : party.inviteCode}
+            </span>
+          ) : undefined
+        }
+      />
 
       <div className={styles.content}>
-        <h2 className={styles.pageTitle}>{party.name} — Selecionar Membros</h2>
-        <p className={styles.subtitle}>
-          Selecione os personagens que participarão desta party. Apenas personagens do sistema selecionado são exibidos.
-        </p>
+        {/* My characters selector (multi-select) */}
+        <div className={styles.myCharSection}>
+          <h3 className={styles.sectionTitle}>
+            Meus Personagens ({myCharIds.size} selecionado{myCharIds.size !== 1 ? 's' : ''})
+          </h3>
 
-        {resumos.length === 0 ? (
-          <div className={styles.empty}>
-            Nenhum personagem encontrado para este sistema. Crie personagens primeiro na tela de seleção.
-          </div>
-        ) : (
-          <div className={styles.grid}>
-            {resumos.map((r) => {
-              const isSelected = selected.has(r._id);
-              const classesStr = formatClassesStr(r.classes);
+          {myCharacters.length === 0 ? (
+            <div className={styles.empty}>
+              Nenhum personagem encontrado para este sistema. Crie personagens primeiro na tela de seleção.
+            </div>
+          ) : (
+            <div className={styles.charGrid}>
+              {myCharacters.map((r) => {
+                const isSelected = myCharIds.has(r._id);
+                const classesStr = formatClassesStr(r.classes);
+
+                return (
+                  <button
+                    key={r._id}
+                    type="button"
+                    className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
+                    onClick={() => handleToggleCharacter(r._id)}
+                  >
+                    <span className={styles.checkbox}>{isSelected ? '✓' : ''}</span>
+                    <div
+                      className={styles.avatar}
+                      style={r.avatar ? undefined : { background: getAvatarColor(r.name) }}
+                    >
+                      {r.avatar ? <img src={r.avatar} alt="" /> : getInitials(r.name)}
+                    </div>
+                    <span className={styles.cardName}>{r.name}</span>
+                    <span className={styles.cardClass}>{classesStr}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Members list */}
+        <div className={styles.membersSection}>
+          <h3 className={styles.sectionTitle}>
+            Membros ({party.members.length})
+          </h3>
+
+          <div className={styles.membersList}>
+            {party.members.map((member) => {
+              const isSelf = member.uid === uid;
+              const isMemberOwner = member.uid === party.ownerUid;
+              const memberCharIds = member.characterIds ?? [];
+              const memberCharNames = isSelf
+                ? myCharacters.filter((c) => myCharIds.has(c._id)).map((c) => c.name)
+                : [];
 
               return (
-                <button
-                  key={r._id}
-                  type="button"
-                  className={`${styles.card} ${isSelected ? styles.cardSelected : ''}`}
-                  onClick={() => toggleMember(r._id)}
-                >
-                  <span className={styles.checkbox}>{isSelected ? '✓' : ''}</span>
-                  <div
-                    className={styles.avatar}
-                    style={r.avatar ? undefined : { background: getAvatarColor(r.name) }}
-                  >
-                    {r.avatar ? <img src={r.avatar} alt="" /> : getInitials(r.name)}
+                <div key={member.uid} className={styles.memberRow}>
+                  <div className={styles.memberInfo}>
+                    <div
+                      className={styles.memberAvatar}
+                      style={{ background: getAvatarColor(member.email || member.uid) }}
+                    >
+                      {getInitials(member.email || member.uid)}
+                    </div>
+                    <div className={styles.memberDetails}>
+                      <span className={styles.memberEmail}>
+                        {member.email || member.uid}
+                        {isSelf && <span className={styles.selfBadge}>(você)</span>}
+                        {isMemberOwner && <span className={styles.ownerBadge}>Mestre</span>}
+                      </span>
+                      <span className={styles.memberChar}>
+                        {memberCharIds.length > 0
+                          ? isSelf
+                            ? memberCharNames.join(', ')
+                            : `${memberCharIds.length} personagem${memberCharIds.length !== 1 ? 's' : ''}`
+                          : 'Nenhum personagem selecionado'}
+                      </span>
+                    </div>
                   </div>
-                  <span className={styles.cardName}>{r.name}</span>
-                  <span className={styles.cardClass}>{classesStr}</span>
-                </button>
+                  {isOwner && !isMemberOwner && (
+                    <button
+                      type="button"
+                      className={styles.removeMemberBtn}
+                      title="Remover membro"
+                      onClick={() => setRemoveMember(member)}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
-        )}
-
-        <div className={styles.actions}>
-          <Button variant="ghost" onClick={() => navigate('/parties')}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleConfirm} disabled={selected.size === 0}>
-            Iniciar Combate ({selected.size})
-          </Button>
         </div>
+
       </div>
+
+      <ConfirmModal
+        open={removeMember !== null}
+        onClose={() => setRemoveMember(null)}
+        onConfirm={handleRemoveMember}
+        variant="danger"
+        icon="✕"
+        title="Remover membro?"
+        message={`Tem certeza que deseja remover ${removeMember?.email || 'este membro'} do grupo?`}
+        confirmLabel="Remover"
+      />
     </div>
   );
 }

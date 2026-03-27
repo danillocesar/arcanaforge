@@ -33,26 +33,26 @@ function TimelineMarker({ active }: { active: boolean }) {
 
 function TrackUnit({
   row,
-  isTurno,
+  isCurrentTurn,
 }: {
   row: CombatRow;
-  isTurno: boolean;
+  isCurrentTurn: boolean;
 }) {
-  const isJogador = row.type === 'player';
+  const isPlayer = row.type === 'player';
   const cor = getAvatarColor(row.name);
 
   return (
     <div className={styles.trackRow}>
-      <TimelineMarker active={isTurno} />
+      <TimelineMarker active={isCurrentTurn} />
       <div
-        className={`${styles.unitCard} ${isJogador ? styles.unitAlly : styles.unitEnemy} ${isTurno ? styles.unitActive : ''}`}
+        className={`${styles.unitCard} ${isPlayer ? styles.unitAlly : styles.unitEnemy} ${isCurrentTurn ? styles.unitActive : ''}`}
         title={row.name}
       >
         <span className={styles.unitRail} aria-hidden />
         <div
           className={styles.unitFace}
           style={
-            isJogador
+            isPlayer
               ? {
                   background: `linear-gradient(135deg, color-mix(in srgb, ${cor} 18%, transparent) 0%, rgba(15, 20, 28, 0.85) 100%)`,
                 }
@@ -87,7 +87,7 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
       <div className={styles.column}>
         <div className={styles.track}>
           {visible.map((row) => (
-            <TrackUnit key={row.id} row={row} isTurno={false} />
+            <TrackUnit key={row.id} row={row} isCurrentTurn={false} />
           ))}
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
                   <span className={styles.cycleGapLine} />
                 </div>
               )}
-              <TrackUnit row={row} isTurno={k === 0} />
+              <TrackUnit row={row} isCurrentTurn={k === 0} />
             </Fragment>
           );
         })}

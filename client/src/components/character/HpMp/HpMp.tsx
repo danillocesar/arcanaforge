@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { hpPercent } from '../../../utils/calculations';
 import Section from '../../ui/Section/Section';
-import AtaquesMini from '../AttacksMini/AttacksMini';
+import AttacksMini from '../AttacksMini/AttacksMini';
 import CastSpellModal from '../CastSpellModal/CastSpellModal';
 import styles from './HpMp.module.css';
 
@@ -43,9 +43,9 @@ function MaxEditor({ value, onChange }: { value: number; onChange: (v: number) =
   );
 }
 
-export default function VidaMana() {
+export default function HpMp() {
   const { character, updateCharacter, sendHpUpdate } = useCharacterContext();
-  const [conjurarIdx, setConjurarIdx] = useState<number | null>(null);
+  const [castSpellIdx, setCastSpellIdx] = useState<number | null>(null);
 
   if (!character) return null;
 
@@ -78,7 +78,7 @@ export default function VidaMana() {
   };
 
   return (
-    <Section id="secVidaMana" title="Vida / Mana">
+    <Section id="secHpMp" title="Vida / Mana">
       <div className={styles.row}>
         <div className={`${styles.block} ${styles.pvBlock}`}>
           <div className={styles.header}>
@@ -150,9 +150,9 @@ export default function VidaMana() {
         </button>
       </div>
 
-      <AtaquesMini type="attacks" />
-      <AtaquesMini type="spells" onCast={setConjurarIdx} />
-      <CastSpellModal spellIdx={conjurarIdx} onClose={() => setConjurarIdx(null)} />
+      <AttacksMini type="attacks" />
+      <AttacksMini type="spells" onCast={setCastSpellIdx} />
+      <CastSpellModal spellIdx={castSpellIdx} onClose={() => setCastSpellIdx(null)} />
     </Section>
   );
 }

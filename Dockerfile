@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY client/package.json client/package-lock.json ./client/
 
-RUN npm ci --ignore-scripts && cd client && npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --legacy-peer-deps && cd client && npm ci --ignore-scripts
 
 COPY .env ./
 COPY client/ ./client/
@@ -20,7 +20,7 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps
 
 COPY server.js ./
 COPY server/ ./server/

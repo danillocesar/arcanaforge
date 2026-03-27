@@ -2,23 +2,23 @@ import { useState, useEffect, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './DamagePopover.module.css';
 
-interface DanoPopoverProps {
+interface DamagePopoverProps {
   barRef: RefObject<HTMLDivElement | null>;
   onApply: (delta: number) => void;
   onClose: () => void;
 }
 
-export default function DanoPopover({
+export default function DamagePopover({
   barRef,
   onApply,
   onClose,
-}: DanoPopoverProps) {
-  const [valor, setValor] = useState('');
+}: DamagePopoverProps) {
+  const [value, setValue] = useState('');
   const popRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
 
   const parseAmount = (): number => {
-    const t = valor.trim();
+    const t = value.trim();
     if (t === '') return 0;
     const n = Number(t);
     return Number.isFinite(n) ? Math.abs(n) : 0;
@@ -38,7 +38,7 @@ export default function DanoPopover({
     }
   }, [barRef]);
 
-  const aplicarDano = () => onApply(-parseAmount());
+  const applyDamage = () => onApply(-parseAmount());
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -65,12 +65,12 @@ export default function DanoPopover({
           className={styles.input}
           min={0}
           placeholder=""
-          value={valor}
-          onChange={(e) => setValor(e.target.value)}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
-              aplicarDano();
+              applyDamage();
             }
           }}
           autoFocus
@@ -78,7 +78,7 @@ export default function DanoPopover({
         <div className={styles.actions}>
           <button
             className={styles.btnDamage}
-            onClick={aplicarDano}
+            onClick={applyDamage}
           >
             - Dano
           </button>

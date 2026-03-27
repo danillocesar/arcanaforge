@@ -8,7 +8,7 @@ export default function TemporaryEffects() {
   if (!character) return null;
 
   return (
-    <Section id="secEfeitos" title="Efeitos Temporários">
+    <Section id="secEffects" title="Efeitos Temporários">
       <textarea
         className={styles.textarea}
         value={character.temporaryEffects}

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useCharacterContextOptional } from '../../../contexts/CharacterContext';
+import { isSectionKeyActive, SECTION_ID_LEGACY_PT } from '../../../data/constants';
 import styles from './Section.module.css';
 
 interface SectionProps {
@@ -25,15 +26,20 @@ export default function Section({
   const [localCollapsed, setLocalCollapsed] = useState(defaultCollapsed);
 
   const collapsed = isControlled
-    ? !!charCtx!.character!.collapsedSections?.[id]
+    ? isSectionKeyActive(charCtx!.character!.collapsedSections, id)
     : localCollapsed;
 
   const toggleCollapse = () => {
     if (isControlled) {
-      charCtx!.updateCharacter((f) => ({
-        ...f,
-        collapsedSections: { ...f.collapsedSections, [id]: !f.collapsedSections?.[id] },
-      }));
+      charCtx!.updateCharacter((f) => {
+        const was = isSectionKeyActive(f.collapsedSections, id);
+        const next = { ...f.collapsedSections };
+        Object.entries(SECTION_ID_LEGACY_PT).forEach(([pt, en]) => {
+          if (en === id) delete next[pt];
+        });
+        next[id] = !was;
+        return { ...f, collapsedSections: next };
+      });
     } else {
       setLocalCollapsed((c) => !c);
     }

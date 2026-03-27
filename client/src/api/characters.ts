@@ -1,4 +1,5 @@
 import type { Character, CharacterSummary } from '../types/character';
+import { uploadCharacterAvatar } from '../services/avatarStorage';
 import { apiFetch, assertOk } from './http';
 
 export async function apiFetchCharacters(): Promise<string[]> {
@@ -34,23 +35,7 @@ export async function apiDeleteCharacter(id: string): Promise<void> {
   await assertOk(res);
 }
 
-export async function apiUploadAvatar(
-  id: string,
-  file: File,
-): Promise<{ url: string }> {
-  const form = new FormData();
-  form.append('avatar', file);
-  const res = await apiFetch(`/api/avatar/${encodeURIComponent(id)}`, {
-    method: 'POST',
-    body: form,
-  });
-  await assertOk(res);
-  return res.json();
-}
-
-export async function apiAvatarTransparent(id: string): Promise<string | null> {
-  const res = await apiFetch(`/api/avatar-transparent/${encodeURIComponent(id)}`);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.url || null;
+export async function apiUploadAvatar(id: string, file: File): Promise<{ url: string }> {
+  const url = await uploadCharacterAvatar(id, file);
+  return { url };
 }

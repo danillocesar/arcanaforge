@@ -19,7 +19,6 @@ const paths = require('./paths');
 const { connectMongo } = require('./db/connection');
 const { register: registerValidateId } = require('./middleware/validateId');
 const { requireAuth } = require('./middleware/requireAuth');
-const { createUploadAvatar } = require('./multerAvatar');
 const { registerRoutes } = require('./routes');
 const { attachWebSocket } = require('./websocket');
 
@@ -72,15 +71,16 @@ async function start() {
 
   app.use('/api', apiLimiter, requireAuth);
 
-  const uploadAvatar = createUploadAvatar(paths.AVATARS_DIR);
-
   const refs = {
     broadcastCombat() {
       /* filled by attachWebSocket */
     },
+    broadcastPartyRoster() {
+      /* filled by attachWebSocket */
+    },
   };
 
-  registerRoutes(app, { uploadAvatar, refs });
+  registerRoutes(app, { refs });
 
   const server = http.createServer(app);
   attachWebSocket(server, { refs });

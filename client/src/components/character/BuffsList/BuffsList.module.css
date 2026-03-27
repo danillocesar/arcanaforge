@@ -16,7 +16,7 @@
   background: color-mix(in srgb, var(--accent-success) 8%, transparent);
 }
 
-.nome {
+.name {
   flex: 1;
   min-width: 80px;
   background: transparent;

@@ -12,6 +12,7 @@ export default function Topbar({ title, right }: TopbarProps) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
   const [openMenu, setOpenMenu] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const isPersonagens =
@@ -93,15 +94,17 @@ export default function Topbar({ title, right }: TopbarProps) {
               aria-expanded={openMenu}
               aria-label="Menu da conta"
             >
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt={displayName} className={styles.userAvatarImg} />
+              {user?.photoURL && !avatarError ? (
+                <img
+                  src={user.photoURL}
+                  alt={displayName}
+                  className={styles.userAvatarImg}
+                  onError={() => setAvatarError(true)}
+                />
               ) : (
                 <span className={styles.userAvatar}>{initials}</span>
               )}
-              <span className={styles.userMeta}>
-                <span className={styles.userName}>{displayName}</span>
-                <span className={styles.userEmail}>{displayEmail}</span>
-              </span>
+
             </button>
 
             {openMenu && (
