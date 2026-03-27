@@ -52,7 +52,7 @@ export default function BasicInfo() {
   const classIconSrc = getClassIconUrl(firstClassName);
 
   return (
-    <Section id="secHeader" title="Info Básica">
+    <Section id="secHeader" title="Dados do Personagem">
       <div className={styles.topRow}>
         <div className={styles.avatarCol}>
           <div className={styles.avatarWrapper} onClick={handleAvatarClick}>

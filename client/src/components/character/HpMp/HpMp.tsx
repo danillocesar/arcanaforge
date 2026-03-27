@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { hpPercent } from '../../../utils/calculations';
 import Section from '../../ui/Section/Section';
+import HealthBar from '../../ui/HealthBar/HealthBar';
 import AttacksMini from '../AttacksMini/AttacksMini';
 import CastSpellModal from '../CastSpellModal/CastSpellModal';
 import styles from './HpMp.module.css';
@@ -49,9 +49,6 @@ export default function HpMp() {
 
   if (!character) return null;
 
-  const pvPct = hpPercent(character.hp.current, character.hp.max);
-  const pmPct = hpPercent(character.mp.current, character.mp.max);
-
   const changePv = (delta: number) => {
     updateCharacter((f) => ({
       ...f,
@@ -88,9 +85,7 @@ export default function HpMp() {
               onChange={(v) => updateCharacter((f) => ({ ...f, hp: { ...f.hp, max: v } }))}
             />
           </div>
-          <div className={styles.barContainer}>
-            <div className={`${styles.bar} ${styles.pvBar}`} style={{ width: `${pvPct}%` }} />
-          </div>
+          <HealthBar current={character.hp.current} max={character.hp.max} variant="hp" />
           <div className={styles.controls}>
             <button type="button" className={styles.vmBtn} onClick={() => changePv(-1)}>−</button>
             <span className={styles.current}>{character.hp.current}</span>
@@ -115,9 +110,7 @@ export default function HpMp() {
               onChange={(v) => updateCharacter((f) => ({ ...f, mp: { ...f.mp, max: v } }))}
             />
           </div>
-          <div className={styles.barContainer}>
-            <div className={`${styles.bar} ${styles.pmBar}`} style={{ width: `${pmPct}%` }} />
-          </div>
+          <HealthBar current={character.mp.current} max={character.mp.max} variant="pm" />
           <div className={styles.controls}>
             <button type="button" className={styles.vmBtn} onClick={() => changePm(-1)}>−</button>
             <span className={styles.current}>{character.mp.current}</span>

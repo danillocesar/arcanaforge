@@ -22,3 +22,5 @@ export {
   apiLoadCombat,
   apiSaveCombat,
 } from './parties';
+export { apiFetchNarutoClans } from './naruto';
+export type { NarutoClanOption } from './naruto';

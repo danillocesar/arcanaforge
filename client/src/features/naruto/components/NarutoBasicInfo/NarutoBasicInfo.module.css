@@ -1,6 +1,6 @@
 .topRow {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
   margin-bottom: 6px;
   overflow: hidden;
@@ -44,11 +44,10 @@
 }
 
 .nameCol {
-  flex: 0 0 240px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .nameField {
@@ -71,7 +70,8 @@
 .rankRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .rankLabel {
@@ -100,8 +100,9 @@
 }
 
 .rankSelect {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 160px;
+  min-width: 160px;
+  width: 160px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -122,23 +123,17 @@
   color: var(--text-primary);
 }
 
-.clanCol {
-  flex: 1;
-  min-width: 0;
+.clanSelectRow {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.clanLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .clanInput {
+  flex: 0 0 155px;
+  min-width: 0;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -153,6 +148,18 @@
 .clanInput:focus {
   border-color: var(--accent-gold);
   outline: none;
+}
+
+.clanInput option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.clanIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  filter: invert(1) drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
 }
 
 .infoGrid {
@@ -211,8 +218,8 @@
     flex: 1 1 auto;
     width: 100%;
   }
-  .clanCol {
-    width: 100%;
+  .rankRow {
+    flex-wrap: wrap;
   }
   .infoGrid {
     grid-template-columns: repeat(3, 1fr);

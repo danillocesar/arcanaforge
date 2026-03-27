@@ -1,14 +1,16 @@
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+.row { composes: row from '../../../../styles/energyBlock.module.css'; }
+.block { composes: block from '../../../../styles/energyBlock.module.css'; }
+.header { composes: header from '../../../../styles/energyBlock.module.css'; }
+.title { composes: title from '../../../../styles/energyBlock.module.css'; }
+.max { composes: max from '../../../../styles/energyBlock.module.css'; }
+.vmBtn { composes: vmBtn from '../../../../styles/energyBlock.module.css'; }
+.current { composes: current from '../../../../styles/energyBlock.module.css'; }
+.footer { composes: footer from '../../../../styles/energyBlock.module.css'; flex-wrap: wrap; }
+.resetBtn { composes: resetBtn from '../../../../styles/energyBlock.module.css'; }
 
-.block {
-  background: var(--bg-input);
-  border-radius: var(--radius);
-  padding: 14px;
-  border: 1px solid var(--border);
+.controls {
+  composes: controls from '../../../../styles/energyBlock.module.css';
+  margin-top: 10px;
 }
 
 .vitBlock {
@@ -19,64 +21,10 @@
   border-left: 3px solid var(--accent-blue-bar);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.max {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.vmBtn {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-primary);
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-
-.vmBtn:hover {
-  border-color: var(--accent-gold);
-  background: var(--bg-card-hover);
-}
-
 .valueGroup {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.current {
-  font-size: 1.5rem;
-  font-weight: 700;
-  min-width: 50px;
-  text-align: center;
-  color: var(--text-primary);
 }
 
 .perdidoLabel {
@@ -112,17 +60,6 @@
   gap: 6px;
 }
 
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
 .bleedingRow {
   display: flex;
   align-items: center;
@@ -142,38 +79,4 @@
   color: var(--accent-red);
   min-width: 20px;
   text-align: center;
-}
-
-.resetBtn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-muted);
-  font-family: var(--font);
-  font-size: 0.72rem;
-  padding: 3px 10px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.resetBtn:hover {
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-  background: rgba(255, 215, 0, 0.06);
-}
-
-@media (max-width: 600px) {
-  .row {
-    grid-template-columns: 1fr;
-  }
-  .block {
-    padding: 10px;
-  }
-  .title {
-    font-size: 0.75rem;
-  }
-  .current {
-    font-size: 1.1rem;
-  }
 }

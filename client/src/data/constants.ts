@@ -17,7 +17,7 @@ export const BUFF_TYPES: Record<string, string> = {
 
 /** Keys = English `id` on `<Section>`; values = nav labels (PT UI). */
 export const SECTION_LABELS: Record<string, string> = {
-  secHeader: 'Info Básica',
+  secHeader: 'Dados do Personagem',
   secAttributes: 'Atributos & Defesa',
   secHpMp: 'Vida / Mana',
   secBuffs: 'Buffs',

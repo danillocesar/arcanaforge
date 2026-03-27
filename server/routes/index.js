@@ -6,6 +6,7 @@ const paths = require('../paths');
 const combatState = require('../combatState');
 const Character = require('../db/models/Character');
 const Party = require('../db/models/Party');
+const NarutoClan = require('../db/models/NarutoClan');
 const { ownerFieldsFromReq } = require('../characters/userCharactersDir');
 const { resolveUserEmail } = require('../auth/firebaseAdmin');
 const { uploadAvatarBuffer, deleteAvatarByPublicUrl, isR2Configured } = require('../storage/r2');
@@ -61,6 +62,26 @@ function registerRoutes(app, opts) {
       const doc = await Character.findOne({ _id: req.params.id, ownerUid: req.user.uid }).lean();
       if (!doc) return res.status(404).json({ error: 'Character not found' });
       res.json(cleanMongoFields(doc));
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Naruto clans
+  app.get('/api/naruto/clans', async (_req, res) => {
+    try {
+      const clans = await NarutoClan.find({ system: 'naruto', active: true })
+        .select('_id name icon system active')
+        .sort({ name: 1 })
+        .lean();
+      const payload = clans.map((c) => ({
+        id: c._id,
+        name: c.name,
+        icon: c.icon,
+        system: c.system,
+        active: c.active,
+      }));
+      res.json(payload);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

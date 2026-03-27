@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCharacterContext } from '../../../../contexts/CharacterContext';
-import { apiUploadAvatar } from '../../../../api';
+import { apiFetchNarutoClans, apiUploadAvatar } from '../../../../api';
 import { getInitials } from '../../../../utils/formatters';
 import { syncNarutoHpMp } from '../../utils/narutoCalculations';
 import Section from '../../../../components/ui/Section/Section';
@@ -17,8 +17,25 @@ const SIZES = [
 export default function NarutoBasicInfo() {
   const { character, updateCharacter } = useCharacterContext();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [clans, setClans] = useState<Array<{ id: string; name: string; icon: string }>>([]);
 
   if (!character) return null;
+
+  useEffect(() => {
+    let alive = true;
+    apiFetchNarutoClans()
+      .then((items) => {
+        if (!alive) return;
+        setClans(items.map((c) => ({ id: c.id, name: c.name, icon: c.icon })));
+      })
+      .catch(() => {
+        if (!alive) return;
+        setClans([]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handleAvatarClick = () => fileRef.current?.click();
 
@@ -32,6 +49,12 @@ export default function NarutoBasicInfo() {
   const setField = (field: string, value: string | number) => {
     updateCharacter((f) => ({ ...f, [field]: value }));
   };
+
+  const selectedClan = useMemo(
+    () => clans.find((c) => c.name === (character.clan ?? '')),
+    [clans, character.clan],
+  );
+  const isClanOutsideList = Boolean(character.clan) && !selectedClan;
 
   return (
     <Section id="secHeader" title="Dados do Personagem">
@@ -76,17 +99,29 @@ export default function NarutoBasicInfo() {
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
+            <div className={styles.clanSelectRow}>
+              <select
+                className={styles.clanInput}
+                value={character.clan ?? ''}
+                onChange={(e) => setField('clan', e.target.value)}
+              >
+                <option value="">Clã</option>
+                {isClanOutsideList && (
+                  <option value={character.clan}>{character.clan} (não listado)</option>
+                )}
+                {clans.map((c) => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+              {selectedClan && (
+                <img
+                  className={styles.clanIcon}
+                  src={selectedClan.icon}
+                  alt={`Ícone do clã ${selectedClan.name}`}
+                />
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className={styles.clanCol}>
-          <label className={styles.clanLabel}>Clã</label>
-          <input
-            className={styles.clanInput}
-            value={character.clan ?? ''}
-            onChange={(e) => setField('clan', e.target.value)}
-            placeholder="Clã / Linhagem"
-          />
         </div>
       </div>
 
