@@ -1,0 +1,100 @@
+.baseRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.baseCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  transition: border-color 0.2s;
+}
+
+.baseCard:hover {
+  border-color: var(--accent-gold-dim);
+}
+
+.baseLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.baseInput {
+  width: 56px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px;
+}
+
+.baseInput:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.subSkills {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  transition: border-color 0.2s;
+}
+
+.subRow:hover {
+  border-color: var(--accent-gold-dim);
+}
+
+.subName {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subBase {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.subTotal {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  min-width: 30px;
+  text-align: center;
+}
+
+@media (max-width: 450px) {
+  .baseRow {
+    grid-template-columns: 1fr;
+  }
+}

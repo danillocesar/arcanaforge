@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { useCombatContext } from '../../../contexts/CombatContext';
 import { getInitials } from '../../../utils/formatters';
 import { hpPercent } from '../../../utils/calculations';
@@ -90,7 +91,12 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
 
   return (
     <div className={cardCls}>
-      {isActiveTurn && <div className={styles.turnIndicator}>▶ TURNO ATUAL</div>}
+      {isActiveTurn && (
+        <div className={styles.turnIndicator}>
+          <ChevronRight size={12} className={styles.turnIcon} aria-hidden="true" />
+          TURNO ATUAL
+        </div>
+      )}
 
       <div className={`${styles.avatar} ${isPlayer ? styles.avatarPlayer : styles.avatarEnemy}`}>
         {row.avatar ? (

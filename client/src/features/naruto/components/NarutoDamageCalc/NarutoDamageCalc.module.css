@@ -1,0 +1,217 @@
+.refToggleRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.refToggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.refToggle:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+}
+
+.refToggleActive {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+  background: rgba(255, 215, 0, 0.08);
+}
+
+.refTable {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.refRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.refCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  min-width: 60px;
+}
+
+.refRange {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.refLabel {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+}
+
+.entryHeader,
+.entryRow {
+  display: grid;
+  grid-template-columns: 1fr 55px 55px 55px 55px 55px 45px 45px 45px 45px 32px;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  min-width: 580px;
+}
+
+.entryHeader {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.entryRow {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+
+.entryRow:hover {
+  border-color: var(--accent-gold-dim);
+}
+
+.ehName {
+  text-align: left;
+}
+
+.ehVal,
+.ehTotal,
+.ehGrade {
+  text-align: center;
+}
+
+.ehAction {
+  width: 32px;
+}
+
+.nameInput {
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 4px;
+  box-sizing: border-box;
+}
+
+.nameInput:focus {
+  outline: none;
+  border-bottom-color: var(--accent-gold);
+}
+
+.numInput {
+  width: 100%;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 3px 2px;
+  box-sizing: border-box;
+}
+
+.numInput:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.totalVal {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.gradeVal {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  transition: color 0.2s;
+}
+
+.removeBtn:hover {
+  color: var(--accent-red);
+}
+
+.addBtn {
+  display: block;
+  width: 100%;
+  background: var(--btn-add-bg);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addBtn:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold-dim);
+  background: var(--btn-add-hover);
+}
+
+@media (max-width: 650px) {
+  .refRow {
+    gap: 4px;
+  }
+  .refCell {
+    padding: 4px 8px;
+    min-width: 50px;
+  }
+}

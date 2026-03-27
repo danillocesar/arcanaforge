@@ -64,6 +64,18 @@ function attachWebSocket(server, opts) {
             if (c !== ws && c.readyState === 1) c.send(out);
           });
         }
+        if (msg.type === 'character_spell_cast' && msg.characterId) {
+          const out = JSON.stringify({
+            type: 'character_spell_cast_sync',
+            characterId: msg.characterId,
+            name: msg.name,
+            spellName: msg.spellName,
+            mpCost: msg.mpCost,
+          });
+          wss.clients.forEach((c) => {
+            if (c !== ws && c.readyState === 1) c.send(out);
+          });
+        }
       } catch (err) {
         console.error('WS message parse error:', err.message);
       }

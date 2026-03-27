@@ -49,47 +49,7 @@ export function createEmptyCharacter(name?: string): Character {
   };
 }
 
-export function createEmptyNarutoCharacter(name?: string): Character {
-  return {
-    _id: crypto.randomUUID(),
-    system: 'naruto',
-    name: name || 'Novo Personagem',
-    classes: [{ name: '', level: 1 }],
-    race: '',
-    origin: '',
-    deity: '',
-    alignment: '',
-    age: '',
-    size: '',
-    speed: '',
-    experience: 0,
-    attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
-    hp: { max: 0, current: 0 },
-    mp: { max: 0, current: 0 },
-    defense: { base: 10, items: [] },
-    damageReduction: '',
-    attacks: [],
-    skills: {},
-    abilities: [],
-    spells: [],
-    spellcastingAttribute: 'int',
-    inventory: [],
-    equipped: [],
-    coins: { copper: 0, silver: 0, gold: 0 },
-    notes: '',
-    temporaryEffects: '',
-    proficiencies: '',
-    progression: [],
-    buffs: [],
-    temporaryHp: 0,
-    temporaryMp: 0,
-    collapsedSections: {},
-    hiddenSections: {},
-    attackAnimation: '',
-    avatar: '',
-    logs: [],
-  };
-}
+export { createEmptyNarutoCharacter } from '../features/naruto/utils/narutoCalculations';
 
 export function getTotalLevel(character: Character): number {
   if (character.classes && character.classes.length > 0) {

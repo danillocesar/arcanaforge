@@ -1,0 +1,230 @@
+/* ─── Two-column layout (like Tormenta Atributos & Defesa) ─── */
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.attrCol {
+  flex: 1 1 25%;
+  min-width: 0;
+}
+
+.combatCol {
+  flex: 1 1 50%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .attrCol,
+  .combatCol {
+    width: 100%;
+  }
+}
+
+/* ─── Header (points) ─── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pointsLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.pointsLabel strong {
+  color: var(--accent-gold);
+}
+
+.remaining {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+
+.over {
+  color: var(--accent-red);
+}
+
+/* ─── Attribute cards grid ─── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.card {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: border-color 0.2s;
+}
+
+.card:hover {
+  border-color: var(--accent-gold-dim);
+}
+
+.cardError {
+  border-color: var(--accent-red);
+}
+
+.cardError .value {
+  color: var(--accent-red);
+}
+
+.card:hover .editPencil {
+  opacity: 1;
+}
+
+.label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+
+.value {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: default;
+}
+
+.editPencil {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.editPencil:hover {
+  color: var(--accent-gold);
+}
+
+.editInput {
+  width: 60px;
+  text-align: center;
+  background: var(--bg-body);
+  border: 1px solid var(--accent-gold);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.editInput:focus {
+  outline: none;
+  padding: 2px;
+}
+
+/* ─── Combat totals grid (CC, CD, ESQ, LM) ─── */
+
+.combatGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-input);
+  border: 1px solid var(--accent-gold-dim);
+  border-radius: var(--radius);
+  padding: 8px 6px;
+}
+
+.statLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.statValue {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* ─── Derived stats list ─── */
+
+.derivedList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.derivedItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.derivedLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.derivedValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .combatGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

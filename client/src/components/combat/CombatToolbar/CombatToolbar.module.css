@@ -35,7 +35,10 @@
 }
 
 .btnIcon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
 }
 
 .btnGhost {

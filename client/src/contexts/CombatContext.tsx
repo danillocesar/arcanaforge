@@ -164,6 +164,15 @@ export function CombatProvider({
           if (partyId && msg.partyId && msg.partyId !== partyId) return;
           reloadPlayersRef.current();
         }
+        if (msg.type === 'character_spell_cast_sync' && msg.characterId) {
+          const charId = msg.characterId as string;
+          const isParticipant = playersRef.current.some((p) => p._id === charId);
+          if (!isParticipant) return;
+          const casterName = (msg.name as string) || 'Personagem';
+          const spellName = (msg.spellName as string) || 'Jutsu';
+          const mpCost = Number(msg.mpCost) || 0;
+          showToast(`${casterName} usou ${spellName}!`, 'attack', mpCost);
+        }
       },
       [buildOrdered, showToast, partyId],
     ),

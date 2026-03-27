@@ -23,6 +23,7 @@ interface CharacterContextValue {
   deleteCharacter: () => Promise<void>;
   refreshList: () => Promise<string[]>;
   sendHpUpdate: () => void;
+  sendSpellCast: (spellName: string, mpCost: number) => void;
 }
 
 const CharacterContext = createContext<CharacterContextValue | null>(null);
@@ -79,6 +80,13 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
       });
       showToast?.(`PV atualizado pelo mestre: ${currentHp}`, 'info');
     }
+
+    if (msg.type === 'character_spell_cast_sync' && msg.characterId === characterRef.current._id) {
+      const spellName = (msg.spellName as string) || 'Jutsu';
+      const mpCost = Number(msg.mpCost) || 0;
+      const casterName = (msg.name as string) || characterRef.current.name;
+      showToast?.(`${casterName} usou ${spellName}!`, 'attack', mpCost);
+    }
   });
 
   const sendHpUpdate = useCallback(() => {
@@ -91,6 +99,18 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
       name: c.name,
       hp: c.hp,
       mp: c.mp,
+    });
+  }, [send]);
+
+  const sendSpellCast = useCallback((spellName: string, mpCost: number) => {
+    const c = characterRef.current;
+    if (!c) return;
+    send({
+      type: 'character_spell_cast',
+      characterId: c._id,
+      name: c.name,
+      spellName,
+      mpCost,
     });
   }, [send]);
 
@@ -168,7 +188,8 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
     deleteCharacter,
     refreshList,
     sendHpUpdate,
-  }), [character, characterOriginalId, characterList, saveStatus, updateCharacter, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate]);
+    sendSpellCast,
+  }), [character, characterOriginalId, characterList, saveStatus, updateCharacter, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate, sendSpellCast]);
 
   return <CharacterContext.Provider value={value}>{children}</CharacterContext.Provider>;
 }

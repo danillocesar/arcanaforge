@@ -191,4 +191,41 @@ export interface Character {
   avatar: string;
   logs: LogEntry[];
   level?: number;
+
+  /* ─── Naruto SNS fields (optional, only present when system === 'naruto') ─── */
+  narpiAttributes?: import('./narutoCharacter').NarutoAttributes;
+  combatSkills?: import('./narutoCharacter').NarutoCombatSkills;
+  social?: import('./narutoCharacter').NarutoSocialAttributes;
+  narpiSkills?: Record<string, import('./narutoCharacter').NarutoSkillData>;
+  powers?: import('./narutoCharacter').NarutoPower[];
+  aptitudes?: import('./narutoCharacter').NarutoAptitude[];
+  jutsus?: import('./narutoCharacter').Jutsu[];
+  damageEntries?: import('./narutoCharacter').DamageEntry[];
+  weapons?: import('./narutoCharacter').NarutoWeapon[];
+  armor?: import('./narutoCharacter').NarutoArmor;
+  narpiItems?: import('./narutoCharacter').NarutoItem[];
+  storedItems?: import('./narutoCharacter').NarutoItem[];
+  narpiConfig?: import('./narutoCharacter').NarutoConfig;
+  recursoExtra?: import('./narutoCharacter').NarutoRecursoExtra;
+  clan?: string;
+  campaignLevel?: number;
+  shinobiRank?: string;
+  gender?: string;
+  sexuality?: string;
+  tendency?: string;
+  villageOrigin?: string;
+  villageActive?: string;
+  ryos?: number;
+  ryosStored?: number;
+  biography?: string;
+  motto?: string;
+  curiosities?: string;
+  sensorType?: string;
+  sensorRange?: string;
+  bleedingGrades?: number;
+  weaponReachCC?: number;
+  targetHardness?: number;
+  extraDamageCC?: string;
+  extraDamageCD?: string;
+  halfDamageGrade?: string;
 }
