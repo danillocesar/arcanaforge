@@ -75,7 +75,7 @@ function NarutoSheetInner() {
 
   return (
     <>
-      <Topbar title={`Naruto - ${character.name}`} />
+      <Topbar title={`${character.name}`} systemBrand="naruto" />
 
       <SectionNav
         items={sections}

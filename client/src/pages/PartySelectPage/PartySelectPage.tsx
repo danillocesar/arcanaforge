@@ -130,10 +130,15 @@ export default function PartySelectPage() {
   };
 
   const renderPartyCard = (p: Party, isOwner: boolean) => (
-    <button
+    <div
       key={p.id}
       className={styles.card}
+      role="button"
+      tabIndex={0}
       onClick={() => navigate(`/${p.system}/party/${p.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') navigate(`/${p.system}/party/${p.id}`);
+      }}
     >
       <span className={styles.systemBadge}>{SISTEMA_BADGE[p.system]}</span>
 
@@ -178,7 +183,7 @@ export default function PartySelectPage() {
           {p.inviteCode}
         </span>
       )}
-    </button>
+    </div>
   );
 
   const filteredMy = filterByTab(myParties);

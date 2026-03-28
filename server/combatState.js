@@ -1,4 +1,4 @@
-﻿const Combat = require('./db/models/Combat');
+const Combat = require('./db/models/Combat');
 
 const combatCache = {};
 
@@ -34,10 +34,32 @@ async function deleteCombat(partyId) {
   await Combat.findByIdAndDelete(partyId);
 }
 
+/**
+ * Mescla payload de combate como em POST /api/parties/:id/combat.
+ * Quem não é dono não pode alterar inactiveCharacterIds nem gmCharacterVisual.
+ * @param {object} existing
+ * @param {object} incoming
+ * @param {boolean} isPartyOwner
+ */
+function mergeCombatWrite(existing, incoming, isPartyOwner) {
+  const inc = incoming && typeof incoming === 'object' ? incoming : {};
+  const { _id: _eid, __v, createdAt, updatedAt, ...exRest } = existing;
+  let merged = { ...COMBAT_DEFAULT, ...exRest, ...inc };
+  if (!isPartyOwner) {
+    merged.inactiveCharacterIds = exRest.inactiveCharacterIds ?? [];
+    merged.gmCharacterVisual =
+      exRest.gmCharacterVisual && typeof exRest.gmCharacterVisual === 'object'
+        ? exRest.gmCharacterVisual
+        : {};
+  }
+  return merged;
+}
+
 module.exports = {
   combatCache,
   COMBAT_DEFAULT,
   loadCombat,
   saveCombat,
   deleteCombat,
+  mergeCombatWrite,
 };

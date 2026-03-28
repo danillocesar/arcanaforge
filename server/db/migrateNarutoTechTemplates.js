@@ -1294,7 +1294,7 @@ async function run() {
     await NarutoTechTemplate.findByIdAndUpdate(
       tpl._id,
       { $setOnInsert: tpl },
-      { upsert: true, new: false },
+      { upsert: true, returnDocument: 'before' },
     );
     upserts++;
   }

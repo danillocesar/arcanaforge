@@ -1,0 +1,791 @@
+openapi: 3.0.3
+info:
+  title: ArcanaForge API
+  version: 1.0.0
+  description: |
+    Especificação OpenAPI para testes no Postman.
+    Observação: todos os endpoints em `/api/*` exigem Bearer token Firebase ID Token.
+
+servers:
+  - url: http://localhost:3000
+    description: Local
+
+tags:
+  - name: Health
+  - name: Characters
+  - name: Naruto
+  - name: Parties
+  - name: Combat
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /api/characters:
+    get:
+      tags: [Characters]
+      summary: Lista IDs dos personagens do usuário autenticado
+      responses:
+        "200":
+          description: Lista de IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/AuthUnavailable"
+
+  /api/characters/summary:
+    get:
+      tags: [Characters]
+      summary: Lista resumida de personagens do usuário
+      responses:
+        "200":
+          description: Lista de personagens resumidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/characters/{id}:
+    get:
+      tags: [Characters]
+      summary: Busca personagem por ID (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "200":
+          description: Personagem completo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CharacterDocument"
+        "404":
+          $ref: "#/components/responses/CharacterNotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Characters]
+      summary: Cria/atualiza personagem por ID (upsert)
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Objeto da ficha do personagem (dinâmico), com `name` obrigatório.
+              required: [name]
+              properties:
+                name:
+                  type: string
+              additionalProperties: true
+      responses:
+        "200":
+          description: Salvo com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  _id:
+                    type: string
+        "400":
+          description: Body inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      tags: [Characters]
+      summary: Exclui personagem por ID (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      responses:
+        "200":
+          description: Excluído
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "404":
+          $ref: "#/components/responses/CharacterNotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/characters/{id}/avatar:
+    post:
+      tags: [Characters]
+      summary: Upload do avatar do personagem (multipart/form-data)
+      parameters:
+        - $ref: "#/components/parameters/CharacterId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: URL pública do avatar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+        "400":
+          description: Upload inválido / sem arquivo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/CharacterNotFound"
+        "503":
+          description: R2 não configurado / upload falhou
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/naruto/clans:
+    get:
+      tags: [Naruto]
+      summary: Lista clãs Naruto ativos
+      responses:
+        "200":
+          description: Lista de clãs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NarutoClan"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/naruto/technique-templates:
+    get:
+      tags: [Naruto]
+      summary: Lista templates de técnicas Naruto
+      parameters:
+        - in: query
+          name: source
+          schema:
+            type: string
+        - in: query
+          name: sourceDetail
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NarutoTechniqueTemplate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/parties:
+    get:
+      tags: [Parties]
+      summary: Lista groups do usuário (dono ou membro)
+      responses:
+        "200":
+          description: Lista de grupos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Party"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Parties]
+      summary: Cria novo grupo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                system:
+                  type: string
+                  enum: [tormenta, naruto]
+      responses:
+        "200":
+          description: Grupo criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "400":
+          description: Body inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/join:
+    post:
+      tags: [Parties]
+      summary: Entrar em grupo por código
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+      responses:
+        "200":
+          description: Grupo após join
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "400":
+          description: Código ausente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Código inválido/expirado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}:
+    put:
+      tags: [Parties]
+      summary: Atualiza grupo (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                system:
+                  type: string
+                  enum: [tormenta, naruto]
+      responses:
+        "200":
+          description: Grupo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "404":
+          description: Party not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [Parties]
+      summary: Exclui grupo (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      responses:
+        "200":
+          description: Excluído
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /api/parties/{id}/add-character:
+    post:
+      tags: [Parties]
+      summary: Adiciona personagem do usuário no grupo
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [characterId]
+              properties:
+                characterId:
+                  type: string
+      responses:
+        "200":
+          description: Grupo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "400":
+          description: Body inválido/sistema incompatível
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Personagem não pertence ao usuário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Party não encontrada ou usuário não é membro
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/remove-character:
+    post:
+      tags: [Parties]
+      summary: Remove personagem do usuário do grupo
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [characterId]
+              properties:
+                characterId:
+                  type: string
+      responses:
+        "200":
+          description: Grupo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "400":
+          description: Body inválido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Party não encontrada ou usuário não é membro
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/leave:
+    post:
+      tags: [Parties]
+      summary: Sai do grupo (dono não pode)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      responses:
+        "200":
+          description: Saiu do grupo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: Dono não pode sair
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Party não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/members/{uid}:
+    delete:
+      tags: [Parties]
+      summary: Remove membro do grupo (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Grupo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "400":
+          description: Não pode remover o dono
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Party não encontrada ou usuário não é dono
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/regenerate-code:
+    post:
+      tags: [Parties]
+      summary: Regenera código de convite (somente dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      responses:
+        "200":
+          description: Grupo atualizado com novo código
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Party"
+        "404":
+          description: Party não encontrada ou usuário não é dono
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/characters:
+    get:
+      tags: [Parties]
+      summary: Lista personagens vinculados ao grupo (se for membro)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      responses:
+        "200":
+          description: Lista de personagens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterSummary"
+        "404":
+          description: Party não encontrada ou usuário não é membro
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/parties/{id}/combat:
+    get:
+      tags: [Combat]
+      summary: Carrega estado de combate da party (membro ou dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      responses:
+        "200":
+          description: Estado de combate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CombatData"
+        "403":
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags: [Combat]
+      summary: Salva estado de combate da party (membro ou dono)
+      parameters:
+        - $ref: "#/components/parameters/PartyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CombatData"
+      responses:
+        "200":
+          description: Salvo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          description: Acesso negado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    CharacterId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    PartyId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Unauthorized:
+      description: Token ausente ou inválido
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    AuthUnavailable:
+      description: Firebase Admin não configurado no servidor
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    CharacterNotFound:
+      description: Character not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    OkResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required: [ok]
+
+    CharacterSummary:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        classes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        system:
+          type: string
+        ownerUid:
+          type: string
+        ownerEmail:
+          type: string
+      additionalProperties: true
+
+    CharacterDocument:
+      type: object
+      description: Documento de personagem (schema dinâmico)
+      properties:
+        _id:
+          type: string
+        ownerUid:
+          type: string
+        ownerEmail:
+          type: string
+        system:
+          type: string
+        name:
+          type: string
+      additionalProperties: true
+
+    PartyMember:
+      type: object
+      properties:
+        uid:
+          type: string
+        email:
+          type: string
+        characterIds:
+          type: array
+          items:
+            type: string
+        joinedAt:
+          type: string
+          format: date-time
+      additionalProperties: true
+
+    Party:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        system:
+          type: string
+          enum: [tormenta, naruto]
+        inviteCode:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/PartyMember"
+        ownerUid:
+          type: string
+        ownerEmail:
+          type: string
+      additionalProperties: true
+
+    NarutoClan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        system:
+          type: string
+        active:
+          type: boolean
+      required: [id, name, icon, system, active]
+
+    NarutoTechniqueTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        unlockLevel:
+          type: number
+        category:
+          type: string
+        action:
+          type: string
+        range:
+          type: string
+        baseDamage:
+          type: string
+        duration:
+          type: string
+        target:
+          type: string
+        chakraCost:
+          type: string
+        description:
+          type: string
+        evolutions:
+          type: string
+        availableFor:
+          type: array
+          items:
+            type: string
+        dealsDamage:
+          type: boolean
+        source:
+          type: string
+        sourceDetail:
+          type: string
+      additionalProperties: false
+
+    CombatData:
+      type: object
+      description: Estado de combate (schema flexível)
+      properties:
+        enemies:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        initiatives:
+          type: object
+          additionalProperties:
+            type: number
+        turnIndex:
+          type: integer
+        ordered:
+          type: boolean
+        round:
+          type: integer
+        inactiveCharacterIds:
+          type: array
+          items:
+            type: string
+        gmCharacterVisual:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: true

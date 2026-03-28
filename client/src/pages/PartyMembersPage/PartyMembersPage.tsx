@@ -13,7 +13,7 @@ import { useAuth } from '../../features/auth';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import type { WsMessage } from '../../hooks/useWebSocket';
 import { getInitials, getAvatarColor, formatClassesStr } from '../../utils/formatters';
-import Topbar from '../../components/layout/Topbar/Topbar';
+import Topbar, { systemParamToBrand } from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
@@ -133,7 +133,7 @@ export default function PartyMembersPage() {
 
   return (
     <div className={styles.page}>
-      <Topbar title={`Grupo - ${party.name}`} />
+      <Topbar title={`Grupo - ${party.name}`} systemBrand={systemParamToBrand(system)} />
       <SectionNav
         items={navItems}
         rightSlot={

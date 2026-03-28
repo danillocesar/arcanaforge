@@ -44,7 +44,7 @@ async function run() {
     await NarutoClan.findByIdAndUpdate(
       clan._id,
       { $setOnInsert: clan },
-      { upsert: true, new: false },
+      { upsert: true, returnDocument: 'before' },
     );
     upserts++;
   }

@@ -97,7 +97,8 @@ function TormentaSheetInner() {
   return (
     <>
       <Topbar
-        title={`Tormenta - ${character.name}`}
+        title={`${character.name}`}
+        systemBrand="tormenta"
       />
 
       <SectionNav

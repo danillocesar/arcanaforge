@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CombatProvider, useCombatContext } from '../../contexts/CombatContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
@@ -6,7 +6,7 @@ import { apiFetchParties } from '../../api';
 import type { Party } from '../../types/party';
 import type { CombatRow } from '../../types/combat';
 import { buildCombatRows } from '../../utils/combatRows';
-import Topbar from '../../components/layout/Topbar/Topbar';
+import Topbar, { systemParamToBrand } from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import CombatToolbar from '../../components/combat/CombatToolbar/CombatToolbar';
 import CombatCard from '../../components/combat/CombatCard/CombatCard';
@@ -127,7 +127,10 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   return (
     <>
       {isMaster && <div className={styles.gmStrip} aria-hidden />}
-      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
+      <Topbar
+        title={party.name ? `Grupo - ${party.name}` : 'Grupo'}
+        systemBrand={systemParamToBrand(system)}
+      />
       <SectionNav
         items={navItems}
         rightSlot={

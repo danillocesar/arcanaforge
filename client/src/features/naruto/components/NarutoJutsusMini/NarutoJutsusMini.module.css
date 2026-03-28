@@ -101,6 +101,34 @@
   color: var(--accent-blue-bar);
 }
 
+.castBtnJutsu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  flex-shrink: 0;
+  background: var(--accent-blue-bg);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  border-radius: 5px;
+  color: var(--accent-blue-bar);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.castBtnJutsu svg {
+  width: 14px;
+  height: 14px;
+}
+
+.castBtnJutsu:hover {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: rgba(37, 99, 235, 0.5);
+}
+
 .castBtn {
   display: inline-flex;
   align-items: center;

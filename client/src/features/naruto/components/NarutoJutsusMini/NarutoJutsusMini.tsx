@@ -86,7 +86,7 @@ export default function NarutoJutsusMini() {
                     </span>
                     {hitTotal !== null && (
                       <span className={styles.badge} title={`Teste de Acerto (${hitLabel})`}>
-                        {hitLabel} {hitTotal}
+                        +{hitTotal}
                       </span>
                     )}
                   </div>
@@ -104,7 +104,7 @@ export default function NarutoJutsusMini() {
                       <span className={`${styles.badge} ${styles.badgeNeutral}`}>Nv {lv}</span>
                       {dmg !== null && (
                         <span className={`${styles.badge} ${styles.badgeDmg}`} title="Dano Total">
-                          Dano {dmg}
+                          {dmg}
                         </span>
                       )}
                       <span className={`${styles.badge} ${styles.badgeChk}`} title="Custo de Chakra">
@@ -112,7 +112,7 @@ export default function NarutoJutsusMini() {
                       </span>
                       <button
                         type="button"
-                        className={styles.castBtn}
+                        className={styles.castBtnJutsu}
                         onClick={() => openCast(jutsu, lv)}
                         title={`Usar no Nv ${lv}`}
                       >
@@ -150,13 +150,13 @@ export default function NarutoJutsusMini() {
                     <span className={styles.jutsuName}>{w.name || '(Arma)'}</span>
                     {hitVal !== null && (
                       <span className={styles.badge} title={`Acerto (${hitLabel})`}>
-                        {hitLabel} {hitVal}
+                        +{hitVal}
                       </span>
                     )}
                   </div>
                   <div className={styles.weaponTags}>
                     <span className={`${styles.badge} ${styles.badgeDmg}`} title="Dano Total">
-                      Dano {dmgTotal}
+                      {dmgTotal}
                     </span>
                     {w.type && <span className={styles.tagType}>{w.type}</span>}
                   </div>

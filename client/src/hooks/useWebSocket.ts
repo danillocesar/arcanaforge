@@ -1,11 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../features/auth/firebase';
 
 export interface WsMessage {
   type: string;
   [key: string]: unknown;
 }
 
-function getWsUrl(): string {
+function getWsBaseUrl(): string {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   if (import.meta.env.DEV) {
     const port = import.meta.env.VITE_BACKEND_WS_PORT || '3001';
@@ -25,9 +27,33 @@ export function useWebSocket(onMessage: (msg: WsMessage) => void): {
     let reconnectTimer: number | undefined;
     let unmounted = false;
 
-    function connect() {
+    function clearReconnect() {
+      if (reconnectTimer !== undefined) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = undefined;
+      }
+    }
+
+    async function connectWithUser() {
+      clearReconnect();
+      wsRef.current?.close();
+      wsRef.current = null;
+
+      const user = auth.currentUser;
+      if (!user || unmounted) return;
+
+      let token: string;
+      try {
+        token = await user.getIdToken();
+      } catch {
+        reconnectTimer = window.setTimeout(connectWithUser, 2000);
+        return;
+      }
+
       if (unmounted) return;
-      const ws = new WebSocket(getWsUrl());
+
+      const url = `${getWsBaseUrl()}?token=${encodeURIComponent(token)}`;
+      const ws = new WebSocket(url);
       wsRef.current = ws;
 
       ws.onmessage = (ev) => {
@@ -40,8 +66,8 @@ export function useWebSocket(onMessage: (msg: WsMessage) => void): {
       };
 
       ws.onclose = () => {
-        if (!unmounted) {
-          reconnectTimer = window.setTimeout(connect, 2000);
+        if (!unmounted && auth.currentUser) {
+          reconnectTimer = window.setTimeout(connectWithUser, 2000);
         }
       };
 
@@ -50,12 +76,23 @@ export function useWebSocket(onMessage: (msg: WsMessage) => void): {
       };
     }
 
-    connect();
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (unmounted) return;
+      if (!user) {
+        clearReconnect();
+        wsRef.current?.close();
+        wsRef.current = null;
+        return;
+      }
+      void connectWithUser();
+    });
 
     return () => {
       unmounted = true;
-      if (reconnectTimer !== undefined) clearTimeout(reconnectTimer);
+      clearReconnect();
+      unsub();
       wsRef.current?.close();
+      wsRef.current = null;
     };
   }, []);
 
