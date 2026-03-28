@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CombatProvider, useCombatContext } from '../../contexts/CombatContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
 import { apiFetchParties } from '../../api';
 import type { Party } from '../../types/party';
+import type { CombatRow } from '../../types/combat';
+import { buildCombatRows } from '../../utils/combatRows';
 import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import CombatToolbar from '../../components/combat/CombatToolbar/CombatToolbar';
@@ -28,6 +30,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
     loadCombat,
   } = useCombatContext();
 
+  const [combatTab, setCombatTab] = useState<'active' | 'inactive'>('active');
   const [newEnemyModalOpen, setNewEnemyModalOpen] = useState(false);
   const [newEnemyName, setNewEnemyName] = useState('');
   const [newEnemyHp, setNewEnemyHp] = useState('20');
@@ -40,6 +43,53 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   useEffect(() => {
     document.title = 'Combate Tracker — ArcanaForge';
   }, []);
+
+  const inactiveSet = useMemo(
+    () => new Set(combatData.inactiveCharacterIds ?? []),
+    [combatData.inactiveCharacterIds],
+  );
+
+  const activeRows: CombatRow[] = useMemo(() => {
+    if (orderActive) return ordered;
+    return buildCombatRows(combatData, players, { sort: false });
+  }, [orderActive, ordered, combatData, players]);
+
+  const inactiveRows: CombatRow[] = useMemo(
+    () =>
+      players
+        .filter((p) => inactiveSet.has(p._id))
+        .map((p) => ({
+          type: 'player' as const,
+          id: `player_${p._id}`,
+          characterId: p._id,
+          name: p.name,
+          initiative: Number(combatData.initiatives[`player_${p._id}`]) || 0,
+          maxHp: p.maxHp,
+          currentHp: p.currentHp,
+          maxMp: p.maxMp,
+          currentMp: p.currentMp,
+          avatar: p.avatar,
+          classes: p.classes,
+          system: p.system,
+          clan: p.clan,
+          ownerUid: p.ownerUid,
+          combatVisual: combatData.gmCharacterVisual?.[p._id] ?? 'ally',
+        })),
+    [players, inactiveSet, combatData],
+  );
+
+  const activeTurnId =
+    orderActive && turnIndex >= 0 && activeRows[turnIndex] ? activeRows[turnIndex].id : null;
+
+  const rows = combatTab === 'active' ? activeRows : inactiveRows;
+
+  const isActiveTurn = (i: number) => {
+    if (combatTab !== 'active') return false;
+    const row = rows[i];
+    if (!row) return false;
+    if (orderActive && activeTurnId) return row.id === activeTurnId;
+    return turnIndex >= 0 && i === turnIndex;
+  };
 
   const openNewEnemyModal = () => {
     const n = combatData.enemies.length + 1;
@@ -71,35 +121,8 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
     [navigate, party.id, system],
   );
 
-  const rows = orderActive
-    ? ordered
-    : [
-        ...players.map((p) => ({
-          type: 'player' as const,
-          id: `player_${p._id}`,
-          characterId: p._id,
-          name: p.name,
-          initiative: Number(combatData.initiatives[`player_${p._id}`]) || 0,
-          maxHp: p.maxHp,
-          currentHp: p.currentHp,
-          maxMp: p.maxMp,
-          currentMp: p.currentMp,
-          avatar: p.avatar,
-          classes: p.classes,
-        })),
-        ...combatData.enemies.map((enemy, idx) => ({
-          type: 'enemy' as const,
-          id: `enemy_${idx}`,
-          name: enemy.name,
-          initiative: enemy.initiative ?? 0,
-          maxHp: enemy.maxHp,
-          currentHp: enemy.currentHp,
-          woundThreshold: enemy.woundThreshold,
-          criticalThreshold: enemy.criticalThreshold,
-        })),
-      ];
-
-  const isActiveTurn = (i: number) => turnIndex >= 0 && i === turnIndex;
+  const showEmptyActive = combatTab === 'active' && rows.length === 0;
+  const showEmptyInactive = combatTab === 'inactive' && rows.length === 0;
 
   return (
     <>
@@ -128,22 +151,58 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
         )}
         <div className={styles.gmSection}>
           {isMaster && <CombatToolbar />}
-          {rows.length === 0 ? (
+          {isMaster && (
+            <div className={styles.combatTabs} role="tablist" aria-label="Participantes do combate">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={combatTab === 'active'}
+                className={`${styles.combatTab} ${combatTab === 'active' ? styles.combatTabActive : ''}`}
+                onClick={() => setCombatTab('active')}
+              >
+                Ativos
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={combatTab === 'inactive'}
+                className={`${styles.combatTab} ${combatTab === 'inactive' ? styles.combatTabActive : ''}`}
+                onClick={() => setCombatTab('inactive')}
+              >
+                Inativos
+                {inactiveRows.length > 0 ? (
+                  <span className={styles.combatTabBadge}>{inactiveRows.length}</span>
+                ) : null}
+              </button>
+            </div>
+          )}
+          {showEmptyActive ? (
             <div className={styles.empty}>
               <span className={styles.emptyIcon}>🎲</span>
-              <p>Nenhum participante no combate ainda.</p>
+              <p>Nenhum participante ativo no combate.</p>
               <p className={styles.emptyHint}>
-                Os personagens salvos aparecerão automaticamente. Use o botão abaixo para adicionar inimigos.
+                Os personagens da party aparecem aqui. Inativos ficam na aba Inativos. Use o botão abaixo para
+                inimigos.
               </p>
+            </div>
+          ) : showEmptyInactive ? (
+            <div className={styles.empty}>
+              <p>Nenhum personagem inativo.</p>
+              <p className={styles.emptyHint}>Use Inativar no card de um personagem na aba Ativos.</p>
             </div>
           ) : (
             <div className={styles.cardsWrapper}>
               {rows.map((row, i) => (
-                <CombatCard key={row.id} row={row} isActiveTurn={isActiveTurn(i)} />
+                <CombatCard
+                  key={row.id}
+                  row={row}
+                  isActiveTurn={isActiveTurn(i)}
+                  listVariant={combatTab === 'inactive' ? 'inactive' : 'active'}
+                />
               ))}
             </div>
           )}
-          {isMaster && (
+          {isMaster && combatTab === 'active' && (
             <button type="button" className={styles.addEnemy} onClick={openNewEnemyModal}>
               <span className={styles.addIcon}>+</span> Adicionar Inimigo
             </button>
@@ -184,7 +243,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
         </form>
       </Modal>
 
-      <MiniOrder rows={rows} />
+      {combatTab === 'active' ? <MiniOrder rows={activeRows} /> : null}
     </>
   );
 }
@@ -220,3 +279,4 @@ export default function GameMasterPage() {
     </ToastProvider>
   );
 }
+

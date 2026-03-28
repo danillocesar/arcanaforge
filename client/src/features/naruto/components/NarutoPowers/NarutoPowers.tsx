@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCharacterContext } from '../../../../contexts/CharacterContext';
 import { getPowerPointsRemaining, getPowerLimit } from '../../utils/narutoCalculations';
 import { getEvolutionRow } from '../../data/narutoConstants';
+import { apiFetchNarutoTechTemplates } from '../../../../api';
+import type { NarutoTechTemplateOption } from '../../../../api';
 import type { NarutoPower, NarutoTechnique, TechLevelEntry } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
 import ConfirmModal from '../../../../components/ui/ConfirmModal/ConfirmModal';
@@ -12,6 +14,11 @@ export default function NarutoPowers() {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [expandedTechIdx, setExpandedTechIdx] = useState<string | null>(null);
   const [confirmIdx, setConfirmIdx] = useState<number | null>(null);
+  const [techTemplates, setTechTemplates] = useState<NarutoTechTemplateOption[]>([]);
+
+  useEffect(() => {
+    apiFetchNarutoTechTemplates().then(setTechTemplates).catch(() => {});
+  }, []);
 
   if (!character) return null;
 
@@ -98,6 +105,34 @@ export default function NarutoPowers() {
       powers: f.powers!.map((p, pi) => {
         if (pi !== powerIdx) return p;
         return { ...p, techniques: (p.techniques ?? []).filter((_, ti) => ti !== techIdx) };
+      }),
+    }));
+  };
+
+  const applyTemplate = (powerIdx: number, techIdx: number, templateId: string) => {
+    const tpl = techTemplates.find((t) => t.id === templateId);
+    if (!tpl) return;
+    updateCharacter((f) => ({
+      ...f,
+      powers: f.powers!.map((p, pi) => {
+        if (pi !== powerIdx) return p;
+        const techs = (p.techniques ?? []).map((t, ti) =>
+          ti === techIdx
+            ? {
+                ...t,
+                name: tpl.name,
+                type: tpl.category,
+                action: tpl.action,
+                range: tpl.range,
+                duration: tpl.duration,
+                target: tpl.target,
+                description: tpl.description,
+                dealsDamage: tpl.dealsDamage,
+                unlockLevel: tpl.unlockLevel,
+              }
+            : t,
+        );
+        return { ...p, techniques: techs };
       }),
     }));
   };
@@ -244,6 +279,24 @@ export default function NarutoPowers() {
                             </div>
                             {isTechExpanded && (
                               <div className={styles.techBody}>
+                                {techTemplates.length > 0 && (
+                                  <div className={styles.templateRow}>
+                                    <label>Efeito Base</label>
+                                    <select
+                                      value=""
+                                      onChange={(e) => {
+                                        if (e.target.value) applyTemplate(i, ti, e.target.value);
+                                      }}
+                                    >
+                                      <option value="">Selecionar template...</option>
+                                      {techTemplates.map((tpl) => (
+                                        <option key={tpl.id} value={tpl.id}>
+                                          {tpl.name} (Nv {tpl.unlockLevel}) — {tpl.sourceDetail}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )}
                                 <div className={styles.techGrid}>
                                   <div className={`${styles.techField} ${styles.techFullWidth} ${styles.techNameRow}`}>
                                     <label>Nome</label>

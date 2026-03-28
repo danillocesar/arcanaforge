@@ -95,6 +95,7 @@ export async function apiRegenerateInviteCode(partyId: string): Promise<Party> {
 export interface PartyCharacter extends CharacterSummary {
   hp?: { max?: number; current?: number };
   mp?: { max?: number; current?: number };
+  clan?: string;
 }
 
 export async function apiFetchPartyCharacters(partyId: string): Promise<PartyCharacter[]> {

@@ -1,4 +1,4 @@
-const Combat = require('./db/models/Combat');
+﻿const Combat = require('./db/models/Combat');
 
 const combatCache = {};
 
@@ -8,6 +8,8 @@ const COMBAT_DEFAULT = {
   turnIndex: -1,
   ordered: false,
   round: 1,
+  inactiveCharacterIds: [],
+  gmCharacterVisual: {},
 };
 
 async function loadCombat(partyId) {

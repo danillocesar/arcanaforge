@@ -204,3 +204,43 @@
   0%, 100% { opacity: 0.6; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.3); }
 }
+
+.combatTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.combatTab {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.combatTab:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text-primary);
+}
+
+.combatTabActive {
+  border-color: color-mix(in srgb, var(--accent-gm) 45%, transparent);
+  color: var(--accent-gm);
+  background: color-mix(in srgb, var(--accent-gm) 10%, rgba(15, 17, 28, 0.6));
+}
+
+.combatTabBadge {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}

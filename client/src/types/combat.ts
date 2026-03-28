@@ -1,4 +1,4 @@
-export interface Enemy {
+﻿export interface Enemy {
   id: string;
   name: string;
   maxHp: number;
@@ -8,12 +8,16 @@ export interface Enemy {
   criticalThreshold: number;
 }
 
+export type CombatCharacterVisual = 'ally' | 'npc' | 'enemy';
+
 export interface CombatData {
   enemies: Enemy[];
   initiatives: Record<string, number>;
   turnIndex: number;
   ordered: boolean;
   round?: number;
+  inactiveCharacterIds?: string[];
+  gmCharacterVisual?: Record<string, CombatCharacterVisual>;
 }
 
 export interface CombatPlayer {
@@ -21,6 +25,9 @@ export interface CombatPlayer {
   name: string;
   avatar: string;
   classes: { name: string; level: number }[];
+  system?: 'tormenta' | 'naruto';
+  clan?: string;
+  ownerUid?: string;
   maxHp: number;
   currentHp: number;
   maxMp: number;
@@ -39,6 +46,10 @@ export interface CombatRow {
   currentMp?: number;
   avatar?: string;
   classes?: { name: string; level: number }[];
+  system?: 'tormenta' | 'naruto';
+  clan?: string;
+  ownerUid?: string;
+  combatVisual?: CombatCharacterVisual;
   woundThreshold?: number;
   criticalThreshold?: number;
 }

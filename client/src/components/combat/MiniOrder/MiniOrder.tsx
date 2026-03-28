@@ -38,21 +38,21 @@ function TrackUnit({
   row: CombatRow;
   isCurrentTurn: boolean;
 }) {
-  const isPlayer = row.type === 'player';
+  const looksAlly = row.type === 'player' && row.combatVisual !== 'enemy';
   const cor = getAvatarColor(row.name);
 
   return (
     <div className={styles.trackRow}>
       <TimelineMarker active={isCurrentTurn} />
       <div
-        className={`${styles.unitCard} ${isPlayer ? styles.unitAlly : styles.unitEnemy} ${isCurrentTurn ? styles.unitActive : ''}`}
+        className={`${styles.unitCard} ${looksAlly ? styles.unitAlly : styles.unitEnemy} ${isCurrentTurn ? styles.unitActive : ''}`}
         title={row.name}
       >
         <span className={styles.unitRail} aria-hidden />
         <div
           className={styles.unitFace}
           style={
-            isPlayer
+            looksAlly
               ? {
                   background: `linear-gradient(135deg, color-mix(in srgb, ${cor} 18%, transparent) 0%, rgba(15, 20, 28, 0.85) 100%)`,
                 }

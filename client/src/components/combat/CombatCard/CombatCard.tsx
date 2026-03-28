@@ -1,12 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, UserMinus, RefreshCw, UserCheck } from 'lucide-react';
 import { useCombatContext } from '../../../contexts/CombatContext';
 import { getInitials } from '../../../utils/formatters';
 import { hpPercent } from '../../../utils/calculations';
 import { getClassIconUrl } from '../../../features/tormenta/data/tormentaClasses';
+import { apiFetchNarutoClans } from '../../../api';
+import type { NarutoClanOption } from '../../../api';
 import DamagePopover from '../DamagePopover/DamagePopover';
 import type { CombatRow } from '../../../types/combat';
 import styles from './CombatCard.module.css';
+
+let cachedClans: NarutoClanOption[] | null = null;
+let clanFetchPromise: Promise<NarutoClanOption[]> | null = null;
+
+function fetchClansOnce(): Promise<NarutoClanOption[]> {
+  if (cachedClans) return Promise.resolve(cachedClans);
+  if (!clanFetchPromise) {
+    clanFetchPromise = apiFetchNarutoClans().then((clans) => {
+      cachedClans = clans;
+      return clans;
+    });
+  }
+  return clanFetchPromise;
+}
 
 const VILLAIN_ICON = (
   <svg className={styles.villainIcon} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -17,16 +33,20 @@ const VILLAIN_ICON = (
 interface CombatCardProps {
   row: CombatRow;
   isActiveTurn: boolean;
+  listVariant?: 'active' | 'inactive';
 }
 
-export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
+export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }: CombatCardProps) {
   const {
     isMaster,
+    partyOwnerUid,
     updateInitiative,
     updateEnemyName,
     removeEnemy,
     applyHpChange,
     updateEnemyMaxHp,
+    setCharacterInactive,
+    cycleGmVisual,
   } = useCombatContext();
 
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -34,7 +54,11 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
   const [draftMaxHp, setDraftMaxHp] = useState('');
   const hpBarRef = useRef<HTMLDivElement>(null);
 
-  const isPlayer = row.type === 'player';
+  const isPartyCharacter = row.type === 'player';
+  const visual = row.combatVisual ?? 'ally';
+  const showAsEnemyCard = isPartyCharacter && visual === 'enemy';
+  const cardLooksPlayer = isPartyCharacter && !showAsEnemyCard;
+
   const maxHp = row.maxHp || 1;
   const currentHp = row.currentHp || 0;
   const maxMp = row.maxMp || 0;
@@ -42,28 +66,48 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
   const hpPct = hpPercent(currentHp, maxHp);
   const mpPercent = hpPercent(currentMp, maxMp);
 
-  const enemyIndex = !isPlayer
+  const enemyIndex = !isPartyCharacter
     ? parseInt(row.id.split('_').pop() || '0', 10)
     : undefined;
 
+  const isNaruto = row.system === 'naruto';
   const firstClassName = row.classes?.[0]?.name;
   const classIconSrc = firstClassName ? getClassIconUrl(firstClassName) : '';
+
+  const [clanIconSrc, setClanIconSrc] = useState('');
+  useEffect(() => {
+    if (!isNaruto || !row.clan?.trim()) {
+      setClanIconSrc('');
+      return;
+    }
+    const want = row.clan.trim().toLowerCase();
+    fetchClansOnce()
+      .then((clans) => {
+        const match = clans.find((c) => c.name.toLowerCase() === want);
+        setClanIconSrc(match?.icon ?? '');
+      })
+      .catch(() => setClanIconSrc(''));
+  }, [isNaruto, row.clan]);
+
+  const stripIconSrc = isNaruto ? clanIconSrc : classIconSrc;
+  const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && (isNaruto ? !!clanIconSrc : !!firstClassName);
 
   useEffect(() => {
     if (!editingMaxHp) setDraftMaxHp(String(row.maxHp ?? 1));
   }, [row.maxHp, editingMaxHp]);
 
-  // HP band thresholds (% of max): yellow 48–76%, red 6–28%
-  const isAlertBand = !isPlayer && hpPct >= 48 && hpPct <= 76;
-  const isCriticalBand = !isPlayer && hpPct >= 6 && hpPct <= 28;
+  const isAlertBand = !cardLooksPlayer && hpPct >= 48 && hpPct <= 76;
+  const isCriticalBand = !cardLooksPlayer && hpPct >= 6 && hpPct <= 28;
 
   const cardCls = [
     styles.card,
-    isPlayer ? styles.cardPlayer : styles.cardEnemy,
+    cardLooksPlayer ? styles.cardPlayer : styles.cardEnemy,
     isActiveTurn ? styles.turn : '',
     isAlertBand ? styles.alert : '',
     isCriticalBand ? styles.critical : '',
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const handleHpApply = async (delta: number) => {
     await applyHpChange(row.type, row.characterId || row.id, enemyIndex, delta);
@@ -85,9 +129,24 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
     setEditingMaxHp(false);
   };
 
-  const showEnemyBars = isPlayer || isMaster;
+  const showEnemyBars = isPartyCharacter || isMaster;
   const initiativeValue =
     row.initiative === undefined || row.initiative === null ? '' : String(row.initiative);
+
+  const tipoLabel = !isPartyCharacter
+    ? 'Inimigo'
+    : visual === 'npc'
+      ? 'NPC'
+      : visual === 'enemy'
+        ? 'Inimigo'
+        : 'Jogador';
+
+  const canGmStyle =
+    isMaster &&
+    isPartyCharacter &&
+    row.characterId &&
+    partyOwnerUid &&
+    row.ownerUid === partyOwnerUid;
 
   return (
     <div className={cardCls}>
@@ -98,7 +157,7 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
         </div>
       )}
 
-      <div className={`${styles.avatar} ${isPlayer ? styles.avatarPlayer : styles.avatarEnemy}`}>
+      <div className={`${styles.avatar} ${cardLooksPlayer ? styles.avatarPlayer : styles.avatarEnemy}`}>
         {row.avatar ? (
           <img className={styles.avatarImg} src={row.avatar} alt="" />
         ) : (
@@ -106,25 +165,27 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
         )}
       </div>
 
-      {isPlayer && firstClassName ? (
+      {isPartyCharacter && showAsEnemyCard ? (
+        <div className={`${styles.classStrip} ${styles.classStripEnemy}`}>{VILLAIN_ICON}</div>
+      ) : hasAllyStripIcon ? (
         <div className={styles.classStrip}>
           <img
             className={styles.classIcon}
-            src={classIconSrc}
+            src={stripIconSrc}
             alt=""
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         </div>
-      ) : !isPlayer ? (
+      ) : !isPartyCharacter ? (
         <div className={`${styles.classStrip} ${styles.classStripEnemy}`}>{VILLAIN_ICON}</div>
       ) : null}
 
       <div className={styles.cardTop}>
         <div className={styles.info}>
           <div className={styles.nameRow}>
-            {isPlayer ? (
+            {isPartyCharacter ? (
               <span className={styles.name}>{row.name}</span>
             ) : (
               <input
@@ -135,24 +196,28 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
             )}
           </div>
           <div className={styles.meta}>
-            <span className={`${styles.tipoTag} ${isPlayer ? styles.typePlayer : styles.typeEnemy}`}>
-              {isPlayer ? 'Jogador' : 'Inimigo'}
+            <span
+              className={`${styles.tipoTag} ${!isPartyCharacter || visual === 'enemy' ? styles.typeEnemy : styles.typePlayer}`}
+            >
+              {tipoLabel}
             </span>
-            <div className={styles.initField}>
-              <label>Iniciativa:</label>
-              <input
-                type="number"
-                className={styles.initInput}
-                value={initiativeValue}
-                placeholder="—"
-                onChange={(e) => updateInitiative(row.id, row.type, e.target.value)}
-              />
-            </div>
+            {listVariant === 'active' && (
+              <div className={styles.initField}>
+                <label>Iniciativa:</label>
+                <input
+                  type="number"
+                  className={styles.initInput}
+                  value={initiativeValue}
+                  placeholder="—"
+                  onChange={(e) => updateInitiative(row.id, row.type, e.target.value)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
         <div
-          className={`${styles.bars} ${!isPlayer ? styles.barsEnemy : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
+          className={`${styles.bars} ${!cardLooksPlayer ? styles.barsEnemy : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
         >
           <div
             className={`${styles.bar} ${styles.barHp} ${isMaster ? styles.barClickable : ''}`}
@@ -166,7 +231,7 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
             </span>
           </div>
 
-          {!isPlayer && isMaster && showEnemyBars && (
+          {!isPartyCharacter && isMaster && showEnemyBars && (
             <div className={styles.pvMaxEditRow}>
               <span className={styles.pvMaxLabel}>PV total</span>
               {editingMaxHp ? (
@@ -199,7 +264,7 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
             </div>
           )}
 
-          {isPlayer && maxMp > 0 && (
+          {isPartyCharacter && maxMp > 0 && (
             <div className={`${styles.bar} ${styles.barPm}`}>
               <div className={`${styles.barFill} ${styles.pmFill}`} style={{ width: `${mpPercent}%` }} />
               <span className={styles.barLabel}>
@@ -209,7 +274,41 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
           )}
         </div>
 
-        {!isPlayer && isMaster && (
+        {isMaster && isPartyCharacter && row.characterId && (
+          <div className={styles.masterActions}>
+            {listVariant === 'inactive' ? (
+              <button
+                type="button"
+                className={styles.masterIconBtn}
+                title="Reativar na ordem de combate"
+                onClick={() => setCharacterInactive(row.characterId!, false)}
+              >
+                <UserCheck size={18} aria-hidden />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.masterIconBtn}
+                title="Marcar como inativo"
+                onClick={() => setCharacterInactive(row.characterId!, true)}
+              >
+                <UserMinus size={18} aria-hidden />
+              </button>
+            )}
+            {canGmStyle && listVariant === 'active' && (
+              <button
+                type="button"
+                className={styles.masterIconBtn}
+                title="Alternar visual: Jogador → NPC → Inimigo"
+                onClick={() => cycleGmVisual(row.characterId!)}
+              >
+                <RefreshCw size={18} aria-hidden />
+              </button>
+            )}
+          </div>
+        )}
+
+        {!isPartyCharacter && isMaster && (
           <button
             type="button"
             className={styles.removeBtn}
@@ -231,3 +330,4 @@ export default function CombatCard({ row, isActiveTurn }: CombatCardProps) {
     </div>
   );
 }
+

@@ -7,6 +7,7 @@ const combatState = require('../combatState');
 const Character = require('../db/models/Character');
 const Party = require('../db/models/Party');
 const NarutoClan = require('../db/models/NarutoClan');
+const NarutoTechTemplate = require('../db/models/NarutoTechTemplate');
 const { ownerFieldsFromReq } = require('../characters/userCharactersDir');
 const { resolveUserEmail } = require('../auth/firebaseAdmin');
 const { uploadAvatarBuffer, deleteAvatarByPublicUrl, isR2Configured } = require('../storage/r2');
@@ -80,6 +81,38 @@ function registerRoutes(app, opts) {
         icon: c.icon,
         system: c.system,
         active: c.active,
+      }));
+      res.json(payload);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/naruto/technique-templates', async (req, res) => {
+    try {
+      const filter = { system: 'naruto', active: true };
+      if (req.query.source) filter.source = req.query.source;
+      if (req.query.sourceDetail) filter.sourceDetail = req.query.sourceDetail;
+      const docs = await NarutoTechTemplate.find(filter)
+        .sort({ unlockLevel: 1, name: 1 })
+        .lean();
+      const payload = docs.map((d) => ({
+        id: d._id,
+        name: d.name,
+        unlockLevel: d.unlockLevel,
+        category: d.category,
+        action: d.action,
+        range: d.range,
+        baseDamage: d.baseDamage,
+        duration: d.duration,
+        target: d.target,
+        chakraCost: d.chakraCost,
+        description: d.description,
+        evolutions: d.evolutions,
+        availableFor: d.availableFor,
+        dealsDamage: d.dealsDamage,
+        source: d.source,
+        sourceDetail: d.sourceDetail,
       }));
       res.json(payload);
     } catch (err) {
@@ -429,7 +462,7 @@ function registerRoutes(app, opts) {
       if (charIds.length === 0) return res.json([]);
 
       const characters = await Character.find({ _id: { $in: charIds } })
-        .select('_id name avatar classes system ownerUid ownerEmail hp mp')
+        .select('_id name avatar classes system ownerUid ownerEmail hp mp clan')
         .lean();
       res.json(characters.map(cleanMongoFields));
     } catch (err) {
@@ -463,8 +496,20 @@ function registerRoutes(app, opts) {
       if (!party) return res.status(403).json({ error: 'Acesso negado' });
 
       const { id } = req.params;
-      combatState.combatCache[id] = req.body;
-      await combatState.saveCombat(id, req.body);
+      const existing = await combatState.loadCombat(id);
+      const incoming = req.body || {};
+      const isPartyOwner = party.ownerUid === req.user.uid;
+      const { _id: _eid, __v, createdAt, updatedAt, ...exRest } = existing;
+      let merged = { ...combatState.COMBAT_DEFAULT, ...exRest, ...incoming };
+      if (!isPartyOwner) {
+        merged.inactiveCharacterIds = exRest.inactiveCharacterIds ?? [];
+        merged.gmCharacterVisual =
+          exRest.gmCharacterVisual && typeof exRest.gmCharacterVisual === 'object'
+            ? exRest.gmCharacterVisual
+            : {};
+      }
+      combatState.combatCache[id] = merged;
+      await combatState.saveCombat(id, merged);
       refs.broadcastCombat(id);
       res.json({ ok: true });
     } catch (err) {

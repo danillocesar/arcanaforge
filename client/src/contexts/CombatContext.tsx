@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
+﻿import React, { createContext, useContext, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import type { CombatData, CombatPlayer, CombatRow, Enemy } from '../types/combat';
 import {
   apiLoadCombat,
@@ -11,6 +11,12 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import type { WsMessage } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/Toast/Toast';
 import { useAuth } from '../features/auth';
+import {
+  normalizeCombatData,
+  buildCombatRows,
+  adjustTurnIndexAfterRowChange,
+  getActivePlayers,
+} from '../utils/combatRows';
 
 interface CombatContextValue {
   combatData: CombatData;
@@ -19,6 +25,7 @@ interface CombatContextValue {
   ordered: CombatRow[];
   orderActive: boolean;
   isMaster: boolean;
+  partyOwnerUid?: string;
 
   addEnemy: (name: string, maxHp: number) => void;
   removeEnemy: (idx: number) => void;
@@ -30,15 +37,11 @@ interface CombatContextValue {
   resetTurn: () => void;
   applyHpChange: (type: string, characterId: string, enemyIdx: number | undefined, delta: number) => Promise<void>;
   loadCombat: () => Promise<void>;
+  setCharacterInactive: (characterId: string, inactive: boolean) => void;
+  cycleGmVisual: (characterId: string) => void;
 }
 
-const DEFAULT_COMBAT: CombatData = {
-  enemies: [],
-  initiatives: {},
-  turnIndex: -1,
-  ordered: false,
-  round: 1,
-};
+const DEFAULT_COMBAT: CombatData = normalizeCombatData({});
 
 const CombatContext = createContext<CombatContextValue | null>(null);
 
@@ -54,7 +57,7 @@ export function CombatProvider({
   const { user } = useAuth();
   const isMaster = Boolean(ownerUid && user?.uid && ownerUid === user.uid);
 
-  const [combatData, setCombatData] = useState<CombatData>({ ...DEFAULT_COMBAT });
+  const [combatData, setCombatData] = useState<CombatData>(DEFAULT_COMBAT);
   const [players, setPlayers] = useState<CombatPlayer[]>([]);
   const [turnIndex, setTurnIndex] = useState(-1);
   const [orderedList, setOrderedList] = useState<CombatRow[]>([]);
@@ -64,44 +67,20 @@ export function CombatProvider({
   combatDataRef.current = combatData;
   const playersRef = useRef(players);
   playersRef.current = players;
+  const orderedListRef = useRef<CombatRow[]>([]);
+  const turnIndexRef = useRef(-1);
+
+  useEffect(() => {
+    turnIndexRef.current = turnIndex;
+  }, [turnIndex]);
 
   const { showToast } = useToast();
 
   const reloadPlayersRef = useRef<() => void>(() => {});
 
   const buildOrdered = useCallback((data: CombatData, currentPlayers: CombatPlayer[]) => {
-    const rows: CombatRow[] = [];
-
-    currentPlayers.forEach((p) => {
-      rows.push({
-        type: 'player',
-        id: `player_${p._id}`,
-        characterId: p._id,
-        name: p.name,
-        initiative: Number(data.initiatives[`player_${p._id}`]) || 0,
-        maxHp: p.maxHp,
-        currentHp: p.currentHp,
-        maxMp: p.maxMp,
-        currentMp: p.currentMp,
-        avatar: p.avatar,
-        classes: p.classes,
-      });
-    });
-
-    data.enemies.forEach((enemy, idx) => {
-      rows.push({
-        type: 'enemy',
-        id: `enemy_${idx}`,
-        name: enemy.name,
-        initiative: enemy.initiative,
-        maxHp: enemy.maxHp,
-        currentHp: enemy.currentHp,
-        woundThreshold: enemy.woundThreshold,
-        criticalThreshold: enemy.criticalThreshold,
-      });
-    });
-
-    rows.sort((a, b) => b.initiative - a.initiative);
+    const rows = buildCombatRows(data, currentPlayers, { sort: true });
+    orderedListRef.current = rows;
     setOrderedList(rows);
     setOrderActive(true);
   }, []);
@@ -111,14 +90,15 @@ export function CombatProvider({
       (msg: WsMessage) => {
         if (msg.type === 'combat_sync' && msg.data) {
           if (partyId && msg.partyId && msg.partyId !== partyId) return;
-          const d = msg.data as CombatData;
-          setCombatData({ ...d, round: d.round ?? 1 });
+          const d = normalizeCombatData(msg.data as CombatData);
+          setCombatData(d);
           if (d.turnIndex !== undefined) setTurnIndex(d.turnIndex);
           if (d.ordered) {
             buildOrdered(d, playersRef.current);
           } else {
             setOrderActive(false);
             setOrderedList([]);
+            orderedListRef.current = [];
           }
         }
         if (msg.type === 'character_hp_sync' && msg.characterId) {
@@ -186,48 +166,46 @@ export function CombatProvider({
     [send, partyId],
   );
 
+  const mapPartyToPlayers = useCallback(
+    (partyChars: Awaited<ReturnType<typeof apiFetchPartyCharacters>>): CombatPlayer[] =>
+      partyChars.map((r) => ({
+        _id: r._id,
+        name: r.name,
+        avatar: r.avatar || '',
+        classes: r.classes,
+        system: r.system,
+        clan: r.clan,
+        ownerUid: r.ownerUid,
+        maxHp: r.hp?.max ?? 0,
+        currentHp: r.hp?.current ?? 0,
+        maxMp: r.mp?.max ?? 0,
+        currentMp: r.mp?.current ?? 0,
+      })),
+    [],
+  );
+
   const reloadPlayers = useCallback(async () => {
     if (!partyId) return;
     const partyChars = await apiFetchPartyCharacters(partyId);
-
-    const loadedPlayers: CombatPlayer[] = partyChars.map((r) => ({
-      _id: r._id,
-      name: r.name,
-      avatar: r.avatar || '',
-      classes: r.classes,
-      maxHp: r.hp?.max ?? 0,
-      currentHp: r.hp?.current ?? 0,
-      maxMp: r.mp?.max ?? 0,
-      currentMp: r.mp?.current ?? 0,
-    }));
+    const loadedPlayers = mapPartyToPlayers(partyChars);
     setPlayers(loadedPlayers);
 
     const cd = combatDataRef.current;
     if (cd.ordered) {
       buildOrdered(cd, loadedPlayers);
     }
-  }, [buildOrdered, partyId]);
+  }, [buildOrdered, partyId, mapPartyToPlayers]);
   reloadPlayersRef.current = reloadPlayers;
 
   const loadCombat = useCallback(async () => {
     if (!partyId) return;
-    const data = await apiLoadCombat(partyId);
-    const normalized = { ...data, round: data.round ?? 1 };
+    const raw = await apiLoadCombat(partyId);
+    const normalized = normalizeCombatData({ ...raw, round: raw.round ?? 1 });
     setCombatData(normalized);
     if (normalized.turnIndex !== undefined) setTurnIndex(normalized.turnIndex);
 
     const partyChars = await apiFetchPartyCharacters(partyId);
-
-    const loadedPlayers: CombatPlayer[] = partyChars.map((r) => ({
-      _id: r._id,
-      name: r.name,
-      avatar: r.avatar || '',
-      classes: r.classes,
-      maxHp: r.hp?.max ?? 0,
-      currentHp: r.hp?.current ?? 0,
-      maxMp: r.mp?.max ?? 0,
-      currentMp: r.mp?.current ?? 0,
-    }));
+    const loadedPlayers = mapPartyToPlayers(partyChars);
     setPlayers(loadedPlayers);
 
     if (normalized.ordered) {
@@ -235,28 +213,81 @@ export function CombatProvider({
     } else {
       setOrderActive(false);
       setOrderedList([]);
+      orderedListRef.current = [];
     }
-  }, [buildOrdered, partyId]);
+  }, [buildOrdered, partyId, mapPartyToPlayers]);
 
-  const addEnemy = useCallback((name: string, maxHp: number) => {
-    const max = Math.max(1, Math.floor(Number(maxHp)) || 1);
-    const label = name.trim() || `Inimigo ${combatDataRef.current.enemies.length + 1}`;
-    const newEnemy: Enemy = {
-      id: `enemy_${Date.now()}`,
-      name: label,
-      maxHp: max,
-      currentHp: max,
-      initiative: 0,
-      woundThreshold: 76,
-      criticalThreshold: 28,
-    };
-    const updated = {
-      ...combatDataRef.current,
-      enemies: [...combatDataRef.current.enemies, newEnemy],
-    };
-    setCombatData(updated);
-    broadcastCombatData(updated);
-  }, [broadcastCombatData]);
+  const setCharacterInactive = useCallback(
+    (characterId: string, inactive: boolean) => {
+      if (!isMaster) return;
+      const cd = combatDataRef.current;
+      const prevRows = [...orderedListRef.current];
+      const prevTurn = turnIndexRef.current;
+      const set = new Set(cd.inactiveCharacterIds ?? []);
+      if (inactive) set.add(characterId);
+      else set.delete(characterId);
+      const inactiveCharacterIds = [...set];
+      let updated: CombatData = { ...cd, inactiveCharacterIds };
+
+      if (updated.ordered) {
+        const newRows = buildCombatRows(updated, playersRef.current, { sort: true });
+        const newTurn = adjustTurnIndexAfterRowChange(prevTurn, prevRows, newRows);
+        updated = { ...updated, turnIndex: newTurn };
+        setTurnIndex(newTurn);
+        orderedListRef.current = newRows;
+        setOrderedList(newRows);
+        setOrderActive(true);
+      }
+
+      setCombatData(updated);
+      broadcastCombatData(updated);
+    },
+    [isMaster, broadcastCombatData],
+  );
+
+  const cycleGmVisual = useCallback(
+    (characterId: string) => {
+      if (!isMaster) return;
+      const cd = combatDataRef.current;
+      const map = { ...(cd.gmCharacterVisual ?? {}) };
+      const order = ['ally', 'npc', 'enemy'] as const;
+      const cur = map[characterId] ?? 'ally';
+      const idx = order.indexOf(cur);
+      map[characterId] = order[(idx + 1) % order.length];
+      const updated = { ...cd, gmCharacterVisual: map };
+      setCombatData(updated);
+      broadcastCombatData(updated);
+      if (updated.ordered) {
+        const rows = buildCombatRows(updated, playersRef.current, { sort: true });
+        orderedListRef.current = rows;
+        setOrderedList(rows);
+      }
+    },
+    [isMaster, broadcastCombatData],
+  );
+
+  const addEnemy = useCallback(
+    (name: string, maxHp: number) => {
+      const max = Math.max(1, Math.floor(Number(maxHp)) || 1);
+      const label = name.trim() || `Inimigo ${combatDataRef.current.enemies.length + 1}`;
+      const newEnemy: Enemy = {
+        id: `enemy_${Date.now()}`,
+        name: label,
+        maxHp: max,
+        currentHp: max,
+        initiative: 0,
+        woundThreshold: 76,
+        criticalThreshold: 28,
+      };
+      const updated = {
+        ...combatDataRef.current,
+        enemies: [...combatDataRef.current.enemies, newEnemy],
+      };
+      setCombatData(updated);
+      broadcastCombatData(updated);
+    },
+    [broadcastCombatData],
+  );
 
   const removeEnemy = useCallback(
     (idx: number) => {
@@ -333,23 +364,26 @@ export function CombatProvider({
   }, [broadcastCombatData, buildOrdered]);
 
   const nextTurn = useCallback(() => {
-    const total = playersRef.current.length + combatDataRef.current.enemies.length;
+    const cd = combatDataRef.current;
+    const activeCount = getActivePlayers(playersRef.current, cd.inactiveCharacterIds).length;
+    const total = activeCount + cd.enemies.length;
     if (total === 0) return;
+    const ti = turnIndexRef.current;
     let next: number;
-    if (turnIndex < 0) {
+    if (ti < 0) {
       next = 0;
     } else {
-      next = (turnIndex + 1) % total;
+      next = (ti + 1) % total;
     }
-    let round = combatDataRef.current.round ?? 1;
-    if (turnIndex >= 0 && turnIndex === total - 1 && next === 0) {
+    let round = cd.round ?? 1;
+    if (ti >= 0 && ti === total - 1 && next === 0) {
       round += 1;
     }
     setTurnIndex(next);
-    const updated = { ...combatDataRef.current, turnIndex: next, round };
+    const updated = { ...cd, turnIndex: next, round };
     setCombatData(updated);
     broadcastCombatData(updated);
-  }, [turnIndex, broadcastCombatData]);
+  }, [broadcastCombatData]);
 
   const resetTurn = useCallback(() => {
     const updated = {
@@ -361,6 +395,7 @@ export function CombatProvider({
     setCombatData(updated);
     setTurnIndex(-1);
     setOrderedList([]);
+    orderedListRef.current = [];
     setOrderActive(false);
     broadcastCombatData(updated);
   }, [broadcastCombatData]);
@@ -408,24 +443,50 @@ export function CombatProvider({
     [send, broadcastCombatData, buildOrdered],
   );
 
-  const value = useMemo<CombatContextValue>(() => ({
-    combatData,
-    players,
-    turnIndex,
-    ordered: orderedList,
-    orderActive,
-    isMaster,
-    addEnemy,
-    removeEnemy,
-    updateInitiative,
-    updateEnemyName,
-    updateEnemyMaxHp,
-    sortInitiative,
-    nextTurn,
-    resetTurn,
-    applyHpChange,
-    loadCombat,
-  }), [combatData, players, turnIndex, orderedList, orderActive, isMaster, addEnemy, removeEnemy, updateInitiative, updateEnemyName, updateEnemyMaxHp, sortInitiative, nextTurn, resetTurn, applyHpChange, loadCombat]);
+  const value = useMemo<CombatContextValue>(
+    () => ({
+      combatData,
+      players,
+      turnIndex,
+      ordered: orderedList,
+      orderActive,
+      isMaster,
+      partyOwnerUid: ownerUid,
+      addEnemy,
+      removeEnemy,
+      updateInitiative,
+      updateEnemyName,
+      updateEnemyMaxHp,
+      sortInitiative,
+      nextTurn,
+      resetTurn,
+      applyHpChange,
+      loadCombat,
+      setCharacterInactive,
+      cycleGmVisual,
+    }),
+    [
+      combatData,
+      players,
+      turnIndex,
+      orderedList,
+      orderActive,
+      isMaster,
+      ownerUid,
+      addEnemy,
+      removeEnemy,
+      updateInitiative,
+      updateEnemyName,
+      updateEnemyMaxHp,
+      sortInitiative,
+      nextTurn,
+      resetTurn,
+      applyHpChange,
+      loadCombat,
+      setCharacterInactive,
+      cycleGmVisual,
+    ],
+  );
 
   return <CombatContext.Provider value={value}>{children}</CombatContext.Provider>;
 }
@@ -435,3 +496,4 @@ export function useCombatContext(): CombatContextValue {
   if (!ctx) throw new Error('useCombatContext must be used within CombatProvider');
   return ctx;
 }
+
