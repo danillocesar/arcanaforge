@@ -6,6 +6,7 @@ const { createNarutoRoutes } = require('./naruto.routes');
 const { createCharacterRoutes } = require('./characters.routes');
 const { createPartyRoutes } = require('./parties.routes');
 const { createCombatRoutes } = require('./combat.routes');
+const { createBillingRoutes } = require('./billing.routes');
 
 /**
  * @param {import('express').Express} app
@@ -13,6 +14,7 @@ const { createCombatRoutes } = require('./combat.routes');
  */
 function registerRoutes(app, opts) {
   const { refs } = opts;
+  app.use(createBillingRoutes());
   app.use(createCharacterRoutes());
   app.use(createNarutoRoutes());
   app.use(createPartyRoutes(refs));

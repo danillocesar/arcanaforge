@@ -18,7 +18,7 @@ async function updateOwnedParty(id, uid, update) {
   return Party.findOneAndUpdate(
     { _id: id, ownerUid: uid },
     update,
-    { returnDocument: 'after' },
+    { returnDocument: 'after', runValidators: true },
   ).lean();
 }
 

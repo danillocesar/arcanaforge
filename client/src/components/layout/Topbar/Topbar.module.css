@@ -239,7 +239,23 @@
   text-overflow: ellipsis;
 }
 
+.dropdownPlanBadge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--accent-gold);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  width: fit-content;
+}
+
 .dropdownItem {
+  display: block;
   width: 100%;
   border: none;
   background: transparent;
@@ -248,6 +264,8 @@
   cursor: pointer;
   padding: 10px;
   font-size: 0.78rem;
+  text-decoration: none;
+  font-family: var(--font);
 }
 
 .dropdownItem:hover {

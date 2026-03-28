@@ -1,6 +1,6 @@
 const { ownerFieldsFromReq } = require('../../characters/userCharactersDir');
 const { AppError } = require('../errors/AppError');
-const { cleanMongoFields, toPartyJson } = require('../utils/mongo');
+const { toPartyDTO, toPartyCharacterDTO } = require('../dto/party.dto');
 const { generatePartyId, generateInviteCode } = require('../utils/inviteCode');
 const partyRepository = require('../repositories/party.repository');
 const characterRepository = require('../repositories/character.repository');
@@ -20,7 +20,7 @@ async function uniqueInviteCode() {
 function createPartyService(refs) {
   async function listParties(uid) {
     const docs = await partyRepository.findVisibleToUser(uid);
-    return docs.map(toPartyJson);
+    return docs.map(toPartyDTO);
   }
 
   async function createParty(body, req) {
@@ -45,17 +45,18 @@ function createPartyService(refs) {
       }],
       ...owners,
     });
-    return toPartyJson(party.toObject());
+    return toPartyDTO(party.toObject());
   }
 
   async function updateParty(id, body, uid) {
     const { name, system } = body || {};
     const update = {};
     if (name && typeof name === 'string') update.name = name.trim();
+    if (system && !VALID_SYSTEMS.includes(system)) throw new AppError(400, 'Invalid system');
     if (system) update.system = system;
     const party = await partyRepository.updateOwnedParty(id, uid, update);
     if (!party) throw new AppError(404, 'Party not found');
-    return toPartyJson(party);
+    return toPartyDTO(party);
   }
 
   async function deleteParty(id, uid) {
@@ -83,7 +84,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(String(party._id));
     }
-    return toPartyJson(party.toObject());
+    return toPartyDTO(party.toObject());
   }
 
   async function addCharacterToParty(id, body, uid) {
@@ -112,7 +113,7 @@ function createPartyService(refs) {
         refs.broadcastPartyRoster(id);
       }
     }
-    return toPartyJson(party.toObject());
+    return toPartyDTO(party.toObject());
   }
 
   async function removeCharacterFromParty(id, body, uid) {
@@ -129,7 +130,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(id);
     }
-    return toPartyJson(party.toObject());
+    return toPartyDTO(party.toObject());
   }
 
   async function leaveParty(id, uid) {
@@ -153,14 +154,14 @@ function createPartyService(refs) {
     party.members = party.members.filter((m) => m.uid !== memberUid);
     await party.save();
     refs.broadcastPartyRoster(id);
-    return toPartyJson(party.toObject());
+    return toPartyDTO(party.toObject());
   }
 
   async function regenerateCode(id, ownerUid) {
     const inviteCode = await uniqueInviteCode();
     const party = await partyRepository.updateOwnedParty(id, ownerUid, { inviteCode });
     if (!party) throw new AppError(404, 'Party não encontrada ou você não é o dono');
-    return toPartyJson(party);
+    return toPartyDTO(party);
   }
 
   async function listPartyCharacters(id, uid) {
@@ -169,7 +170,7 @@ function createPartyService(refs) {
     const charIds = party.members.flatMap((m) => m.characterIds || []).filter(Boolean);
     if (charIds.length === 0) return [];
     const characters = await characterRepository.findByIds(charIds);
-    return characters.map(cleanMongoFields);
+    return characters.map(toPartyCharacterDTO);
   }
 
   return {

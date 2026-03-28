@@ -6,6 +6,7 @@ import GameMasterPage from './pages/GameMasterPage/GameMasterPage';
 import SelectPage from './pages/SelectPage/SelectPage';
 import PartySelectPage from './pages/PartySelectPage/PartySelectPage';
 import PartyMembersPage from './pages/PartyMembersPage/PartyMembersPage';
+import BillingPage from './pages/BillingPage/BillingPage';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/characters" element={<RequireAuth><SelectPage /></RequireAuth>} />
       <Route path="/parties" element={<RequireAuth><PartySelectPage /></RequireAuth>} />
+      <Route path="/billing" element={<RequireAuth><BillingPage /></RequireAuth>} />
       <Route path="/tormenta/char" element={<RequireAuth><TormentaSheetPage /></RequireAuth>} />
       <Route path="/naruto/char" element={<RequireAuth><NarutoSheetPage /></RequireAuth>} />
       <Route path="/:system/party/:partyId" element={<RequireAuth><GameMasterPage /></RequireAuth>} />

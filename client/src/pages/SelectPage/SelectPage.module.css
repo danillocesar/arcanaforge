@@ -92,9 +92,119 @@
   font-weight: 700;
 }
 
+/* Banners de plano */
+.bannerTrial {
+  background: rgba(201, 168, 76, 0.12);
+  border: 1px solid rgba(201, 168, 76, 0.4);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: var(--accent-gold);
+}
+
+.bannerTrial a {
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.bannerExpired {
+  background: rgba(220, 60, 60, 0.1);
+  border: 1px solid rgba(220, 60, 60, 0.4);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: #e55;
+}
+
+.bannerExpired a {
+  color: #e55;
+  font-weight: 700;
+}
+
+/* Contador de slots */
+.slotCounter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.slotBuyLink {
+  color: var(--accent-gold);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+.slotBuyLink:hover {
+  text-decoration: underline;
+}
+
+/* Seção de personagens pendentes de exclusão */
+.pendingSection {
+  margin-top: 28px;
+}
+
+.pendingSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 10px;
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(220, 60, 60, 0.06);
+  border: 1px solid rgba(220, 60, 60, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.pendingName {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.pendingTimer {
+  font-size: 0.78rem;
+  color: #e55;
+}
+
+.restoreBtn {
+  background: transparent;
+  border: 1px solid var(--accent-gold);
+  color: var(--accent-gold);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+
+.restoreBtn:hover {
+  background: rgba(201, 168, 76, 0.1);
+}
+
 @media (max-width: 550px) {
   .content {
     padding: 16px 12px;
   }
-
 }

@@ -134,6 +134,24 @@
   font-weight: 600;
 }
 
+.newCardDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.newCardDisabled:hover {
+  border-color: var(--border);
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.newLimitHint {
+  font-size: 0.72rem;
+  color: var(--accent-red, #e55);
+  font-weight: 500;
+  text-align: center;
+}
+
 @media (max-width: 800px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
