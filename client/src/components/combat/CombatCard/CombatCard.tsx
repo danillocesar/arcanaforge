@@ -96,8 +96,8 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
     if (!editingMaxHp) setDraftMaxHp(String(row.maxHp ?? 1));
   }, [row.maxHp, editingMaxHp]);
 
-  const isAlertBand = !cardLooksPlayer && hpPct >= 48 && hpPct <= 76;
-  const isCriticalBand = !cardLooksPlayer && hpPct >= 6 && hpPct <= 28;
+  const isAlertBand = !cardLooksPlayer && hpPct > 28 && hpPct <= 76;
+  const isCriticalBand = !cardLooksPlayer && hpPct < 28;
 
   const cardCls = [
     styles.card,
