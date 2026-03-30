@@ -345,6 +345,7 @@ export function createEmptyNarutoCharacter(name?: string): Character {
     jutsus: [],
     damageEntries: [],
     weapons: [],
+    weaponAttacks: [],
     armor: { name: '', absorption: 0, hardness: 0, penalty: 0, type: '', compartments: 0 },
     narpiItems: [],
     storedItems: [],

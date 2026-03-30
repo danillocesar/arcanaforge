@@ -61,12 +61,13 @@ export default function DamagePopover({
         </label>
         <input
           id="combat-damage-input"
-          type="number"
+          type="text"
+          inputMode="numeric"
           className={styles.input}
-          min={0}
           placeholder=""
           value={value}
           onChange={(e) => setValue(e.target.value)}
+          onFocus={(e) => e.target.select()}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();

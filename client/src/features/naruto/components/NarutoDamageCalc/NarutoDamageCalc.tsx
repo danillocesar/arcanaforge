@@ -4,6 +4,7 @@ import { DAMAGE_GRADES } from '../../data/narutoConstants';
 import { calcDamageTotal, calcDamageGrade } from '../../utils/narutoCalculations';
 import type { DamageEntry } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoDamageCalc.module.css';
 
 export default function NarutoDamageCalc() {
@@ -98,29 +99,25 @@ export default function NarutoDamageCalc() {
                 onChange={(ev) => updateEntry(i, 'name', ev.target.value)}
                 placeholder="Nome"
               />
-              <input
+              <NumericInput
                 className={styles.numInput}
-                type="number"
                 value={e.atribHalf}
-                onChange={(ev) => updateEntry(i, 'atribHalf', Number(ev.target.value) || 0)}
+                onChange={(n) => updateEntry(i, 'atribHalf', n)}
               />
-              <input
+              <NumericInput
                 className={styles.numInput}
-                type="number"
                 value={e.weaponDamage}
-                onChange={(ev) => updateEntry(i, 'weaponDamage', Number(ev.target.value) || 0)}
+                onChange={(n) => updateEntry(i, 'weaponDamage', n)}
               />
-              <input
+              <NumericInput
                 className={styles.numInput}
-                type="number"
                 value={e.level}
-                onChange={(ev) => updateEntry(i, 'level', Number(ev.target.value) || 0)}
+                onChange={(n) => updateEntry(i, 'level', n)}
               />
-              <input
+              <NumericInput
                 className={styles.numInput}
-                type="number"
                 value={e.outro}
-                onChange={(ev) => updateEntry(i, 'outro', Number(ev.target.value) || 0)}
+                onChange={(n) => updateEntry(i, 'outro', n)}
               />
               <span className={styles.totalVal}>{total}</span>
               <span className={styles.gradeVal}>{calcDamageGrade(total, 1)}</span>

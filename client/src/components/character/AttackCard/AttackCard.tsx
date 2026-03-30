@@ -11,6 +11,7 @@ import {
 import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim, type AnimationStyle } from '../../../utils/animations';
 import type { AttributeId, ExtraBonus, ExtraDamage } from '../../../types/character';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './AttackCard.module.css';
 
 interface AttackCardProps {
@@ -156,10 +157,9 @@ export default function AttackCard({ index }: AttackCardProps) {
         </div>
         <div className={styles.infoField}>
           <label>Custo PM</label>
-          <input
-            type="number"
+          <NumericInput
             value={atk.mpCost ?? 0}
-            onChange={e => updateAttack({ mpCost: Number(e.target.value) || 0 })}
+            onChange={(n) => updateAttack({ mpCost: n })}
           />
         </div>
         <div className={styles.pmBadgeWrap}>
@@ -187,15 +187,13 @@ export default function AttackCard({ index }: AttackCardProps) {
                   onChange={e => updateBonusTeste(bIdx, { name: e.target.value })}
                   placeholder="Bônus"
                 />
-                <input
-                  type="number"
+                <NumericInput
                   value={b.value ?? 0}
-                  onChange={e => updateBonusTeste(bIdx, { value: Number(e.target.value) || 0 })}
+                  onChange={(n) => updateBonusTeste(bIdx, { value: n })}
                 />
-                <input
-                  type="number"
+                <NumericInput
                   value={b.mp ?? 0}
-                  onChange={e => updateBonusTeste(bIdx, { mp: Number(e.target.value) || 0 })}
+                  onChange={(n) => updateBonusTeste(bIdx, { mp: n })}
                   placeholder="PM"
                 />
                 <button className={styles.removeSm} onClick={() => removeBonusTeste(bIdx)}>
@@ -252,10 +250,9 @@ export default function AttackCard({ index }: AttackCardProps) {
                   onChange={e => updateBonusDano(dIdx, { value: e.target.value })}
                   placeholder="Valor"
                 />
-                <input
-                  type="number"
+                <NumericInput
                   value={d.mp ?? 0}
-                  onChange={e => updateBonusDano(dIdx, { mp: Number(e.target.value) || 0 })}
+                  onChange={(n) => updateBonusDano(dIdx, { mp: n })}
                   placeholder="PM"
                 />
                 <button className={styles.removeSm} onClick={() => removeBonusDano(dIdx)}>

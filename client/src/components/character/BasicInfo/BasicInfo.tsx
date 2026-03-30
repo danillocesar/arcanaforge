@@ -5,7 +5,7 @@ import { getTotalLevel } from '../../../utils/calculations';
 import { getInitials } from '../../../utils/formatters';
 import { TORMENTA_CLASSES, getClassIconUrl } from '../../../features/tormenta/data/tormentaClasses';
 import Section from '../../ui/Section/Section';
-import Input from '../../ui/Input/Input';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './BasicInfo.module.css';
 
 export default function BasicInfo() {
@@ -104,13 +104,12 @@ export default function BasicInfo() {
                     ))}
                   </select>
                   <span className={styles.classLevelLabel}>Nv</span>
-                  <Input
-                    variant="secondary"
+                  <NumericInput
                     className={styles.classLevelInput}
-                    type="number"
                     min={1}
+                    fallback={1}
                     value={c.level}
-                    onChange={(e) => updateClassRow(i, 'level', Number(e.target.value) || 1)}
+                    onChange={(n) => updateClassRow(i, 'level', n)}
                   />
                   {character.classes.length > 1 && (
                     <button type="button" className={styles.classRemove} onClick={() => removeClassRow(i)}>✕</button>
@@ -161,10 +160,9 @@ export default function BasicInfo() {
         </div>
         <div className={styles.infoField}>
           <label>XP</label>
-          <input
-            type="number"
+          <NumericInput
             value={character.experience}
-            onChange={(e) => setField('experience', Number(e.target.value) || 0)}
+            onChange={(n) => setField('experience', n)}
           />
         </div>
       </div>

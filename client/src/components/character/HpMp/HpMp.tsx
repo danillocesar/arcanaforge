@@ -4,6 +4,7 @@ import Section from '../../ui/Section/Section';
 import HealthBar from '../../ui/HealthBar/HealthBar';
 import AttacksMini from '../AttacksMini/AttacksMini';
 import CastSpellModal from '../CastSpellModal/CastSpellModal';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './HpMp.module.css';
 
 function MaxEditor({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -25,9 +26,11 @@ function MaxEditor({ value, onChange }: { value: number; onChange: (v: number) =
     return (
       <input
         className={styles.maxInput}
-        type="number"
+        type="text"
+        inputMode="numeric"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
+        onFocus={(e) => e.target.select()}
         onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && commit()}
         autoFocus
@@ -93,11 +96,10 @@ export default function HpMp() {
           </div>
           <div className={styles.temp}>
             <span className={styles.tempLabel}>Temp:</span>
-            <input
+            <NumericInput
               className={styles.tempInput}
-              type="number"
               value={character.temporaryHp}
-              onChange={(e) => updateCharacter((f) => ({ ...f, temporaryHp: Number(e.target.value) || 0 }))}
+              onChange={(n) => updateCharacter((f) => ({ ...f, temporaryHp: n }))}
             />
           </div>
         </div>
@@ -118,11 +120,10 @@ export default function HpMp() {
           </div>
           <div className={styles.temp}>
             <span className={styles.tempLabel}>Temp:</span>
-            <input
+            <NumericInput
               className={styles.tempInput}
-              type="number"
               value={character.temporaryMp}
-              onChange={(e) => updateCharacter((f) => ({ ...f, temporaryMp: Number(e.target.value) || 0 }))}
+              onChange={(n) => updateCharacter((f) => ({ ...f, temporaryMp: n }))}
             />
           </div>
         </div>

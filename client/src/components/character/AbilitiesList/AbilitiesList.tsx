@@ -2,6 +2,7 @@ import { useCharacterContext } from '../../../contexts/CharacterContext';
 import Section from '../../ui/Section/Section';
 import Button from '../../ui/Button/Button';
 import type { Ability } from '../../../types/character';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './AbilitiesList.module.css';
 
 export default function AbilitiesList() {
@@ -54,11 +55,10 @@ export default function AbilitiesList() {
               onChange={e => updateAbility(idx, { type: e.target.value })}
               placeholder="Tipo"
             />
-            <input
+            <NumericInput
               className={styles.smallInput}
-              type="number"
               value={ab.mpCost || 0}
-              onChange={e => updateAbility(idx, { mpCost: Number(e.target.value) || 0 })}
+              onChange={(n) => updateAbility(idx, { mpCost: n })}
               placeholder="PM"
             />
           </div>

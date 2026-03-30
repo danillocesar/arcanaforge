@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCharacterContext } from '../../../../contexts/CharacterContext';
-import type { TechLevelEntry } from '../../../../types/narutoCharacter';
-import { calcCombatSkillTotal } from '../../utils/narutoCalculations';
+import { calcCombatSkillTotal, getNarutoAttr } from '../../utils/narutoCalculations';
+import type { NarutoAttributeId } from '../../../../types/narutoCharacter';
 import { triggerAttackAnim } from '../../../../utils/animations';
 import NarutoActionModal from '../NarutoActionModal/NarutoActionModal';
 import NarutoDamageTable from '../NarutoDamageTable/NarutoDamageTable';
@@ -33,23 +33,31 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
   }
 
   const maxLv = power.level;
-
-  const levelEntry: TechLevelEntry | null =
-    selectedLevel !== null
-      ? (tech.levelEntries ?? []).find((e) => e.level === selectedLevel) ?? null
-      : null;
-
-  const chakraCost = levelEntry?.chakraCost ?? 0;
+  const effectiveLevel = tech.singleCast ? power.level : selectedLevel;
+  const chakraCost = tech.chakraFormula === 'fixed'
+    ? (tech.chakraFixedCost ?? 0)
+    : (effectiveLevel ?? 0);
   const currentChakra = character.mp.current;
 
-  const dda = levelEntry ? (Number(levelEntry.damage) || 0) : 0;
-  const halfAttr = 0;
-  const nv = Math.ceil((character.campaignLevel ?? 1) / 2);
-  const outro = (levelEntry?.outro ?? 0) + damageMod;
+  const isPerLevel = tech.damageFormula === 'perLevel';
+  const isFixedBonus = tech.damageFormula === 'fixedBonus';
+  const attr = (tech.damageAttr ?? 'esp') as NarutoAttributeId;
+  const hasWeaponScale = !isPerLevel && !isFixedBonus && tech.weaponDamageOffset !== undefined && tech.weaponDamageOffset !== null;
+
+  const halfAttr = isPerLevel ? 0 : Math.ceil(getNarutoAttr(character, attr) / 2);
+  const nv = (isPerLevel || hasWeaponScale || isFixedBonus) ? 0 : (effectiveLevel ?? 0);
+  const dda = isPerLevel
+    ? (tech.damagePerLevel ?? 0) * (effectiveLevel ?? 0)
+    : isFixedBonus
+      ? (tech.damageFixedBonus ?? 0)
+      : hasWeaponScale
+        ? (effectiveLevel ?? 0) + (tech.weaponDamageOffset ?? 0)
+        : 0;
+  const outro = damageMod;
   const dmgTotal = dda + halfAttr + nv + outro;
 
   const confirm = () => {
-    if (selectedLevel === null) return;
+    if (effectiveLevel === null) return;
     const spellName = `${power.name}: ${tech.name}`;
 
     updateCharacter((f) => ({
@@ -66,9 +74,9 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
             baseMpCost: chakraCost,
             enhancements: [],
             totalCost: chakraCost,
-            castLevel: selectedLevel,
-            damage: levelEntry?.damage ?? '',
-            difficulty: levelEntry?.difficulty ?? '',
+            castLevel: effectiveLevel,
+            damage: dmgTotal,
+            difficulty: '',
           },
         },
       ],
@@ -94,7 +102,7 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
           <button
             className={styles.confirmBtn}
             onClick={confirm}
-            disabled={selectedLevel === null}
+            disabled={effectiveLevel === null}
           >
             Usar Jutsu ({chakraCost} Chk)
           </button>
@@ -109,37 +117,32 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
         {tech.duration && <span className={styles.techTag}>{tech.duration}</span>}
       </div>
 
-      <div className={styles.sectionLabel}>Nivel de Uso</div>
-      <div className={styles.levelSelector}>
-        {Array.from({ length: maxLv }, (_, k) => k + 1).map((lv) => {
-          const entry = (tech.levelEntries ?? []).find((e) => e.level === lv);
-          return (
-            <button
-              key={lv}
-              type="button"
-              className={`${styles.levelBtn} ${selectedLevel === lv ? styles.levelBtnActive : ''}`}
-              onClick={() => setSelectedLevel(lv)}
-              title={entry ? `Chakra: ${entry.chakraCost} | Dano: ${entry.damage || '\u2014'}` : `Nv ${lv}`}
-            >
-              {lv}
-            </button>
-          );
-        })}
-      </div>
+      {!tech.singleCast && (
+        <>
+          <div className={styles.sectionLabel}>Nivel de Uso</div>
+          <div className={styles.levelSelector}>
+            {Array.from({ length: maxLv }, (_, k) => k + 1).map((lv) => (
+              <button
+                key={lv}
+                type="button"
+                className={`${styles.levelBtn} ${selectedLevel === lv ? styles.levelBtnActive : ''}`}
+                onClick={() => setSelectedLevel(lv)}
+                title={`Nv ${lv} — Chakra: ${lv}`}
+              >
+                {lv}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
-      {selectedLevel !== null && (
+      {effectiveLevel !== null && (
         <>
           <div className={styles.statsBox}>
             <div className={styles.statRow}>
               <span className={styles.statLabel}>Chakra</span>
               <span className={styles.statVal}>{chakraCost}</span>
             </div>
-            {levelEntry?.difficulty && (
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>DIF</span>
-                <span className={styles.statVal}>{levelEntry.difficulty}</span>
-              </div>
-            )}
             {tech.hitAttr && (tech.hitAttr === 'cc' || tech.hitAttr === 'cd') && (
               (() => {
                 const hitLabel = tech.hitAttr === 'cc' ? 'CC' : 'CD';
@@ -157,11 +160,6 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
                 );
               })()
             )}
-            {!levelEntry && (
-              <div className={styles.warnMsg}>
-                Nivel nao preenchido na tabela de escalamento.
-              </div>
-            )}
           </div>
 
           {(tech.dealsDamage ?? true) && (
@@ -173,6 +171,7 @@ export default function CastJutsuModal({ powerId, techniqueId, damageMod = 0, hi
                 nv={nv}
                 outro={outro}
                 total={dmgTotal}
+                halfAttrLabel={`2/${attr.toUpperCase()}`}
               />
             </>
           )}

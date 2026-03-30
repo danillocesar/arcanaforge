@@ -230,10 +230,11 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
           </label>
           <Input
             id="new-enemy-hp"
-            type="number"
-            min={1}
+            type="text"
+            inputMode="numeric"
             value={newEnemyHp}
             onChange={(e) => setNewEnemyHp(e.target.value)}
+            onFocus={(e) => e.target.select()}
           />
           <div className={styles.newEnemyActions}>
             <Button type="button" variant="ghost" onClick={() => setNewEnemyModalOpen(false)}>

@@ -3,6 +3,7 @@ import { useCharacterContext } from '../../../../contexts/CharacterContext';
 import type { NarutoAptitude } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
 import ConfirmModal from '../../../../components/ui/ConfirmModal/ConfirmModal';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoAptitudes.module.css';
 
 export default function NarutoAptitudes() {
@@ -58,12 +59,11 @@ export default function NarutoAptitudes() {
               {apt.free ? (
                 <span className={styles.freeTag}>Gratuita</span>
               ) : (
-                <input
+                <NumericInput
                   className={styles.costInput}
-                  type="number"
                   min={0}
                   value={apt.cost}
-                  onChange={(e) => updateAptitude(i, 'cost', Number(e.target.value) || 0)}
+                  onChange={(n) => updateAptitude(i, 'cost', n)}
                   title="Custo"
                 />
               )}

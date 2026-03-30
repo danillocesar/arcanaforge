@@ -107,6 +107,7 @@ export const NARUTO_SECTION_LABELS: Record<string, string> = {
   secCombat:      'Combate',
   secSocial:      'Social',
   secJutsus:      'Jutsus',
+  secAttacks:     'Ataques',
   secPowers:      'Poderes',
   secAptitudes:   'Aptidões',
   secDamage:      'Calculadora de Dano',

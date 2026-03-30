@@ -1,5 +1,6 @@
 import { useCharacterContext } from '../../../../contexts/CharacterContext';
 import { calcCombatSkillTotal, getNarutoAttr } from '../../utils/narutoCalculations';
+import { getEffectsOfType } from '../../data/narutoConfigEffects';
 import type { NarutoAttributeId } from '../../../../types/narutoCharacter';
 import NarutoActionModal from '../NarutoActionModal/NarutoActionModal';
 import NarutoDamageTable from '../NarutoDamageTable/NarutoDamageTable';
@@ -7,12 +8,15 @@ import styles from '../NarutoActionModal/NarutoActionModal.module.css';
 
 interface AttackWeaponModalProps {
   weaponIdx: number | null;
+  hitMod?: number;
+  damageMod?: number;
+  attackName?: string;
   onClose: () => void;
 }
 
 const ATTR_LABELS: Record<string, string> = { for: 'FOR', des: 'DES', esp: 'ESP' };
 
-export default function AttackWeaponModal({ weaponIdx, onClose }: AttackWeaponModalProps) {
+export default function AttackWeaponModal({ weaponIdx, hitMod = 0, damageMod = 0, attackName, onClose }: AttackWeaponModalProps) {
   const { character } = useCharacterContext();
 
   const isOpen = weaponIdx !== null;
@@ -23,24 +27,29 @@ export default function AttackWeaponModal({ weaponIdx, onClose }: AttackWeaponMo
   }
 
   const dda = weapon.damage || 0;
-  const halfAttr = weapon.damageAttr && ['for', 'des', 'esp'].includes(weapon.damageAttr)
-    ? Math.ceil(getNarutoAttr(character, weapon.damageAttr as NarutoAttributeId) / 2)
+  const isAcuidade = getEffectsOfType(character, 'combatAttrOverride')
+    .some((o) => o.skill === 'cc' && o.attr === 'des');
+  const effectiveAttr = weapon.damageAttr === 'for' && isAcuidade ? 'des' : weapon.damageAttr;
+  const halfAttr = effectiveAttr && ['for', 'des', 'esp'].includes(effectiveAttr)
+    ? Math.ceil(getNarutoAttr(character, effectiveAttr as NarutoAttributeId) / 2)
     : 0;
-  const nv = Math.ceil((character.campaignLevel ?? 1) / 2);
-  const outro = 0;
-  const dmgTotal = dda + halfAttr + nv + outro;
+  const outro = damageMod;
+  const dmgTotal = dda + halfAttr + outro;
 
   const hitAttr = weapon.hitAttr;
   const hasHit = hitAttr === 'cc' || hitAttr === 'cd';
   const hitLabel = hitAttr === 'cc' ? 'CC' : hitAttr === 'cd' ? 'CD' : '';
-  const hitTotal = hasHit ? calcCombatSkillTotal(character, hitAttr as 'cc' | 'cd') : 0;
+  const hitBase = hasHit ? calcCombatSkillTotal(character, hitAttr as 'cc' | 'cd') : 0;
+  const hitTotal = hitBase + hitMod;
 
-  const attrLabel = weapon.damageAttr ? (ATTR_LABELS[weapon.damageAttr] ?? '') : '';
+  const attrLabel = effectiveAttr ? (ATTR_LABELS[effectiveAttr] ?? '') : '';
+
+  const title = attackName ? `${attackName} (${weapon.name || 'Arma'})` : (weapon.name || 'Arma');
 
   return (
     <NarutoActionModal
       open={isOpen}
-      title={weapon.name || 'Arma'}
+      title={title}
       onClose={onClose}
       actions={<button className={styles.cancelBtn} onClick={onClose}>Fechar</button>}
     >
@@ -55,7 +64,9 @@ export default function AttackWeaponModal({ weaponIdx, onClose }: AttackWeaponMo
         <div className={styles.statsBox}>
           <div className={styles.statRow}>
             <span className={styles.statLabel}>Teste de Acerto ({hitLabel})</span>
-            <span className={styles.statVal}><strong>{hitTotal}</strong></span>
+            <span className={styles.statVal}>
+              {hitBase}{hitMod !== 0 ? ` ${hitMod > 0 ? '+' : ''}${hitMod}` : ''} = <strong>{hitTotal}</strong>
+            </span>
           </div>
         </div>
       )}
@@ -64,7 +75,7 @@ export default function AttackWeaponModal({ weaponIdx, onClose }: AttackWeaponMo
       <NarutoDamageTable
         dda={dda}
         halfAttr={halfAttr}
-        nv={nv}
+        nv={0}
         outro={outro}
         total={dmgTotal}
         halfAttrLabel={attrLabel ? `2/${attrLabel}` : '2/ATR'}

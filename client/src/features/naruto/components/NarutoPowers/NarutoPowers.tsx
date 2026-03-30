@@ -4,9 +4,10 @@ import { getPowerPointsRemaining, getPowerLimit } from '../../utils/narutoCalcul
 import { getEvolutionRow } from '../../data/narutoConstants';
 import { apiFetchNarutoTechTemplates } from '../../../../api';
 import type { NarutoTechTemplateOption } from '../../../../api';
-import type { NarutoPower, NarutoTechnique, TechLevelEntry } from '../../../../types/narutoCharacter';
+import type { NarutoPower, NarutoTechnique } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
 import ConfirmModal from '../../../../components/ui/ConfirmModal/ConfirmModal';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoPowers.module.css';
 
 export default function NarutoPowers() {
@@ -74,7 +75,7 @@ export default function NarutoPowers() {
           range: '',
           duration: '',
           description: '',
-          levelEntries: [],
+          damageFormula: 'standard',
         };
         return { ...p, techniques: [...(p.techniques ?? []), tech] };
       }),
@@ -137,50 +138,6 @@ export default function NarutoPowers() {
     }));
   };
 
-  const fillLevelEntries = (powerIdx: number, techIdx: number) => {
-    updateCharacter((f) => ({
-      ...f,
-      powers: f.powers!.map((p, pi) => {
-        if (pi !== powerIdx) return p;
-        const techs = (p.techniques ?? []).map((t, ti) => {
-          if (ti !== techIdx) return t;
-          const maxLv = p.level || 1;
-          const existing = t.levelEntries ?? [];
-          const entries: TechLevelEntry[] = [];
-          for (let lv = 1; lv <= maxLv; lv++) {
-            const found = existing.find((e) => e.level === lv);
-            entries.push(found ?? { level: lv, chakraCost: 0, damage: '', difficulty: '', outro: 0 });
-          }
-          return { ...t, levelEntries: entries };
-        });
-        return { ...p, techniques: techs };
-      }),
-    }));
-  };
-
-  const updateLevelEntry = (
-    powerIdx: number,
-    techIdx: number,
-    entryLevel: number,
-    field: keyof TechLevelEntry,
-    value: string | number,
-  ) => {
-    updateCharacter((f) => ({
-      ...f,
-      powers: f.powers!.map((p, pi) => {
-        if (pi !== powerIdx) return p;
-        const techs = (p.techniques ?? []).map((t, ti) => {
-          if (ti !== techIdx) return t;
-          const entries = (t.levelEntries ?? []).map((e) =>
-            e.level === entryLevel ? { ...e, [field]: value } : e,
-          );
-          return { ...t, levelEntries: entries };
-        });
-        return { ...p, techniques: techs };
-      }),
-    }));
-  };
-
   return (
     <Section id="secPowers" title="Poderes">
       <div className={styles.header}>
@@ -237,12 +194,11 @@ export default function NarutoPowers() {
                   </div>
                   <div className={styles.fieldRow}>
                     <label>Nivel</label>
-                    <input
-                      type="number"
+                    <NumericInput
                       min={0}
                       max={limit}
                       value={p.level}
-                      onChange={(e) => updatePower(i, 'level', Number(e.target.value) || 0)}
+                      onChange={(n) => updatePower(i, 'level', n)}
                     />
                   </div>
                   <div className={styles.fieldRow}>
@@ -265,7 +221,6 @@ export default function NarutoPowers() {
                         const techKey = `${i}-${ti}`;
                         const isTechExpanded = expandedTechIdx === techKey;
                         const unlock = (t as any).unlockLevel ?? (t as any).level ?? 1;
-                        const entries: TechLevelEntry[] = (t as any).levelEntries ?? [];
 
                         return (
                           <div key={t.id} className={styles.techCard}>
@@ -316,14 +271,131 @@ export default function NarutoPowers() {
                                       </label>
                                     </div>
                                   </div>
+                                  {(t.dealsDamage ?? true) && (
+                                    <>
+                                      <div className={styles.techField}>
+                                        <label>Fórmula de Dano</label>
+                                        <select
+                                          value={t.damageFormula ?? 'standard'}
+                                          onChange={(e) => updateTechnique(i, ti, 'damageFormula', e.target.value)}
+                                        >
+                                          <option value="standard">Padrão (ATR/2 + NV)</option>
+                                          <option value="fixedBonus">ATR/2 + Valor Fixo</option>
+                                          <option value="perLevel">Valor por Nível</option>
+                                        </select>
+                                      </div>
+                                      {(t.damageFormula ?? 'standard') === 'standard' && (
+                                        <>
+                                          <div className={styles.techField}>
+                                            <label>Atributo de Dano</label>
+                                            <select
+                                              value={t.damageAttr ?? 'esp'}
+                                              onChange={(e) => updateTechnique(i, ti, 'damageAttr', e.target.value)}
+                                            >
+                                              <option value="esp">ESP (padrão)</option>
+                                              <option value="des">DES</option>
+                                              <option value="for">FOR</option>
+                                            </select>
+                                          </div>
+                                          <div className={styles.techField}>
+                                            <label>Arma escala com NV — ajuste (ex: -2)</label>
+                                            <input
+                                              type="text"
+                                              inputMode="numeric"
+                                              placeholder="Vazio = desabilitado"
+                                              value={t.weaponDamageOffset ?? ''}
+                                              onChange={(e) => {
+                                                const raw = e.target.value;
+                                                if (raw === '' || raw === '-') {
+                                                  updateTechnique(i, ti, 'weaponDamageOffset', (raw === '' ? undefined : raw) as any);
+                                                  return;
+                                                }
+                                                const n = parseInt(raw, 10);
+                                                if (!isNaN(n)) updateTechnique(i, ti, 'weaponDamageOffset', n);
+                                              }}
+                                              onBlur={(e) => {
+                                                const raw = e.target.value;
+                                                if (raw === '' || raw === '-') {
+                                                  updateTechnique(i, ti, 'weaponDamageOffset', undefined as any);
+                                                }
+                                              }}
+                                            />
+                                          </div>
+                                        </>
+                                      )}
+                                      {t.damageFormula === 'fixedBonus' && (
+                                        <>
+                                          <div className={styles.techField}>
+                                            <label>Atributo de Dano</label>
+                                            <select
+                                              value={t.damageAttr ?? 'esp'}
+                                              onChange={(e) => updateTechnique(i, ti, 'damageAttr', e.target.value)}
+                                            >
+                                              <option value="esp">ESP (padrão)</option>
+                                              <option value="des">DES</option>
+                                              <option value="for">FOR</option>
+                                            </select>
+                                          </div>
+                                          <div className={styles.techField}>
+                                            <label>Valor Fixo de Dano</label>
+                                            <NumericInput
+                                              min={0}
+                                              value={t.damageFixedBonus ?? 0}
+                                              onChange={(n) => updateTechnique(i, ti, 'damageFixedBonus', n)}
+                                            />
+                                          </div>
+                                        </>
+                                      )}
+                                      {(t.damageFormula ?? 'standard') === 'perLevel' && (
+                                        <div className={styles.techField}>
+                                          <label>Valor por Nível</label>
+                                          <NumericInput
+                                            min={0}
+                                            value={t.damagePerLevel ?? 0}
+                                            onChange={(n) => updateTechnique(i, ti, 'damagePerLevel', n)}
+                                          />
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+                                  <div className={styles.techField}>
+                                    <label className={styles.dmgCheck}>
+                                      <input
+                                        type="checkbox"
+                                        checked={t.singleCast ?? false}
+                                        onChange={(e) => updateTechnique(i, ti, 'singleCast', e.target.checked)}
+                                      />
+                                      Cast único (sem seleção de nível)
+                                    </label>
+                                  </div>
+                                  <div className={styles.techField}>
+                                    <label>Custo de Chakra</label>
+                                    <select
+                                      value={t.chakraFormula ?? 'level'}
+                                      onChange={(e) => updateTechnique(i, ti, 'chakraFormula', e.target.value)}
+                                    >
+                                      <option value="level">Por nível usado (padrão)</option>
+                                      <option value="fixed">Valor fixo</option>
+                                    </select>
+                                  </div>
+                                  {(t.chakraFormula ?? 'level') === 'fixed' && (
+                                    <div className={styles.techField}>
+                                      <label>Chakra fixo</label>
+                                      <NumericInput
+                                        min={0}
+                                        value={t.chakraFixedCost ?? 0}
+                                        onChange={(n) => updateTechnique(i, ti, 'chakraFixedCost', n)}
+                                      />
+                                    </div>
+                                  )}
                                   <div className={styles.techField}>
                                     <label>Nivel de Desbloqueio</label>
-                                    <input
-                                      type="number"
+                                    <NumericInput
                                       min={1}
                                       max={p.level || 1}
+                                      fallback={1}
                                       value={unlock}
-                                      onChange={(e) => updateTechnique(i, ti, 'unlockLevel', Number(e.target.value) || 1)}
+                                      onChange={(n) => updateTechnique(i, ti, 'unlockLevel', n)}
                                     />
                                   </div>
                                   <div className={styles.techField}>
@@ -386,66 +458,6 @@ export default function NarutoPowers() {
                                       placeholder="Descreva a técnica..."
                                     />
                                   </div>
-                                </div>
-
-                                {/* Scaling table */}
-                                <div className={styles.scalingSection}>
-                                  <div className={styles.scalingHeaderRow}>
-                                    <span className={styles.scalingTitle}>Escalamento por Nivel</span>
-                                    <button
-                                      type="button"
-                                      className={styles.fillBtn}
-                                      onClick={() => fillLevelEntries(i, ti)}
-                                    >
-                                      Preencher Tabela
-                                    </button>
-                                  </div>
-                                  {entries.length > 0 && (
-                                    <div className={styles.scalingTable}>
-                                      <div className={styles.scalingHead}>
-                                        <span>Nv</span>
-                                        <span>Chakra</span>
-                                        <span>Dano</span>
-                                        <span>DIF</span>
-                                        <span>Outro</span>
-                                      </div>
-                                      {entries.map((entry) => (
-                                        <div key={entry.level} className={styles.scalingRow}>
-                                          <span className={styles.scalingLv}>{entry.level}</span>
-                                          <input
-                                            className={styles.scalingInput}
-                                            type="number"
-                                            min={0}
-                                            value={entry.chakraCost}
-                                            onChange={(e) => updateLevelEntry(i, ti, entry.level, 'chakraCost', Number(e.target.value) || 0)}
-                                          />
-                                          <input
-                                            className={styles.scalingInput}
-                                            value={entry.damage}
-                                            onChange={(e) => updateLevelEntry(i, ti, entry.level, 'damage', e.target.value)}
-                                            placeholder="—"
-                                          />
-                                          <input
-                                            className={styles.scalingInput}
-                                            value={entry.difficulty}
-                                            onChange={(e) => updateLevelEntry(i, ti, entry.level, 'difficulty', e.target.value)}
-                                            placeholder="—"
-                                          />
-                                          <input
-                                            className={styles.scalingInput}
-                                            type="number"
-                                            value={entry.outro ?? 0}
-                                            onChange={(e) => updateLevelEntry(i, ti, entry.level, 'outro', Number(e.target.value) || 0)}
-                                          />
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {entries.length === 0 && (
-                                    <span className={styles.scalingEmpty}>
-                                      Clique em "Preencher Tabela" para gerar linhas
-                                    </span>
-                                  )}
                                 </div>
 
                                 <button

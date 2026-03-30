@@ -6,6 +6,7 @@ import {
 } from '../../utils/narutoCalculations';
 import { NARUTO_ATTRIBUTE_LABELS } from '../../data/narutoAttributes';
 import Section from '../../../../components/ui/Section/Section';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoCombatStats.module.css';
 
 const COMBAT_SKILLS_DEF: {
@@ -59,20 +60,18 @@ export default function NarutoCombatStats() {
               <span className={styles.colName}>{cs.label}</span>
               <span className={styles.colTotal}>{total}</span>
               <span className={styles.colSep}>=</span>
-              <input
+              <NumericInput
                 className={styles.colInput}
-                type="number"
                 value={base}
-                onChange={(e) => setCombat(cs.id, 'base', Number(e.target.value) || 0)}
+                onChange={(n) => setCombat(cs.id, 'base', n)}
               />
               <span className={styles.colSep}>+</span>
               <span className={styles.colAuto} title={attrLabel}>{attrVal}</span>
               <span className={styles.colSep}>+</span>
-              <input
+              <NumericInput
                 className={styles.colInput}
-                type="number"
                 value={outro}
-                onChange={(e) => setCombat(cs.id, 'outro', Number(e.target.value) || 0)}
+                onChange={(n) => setCombat(cs.id, 'outro', n)}
               />
             </div>
           );

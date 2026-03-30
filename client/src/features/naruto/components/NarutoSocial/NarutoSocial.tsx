@@ -2,6 +2,7 @@ import { useCharacterContext } from '../../../../contexts/CharacterContext';
 import { NARUTO_SOCIAL_SKILLS } from '../../data/narutoSocialSkills';
 import { calcSocialSkillTotal } from '../../utils/narutoCalculations';
 import Section from '../../../../components/ui/Section/Section';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoSocial.module.css';
 
 export default function NarutoSocial() {
@@ -24,20 +25,18 @@ export default function NarutoSocial() {
       <div className={styles.baseRow}>
         <div className={styles.baseCard}>
           <label className={styles.baseLabel}>Carisma</label>
-          <input
+          <NumericInput
             className={styles.baseInput}
-            type="number"
             value={carisma}
-            onChange={(e) => setSocial('carisma', Number(e.target.value) || 0)}
+            onChange={(n) => setSocial('carisma', n)}
           />
         </div>
         <div className={styles.baseCard}>
           <label className={styles.baseLabel}>Manipulação</label>
-          <input
+          <NumericInput
             className={styles.baseInput}
-            type="number"
             value={manipulacao}
-            onChange={(e) => setSocial('manipulacao', Number(e.target.value) || 0)}
+            onChange={(n) => setSocial('manipulacao', n)}
           />
         </div>
       </div>

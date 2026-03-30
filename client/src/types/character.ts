@@ -202,6 +202,7 @@ export interface Character {
   jutsus?: import('./narutoCharacter').Jutsu[];
   damageEntries?: import('./narutoCharacter').DamageEntry[];
   weapons?: import('./narutoCharacter').NarutoWeapon[];
+  weaponAttacks?: import('./narutoCharacter').NarutoWeaponAttack[];
   armor?: import('./narutoCharacter').NarutoArmor;
   narpiItems?: import('./narutoCharacter').NarutoItem[];
   storedItems?: import('./narutoCharacter').NarutoItem[];

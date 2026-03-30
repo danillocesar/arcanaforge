@@ -5,6 +5,7 @@ import type { Jutsu } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
 import ConfirmModal from '../../../../components/ui/ConfirmModal/ConfirmModal';
 import CastJutsuModal from '../CastJutsuModal/CastJutsuModal';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoJutsus.module.css';
 
 export default function NarutoJutsus() {
@@ -136,18 +137,16 @@ export default function NarutoJutsus() {
                   <div className={styles.selectRow}>
                     <div className={styles.selectField}>
                       <label>Mod. Dano</label>
-                      <input
-                        type="number"
+                      <NumericInput
                         value={j.damageMod ?? 0}
-                        onChange={(e) => updateJutsu(i, 'damageMod', Number(e.target.value) || 0)}
+                        onChange={(n) => updateJutsu(i, 'damageMod', n)}
                       />
                     </div>
                     <div className={styles.selectField}>
                       <label>Mod. Acerto</label>
-                      <input
-                        type="number"
+                      <NumericInput
                         value={j.hitMod ?? 0}
-                        onChange={(e) => updateJutsu(i, 'hitMod', Number(e.target.value) || 0)}
+                        onChange={(n) => updateJutsu(i, 'hitMod', n)}
                       />
                     </div>
                   </div>
@@ -230,12 +229,16 @@ export default function NarutoJutsus() {
 
       {castIdx !== null && (() => {
         const cj = jutsus[castIdx];
+        const castPower = powers.find((p) => p.id === cj?.powerId);
+        const castTech = castPower?.techniques?.find((t) => t.id === cj?.techniqueId);
+        const castInitialLevel = castTech?.singleCast ? castPower?.level : undefined;
         return (
           <CastJutsuModal
             powerId={cj?.powerId ?? null}
             techniqueId={cj?.techniqueId ?? null}
             damageMod={cj?.damageMod ?? 0}
             hitMod={cj?.hitMod ?? 0}
+            initialLevel={castInitialLevel}
             onClose={() => setCastIdx(null)}
           />
         );

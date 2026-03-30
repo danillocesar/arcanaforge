@@ -7,6 +7,7 @@ import {
   getNarutoAttr,
 } from '../../utils/narutoCalculations';
 import { getEvolutionRow } from '../../data/narutoConstants';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoSkills.module.css';
 
 export default function NarutoSkills() {
@@ -75,21 +76,19 @@ export default function NarutoSkills() {
                 {cannotUse ? 'X' : total}
               </span>
               <span className={styles.sep}>=</span>
-              <input
+              <NumericInput
                 className={styles.input}
-                type="number"
                 min={0}
                 value={pontos}
-                onChange={(e) => setSkillField(cfg.id, 'pontos', Number(e.target.value) || 0)}
+                onChange={(n) => setSkillField(cfg.id, 'pontos', n)}
               />
               <span className={styles.sep}>+</span>
               <span className={styles.auto}>{halfAttr}</span>
               <span className={styles.sep}>+</span>
-              <input
+              <NumericInput
                 className={styles.input}
-                type="number"
                 value={outro}
-                onChange={(e) => setSkillField(cfg.id, 'outro', Number(e.target.value) || 0)}
+                onChange={(n) => setSkillField(cfg.id, 'outro', n)}
               />
             </div>
           );
