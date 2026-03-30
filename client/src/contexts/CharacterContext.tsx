@@ -16,8 +16,10 @@ interface CharacterContextValue {
   characterOriginalId: string;
   characterList: string[];
   saveStatus: 'saved' | 'saving' | 'error';
+  readOnly: boolean;
 
   updateCharacter: (updater: (prev: Character) => Character) => void;
+  setCharacterDirect: (char: Character) => void;
   loadCharacter: (id: string) => Promise<void>;
   createCharacter: (character: Character) => Promise<void>;
   deleteCharacter: () => Promise<void>;
@@ -31,22 +33,28 @@ const CharacterContext = createContext<CharacterContextValue | null>(null);
 interface CharacterProviderProps {
   children: React.ReactNode;
   showToast?: (msg: string, variant?: ToastVariant, mpCost?: number) => void;
+  readOnly?: boolean;
 }
 
-export function CharacterProvider({ children, showToast }: CharacterProviderProps) {
+interface BroadcastSnapshot {
+  hp: { current: number; max: number };
+  mp: { current: number; max: number };
+  name: string;
+}
+
+export function CharacterProvider({ children, showToast, readOnly = false }: CharacterProviderProps) {
   const [character, setCharacter] = useState<Character | null>(null);
   const [characterOriginalId, setCharacterOriginalId] = useState('');
   const [characterList, setCharacterList] = useState<string[]>([]);
   const characterRef = useRef<Character | null>(null);
   characterRef.current = character;
 
-  const skipHpBroadcastAfterSaveRef = useRef(false);
+  const lastBroadcastRef = useRef<BroadcastSnapshot | null>(null);
 
   const { send } = useWebSocket((msg) => {
     if (!characterRef.current) return;
 
     if (msg.type === 'character_hp_sync' && msg.characterId === characterRef.current._id) {
-      skipHpBroadcastAfterSaveRef.current = true;
       const hp = msg.hp as { current?: number; max?: number } | undefined;
       const mp = msg.mp as { current?: number; max?: number } | undefined;
       setCharacter((prev) => {
@@ -66,17 +74,27 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
             max: mp.max ?? prev.mp.max,
           };
         }
+        lastBroadcastRef.current = {
+          hp: { ...next.hp },
+          mp: { ...next.mp },
+          name: next.name,
+        };
         return next;
       });
       showToast?.('PV/PM sincronizados de outra aba', 'sync');
     }
 
     if (msg.type === 'master_hp_sync' && msg.characterId === characterRef.current._id) {
-      skipHpBroadcastAfterSaveRef.current = true;
       const currentHp = msg.currentHp as number;
       setCharacter((prev) => {
         if (!prev) return prev;
-        return { ...prev, hp: { ...prev.hp, current: currentHp } };
+        const next = { ...prev, hp: { ...prev.hp, current: currentHp } };
+        lastBroadcastRef.current = {
+          hp: { ...next.hp },
+          mp: { ...next.mp },
+          name: next.name,
+        };
+        return next;
       });
       showToast?.(`PV atualizado pelo mestre: ${currentHp}`, 'info');
     }
@@ -90,9 +108,14 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
   });
 
   const sendHpUpdate = useCallback(() => {
+    if (readOnly) return;
     const c = characterRef.current;
     if (!c) return;
-    skipHpBroadcastAfterSaveRef.current = true;
+    lastBroadcastRef.current = {
+      hp: { ...c.hp },
+      mp: { ...c.mp },
+      name: c.name,
+    };
     send({
       type: 'character_hp_update',
       characterId: c._id,
@@ -100,9 +123,10 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
       hp: c.hp,
       mp: c.mp,
     });
-  }, [send]);
+  }, [send, readOnly]);
 
   const sendSpellCast = useCallback((spellName: string, mpCost: number) => {
+    if (readOnly) return;
     const c = characterRef.current;
     if (!c) return;
     send({
@@ -112,20 +136,30 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
       spellName,
       mpCost,
     });
-  }, [send]);
+  }, [send, readOnly]);
 
   const sendHpUpdateRef = useRef(sendHpUpdate);
   sendHpUpdateRef.current = sendHpUpdate;
 
-  const { status: saveStatus } = useAutoSave(character, characterOriginalId, () => {
+  const { status: saveStatus } = useAutoSave(readOnly ? null : character, characterOriginalId, () => {
     if (characterRef.current) {
       setCharacterOriginalId(characterRef.current._id);
     }
-    if (skipHpBroadcastAfterSaveRef.current) {
-      skipHpBroadcastAfterSaveRef.current = false;
-      return;
+
+    const c = characterRef.current;
+    if (!c) return;
+
+    const last = lastBroadcastRef.current;
+    const changed = !last
+      || c.hp.current !== last.hp.current
+      || c.hp.max !== last.hp.max
+      || c.mp.current !== last.mp.current
+      || c.mp.max !== last.mp.max
+      || c.name !== last.name;
+
+    if (changed) {
+      sendHpUpdateRef.current();
     }
-    sendHpUpdateRef.current();
   });
 
   const refreshList = useCallback(async () => {
@@ -139,6 +173,11 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
     if (data) {
       setCharacter(data);
       setCharacterOriginalId(data._id);
+      lastBroadcastRef.current = {
+        hp: { ...data.hp },
+        mp: { ...data.mp },
+        name: data.name,
+      };
       history.replaceState(null, '', `?id=${encodeURIComponent(data._id)}`);
     }
   }, []);
@@ -147,6 +186,11 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
     await apiSaveCharacter(newCharacter._id, newCharacter);
     setCharacter(newCharacter);
     setCharacterOriginalId(newCharacter._id);
+    lastBroadcastRef.current = {
+      hp: { ...newCharacter.hp },
+      mp: { ...newCharacter.mp },
+      name: newCharacter.name,
+    };
     history.replaceState(null, '', `?id=${encodeURIComponent(newCharacter._id)}`);
     await refreshList();
   }, [refreshList]);
@@ -170,26 +214,33 @@ export function CharacterProvider({ children, showToast }: CharacterProviderProp
   }, [loadCharacter]);
 
   const updateCharacter = useCallback((updater: (prev: Character) => Character) => {
-    skipHpBroadcastAfterSaveRef.current = false;
+    if (readOnly) return;
     setCharacter((prev) => {
       if (!prev) return prev;
       return updater(prev);
     });
+  }, [readOnly]);
+
+  const setCharacterDirect = useCallback((char: Character) => {
+    setCharacter(char);
+    setCharacterOriginalId(char._id);
   }, []);
 
   const value = useMemo<CharacterContextValue>(() => ({
     character,
     characterOriginalId,
     characterList,
-    saveStatus,
+    saveStatus: readOnly ? 'saved' : saveStatus,
+    readOnly,
     updateCharacter,
+    setCharacterDirect,
     loadCharacter,
     createCharacter,
     deleteCharacter,
     refreshList,
     sendHpUpdate,
     sendSpellCast,
-  }), [character, characterOriginalId, characterList, saveStatus, updateCharacter, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate, sendSpellCast]);
+  }), [character, characterOriginalId, characterList, saveStatus, readOnly, updateCharacter, setCharacterDirect, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate, sendSpellCast]);
 
   return <CharacterContext.Provider value={value}>{children}</CharacterContext.Provider>;
 }

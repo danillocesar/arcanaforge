@@ -104,6 +104,18 @@ export async function apiFetchPartyCharacters(partyId: string): Promise<PartyCha
   return res.json();
 }
 
+export async function apiLoadPartyCharacter(partyId: string, characterId: string): Promise<Record<string, unknown> | null> {
+  try {
+    const res = await apiFetch(
+      `/api/parties/${encodeURIComponent(partyId)}/characters/${encodeURIComponent(characterId)}`,
+    );
+    await assertOk(res);
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
 export async function apiLoadCombat(partyId: string): Promise<CombatData> {
   const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/combat`);
   await assertOk(res);

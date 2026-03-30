@@ -1,5 +1,5 @@
 .sectionTitle {
-  font-size: 0.7rem;
+  font-size: var(--font-xs);
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -17,7 +17,7 @@
 .jutsuHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 4px 0 2px;
   flex-wrap: wrap;
 }
@@ -32,7 +32,7 @@
 }
 
 .jutsuName {
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -44,46 +44,52 @@
 
 .nameWithHit .jutsuName {
   flex: 0 1 auto;
-  min-width: auto;
-  overflow: visible;
-  text-overflow: clip;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tagType {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 1px 5px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--accent-gold) 12%, transparent);
   color: var(--accent-gold);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tagTech {
-  font-size: 0.6rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 1px 5px;
+  padding: 3px 8px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 0 2px 8px;
+  gap: 8px;
+  padding: 3px 0 3px 8px;
+  flex-wrap: wrap;
 }
 
 .badge {
-  font-size: 0.66rem;
+  font-size: var(--font-xs);
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: color-mix(in srgb, var(--accent-success) 15%, transparent);
   color: var(--accent-success);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badgeNeutral {
@@ -106,8 +112,8 @@
   align-items: center;
   justify-content: center;
   line-height: 0;
-  width: 26px;
-  height: 26px;
+  width: var(--touch-target);
+  height: var(--touch-target);
   margin-left: auto;
   flex-shrink: 0;
   background: var(--accent-blue-bg);
@@ -120,8 +126,8 @@
 }
 
 .castBtnJutsu svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 
 .castBtnJutsu:hover {
@@ -136,17 +142,19 @@
   background: none;
   border: none;
   color: var(--accent-gold);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   line-height: 0;
   cursor: pointer;
-  padding: 2px 4px;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding: 4px 6px;
   margin-left: auto;
   flex-shrink: 0;
 }
 
 .castBtn svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
 }
 
 .weaponRow {
@@ -177,4 +185,52 @@
   height: 1px;
   background: var(--border);
   margin: 6px 0;
+}
+
+@media (max-width: 480px) {
+  .jutsuHeader {
+    gap: 6px;
+    padding: 6px 0 4px;
+  }
+
+  .jutsuName {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 0.88rem;
+  }
+
+  .nameWithHit .jutsuName {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .nameWithHit {
+    flex-basis: 100%;
+  }
+
+  .tagType,
+  .tagTech {
+    font-size: var(--font-xs);
+    padding: 3px 10px;
+  }
+
+  .row {
+    padding: 4px 0 4px 4px;
+    gap: 6px;
+  }
+
+  .badge {
+    font-size: var(--font-badge);
+    padding: 4px 10px;
+  }
+
+  .weaponRow {
+    padding-left: 4px;
+  }
+
+  .castBtnJutsu svg,
+  .castBtn svg {
+    width: 20px;
+    height: 20px;
+  }
 }

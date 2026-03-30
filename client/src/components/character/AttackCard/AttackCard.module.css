@@ -22,7 +22,7 @@
 }
 
 .infoField label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -37,7 +37,8 @@
   color: var(--text-primary);
   font-family: var(--font);
   font-size: 0.85rem;
-  padding: 6px 8px;
+  padding: 8px 10px;
+  min-height: var(--touch-target-sm);
 }
 
 .infoField input:focus,
@@ -81,7 +82,7 @@
 }
 
 .checkHeader label {
-  font-size: 0.75rem;
+  font-size: var(--font-xs);
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -108,7 +109,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 0;
+  padding: 4px 0;
+  min-height: var(--touch-target-sm);
 }
 
 .bonusRow input {
@@ -119,9 +121,10 @@
   font-family: var(--font);
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 2px 4px;
-  width: 50px;
+  padding: 4px 6px;
+  width: 54px;
   text-align: right;
+  min-height: 32px;
 }
 
 .bonusRow input:focus {
@@ -136,15 +139,16 @@
 }
 
 .bonusRow input[placeholder="PM"] {
-  width: 38px;
+  width: 42px;
   background: var(--accent-blue-bg);
   border: 1px solid transparent;
   border-radius: 3px;
   color: var(--accent-blue-bar);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   text-align: center;
-  padding: 1px 3px;
+  padding: 3px 4px;
+  min-height: 32px;
 }
 
 .bonusRow input[placeholder="PM"]:focus {
@@ -156,8 +160,9 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 0.8rem;
-  padding: 2px 6px;
+  font-size: 0.82rem;
+  padding: 4px 8px;
+  min-height: 32px;
 }
 
 .bonusRow input.damageDice {
@@ -174,11 +179,12 @@
   border-bottom: 1px solid var(--border);
   color: var(--accent-gold);
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 1px 4px;
+  padding: 4px 6px;
   cursor: pointer;
-  min-width: 45px;
+  min-width: 48px;
+  min-height: 32px;
 }
 
 .bonusRow select.damageAttrSel:focus {
@@ -214,8 +220,9 @@
   gap: 8px;
   background: rgba(46, 204, 64, 0.07);
   border-left: 2px solid #2ecc40;
-  padding: 3px 0 3px 8px;
+  padding: 4px 0 4px 8px;
   opacity: 0.85;
+  min-height: var(--touch-target-sm);
 }
 
 .addBonus {
@@ -224,8 +231,9 @@
   border-radius: 4px;
   color: var(--text-muted);
   font-family: var(--font);
-  font-size: 0.75rem;
-  padding: 4px 10px;
+  font-size: var(--font-xs);
+  padding: 8px 12px;
+  min-height: var(--touch-target);
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 6px;
@@ -239,14 +247,14 @@
 
 .buffNome {
   flex: 1;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: #2ecc40;
   font-weight: 500;
   font-style: italic;
 }
 
 .buffValor {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #2ecc40;
   min-width: 40px;
@@ -265,22 +273,27 @@
   color: var(--accent-blue-bar);
   border: 1px solid var(--accent-blue);
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 4px;
   white-space: nowrap;
 }
 
 .use {
   position: absolute;
-  top: 8px;
-  right: 52px;
+  top: 4px;
+  right: 48px;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 
@@ -290,13 +303,18 @@
 
 .duplicate {
   position: absolute;
-  top: 8px;
-  right: 30px;
+  top: 4px;
+  right: 26px;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 
@@ -306,13 +324,18 @@
 
 .remove {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 4px;
+  right: 4px;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 
@@ -325,8 +348,13 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0 2px;
+  font-size: 0.95rem;
+  padding: 4px 6px;
+  min-width: var(--touch-target-sm);
+  min-height: var(--touch-target-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.2s;
 }
 

@@ -1,6 +1,7 @@
 const { ownerFieldsFromReq } = require('../../characters/userCharactersDir');
 const { AppError } = require('../errors/AppError');
 const { toPartyDTO, toPartyCharacterDTO } = require('../dto/party.dto');
+const { toCharacterDetailDTO } = require('../dto/character.dto');
 const { generatePartyId, generateInviteCode } = require('../utils/inviteCode');
 const partyRepository = require('../repositories/party.repository');
 const characterRepository = require('../repositories/character.repository');
@@ -173,6 +174,21 @@ function createPartyService(refs) {
     return characters.map(toPartyCharacterDTO);
   }
 
+  async function getPartyCharacter(partyId, characterId, uid) {
+    const party = await partyRepository.findOwnedParty(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é o dono');
+
+    const memberCharIds = (party.members || []).flatMap((m) => m.characterIds || []);
+    if (!memberCharIds.includes(characterId)) {
+      throw new AppError(404, 'Personagem não pertence a esta party');
+    }
+
+    const character = await characterRepository.findActiveById(characterId);
+    if (!character) throw new AppError(404, 'Personagem não encontrado');
+
+    return toCharacterDetailDTO(character);
+  }
+
   return {
     listParties,
     createParty,
@@ -185,6 +201,7 @@ function createPartyService(refs) {
     removeMember,
     regenerateCode,
     listPartyCharacters,
+    getPartyCharacter,
   };
 }
 

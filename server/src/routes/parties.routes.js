@@ -19,6 +19,7 @@ function createPartyRoutes(refs) {
   router.delete('/api/parties/:id/members/:uid', asyncHandler(partyController.removeMember));
   router.post('/api/parties/:id/regenerate-code', requireActivePlan, asyncHandler(partyController.regenerateCode));
   router.get('/api/parties/:id/characters', asyncHandler(partyController.listPartyCharacters));
+  router.get('/api/parties/:id/characters/:characterId', asyncHandler(partyController.getPartyCharacter));
   return router;
 }
 

@@ -95,10 +95,19 @@
   .nav {
     padding: 0 8px;
     top: 66px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar {
+    display: none;
   }
   .link {
-    padding: 6px 6px;
-    font-size: 0.6rem;
+    padding: 8px 8px;
+    font-size: 0.68rem;
+    min-height: var(--touch-target-sm);
+    flex-shrink: 0;
   }
   .rightSlot {
     right: 8px;

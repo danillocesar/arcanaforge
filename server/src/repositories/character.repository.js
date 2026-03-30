@@ -75,6 +75,10 @@ async function findOwnedCharacterById(id, uid) {
   return Character.findOne({ _id: id, ownerUid: uid, ...ACTIVE_FILTER }).lean();
 }
 
+async function findActiveById(id) {
+  return Character.findOne({ _id: id, ...ACTIVE_FILTER }).lean();
+}
+
 module.exports = {
   findIdsByOwner,
   findSummaryByOwner,
@@ -90,4 +94,5 @@ module.exports = {
   findExpiredSoftDeletes,
   findByIds,
   findOwnedCharacterById,
+  findActiveById,
 };

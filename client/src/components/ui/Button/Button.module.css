@@ -11,9 +11,10 @@
   border: 1px dashed var(--border);
   border-radius: 6px;
   color: var(--text-muted);
-  font-size: 0.85rem;
-  padding: 10px;
+  font-size: 0.9rem;
+  padding: 12px;
   margin-top: 8px;
+  min-height: var(--touch-target);
 }
 
 .add:hover {
@@ -32,6 +33,11 @@
   font-size: 1.2rem;
   cursor: pointer;
   opacity: 0.5;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .remove:hover {
@@ -40,12 +46,18 @@
 }
 
 .removeSm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   color: var(--text-muted);
   font-size: 0.9rem;
   cursor: pointer;
   opacity: 0.5;
+  min-width: var(--touch-target-sm);
+  min-height: var(--touch-target-sm);
+  padding: 4px 6px;
 }
 
 .removeSm:hover {
@@ -59,7 +71,8 @@
   color: #1a1d27;
   font-weight: 700;
   border-radius: var(--radius);
-  padding: 8px 16px;
+  padding: 10px 18px;
+  min-height: var(--touch-target);
 }
 
 .ghost {
@@ -67,7 +80,8 @@
   border: 1px solid var(--border);
   color: var(--text-secondary);
   border-radius: var(--radius);
-  padding: 8px 16px;
+  padding: 10px 18px;
+  min-height: var(--touch-target);
 }
 
 .ghost:hover {
@@ -81,9 +95,29 @@
   color: #1a1d27;
   font-weight: 700;
   border-radius: var(--radius);
-  padding: 8px 20px;
+  padding: 10px 20px;
+  min-height: var(--touch-target);
 }
 
 .primary:hover {
   filter: brightness(1.1);
+}
+
+@media (max-width: 480px) {
+  .add {
+    padding: 14px;
+    font-size: 0.95rem;
+  }
+
+  .gold,
+  .ghost,
+  .primary {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+
+  .removeSm {
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
 }

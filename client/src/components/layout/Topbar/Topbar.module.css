@@ -79,7 +79,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 8px 14px;
+  min-height: var(--touch-target);
   color: var(--text-muted);
   font-family: var(--font);
   font-size: 0.8rem;
@@ -99,7 +100,7 @@
 }
 
 .saveStatus {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   min-width: 52px;
   text-align: center;
@@ -279,11 +280,13 @@
 @media (max-width: 600px) {
   .topRow {
     padding: 0 12px;
-    height: 36px;
+    height: 42px;
   }
   .navRow {
-    padding: 0 12px;
-    height: 30px;
+    padding: 0 8px;
+    height: 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .logoImage {
     height: 22px;
@@ -294,11 +297,13 @@
     max-width: 96px;
   }
   .navLink {
-    font-size: 0.72rem;
-    padding: 4px 10px;
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    min-height: var(--touch-target);
   }
   .userMenuButton {
     max-width: 180px;
+    min-height: var(--touch-target);
   }
   .userEmail {
     display: none;

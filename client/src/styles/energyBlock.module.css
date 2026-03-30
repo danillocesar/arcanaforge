@@ -43,9 +43,9 @@
   background: none;
   border: none;
   color: var(--text-primary);
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  font-size: 1.4rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -83,8 +83,9 @@
   border-radius: 4px;
   color: var(--text-muted);
   font-family: var(--font);
-  font-size: 0.72rem;
-  padding: 3px 10px;
+  font-size: var(--font-xs);
+  padding: 6px 12px;
+  min-height: var(--touch-target-sm);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s;
@@ -101,12 +102,15 @@
     grid-template-columns: 1fr;
   }
   .block {
-    padding: 10px;
+    padding: 12px;
   }
   .title {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
   }
   .current {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+  }
+  .controls {
+    gap: 16px;
   }
 }
