@@ -5,6 +5,7 @@ import { BUFF_TYPES } from '../../../data/constants';
 import { SKILLS_CONFIG } from '../../../data/pericias';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import type { Buff, BuffType, AttributeId } from '../../../types/character';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './BuffsList.module.css';
 
 export default function BuffsList() {
@@ -120,11 +121,10 @@ export default function BuffsList() {
           />
           <div className={styles.pmField}>
             <span className={styles.pmLabel}>PM</span>
-            <input
+            <NumericInput
               className={styles.pmInput}
-              type="number"
               value={buff.mp}
-              onChange={e => updateBuff(idx, { mp: Number(e.target.value) || 0 })}
+              onChange={(n) => updateBuff(idx, { mp: n })}
             />
           </div>
           <button

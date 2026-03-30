@@ -55,9 +55,11 @@ function AttributeCard({ attrId, character, updateCharacter, minAttr }: {
       {editing ? (
         <input
           className={styles.editInput}
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          onFocus={(e) => e.target.select()}
           onBlur={commitEdit}
           onKeyDown={(e) => e.key === 'Enter' && commitEdit()}
           autoFocus

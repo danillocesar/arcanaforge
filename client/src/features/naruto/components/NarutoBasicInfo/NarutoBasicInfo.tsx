@@ -4,6 +4,7 @@ import { apiFetchNarutoClans, apiUploadAvatar } from '../../../../api';
 import { getInitials } from '../../../../utils/formatters';
 import { syncNarutoHpMp } from '../../utils/narutoCalculations';
 import Section from '../../../../components/ui/Section/Section';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoBasicInfo.module.css';
 
 const SHINOBI_RANKS = [
@@ -79,16 +80,13 @@ export default function NarutoBasicInfo() {
           />
           <div className={styles.rankRow}>
             <span className={styles.rankLabel}>NC</span>
-            <input
+            <NumericInput
               className={styles.ncInput}
-              type="number"
               min={4}
               max={20}
+              fallback={4}
               value={character.campaignLevel ?? 4}
-              onChange={(e) => {
-                const nc = Number(e.target.value) || 4;
-                updateCharacter((f) => syncNarutoHpMp({ ...f, campaignLevel: nc }));
-              }}
+              onChange={(n) => updateCharacter((f) => syncNarutoHpMp({ ...f, campaignLevel: n }))}
             />
             <select
               className={styles.rankSelect}

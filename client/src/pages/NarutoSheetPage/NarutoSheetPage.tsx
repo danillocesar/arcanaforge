@@ -16,6 +16,7 @@ import NarutoSkills from '../../features/naruto/components/NarutoSkills/NarutoSk
 import NarutoPowers from '../../features/naruto/components/NarutoPowers/NarutoPowers';
 import NarutoAptitudes from '../../features/naruto/components/NarutoAptitudes/NarutoAptitudes';
 import NarutoJutsus from '../../features/naruto/components/NarutoJutsus/NarutoJutsus';
+import NarutoAttacks from '../../features/naruto/components/NarutoAttacks/NarutoAttacks';
 import NarutoDamageCalc from '../../features/naruto/components/NarutoDamageCalc/NarutoDamageCalc';
 import NarutoInventory from '../../features/naruto/components/NarutoInventory/NarutoInventory';
 import NarutoConfigDrawer from '../../features/naruto/components/NarutoConfigDrawer/NarutoConfigDrawer';
@@ -99,6 +100,7 @@ function NarutoSheetInner() {
         </div>
 
         {!isHidden('secJutsus') && <NarutoJutsus />}
+        {!isHidden('secAttacks') && <NarutoAttacks />}
 
         {!isHidden('secPowers') && <NarutoPowers />}
         {!isHidden('secAptitudes') && <NarutoAptitudes />}

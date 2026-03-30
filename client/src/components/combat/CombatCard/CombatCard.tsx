@@ -96,8 +96,11 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
     if (!editingMaxHp) setDraftMaxHp(String(row.maxHp ?? 1));
   }, [row.maxHp, editingMaxHp]);
 
-  const isAlertBand = !cardLooksPlayer && hpPct > 28 && hpPct <= 76;
-  const isCriticalBand = !cardLooksPlayer && hpPct < 28;
+  const highestNumberPercent = row.woundThreshold ?? 60;
+  const lowestNumberPercent = row.criticalThreshold ?? 6;
+
+  const isAlertBand = !cardLooksPlayer && hpPct > lowestNumberPercent && hpPct <= highestNumberPercent;
+  const isCriticalBand = !cardLooksPlayer && hpPct > 0 && hpPct <= lowestNumberPercent;
 
   const cardCls = [
     styles.card,
@@ -205,11 +208,13 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
               <div className={styles.initField}>
                 <label>Iniciativa:</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className={styles.initInput}
                   value={initiativeValue}
                   placeholder="—"
                   onChange={(e) => updateInitiative(row.id, row.type, e.target.value)}
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             )}
@@ -236,11 +241,12 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
               <span className={styles.pvMaxLabel}>PV total</span>
               {editingMaxHp ? (
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className={styles.pvMaxEditInput}
-                  min={1}
                   value={draftMaxHp}
                   onChange={(e) => setDraftMaxHp(e.target.value)}
+                  onFocus={(e) => e.target.select()}
                   onBlur={commitMaxHp}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') commitMaxHp();

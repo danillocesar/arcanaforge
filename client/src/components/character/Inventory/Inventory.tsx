@@ -3,6 +3,7 @@ import { calcCarryCapacity, calcUsedLoad } from '../../../utils/calculations';
 import { EQUIP_ICONS } from '../../../data/constants';
 import Section from '../../ui/Section/Section';
 import Button from '../../ui/Button/Button';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './Inventory.module.css';
 
 export default function Inventory() {
@@ -56,25 +57,22 @@ export default function Inventory() {
         <span>Carga Máx: <strong>{maxLoad}</strong></span>
         <div className={styles.coins}>
           <label>TC</label>
-          <input
-            type="number"
+          <NumericInput
             className={styles.coinInput}
             value={character.coins.copper}
-            onChange={(e) => setCoin('copper', Number(e.target.value) || 0)}
+            onChange={(n) => setCoin('copper', n)}
           />
           <label>T$</label>
-          <input
-            type="number"
+          <NumericInput
             className={styles.coinInput}
             value={character.coins.silver}
-            onChange={(e) => setCoin('silver', Number(e.target.value) || 0)}
+            onChange={(n) => setCoin('silver', n)}
           />
           <label>TO</label>
-          <input
-            type="number"
+          <NumericInput
             className={styles.coinInput}
             value={character.coins.gold}
-            onChange={(e) => setCoin('gold', Number(e.target.value) || 0)}
+            onChange={(n) => setCoin('gold', n)}
           />
         </div>
       </div>
@@ -95,15 +93,14 @@ export default function Inventory() {
                 onChange={(e) => updateItem(i, 'name', e.target.value)}
                 placeholder="Nome do item"
               />
-              <input
-                type="number"
+              <NumericInput
                 value={item.quantity}
-                onChange={(e) => updateItem(i, 'quantity', Number(e.target.value) || 1)}
+                fallback={1}
+                onChange={(n) => updateItem(i, 'quantity', n)}
               />
-              <input
-                type="number"
+              <NumericInput
                 value={item.weight}
-                onChange={(e) => updateItem(i, 'weight', Number(e.target.value) || 0)}
+                onChange={(n) => updateItem(i, 'weight', n)}
               />
               <Button variant="remove-sm" onClick={() => removeItem(i)}>✕</Button>
             </div>

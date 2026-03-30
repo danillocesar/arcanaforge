@@ -2,6 +2,7 @@ import { useCharacterContext } from '../../../../contexts/CharacterContext';
 import { calcCompartmentsUsed, calcCompartmentsTotal } from '../../utils/narutoCalculations';
 import type { NarutoWeapon, NarutoItem } from '../../../../types/narutoCharacter';
 import Section from '../../../../components/ui/Section/Section';
+import NumericInput from '../../../../components/ui/NumericInput/NumericInput';
 import styles from './NarutoInventory.module.css';
 
 export default function NarutoInventory() {
@@ -79,18 +80,16 @@ export default function NarutoInventory() {
       <div className={styles.topRow}>
         <div className={styles.ryoField}>
           <label>Ryos</label>
-          <input
-            type="number"
+          <NumericInput
             value={character.ryos ?? 0}
-            onChange={(e) => updateCharacter((f) => ({ ...f, ryos: Number(e.target.value) || 0 }))}
+            onChange={(n) => updateCharacter((f) => ({ ...f, ryos: n }))}
           />
         </div>
         <div className={styles.ryoField}>
           <label>Ryos Guardados</label>
-          <input
-            type="number"
+          <NumericInput
             value={character.ryosStored ?? 0}
-            onChange={(e) => updateCharacter((f) => ({ ...f, ryosStored: Number(e.target.value) || 0 }))}
+            onChange={(n) => updateCharacter((f) => ({ ...f, ryosStored: n }))}
           />
         </div>
         <div className={styles.compartInfo}>
@@ -111,15 +110,15 @@ export default function NarutoInventory() {
           </div>
           <div className={styles.field}>
             <label>Absorcao</label>
-            <input type="number" value={armor.absorption} onChange={(e) => setArmor('absorption', Number(e.target.value) || 0)} />
+            <NumericInput value={armor.absorption} onChange={(n) => setArmor('absorption', n)} />
           </div>
           <div className={styles.field}>
             <label>Dureza</label>
-            <input type="number" value={armor.hardness} onChange={(e) => setArmor('hardness', Number(e.target.value) || 0)} />
+            <NumericInput value={armor.hardness} onChange={(n) => setArmor('hardness', n)} />
           </div>
           <div className={styles.field}>
             <label>Penalidade</label>
-            <input type="number" value={armor.penalty} onChange={(e) => setArmor('penalty', Number(e.target.value) || 0)} />
+            <NumericInput value={armor.penalty} onChange={(n) => setArmor('penalty', n)} />
           </div>
           <div className={styles.field}>
             <label>Tipo</label>
@@ -131,7 +130,7 @@ export default function NarutoInventory() {
           </div>
           <div className={styles.field}>
             <label>Comp.</label>
-            <input type="number" min={0} value={armor.compartments} onChange={(e) => setArmor('compartments', Number(e.target.value) || 0)} />
+            <NumericInput min={0} value={armor.compartments} onChange={(n) => setArmor('compartments', n)} />
           </div>
         </div>
       </div>
@@ -156,12 +155,11 @@ export default function NarutoInventory() {
         <div className={styles.itemList}>
           {weapons.map((w, i) => (
             <div key={w.id} className={styles.itemRow}>
-              <input
+              <NumericInput
                 className={styles.itemNum}
-                type="number"
                 min={0}
                 value={w.quantity ?? 1}
-                onChange={(e) => updateWeapon(i, 'quantity', Number(e.target.value) || 0)}
+                onChange={(n) => updateWeapon(i, 'quantity', n)}
                 title="Quantidade"
               />
               <input
@@ -170,11 +168,10 @@ export default function NarutoInventory() {
                 onChange={(e) => updateWeapon(i, 'name', e.target.value)}
                 placeholder="Nome"
               />
-              <input
+              <NumericInput
                 className={styles.itemNum}
-                type="number"
                 value={w.damage}
-                onChange={(e) => updateWeapon(i, 'damage', Number(e.target.value) || 0)}
+                onChange={(n) => updateWeapon(i, 'damage', n)}
                 title="Dano"
               />
               <input
@@ -220,12 +217,11 @@ export default function NarutoInventory() {
                 <option value="des">DES</option>
                 <option value="esp">ESP</option>
               </select>
-              <input
+              <NumericInput
                 className={styles.itemNum}
-                type="number"
                 min={0}
                 value={w.compartments}
-                onChange={(e) => updateWeapon(i, 'compartments', Number(e.target.value) || 0)}
+                onChange={(n) => updateWeapon(i, 'compartments', n)}
                 title="Compartimentos"
               />
               <button type="button" className={styles.removeBtn} onClick={() => removeWeapon(i)}>X</button>
@@ -241,12 +237,11 @@ export default function NarutoInventory() {
         <div className={styles.itemList}>
           {items.map((it, i) => (
             <div key={it.id} className={styles.itemRow}>
-              <input
+              <NumericInput
                 className={styles.itemNum}
-                type="number"
                 min={0}
                 value={it.quantity}
-                onChange={(e) => updateItem(i, 'quantity', Number(e.target.value) || 0)}
+                onChange={(n) => updateItem(i, 'quantity', n)}
                 title="Qtd"
               />
               <input
@@ -261,12 +256,11 @@ export default function NarutoInventory() {
                 onChange={(e) => updateItem(i, 'description', e.target.value)}
                 placeholder="Descricao"
               />
-              <input
+              <NumericInput
                 className={styles.itemNum}
-                type="number"
                 min={0}
                 value={it.compartments}
-                onChange={(e) => updateItem(i, 'compartments', Number(e.target.value) || 0)}
+                onChange={(n) => updateItem(i, 'compartments', n)}
                 title="Compartimentos"
               />
               <button type="button" className={styles.removeBtn} onClick={() => removeItem(i)}>X</button>

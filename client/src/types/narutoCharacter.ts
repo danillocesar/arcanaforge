@@ -52,14 +52,6 @@ export interface NarutoSkillData {
 
 /* ─── Powers ─── */
 
-export interface TechLevelEntry {
-  level: number;
-  chakraCost: number;
-  damage: string;
-  difficulty: string;
-  outro: number;
-}
-
 export interface NarutoTechnique {
   id: string;
   name: string;
@@ -72,7 +64,14 @@ export interface NarutoTechnique {
   range: string;
   duration: string;
   description: string;
-  levelEntries: TechLevelEntry[];
+  damageFormula?: 'standard' | 'perLevel' | 'fixedBonus';
+  damagePerLevel?: number;
+  damageFixedBonus?: number;
+  damageAttr?: 'for' | 'des' | 'esp';
+  weaponDamageOffset?: number;
+  singleCast?: boolean;
+  chakraFormula?: 'level' | 'fixed';
+  chakraFixedCost?: number;
 }
 
 export interface NarutoPower {
@@ -104,6 +103,16 @@ export interface Jutsu {
   techniqueId: string;
   damageMod: number;
   hitMod: number;
+}
+
+/* ─── Weapon Attacks ─── */
+
+export interface NarutoWeaponAttack {
+  id: string;
+  name: string;
+  weaponId: string;
+  hitMod: number;
+  damageMod: number;
 }
 
 /* ─── Weapons ─── */

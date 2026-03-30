@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import type { CombatData, CombatPlayer, CombatRow, Enemy } from '../types/combat';
 import {
   apiLoadCombat,
@@ -276,8 +276,8 @@ export function CombatProvider({
         maxHp: max,
         currentHp: max,
         initiative: 0,
-        woundThreshold: 76,
-        criticalThreshold: 28,
+        woundThreshold: Math.floor(Math.random() * 21) + 50,
+        criticalThreshold: Math.floor(Math.random() * 9) + 2,
       };
       const updated = {
         ...combatDataRef.current,

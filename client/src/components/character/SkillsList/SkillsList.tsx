@@ -3,6 +3,7 @@ import { SKILLS_CONFIG } from '../../../data/pericias';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import { getTotalLevel, calcTotalSkill, formatMod } from '../../../utils/calculations';
 import type { AttributeId } from '../../../types/character';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './SkillsList.module.css';
 
 const ATTR_OPTIONS: AttributeId[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -98,11 +99,10 @@ export default function SkillsList() {
                   <option key={a} value={a}>{ATTRIBUTE_LABELS[a]}</option>
                 ))}
               </select>
-              <input
-                type="number"
+              <NumericInput
                 className={styles.outros}
                 value={skill.misc || 0}
-                onChange={(e) => setMisc(cfg.id, Number(e.target.value) || 0)}
+                onChange={(n) => setMisc(cfg.id, n)}
               />
               <span className={styles.total}>{formatMod(total)}</span>
             </div>

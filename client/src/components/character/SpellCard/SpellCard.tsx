@@ -1,5 +1,6 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import type { Spell, Enhancement } from '../../../types/character';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './SpellCard.module.css';
 
 interface SpellCardProps {
@@ -73,10 +74,9 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
         ))}
         <div className={`${styles.field} ${styles.pmField}`}>
           <label>Custo PM</label>
-          <input
-            type="number"
+          <NumericInput
             value={spell.mpCost}
-            onChange={e => updateSpell({ mpCost: Number(e.target.value) || 0 })}
+            onChange={(n) => updateSpell({ mpCost: n })}
           />
         </div>
         <div className={`${styles.field} ${styles.fullWidth}`}>
@@ -101,11 +101,10 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
               onChange={e => updateEnhancement(aIdx, { description: e.target.value })}
               placeholder="Descrição"
             />
-            <input
+            <NumericInput
               className={styles.enhMp}
-              type="number"
               value={enh.mpCost}
-              onChange={e => updateEnhancement(aIdx, { mpCost: Number(e.target.value) || 0 })}
+              onChange={(n) => updateEnhancement(aIdx, { mpCost: n })}
               placeholder="PM"
             />
             <button className={styles.removeSm} onClick={() => removeEnhancement(aIdx)}>

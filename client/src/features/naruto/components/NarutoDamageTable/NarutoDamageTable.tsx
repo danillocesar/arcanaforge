@@ -26,10 +26,10 @@ export default function NarutoDamageTable({
         <span>NV</span>
         <span>Outro</span>
         <span>Total</span>
-        <span>G1</span>
-        <span>G2</span>
-        <span>G3</span>
-        <span>G4</span>
+        <span>4~8</span>
+        <span>9~11</span>
+        <span>12~14</span>
+        <span>15~16</span>
       </div>
       <div className={styles.dmgRow}>
         <span className={styles.dmgVal}>{dda}</span>

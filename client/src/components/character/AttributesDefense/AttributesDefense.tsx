@@ -4,6 +4,7 @@ import { getEffectiveAttribute, calcTotalDefense, formatMod } from '../../../uti
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import type { AttributeId } from '../../../types/character';
 import Section from '../../ui/Section/Section';
+import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './AttributesDefense.module.css';
 
 const ATTR_ORDER: AttributeId[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -41,9 +42,11 @@ function AttributeCard({ attr }: { attr: AttributeId }) {
       {editing ? (
         <input
           className={styles.editInput}
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          onFocus={(e) => e.target.select()}
           onBlur={commitEdit}
           onKeyDown={(e) => e.key === 'Enter' && commitEdit()}
           autoFocus
@@ -122,18 +125,16 @@ export default function AttributesDefense() {
                   onChange={(e) => updateDefenseItem(i, 'name', e.target.value)}
                   placeholder="Nome"
                 />
-                <input
-                  type="number"
+                <NumericInput
                   value={item.value ?? 0}
-                  onChange={(e) => updateDefenseItem(i, 'value', Number(e.target.value) || 0)}
+                  onChange={(n) => updateDefenseItem(i, 'value', n)}
                   title="Bônus de Defesa"
                 />
                 <span className={styles.penaltyLabel}>Pen:</span>
-                <input
-                  type="number"
+                <NumericInput
                   className={styles.defensePenInput}
                   value={item.penalty ?? 0}
-                  onChange={(e) => updateDefenseItem(i, 'penalty', Number(e.target.value) || 0)}
+                  onChange={(n) => updateDefenseItem(i, 'penalty', n)}
                   title="Penalidade de Armadura"
                 />
                 <button type="button" className={styles.defenseRemove} onClick={() => removeDefenseItem(i)}>✕</button>
