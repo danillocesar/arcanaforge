@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { CombatProvider, useCombatContext } from '../../contexts/CombatContext';
 import { ToastProvider } from '../../components/ui/Toast/Toast';
 import { apiFetchParties } from '../../api';
@@ -35,6 +36,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   const [newEnemyName, setNewEnemyName] = useState('');
   const [newEnemyHp, setNewEnemyHp] = useState('20');
   const [codeCopied, setCodeCopied] = useState(false);
+  const [spectatorMode, setSpectatorMode] = useState(false);
 
   useEffect(() => {
     loadCombat();
@@ -124,37 +126,41 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   const showEmptyActive = combatTab === 'active' && rows.length === 0;
   const showEmptyInactive = combatTab === 'inactive' && rows.length === 0;
 
+  const showGm = isMaster && !spectatorMode;
+
   return (
     <>
-      {isMaster && <div className={styles.gmStrip} aria-hidden />}
+      {showGm && <div className={styles.gmStrip} aria-hidden />}
       <Topbar
         title={party.name ? `Grupo - ${party.name}` : 'Grupo'}
         systemBrand={systemParamToBrand(system)}
       />
-      <SectionNav
-        items={navItems}
-        rightSlot={
-          isMaster && party.inviteCode ? (
-            <span
-              className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
-              onClick={copyInviteCode}
-              title="Clique para copiar"
-            >
-              {codeCopied ? 'Copiado!' : party.inviteCode}
-            </span>
-          ) : undefined
-        }
-      />
+      {!spectatorMode && (
+        <SectionNav
+          items={navItems}
+          rightSlot={
+            isMaster && party.inviteCode ? (
+              <span
+                className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
+                onClick={copyInviteCode}
+                title="Clique para copiar"
+              >
+                {codeCopied ? 'Copiado!' : party.inviteCode}
+              </span>
+            ) : undefined
+          }
+        />
+      )}
       <div className={styles.gmContainer}>
-        {isMaster && (
+        {showGm && (
           <div className={styles.gmBadge}>
             <span className={styles.gmBadgeDot} aria-hidden />
             MESTRE
           </div>
         )}
         <div className={styles.gmSection}>
-          {isMaster && <CombatToolbar />}
-          {isMaster && (
+          {showGm && <CombatToolbar />}
+          {showGm && (
             <div className={styles.combatTabs} role="tablist" aria-label="Participantes do combate">
               <button
                 type="button"
@@ -201,11 +207,12 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
                   row={row}
                   isActiveTurn={isActiveTurn(i)}
                   listVariant={combatTab === 'inactive' ? 'inactive' : 'active'}
+                  spectatorMode={spectatorMode}
                 />
               ))}
             </div>
           )}
-          {isMaster && combatTab === 'active' && (
+          {showGm && combatTab === 'active' && (
             <button type="button" className={styles.addEnemy} onClick={openNewEnemyModal}>
               <span className={styles.addIcon}>+</span> Adicionar Inimigo
             </button>
@@ -248,6 +255,18 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
       </Modal>
 
       {combatTab === 'active' ? <MiniOrder rows={activeRows} /> : null}
+
+      {isMaster && (
+        <button
+          type="button"
+          className={`${styles.spectatorFab} ${spectatorMode ? styles.spectatorFabActive : ''}`}
+          onClick={() => setSpectatorMode((prev) => !prev)}
+          title={spectatorMode ? 'Sair do Modo Espectador' : 'Modo Espectador'}
+          aria-label={spectatorMode ? 'Sair do Modo Espectador' : 'Ativar Modo Espectador'}
+        >
+          {spectatorMode ? <EyeOff size={22} /> : <Eye size={22} />}
+        </button>
+      )}
     </>
   );
 }

@@ -106,12 +106,24 @@ export function CombatProvider({
           const hp = msg.hp as { current?: number; max?: number } | undefined;
           const mp = msg.mp as { current?: number; max?: number } | undefined;
           setPlayers((prev) => {
+            const existing = prev.find((p) => p._id === charId);
+            if (!existing) return prev;
+
+            const hpCurChanged = hp?.current !== undefined && hp.current !== existing.currentHp;
+            const hpMaxChanged = hp?.max !== undefined && hp.max !== existing.maxHp;
+            const mpCurChanged = mp?.current !== undefined && mp.current !== existing.currentMp;
+            const mpMaxChanged = mp?.max !== undefined && mp.max !== existing.maxMp;
+
+            if (!hpCurChanged && !hpMaxChanged && !mpCurChanged && !mpMaxChanged) return prev;
+
             const next = prev.map((p) =>
               p._id === charId
                 ? {
                     ...p,
                     currentHp: hp?.current ?? p.currentHp,
+                    maxHp: hp?.max ?? p.maxHp,
                     currentMp: mp?.current ?? p.currentMp,
+                    maxMp: mp?.max ?? p.maxMp,
                   }
                 : p,
             );
@@ -120,14 +132,17 @@ export function CombatProvider({
                 buildOrdered(combatDataRef.current, next);
               }
             });
+            showToast(`PV/PM de ${(msg.name as string) || 'jogador'} atualizado`, 'sync');
             return next;
           });
-          showToast(`PV/PM de ${(msg.name as string) || 'jogador'} atualizado`, 'sync');
         }
         if (msg.type === 'master_hp_sync' && msg.characterId) {
           const charId = msg.characterId as string;
           const currentHp = msg.currentHp as number;
           setPlayers((prev) => {
+            const existing = prev.find((p) => p._id === charId);
+            if (!existing || existing.currentHp === currentHp) return prev;
+
             const next = prev.map((p) =>
               p._id === charId ? { ...p, currentHp } : p,
             );
@@ -136,9 +151,9 @@ export function CombatProvider({
                 buildOrdered(combatDataRef.current, next);
               }
             });
+            showToast(`PV de ${(msg.name as string) || 'jogador'} atualizado pelo Mestre`, 'info');
             return next;
           });
-          showToast(`PV de ${(msg.name as string) || 'jogador'} atualizado pelo Mestre`, 'info');
         }
         if (msg.type === 'party_roster_sync') {
           if (partyId && msg.partyId && msg.partyId !== partyId) return;

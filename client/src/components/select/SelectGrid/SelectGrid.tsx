@@ -8,6 +8,8 @@ interface SelectGridProps {
   resumos: CharacterSummary[];
   onNewCharacter: () => void;
   onDelete?: (resumo: CharacterSummary) => void;
+  newDisabled?: boolean;
+  newDisabledTooltip?: string;
 }
 
 const SISTEMA_BADGE: Record<RPGSystem, string> = {
@@ -15,12 +17,18 @@ const SISTEMA_BADGE: Record<RPGSystem, string> = {
   naruto: '🍥',
 };
 
-export default function SelectGrid({ resumos, onNewCharacter, onDelete }: SelectGridProps) {
+export default function SelectGrid({ resumos, onNewCharacter, onDelete, newDisabled, newDisabledTooltip }: SelectGridProps) {
   return (
     <div className={styles.grid}>
-      <button className={styles.newCard} onClick={onNewCharacter}>
+      <button
+        className={`${styles.newCard} ${newDisabled ? styles.newCardDisabled : ''}`}
+        onClick={newDisabled ? undefined : onNewCharacter}
+        disabled={newDisabled}
+        title={newDisabledTooltip}
+      >
         <span className={styles.newIcon}>+</span>
         <span className={styles.newLabel}>Novo Personagem</span>
+        {newDisabledTooltip && <span className={styles.newLimitHint}>{newDisabledTooltip}</span>}
       </button>
 
       {resumos.map((r) => {

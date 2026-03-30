@@ -34,9 +34,10 @@ interface CombatCardProps {
   row: CombatRow;
   isActiveTurn: boolean;
   listVariant?: 'active' | 'inactive';
+  spectatorMode?: boolean;
 }
 
-export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }: CombatCardProps) {
+export default function CombatCard({ row, isActiveTurn, listVariant = 'active', spectatorMode = false }: CombatCardProps) {
   const {
     isMaster,
     partyOwnerUid,
@@ -132,7 +133,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
     setEditingMaxHp(false);
   };
 
-  const showEnemyBars = isPartyCharacter || isMaster;
+  const showEnemyBars = isPartyCharacter || (isMaster && !spectatorMode);
   const initiativeValue =
     row.initiative === undefined || row.initiative === null ? '' : String(row.initiative);
 
@@ -155,7 +156,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
     <div className={cardCls}>
       {isActiveTurn && (
         <div className={styles.turnIndicator}>
-          <ChevronRight size={12} className={styles.turnIcon} aria-hidden="true" />
+          <ChevronRight size={16} className={styles.turnIcon} aria-hidden="true" />
           TURNO ATUAL
         </div>
       )}
@@ -225,9 +226,9 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
           className={`${styles.bars} ${!cardLooksPlayer ? styles.barsEnemy : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
         >
           <div
-            className={`${styles.bar} ${styles.barHp} ${isMaster ? styles.barClickable : ''}`}
+            className={`${styles.bar} ${styles.barHp} ${isMaster && !spectatorMode ? styles.barClickable : ''}`}
             ref={hpBarRef}
-            onClick={() => isMaster && showEnemyBars && setPopoverOpen(true)}
+            onClick={() => isMaster && !spectatorMode && showEnemyBars && setPopoverOpen(true)}
             role="presentation"
           >
             <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
@@ -236,7 +237,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
             </span>
           </div>
 
-          {!isPartyCharacter && isMaster && showEnemyBars && (
+          {!isPartyCharacter && isMaster && !spectatorMode && showEnemyBars && (
             <div className={styles.pvMaxEditRow}>
               <span className={styles.pvMaxLabel}>PV total</span>
               {editingMaxHp ? (
@@ -280,7 +281,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
           )}
         </div>
 
-        {isMaster && isPartyCharacter && row.characterId && (
+        {isMaster && !spectatorMode && isPartyCharacter && row.characterId && (
           <div className={styles.masterActions}>
             {listVariant === 'inactive' ? (
               <button
@@ -289,7 +290,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
                 title="Reativar na ordem de combate"
                 onClick={() => setCharacterInactive(row.characterId!, false)}
               >
-                <UserCheck size={18} aria-hidden />
+                <UserCheck size={20} aria-hidden />
               </button>
             ) : (
               <button
@@ -298,7 +299,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
                 title="Marcar como inativo"
                 onClick={() => setCharacterInactive(row.characterId!, true)}
               >
-                <UserMinus size={18} aria-hidden />
+                <UserMinus size={20} aria-hidden />
               </button>
             )}
             {canGmStyle && listVariant === 'active' && (
@@ -308,13 +309,13 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active' }
                 title="Alternar visual: Jogador → NPC → Inimigo"
                 onClick={() => cycleGmVisual(row.characterId!)}
               >
-                <RefreshCw size={18} aria-hidden />
+                <RefreshCw size={20} aria-hidden />
               </button>
             )}
           </div>
         )}
 
-        {!isPartyCharacter && isMaster && (
+        {!isPartyCharacter && isMaster && !spectatorMode && (
           <button
             type="button"
             className={styles.removeBtn}

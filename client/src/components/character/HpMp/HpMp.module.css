@@ -22,8 +22,13 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.7rem;
-  padding: 0 2px;
+  font-size: 0.75rem;
+  padding: 4px 6px;
+  min-width: var(--touch-target-sm);
+  min-height: var(--touch-target-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0.6;
   transition: opacity 0.2s;
 }
@@ -34,15 +39,16 @@
 }
 
 .maxInput {
-  width: 50px;
+  width: 56px;
   background: var(--bg-body);
   border: 1px solid var(--accent-gold);
   border-radius: 4px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   text-align: center;
-  padding: 1px 4px;
+  padding: 4px 6px;
+  min-height: var(--touch-target-sm);
 }
 
 .maxInput:focus {
@@ -66,16 +72,17 @@
 }
 
 .tempInput {
-  width: 50px;
+  width: 56px;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border);
   color: var(--accent-green);
   font-family: var(--font);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-align: center;
-  padding: 0 2px;
+  padding: 4px 4px;
+  min-height: var(--touch-target-sm);
 }
 
 .tempInput:focus {
@@ -97,9 +104,10 @@
   border-radius: 4px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.8rem;
-  padding: 4px 8px;
+  font-size: 0.85rem;
+  padding: 6px 10px;
   margin-left: 6px;
+  min-height: var(--touch-target-sm);
 }
 
 .rdInput:focus {

@@ -8,6 +8,8 @@ export interface CharacterSummary {
   system: RPGSystem;
   ownerUid?: string;
   ownerEmail?: string;
+  deletedAt?: string | null;
+  pendingDeleteAt?: string | null;
 }
 
 export type AttributeId = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';

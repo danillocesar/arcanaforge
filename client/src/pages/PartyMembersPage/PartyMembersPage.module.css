@@ -267,6 +267,99 @@
   color: var(--accent-red, #e74c3c);
 }
 
+/* Member block (row + character cards) */
+.memberBlock {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+
+.memberBlock .memberRow {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.memberCharCards {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-top: 1px solid var(--border);
+}
+
+.viewCharBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px 10px 52px;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font);
+  color: inherit;
+  text-align: left;
+}
+
+.viewCharBtn:hover {
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.viewCharAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.viewCharAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.viewCharInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.viewCharName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.viewCharClass {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.viewCharIcon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.viewCharBtn:hover .viewCharIcon {
+  color: var(--accent-gold);
+}
+
 .empty {
   text-align: center;
   padding: 40px 24px;

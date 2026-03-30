@@ -1,4 +1,5 @@
 const { adminAuth } = require('../../auth/firebaseAdmin');
+const userService = require('../services/user.service');
 
 function parseBearerToken(headerValue) {
   if (!headerValue || typeof headerValue !== 'string') return null;
@@ -20,6 +21,10 @@ async function requireAuth(req, res, next) {
   try {
     const decoded = await adminAuth.verifyIdToken(token);
     req.user = decoded;
+
+    const { user } = await userService.ensureUserExists(decoded.uid, decoded.email || '');
+    req.subscriptionUser = user;
+
     return next();
   } catch (_) {
     return res.status(401).json({ error: 'Token inválido' });

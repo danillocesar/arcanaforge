@@ -24,6 +24,10 @@ async function deleteCharacter(req, res) {
   res.json(await characterService.deleteCharacter(req.params.id, req));
 }
 
+async function restoreCharacter(req, res) {
+  res.json(await characterService.restoreCharacter(req.params.id, req));
+}
+
 module.exports = {
   listCharacterIds,
   listCharacterSummary,
@@ -31,4 +35,5 @@ module.exports = {
   uploadAvatar,
   saveCharacter,
   deleteCharacter,
+  restoreCharacter,
 };

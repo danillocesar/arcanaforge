@@ -79,7 +79,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 8px 14px;
+  min-height: var(--touch-target);
   color: var(--text-muted);
   font-family: var(--font);
   font-size: 0.8rem;
@@ -99,7 +100,7 @@
 }
 
 .saveStatus {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   min-width: 52px;
   text-align: center;
@@ -239,7 +240,23 @@
   text-overflow: ellipsis;
 }
 
+.dropdownPlanBadge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--accent-gold);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  width: fit-content;
+}
+
 .dropdownItem {
+  display: block;
   width: 100%;
   border: none;
   background: transparent;
@@ -248,6 +265,8 @@
   cursor: pointer;
   padding: 10px;
   font-size: 0.78rem;
+  text-decoration: none;
+  font-family: var(--font);
 }
 
 .dropdownItem:hover {
@@ -261,11 +280,13 @@
 @media (max-width: 600px) {
   .topRow {
     padding: 0 12px;
-    height: 36px;
+    height: 42px;
   }
   .navRow {
-    padding: 0 12px;
-    height: 30px;
+    padding: 0 8px;
+    height: 40px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .logoImage {
     height: 22px;
@@ -276,11 +297,13 @@
     max-width: 96px;
   }
   .navLink {
-    font-size: 0.72rem;
-    padding: 4px 10px;
+    font-size: 0.78rem;
+    padding: 10px 12px;
+    min-height: var(--touch-target);
   }
   .userMenuButton {
     max-width: 180px;
+    min-height: var(--touch-target);
   }
   .userEmail {
     display: none;

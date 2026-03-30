@@ -1,12 +1,15 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Eye } from 'lucide-react';
 import {
   apiFetchParties,
   apiFetchCharacterSummaries,
+  apiFetchPartyCharacters,
   apiAddCharacterToParty,
   apiRemoveCharacterFromParty,
   apiRemovePartyMember,
 } from '../../api';
+import type { PartyCharacter } from '../../api/parties';
 import type { Party, PartyMember } from '../../types/party';
 import type { CharacterSummary } from '../../types/character';
 import { useAuth } from '../../features/auth';
@@ -26,6 +29,7 @@ export default function PartyMembersPage() {
   const [party, setParty] = useState<Party | null>(null);
   const [myCharacters, setMyCharacters] = useState<CharacterSummary[]>([]);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [partyCharacters, setPartyCharacters] = useState<PartyCharacter[]>([]);
   const [removeMember, setRemoveMember] = useState<PartyMember | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
 
@@ -35,9 +39,10 @@ export default function PartyMembersPage() {
   const loadData = useCallback(async () => {
     if (!partyId) return;
     try {
-      const [parties, allSummaries] = await Promise.all([
+      const [parties, allSummaries, pChars] = await Promise.all([
         apiFetchParties(),
         apiFetchCharacterSummaries(),
+        apiFetchPartyCharacters(partyId),
       ]);
 
       const found = parties.find((p) => p.id === partyId);
@@ -48,6 +53,7 @@ export default function PartyMembersPage() {
 
       setParty(found);
       setMyCharacters(allSummaries.filter((r) => r.system === found.system));
+      setPartyCharacters(pChars);
     } catch (err) {
       console.error('Erro ao carregar membros:', err);
     }
@@ -113,6 +119,12 @@ export default function PartyMembersPage() {
     ],
     [navigate, system, partyId],
   );
+
+  const partyCharsMap = useMemo(() => {
+    const map = new Map<string, PartyCharacter>();
+    for (const c of partyCharacters) map.set(c._id, c);
+    return map;
+  }, [partyCharacters]);
 
   if (accessDenied) return <AccessDeniedPage />;
 
@@ -204,39 +216,71 @@ export default function PartyMembersPage() {
                 ? myCharacters.filter((c) => myCharIds.has(c._id)).map((c) => c.name)
                 : [];
 
+              const memberChars = isOwner && !isMemberOwner
+                ? memberCharIds.map((cid) => partyCharsMap.get(cid)).filter(Boolean) as PartyCharacter[]
+                : [];
+
               return (
-                <div key={member.uid} className={styles.memberRow}>
-                  <div className={styles.memberInfo}>
-                    <div
-                      className={styles.memberAvatar}
-                      style={{ background: getAvatarColor(member.email || member.uid) }}
-                    >
-                      {getInitials(member.email || member.uid)}
+                <div key={member.uid} className={styles.memberBlock}>
+                  <div className={styles.memberRow}>
+                    <div className={styles.memberInfo}>
+                      <div
+                        className={styles.memberAvatar}
+                        style={{ background: getAvatarColor(member.email || member.uid) }}
+                      >
+                        {getInitials(member.email || member.uid)}
+                      </div>
+                      <div className={styles.memberDetails}>
+                        <span className={styles.memberEmail}>
+                          {member.email || member.uid}
+                          {isSelf && <span className={styles.selfBadge}>(você)</span>}
+                          {isMemberOwner && <span className={styles.ownerBadge}>Mestre</span>}
+                        </span>
+                        <span className={styles.memberChar}>
+                          {memberCharIds.length > 0
+                            ? isSelf
+                              ? memberCharNames.join(', ')
+                              : `${memberCharIds.length} personagem${memberCharIds.length !== 1 ? 's' : ''}`
+                            : 'Nenhum personagem selecionado'}
+                        </span>
+                      </div>
                     </div>
-                    <div className={styles.memberDetails}>
-                      <span className={styles.memberEmail}>
-                        {member.email || member.uid}
-                        {isSelf && <span className={styles.selfBadge}>(você)</span>}
-                        {isMemberOwner && <span className={styles.ownerBadge}>Mestre</span>}
-                      </span>
-                      <span className={styles.memberChar}>
-                        {memberCharIds.length > 0
-                          ? isSelf
-                            ? memberCharNames.join(', ')
-                            : `${memberCharIds.length} personagem${memberCharIds.length !== 1 ? 's' : ''}`
-                          : 'Nenhum personagem selecionado'}
-                      </span>
-                    </div>
+                    {isOwner && !isMemberOwner && (
+                      <button
+                        type="button"
+                        className={styles.removeMemberBtn}
+                        title="Remover membro"
+                        onClick={() => setRemoveMember(member)}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
-                  {isOwner && !isMemberOwner && (
-                    <button
-                      type="button"
-                      className={styles.removeMemberBtn}
-                      title="Remover membro"
-                      onClick={() => setRemoveMember(member)}
-                    >
-                      ✕
-                    </button>
+
+                  {memberChars.length > 0 && (
+                    <div className={styles.memberCharCards}>
+                      {memberChars.map((ch) => (
+                        <button
+                          key={ch._id}
+                          type="button"
+                          className={styles.viewCharBtn}
+                          onClick={() => navigate(`/${system}/party/${partyId}/char/${ch._id}`)}
+                          title={`Ver ficha de ${ch.name}`}
+                        >
+                          <div
+                            className={styles.viewCharAvatar}
+                            style={ch.avatar ? undefined : { background: getAvatarColor(ch.name) }}
+                          >
+                            {ch.avatar ? <img src={ch.avatar} alt="" /> : getInitials(ch.name)}
+                          </div>
+                          <div className={styles.viewCharInfo}>
+                            <span className={styles.viewCharName}>{ch.name}</span>
+                            <span className={styles.viewCharClass}>{formatClassesStr(ch.classes)}</span>
+                          </div>
+                          <Eye size={16} className={styles.viewCharIcon} />
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               );

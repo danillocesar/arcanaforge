@@ -9,6 +9,8 @@ const characterSchema = new mongoose.Schema(
     name: { type: String, default: '' },
     avatar: { type: String, default: '' },
     classes: { type: Array, default: [] },
+    deletedAt: { type: Date, default: null },
+    pendingDeleteAt: { type: Date, default: null },
   },
   {
     strict: false,

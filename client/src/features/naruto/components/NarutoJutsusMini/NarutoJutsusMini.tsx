@@ -140,7 +140,7 @@ export default function NarutoJutsusMini() {
                         onClick={() => openCast(jutsu, lv)}
                         title="Usar"
                       >
-                        <Sparkles size={14} aria-hidden="true" />
+                        <Sparkles size={18} aria-hidden="true" />
                       </button>
                     </div>
                   );
@@ -169,7 +169,7 @@ export default function NarutoJutsusMini() {
                         onClick={() => openCast(jutsu, lv)}
                         title={`Usar no Nv ${lv}`}
                       >
-                        <Sparkles size={14} aria-hidden="true" />
+                        <Sparkles size={18} aria-hidden="true" />
                       </button>
                     </div>
                   );
@@ -221,7 +221,7 @@ export default function NarutoJutsusMini() {
                   onClick={() => setAttackWeaponIdx(wi)}
                   title="Atacar"
                 >
-                  <Sword size={14} aria-hidden="true" />
+                  <Sword size={18} aria-hidden="true" />
                 </button>
               </div>
             );
@@ -278,7 +278,7 @@ export default function NarutoJutsusMini() {
                   })}
                   title="Atacar"
                 >
-                  <Sword size={14} aria-hidden="true" />
+                  <Sword size={18} aria-hidden="true" />
                 </button>
               </div>
             );

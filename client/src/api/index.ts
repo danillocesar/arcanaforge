@@ -19,6 +19,7 @@ export {
   apiRemovePartyMember,
   apiRegenerateInviteCode,
   apiFetchPartyCharacters,
+  apiLoadPartyCharacter,
   apiLoadCombat,
   apiSaveCombat,
 } from './parties';
