@@ -5,7 +5,10 @@ const { toCharacterDetailDTO } = require('../dto/character.dto');
 const { generatePartyId, generateInviteCode } = require('../utils/inviteCode');
 const partyRepository = require('../repositories/party.repository');
 const characterRepository = require('../repositories/character.repository');
+const characterContentRepository = require('../repositories/characterContent.repository');
+const characterLogsRepository = require('../repositories/characterLogs.repository');
 const combatRepository = require('../repositories/combat.repository');
+const { mergeCharacterDocs } = require('./character.service');
 
 const VALID_SYSTEMS = ['tormenta', 'naruto'];
 
@@ -183,10 +186,14 @@ function createPartyService(refs) {
       throw new AppError(404, 'Personagem não pertence a esta party');
     }
 
-    const character = await characterRepository.findActiveById(characterId);
+    const [character, content, logsDoc] = await Promise.all([
+      characterRepository.findActiveById(characterId),
+      characterContentRepository.findById(characterId),
+      characterLogsRepository.findById(characterId),
+    ]);
     if (!character) throw new AppError(404, 'Personagem não encontrado');
 
-    return toCharacterDetailDTO(character);
+    return toCharacterDetailDTO(mergeCharacterDocs(character, content, logsDoc));
   }
 
   return {
