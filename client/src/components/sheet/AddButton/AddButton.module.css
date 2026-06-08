@@ -1,0 +1,30 @@
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px 6px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12.5px;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.15s var(--ease);
+}
+
+.add:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.add:active {
+  transform: scale(0.96);
+}
+
+.plus {
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 700;
+}

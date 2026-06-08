@@ -3,6 +3,7 @@ import { formatMod } from '../../../utils/calculations';
 import type { InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import type { EntityKind } from '../SheetForm/entityForms';
 import styles from './EquipamentosPanel.module.css';
@@ -26,8 +27,8 @@ function isComum(item: InventoryItem): boolean {
  * row exposes a × that removes the entry from its source array via updateCharacter.
  */
 function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
-  const { character, updateCharacter } = useCharacterContext();
-  const { openEdit } = useSheetForm();
+  const { character, updateCharacter, readOnly } = useCharacterContext();
+  const { openEdit, openCreate } = useSheetForm();
 
   if (!character) return null;
 
@@ -82,7 +83,10 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
   return (
     <div className={styles.panel}>
       {/* ─── 1. EQUIPAMENTOS ─── */}
-      <SectionHeader title="Equipamentos" />
+      <SectionHeader
+        title="Equipamentos"
+        action={!readOnly && <AddButton label="Item" onClick={() => openCreate('item')} />}
+      />
 
       <div className={styles.subHead}>Armas</div>
       {attacks.length > 0 ? (

@@ -8,10 +8,8 @@ import {
 } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import SegmentedControl from '../../ui/SegmentedControl/SegmentedControl';
-import FabSpeedDial from '../../ui/FabSpeedDial/FabSpeedDial';
 import SheetForm, { type FormValues } from './SheetForm';
 import { ENTITY_FORMS, ITEM_KINDS, type EntityKind } from './entityForms';
-import styles from './SheetFormProvider.module.css';
 
 type OpenKind = EntityKind | 'item';
 
@@ -105,23 +103,5 @@ export function SheetFormProvider({ children }: { children: ReactNode }) {
         />
       )}
     </SheetFormContext.Provider>
-  );
-}
-
-/** FAB speed-dial wired to the form API (Magia · Poder · Habilidade · Buff · Item). */
-export function SheetFab({ position }: { position: 'phone' | 'desk' }) {
-  const { openCreate } = useSheetForm();
-  return (
-    <FabSpeedDial
-      position={position}
-      className={styles.fab}
-      actions={[
-        { label: 'Magia', icon: '🜂', onClick: () => openCreate('magia') },
-        { label: 'Poder', icon: '✦', onClick: () => openCreate('poder') },
-        { label: 'Habilidade', icon: '◈', onClick: () => openCreate('habilidade') },
-        { label: 'Buff', icon: '✧', onClick: () => openCreate('buff') },
-        { label: 'Item', icon: '🜸', onClick: () => openCreate('item') },
-      ]}
-    />
   );
 }

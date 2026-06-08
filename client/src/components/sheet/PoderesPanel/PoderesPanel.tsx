@@ -1,5 +1,6 @@
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import AbilityCard from '../AbilityCard/AbilityCard';
+import AddButton from '../AddButton/AddButton';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './PoderesPanel.module.css';
@@ -10,8 +11,8 @@ interface PoderesPanelProps {
 }
 
 function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
-  const { character, updateCharacter } = useCharacterContext();
-  const { openEdit } = useSheetForm();
+  const { character, updateCharacter, readOnly } = useCharacterContext();
+  const { openEdit, openCreate } = useSheetForm();
 
   if (!character) return null;
 
@@ -35,7 +36,14 @@ function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
     <section>
       <SectionHeader
         title="Poderes & Habilidades"
-        action={`${abilities.length} ${abilities.length === 1 ? 'item' : 'itens'}`}
+        action={
+          !readOnly && (
+            <div className={styles.addRow}>
+              <AddButton label="Poder" onClick={() => openCreate('poder')} />
+              <AddButton label="Habilidade" onClick={() => openCreate('habilidade')} />
+            </div>
+          )
+        }
       />
       {abilities.length === 0 ? (
         <p className={styles.empty}>Nenhum poder ou habilidade cadastrado.</p>

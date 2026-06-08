@@ -13,7 +13,7 @@ import SkillsPanel from '../../components/sheet/SkillsPanel/SkillsPanel';
 import PoderesPanel from '../../components/sheet/PoderesPanel/PoderesPanel';
 import MagiasPanel from '../../components/sheet/MagiasPanel/MagiasPanel';
 import EquipamentosPanel from '../../components/sheet/EquipamentosPanel/EquipamentosPanel';
-import { SheetFormProvider, SheetFab } from '../../components/sheet/SheetForm/SheetFormProvider';
+import { SheetFormProvider } from '../../components/sheet/SheetForm/SheetFormProvider';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import styles from './CharacterSheetPage.module.css';
@@ -105,7 +105,6 @@ function CharacterSheetInner() {
               <main className={styles.detail}>{panel}</main>
             </div>
           </div>
-          <SheetFab position="desk" />
         </div>
       </SheetFormProvider>
     );
@@ -123,7 +122,6 @@ function CharacterSheetInner() {
           variant="tabs"
           trailing={{ label: 'Menu', icon: '☰', onClick: () => setMenuOpen(true), active: menuOpen }}
         />
-        <SheetFab position="phone" />
         <MobileAppMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
       </div>
     </SheetFormProvider>

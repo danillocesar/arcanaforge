@@ -1,6 +1,7 @@
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import Card from '../../ui/Card/Card';
 import SpellCard from '../SpellCard/SpellCard';
+import AddButton from '../AddButton/AddButton';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import { calcSpellResistance, formatMod, getEffectiveAttribute } from '../../../utils/calculations';
@@ -13,8 +14,8 @@ interface MagiasPanelProps {
 }
 
 function MagiasPanel({ editMode = false, onRemove }: MagiasPanelProps) {
-  const { character, updateCharacter, sendSpellCast } = useCharacterContext();
-  const { openEdit } = useSheetForm();
+  const { character, updateCharacter, sendSpellCast, readOnly } = useCharacterContext();
+  const { openEdit, openCreate } = useSheetForm();
 
   if (!character) return null;
 
@@ -87,7 +88,7 @@ function MagiasPanel({ editMode = false, onRemove }: MagiasPanelProps) {
       <SectionHeader
         title="Conhecidas"
         className={styles.gapHead}
-        action={`${spells.length} ${spells.length === 1 ? 'magia' : 'magias'}`}
+        action={!readOnly && <AddButton label="Magia" onClick={() => openCreate('magia')} />}
       />
 
       {spells.length === 0 ? (

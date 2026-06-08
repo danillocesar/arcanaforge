@@ -1,6 +1,7 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import ActionCard from '../ActionCard/ActionCard';
+import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './AcoesPanel.module.css';
 
@@ -14,8 +15,8 @@ interface AcoesPanelProps {
  * same weapons as plain gear rows instead.
  */
 function AcoesPanel({ editMode = false }: AcoesPanelProps) {
-  const { character } = useCharacterContext();
-  const { openEdit } = useSheetForm();
+  const { character, readOnly } = useCharacterContext();
+  const { openEdit, openCreate } = useSheetForm();
 
   if (!character) return null;
 
@@ -23,7 +24,10 @@ function AcoesPanel({ editMode = false }: AcoesPanelProps) {
 
   return (
     <div className={styles.panel}>
-      <SectionHeader title="Ataques" />
+      <SectionHeader
+        title="Ataques"
+        action={!readOnly && <AddButton label="Ataque" onClick={() => openCreate('arma')} />}
+      />
       {attacks.length > 0 ? (
         <div className={styles.grid}>
           {attacks.map((attack, idx) => (
