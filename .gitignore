@@ -45,6 +45,9 @@ Thumbs.db
 # Docker / MongoDB
 mongo-data/
 
+# Claude Code (local-only settings)
+.claude/settings.local.json
+
 # Misc
 *.tgz
 *.swp
