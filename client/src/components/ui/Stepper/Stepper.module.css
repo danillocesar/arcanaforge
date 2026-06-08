@@ -1,0 +1,69 @@
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 5px;
+  background: var(--line-2);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--accent);
+  transition: width 0.35s var(--ease);
+}
+
+.val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  min-width: 1.5ch;
+  text-align: center;
+}
+
+.stepBtn {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 11px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s var(--ease), background 0.2s;
+}
+
+.stepBtn:hover:not(:disabled) {
+  background: var(--line-2);
+}
+
+.stepBtn:active:not(:disabled) {
+  transform: scale(0.88);
+}
+
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepBtn.plus {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.stepBtn.plus:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.22);
+}

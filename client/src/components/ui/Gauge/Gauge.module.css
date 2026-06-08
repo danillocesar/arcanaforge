@@ -1,0 +1,69 @@
+.vital {
+  background: var(--surface-2);
+  border-radius: 15px;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lab {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+.val small {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.track {
+  height: 4px;
+  border-radius: 3px;
+  background: var(--line-2);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.track i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.pv .val {
+  color: var(--accent-ink);
+}
+
+.pv .track i {
+  background: var(--accent);
+}
+
+.pm .val {
+  color: #60a5fa;
+}
+
+.pm .track i {
+  background: #3b82f6;
+}
+
+.def {
+  display: flex;
+  flex-direction: column;
+}
+
+.def .val {
+  color: var(--ink);
+}

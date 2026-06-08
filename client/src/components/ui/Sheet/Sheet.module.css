@@ -1,0 +1,141 @@
+/* ===== BOTTOM SHEET (mobile) / MODAL (desktop) ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 5, 8, 0.72);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+  backdrop-filter: blur(2px);
+}
+
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: var(--surface);
+  border-radius: 26px 26px 0 0;
+  border-top: 1px solid var(--line-2);
+  box-shadow: 0 -20px 60px -20px rgba(0, 0, 0, 0.8);
+  transform: translateY(100%);
+  transition: transform 0.35s var(--ease);
+  display: flex;
+  flex-direction: column;
+  max-height: 88%;
+}
+
+.sheet.open {
+  transform: translateY(0);
+}
+
+.sheetHead {
+  padding: 16px 20px 12px;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.sheetHead::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 4px;
+  border-radius: 3px;
+  background: var(--line-2);
+}
+
+.stRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.sheetHead h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.sheetX {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s var(--ease);
+}
+
+.sheetX:hover {
+  background: var(--line-2);
+  color: var(--ink);
+}
+
+.sheetX:active {
+  transform: scale(0.88);
+}
+
+.sheetBody {
+  padding: 8px 20px 16px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.sheetBody::-webkit-scrollbar {
+  display: none;
+}
+
+.sheetFoot {
+  padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
+  flex: 0 0 auto;
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* desktop modal variant: same .sheet but centered dialog */
+.sheet.modal {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  top: 50%;
+  transform: translate(-50%, -46%);
+  opacity: 0;
+  width: min(560px, 92%);
+  max-height: 84%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+
+.sheet.modal.open {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sheet.modal .sheetHead::before {
+  display: none;
+}
