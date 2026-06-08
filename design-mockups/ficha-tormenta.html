@@ -1,0 +1,3228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ficha Tormenta 20 — Protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0c0d11;
+    --surface:#16181e;
+    --surface-2:#1e2027;
+    --ink:#e9eaed;
+    --ink-2:#9ba1ad;
+    --ink-3:#6b707c;
+    --line:#23262e;
+    --line-2:#2c2f38;
+    --accent:#10b981;
+    --accent-deep:#0c9a6c;
+    --accent-soft:rgba(16,185,129,.13);
+    --accent-ink:#4ade80;
+    --warn:#f0a830;
+    --warn-soft:rgba(240,168,48,.13);
+    --danger:#fb5570;
+    --danger-soft:rgba(251,85,112,.13);
+    --r-lg:22px;
+    --r-md:18px;
+    --r-sm:13px;
+    --shadow-card:0 1px 2px rgba(0,0,0,.5), 0 12px 30px -14px rgba(0,0,0,.7);
+    --shadow-soft:0 1px 2px rgba(0,0,0,.4), 0 4px 12px -6px rgba(0,0,0,.5);
+    --shadow-pop:0 18px 50px -16px rgba(16,185,129,.45);
+    --font-display:"Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+    --font-body:"Plus Jakarta Sans", sans-serif;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body{
+    font-family:var(--font-body);
+    background:
+      radial-gradient(1200px 600px at 12% -8%, rgba(16,185,129,.10) 0%, transparent 55%),
+      radial-gradient(1000px 700px at 108% 6%, rgba(96,165,250,.06) 0%, transparent 50%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+  }
+
+  /* ============================================================
+     TOP NAV (hub router)
+     ============================================================ */
+  .topnav{
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    padding:13px 22px;
+    background:rgba(12,13,17,.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+    box-shadow:0 12px 30px -22px rgba(0,0,0,.9);
+  }
+  .topnav .brand{
+    display:flex; align-items:center; gap:11px; flex:1 1 auto; min-width:0;
+  }
+  .topnav .brand .mark{
+    width:34px; height:34px; flex:0 0 34px; border-radius:11px;
+    background:linear-gradient(150deg,#10b981,#0b7d5c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:800; font-size:16px; color:#fff;
+    box-shadow:var(--shadow-pop);
+  }
+  .topnav .brand .ttl{ font-family:var(--font-display); font-weight:700; font-size:15.5px; letter-spacing:-.02em; white-space:nowrap; }
+  .topnav .brand .ttl em{ font-style:normal; color:var(--accent-ink); }
+  .topnav .controls{ display:flex; align-items:center; gap:12px; flex:0 0 auto; flex-wrap:wrap; }
+
+  .segctl{ display:flex; gap:4px; background:var(--surface-2); border-radius:13px; padding:4px; border:1px solid var(--line); }
+  .segctl button{
+    padding:8px 15px; border:none; cursor:pointer; border-radius:9px;
+    background:transparent; color:var(--ink-3); font-family:var(--font-body); font-weight:700; font-size:13px;
+    display:flex; align-items:center; gap:7px;
+    transition:background .2s var(--ease), color .2s;
+  }
+  .segctl button .gl{ font-size:13px; }
+  .segctl button.on{ background:var(--surface); color:var(--accent-ink); box-shadow:var(--shadow-soft); }
+
+  /* ============================================================
+     STAGE + VIEW ROUTER
+     ============================================================ */
+  .stage{
+    padding:42px 22px 90px;
+    display:flex; flex-direction:column; align-items:center; gap:26px;
+    min-height:calc(100vh - 62px);
+  }
+  .view{ display:none; width:100%; flex-direction:column; align-items:center; gap:24px; }
+  .view.active{ display:flex; }
+
+  .view-head{ width:min(1100px,100%); display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; animation:rise .6s var(--ease) both; }
+  .view-eyebrow{
+    display:inline-flex; align-items:center; gap:9px;
+    font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-ink); background:var(--accent-soft);
+    padding:7px 14px; border-radius:999px;
+  }
+  .view-eyebrow::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(16,185,129,.16); }
+  .view-title{ font-family:var(--font-display); font-weight:700; font-size:26px; letter-spacing:-.02em; color:var(--ink); }
+  .view-sub{ font-size:13px; color:var(--ink-2); max-width:520px; line-height:1.5; }
+
+  .scroll-pad{ width:100%; display:flex; justify-content:center; overflow-x:auto; padding-bottom:6px; scrollbar-width:thin; }
+
+  /* ============================================================
+     PHONE FRAME (shared)
+     ============================================================ */
+  .phone{
+    width:392px; max-width:100%; flex:0 0 auto;
+    background:#05060a;
+    border-radius:46px;
+    padding:11px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 2px 4px rgba(0,0,0,.5),
+      0 40px 80px -30px rgba(0,0,0,.85);
+    position:relative;
+    animation:rise .7s var(--ease) .05s both;
+  }
+  .screen{
+    background:var(--bg);
+    border-radius:36px;
+    overflow:hidden;
+    height:812px;
+    position:relative;
+    display:flex; flex-direction:column;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+  }
+  .statusbar{
+    height:44px; flex:0 0 44px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 26px 0 30px;
+    font-size:13px; font-weight:600; color:var(--ink);
+    position:relative; z-index:6; background:var(--surface);
+  }
+  .statusbar .dots{ display:flex; gap:5px; align-items:center; }
+  .statusbar .sig{ display:flex; gap:2px; align-items:flex-end; }
+  .statusbar .sig i{ width:3px; background:var(--ink); border-radius:2px; display:block; }
+  .statusbar .sig i:nth-child(1){height:5px;opacity:.4}
+  .statusbar .sig i:nth-child(2){height:7px;opacity:.6}
+  .statusbar .sig i:nth-child(3){height:9px;opacity:.8}
+  .statusbar .sig i:nth-child(4){height:11px}
+  .statusbar .batt{ width:24px; height:12px; border:1.5px solid var(--ink); border-radius:3px; position:relative; opacity:.85; }
+  .statusbar .batt::after{ content:""; position:absolute; right:-3px; top:3px; width:2px; height:6px; background:var(--ink); border-radius:0 2px 2px 0; }
+  .statusbar .batt::before{ content:""; position:absolute; inset:1.5px; right:7px; background:var(--accent); border-radius:1px; }
+  .notch{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:118px; height:30px; background:#000; border-radius:18px; z-index:8; }
+
+  /* ---------- ficha sticky header (vitals) ---------- */
+  .app-header{
+    flex:0 0 auto; background:var(--surface);
+    padding:8px 18px 16px; z-index:5;
+    box-shadow:0 10px 24px -18px rgba(0,0,0,.9);
+    border-bottom:1px solid var(--line);
+  }
+  .id-row{ display:flex; align-items:center; gap:13px; }
+  .avatar{
+    width:54px; height:54px; flex:0 0 54px; border-radius:17px;
+    background:linear-gradient(150deg,#10b981,#0b7d5c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:24px; color:#fff;
+    box-shadow:var(--shadow-pop); position:relative;
+  }
+  .avatar::after{ content:"2"; position:absolute; right:-5px; bottom:-5px; width:23px; height:23px; border-radius:50%; background:var(--surface-2); color:var(--ink); font-family:var(--font-display); font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.5); border:2px solid var(--surface); }
+  .id-meta{ min-width:0; flex:1; }
+  .id-name{ font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:-.02em; line-height:1.05; }
+  .id-line{ font-size:12.5px; color:var(--ink-2); margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .id-line .div{ color:var(--accent-ink); font-weight:600; }
+  .id-line .dot{ width:3px;height:3px;border-radius:50%;background:var(--ink-3); }
+  .lvl-pill{ flex:0 0 auto; text-align:center; background:var(--surface-2); border-radius:14px; padding:6px 12px; }
+  .lvl-pill b{ display:block; font-family:var(--font-display); font-weight:700; font-size:18px; line-height:1; }
+  .lvl-pill span{ font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+
+  .vitals{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:14px; }
+  .vital{ background:var(--surface-2); border-radius:15px; padding:10px 12px; position:relative; overflow:hidden; }
+  .vital .lab{ font-size:9.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .vital .val{ font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:-.02em; margin-top:2px; line-height:1; }
+  .vital .val small{ font-size:12px; color:var(--ink-3); font-weight:600; }
+  .vital .track{ height:4px; border-radius:3px; background:var(--line-2); margin-top:8px; overflow:hidden; }
+  .vital .track i{ display:block; height:100%; border-radius:3px; }
+  .vital.pv .val{ color:var(--accent-ink); }
+  .vital.pv .track i{ width:100%; background:var(--accent); }
+  .vital.pm .val{ color:#60a5fa; }
+  .vital.pm .track i{ width:75%; background:#3b82f6; }
+  .vital.def{ display:flex; flex-direction:column; }
+  .vital.def .val{ color:var(--ink); }
+  .vital.def .shield{ position:absolute; right:9px; top:9px; font-size:13px; opacity:.5; }
+
+  /* ---------- ficha scroll body ---------- */
+  .body{ flex:1; overflow-y:auto; overflow-x:hidden; padding:16px 16px 24px; scrollbar-width:none; }
+  .body::-webkit-scrollbar{ display:none; }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+  .tab-panel.active > *{ animation:rise .5s var(--ease) both; }
+  .tab-panel.active > *:nth-child(1){animation-delay:.02s}
+  .tab-panel.active > *:nth-child(2){animation-delay:.07s}
+  .tab-panel.active > *:nth-child(3){animation-delay:.12s}
+  .tab-panel.active > *:nth-child(4){animation-delay:.17s}
+  .tab-panel.active > *:nth-child(5){animation-delay:.22s}
+  .tab-panel.active > *:nth-child(6){animation-delay:.27s}
+
+  .sec-head{ display:flex; align-items:baseline; justify-content:space-between; margin:4px 2px 11px; }
+  .sec-head h2{ font-family:var(--font-display); font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .sec-head span{ font-size:11px; color:var(--ink-3); font-weight:600; }
+  .sec-head.gap{ margin-top:24px; }
+
+  .card{ background:var(--surface); border-radius:var(--r-md); box-shadow:var(--shadow-soft); border:1px solid var(--line); }
+
+  /* attribute grid (ficha read-only) */
+  .attr-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .attr{
+    background:var(--surface); border-radius:var(--r-md); padding:15px 12px 14px;
+    text-align:center; box-shadow:var(--shadow-soft); border:1px solid var(--line); position:relative;
+    transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+    cursor:default;
+  }
+  .attr:active{ transform:scale(.97); }
+  .attr .lab{ font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); }
+  .attr .mod{ font-family:var(--font-display); font-weight:700; font-size:32px; letter-spacing:-.03em; line-height:1; margin-top:6px; }
+  .attr .sub{ font-size:9.5px; color:var(--ink-3); margin-top:5px; font-weight:600; }
+  .attr.key{ background:linear-gradient(160deg,#0e9d6f,#0a6f51); color:#fff; box-shadow:var(--shadow-pop); border-color:transparent; }
+  .attr.key .lab,.attr.key .sub{ color:rgba(255,255,255,.82); }
+  .attr.key .mod{ color:#fff; }
+  .attr.key .star{ position:absolute; top:9px; right:11px; font-size:11px; }
+
+  /* defense detail */
+  .def-card{ padding:16px; display:flex; align-items:center; gap:16px; }
+  .def-big{ flex:0 0 auto; width:74px; height:74px; border-radius:20px; background:var(--surface-2); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .def-big b{ font-family:var(--font-display); font-weight:800; font-size:32px; line-height:1; }
+  .def-big span{ font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:2px; }
+  .def-break{ flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+  .def-break .row{ display:flex; align-items:baseline; justify-content:space-between; font-size:12px; }
+  .def-break .row span{ color:var(--ink-2); }
+  .def-break .row b{ font-family:var(--font-display); font-weight:600; }
+
+  /* steppers */
+  .resource{ padding:14px 15px; }
+  .resource + .resource{ margin-top:10px; }
+  .res-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+  .res-top .name{ font-size:13px; font-weight:700; }
+  .res-top .name em{ font-style:normal; color:var(--ink-3); font-weight:600; font-size:11px; margin-left:6px; }
+  .res-now{ font-family:var(--font-display); font-weight:700; font-size:17px; }
+  .res-now small{ color:var(--ink-3); font-size:12px; font-weight:600; }
+  .stepper{ display:flex; align-items:center; gap:10px; }
+  .stepper .bar{ flex:1; height:8px; border-radius:5px; background:var(--line-2); overflow:hidden; }
+  .stepper .bar i{ display:block; height:100%; border-radius:5px; transition:width .35s var(--ease); }
+  .step-btn{
+    width:34px; height:34px; flex:0 0 34px; border-radius:11px; border:none; cursor:pointer;
+    background:var(--surface-2); color:var(--ink); font-size:19px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s var(--ease), background .2s;
+  }
+  .step-btn:hover{ background:var(--line-2); }
+  .step-btn:active{ transform:scale(.88); }
+  .step-btn.plus{ background:var(--accent-soft); color:var(--accent-ink); }
+  .step-btn.plus:hover{ background:rgba(16,185,129,.22); }
+
+  /* chips */
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  /* INATIVO (padrão): contorno apagado, texto suave, ponto fraco */
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:999px;
+    font-size:12px; font-weight:600; background:transparent; color:var(--ink-2);
+    border:1px solid var(--line-2);
+    transition:background .15s, border-color .15s, color .15s, box-shadow .15s, opacity .15s;
+  }
+  .chip::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--ink-3);
+    box-shadow:none; transition:background .15s, box-shadow .15s; }
+  /* ATIVO (verde, padrão): preenchido, texto vivo, ponto aceso com halo */
+  .chip.on{ background:var(--accent-soft); border-color:rgba(16,185,129,.55); color:var(--accent-ink); }
+  .chip.on::before{ background:var(--accent); box-shadow:0 0 0 3px rgba(16,185,129,.25); }
+  /* CATEGORIAS: ponto tingido (dica) quando inativo; cor cheia só quando ativo */
+  .chip.surge::before{ background:rgba(240,168,48,.55); }
+  .chip.surge.on{ background:var(--warn-soft); border-color:rgba(240,168,48,.55); color:#fbbf24; }
+  .chip.surge.on::before{ background:var(--warn); box-shadow:0 0 0 3px rgba(240,168,48,.25); }
+  .chip.bleed::before{ background:rgba(251,85,112,.55); }
+  .chip.bleed.on{ background:var(--danger-soft); border-color:rgba(251,85,112,.55); color:#fb7185; }
+  .chip.bleed.on::before{ background:var(--danger); box-shadow:0 0 0 3px rgba(251,85,112,.25); }
+
+  /* skills (ficha read-only list) */
+  .skill-list{ overflow:hidden; }
+  .skill{ display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); }
+  .skill:last-child{ border-bottom:none; }
+  .skill .ico{ width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .skill .nm{ flex:1; font-size:13.5px; font-weight:600; }
+  .skill .nm small{ display:block; font-size:10px; color:var(--ink-3); font-weight:600; margin-top:1px; }
+  .skill .vl{ font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--ink); }
+  .skill.trained .ico{ background:var(--accent-soft); }
+  .skill.trained .vl{ color:var(--accent-ink); }
+  .skill .tag{ font-size:8.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-ink); background:var(--accent-soft); padding:2px 6px; border-radius:5px; margin-left:7px; vertical-align:middle; }
+
+  /* powers */
+  .pow-group{ margin-bottom:6px; }
+  .pow-src{ font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:18px 4px 9px; display:flex; align-items:center; gap:8px; }
+  .pow-src::after{ content:""; flex:1; height:1px; background:var(--line-2); }
+  .pow{ padding:14px 15px; margin-bottom:9px; display:flex; gap:12px; }
+  .pow .glyph{ width:38px; height:38px; flex:0 0 38px; border-radius:12px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .pow.hi .glyph{ background:var(--accent-soft); }
+  .pow .txt h3{ font-size:13.5px; font-weight:700; letter-spacing:-.01em; }
+  .pow .txt p{ font-size:12px; color:var(--ink-2); line-height:1.45; margin-top:4px; }
+
+  /* magic block */
+  .conj{ padding:16px; display:flex; gap:12px; align-items:center; background:linear-gradient(150deg,#0e9d6f,#0a6f51); color:#fff; box-shadow:var(--shadow-pop); }
+  .conj .ic{ width:46px;height:46px;flex:0 0 46px;border-radius:14px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:22px; }
+  .conj .info{ flex:1; }
+  .conj .info .t{ font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; opacity:.85; }
+  .conj .stats{ display:flex; gap:18px; margin-top:5px; }
+  .conj .stats div b{ font-family:var(--font-display); font-weight:700; font-size:20px; display:block; line-height:1; }
+  .conj .stats div span{ font-size:10px; opacity:.85; font-weight:600; }
+
+  .spell{ padding:14px 15px; margin-bottom:9px; }
+  .spell .top{ display:flex; align-items:flex-start; gap:11px; }
+  .spell .cost{ width:42px; height:42px; flex:0 0 42px; border-radius:12px; background:var(--accent-soft); color:var(--accent-ink); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .spell .cost b{ font-family:var(--font-display); font-weight:700; font-size:18px; line-height:1; }
+  .spell .cost span{ font-size:8px; font-weight:700; letter-spacing:.06em; }
+  .spell .meta{ flex:1; }
+  .spell .meta h3{ font-size:14px; font-weight:700; letter-spacing:-.01em; }
+  .spell .meta .sch{ font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:2px; }
+  .spell .meta p{ font-size:11.5px; color:var(--ink-2); margin-top:6px; line-height:1.4; }
+  .btn-cast{
+    margin-top:11px; width:100%; padding:11px; border-radius:13px; cursor:pointer;
+    background:var(--surface-2); color:var(--ink); border:1px solid var(--line-2);
+    font-family:var(--font-body); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .15s var(--ease), background .2s, border-color .2s;
+  }
+  .btn-cast:hover{ background:var(--line-2); border-color:var(--ink-3); }
+  .btn-cast:active{ transform:scale(.97); }
+
+  /* equipment */
+  .weapon{ padding:15px; margin-bottom:10px; }
+  .weapon .top{ display:flex; align-items:center; gap:12px; }
+  .weapon .wic{ width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px; }
+  .weapon .wname{ flex:1; }
+  .weapon .wname h3{ font-size:14px; font-weight:700; }
+  .weapon .wname span{ font-size:11px; color:var(--ink-3); font-weight:600; }
+  .weapon .stats{ display:flex; gap:14px; margin-top:13px; padding-top:13px; border-top:1px solid var(--line); }
+  .weapon .stats div{ flex:1; }
+  .weapon .stats div span{ font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:block; }
+  .weapon .stats div b{ font-family:var(--font-display); font-weight:700; font-size:16px; margin-top:1px; display:block; }
+  .btn-roll{
+    margin-top:13px; width:100%; padding:12px; border-radius:13px; border:none; cursor:pointer;
+    background:var(--accent); color:#04130d; font-family:var(--font-body); font-weight:800; font-size:13px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 8px 20px -8px rgba(16,185,129,.6);
+    transition:transform .15s var(--ease), box-shadow .2s;
+  }
+  .btn-roll:hover{ box-shadow:0 10px 26px -8px rgba(16,185,129,.8); }
+  .btn-roll:active{ transform:scale(.97); }
+
+  .inv-item{ display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); }
+  .inv-item:last-child{ border-bottom:none; }
+  .inv-item .ii{ width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:14px; }
+  .inv-item .inm{ flex:1; font-size:13px; font-weight:600; }
+  .inv-item .qty{ font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--ink-2); background:var(--surface-2); padding:3px 9px; border-radius:8px; }
+
+  .load{ padding:15px 16px; }
+  .load .top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .load .top span{ font-size:13px; font-weight:700; }
+  .load .top b{ font-family:var(--font-display); font-weight:700; font-size:14px; }
+  .load .cells{ display:grid; grid-template-columns:repeat(10,1fr); gap:5px; }
+  .load .cells i{ height:9px; border-radius:3px; background:var(--line-2); }
+  .load .cells i.fill{ background:var(--accent); }
+
+  .coins{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; }
+  .coin{ padding:14px 10px; text-align:center; background:var(--surface); border-radius:var(--r-md); box-shadow:var(--shadow-soft); border:1px solid var(--line); }
+  .coin b{ font-family:var(--font-display); font-weight:700; font-size:22px; display:block; }
+  .coin span{ font-size:9.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:2px; display:block; }
+  .coin.c-copper b{ color:#d8924f; }
+  .coin.c-silver b{ color:#aab3c2; }
+  .coin.c-gold b{ color:#e6c04a; }
+
+  /* tab bar */
+  .tabbar{
+    flex:0 0 auto; background:var(--surface); border-top:1px solid var(--line);
+    display:grid; grid-template-columns:repeat(5,1fr);
+    padding:9px 8px calc(9px + env(safe-area-inset-bottom));
+    position:relative; z-index:5;
+  }
+  .tab{
+    background:none; border:none; cursor:pointer; padding:7px 2px 5px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    color:var(--ink-3); font-family:var(--font-body); transition:color .2s;
+  }
+  .tab .ti{ font-size:19px; line-height:1; transition:transform .25s var(--ease); }
+  .tab .tl{ font-size:9.5px; font-weight:700; letter-spacing:.01em; }
+  .tab.active{ color:var(--accent-ink); }
+  .tab.active .ti{ transform:translateY(-2px) scale(1.08); }
+  .tab:active .ti{ transform:scale(.85); }
+
+  /* toast */
+  .toast-wrap{ position:absolute; left:0; right:0; bottom:88px; display:flex; flex-direction:column; align-items:center; gap:8px; z-index:30; pointer-events:none; padding:0 18px; }
+  .toast{
+    width:100%; max-width:330px; background:#22252e; color:var(--ink);
+    border:1px solid var(--line-2);
+    border-radius:16px; padding:13px 16px; display:flex; align-items:center; gap:13px;
+    box-shadow:0 20px 44px -12px rgba(0,0,0,.85);
+    transform:translateY(20px) scale(.96); opacity:0;
+    animation:toastIn .35s var(--ease) forwards, toastOut .4s var(--ease) 2.7s forwards;
+  }
+  .toast .roll-d{ width:40px; height:40px; flex:0 0 40px; border-radius:12px; background:var(--accent); color:#04130d; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:800; font-size:17px; }
+  .toast.cast .roll-d{ background:#6366f1; color:#fff; font-size:18px; }
+  .toast .tt{ flex:1; }
+  .toast .tt b{ font-size:13.5px; font-weight:700; display:block; }
+  .toast .tt span{ font-size:11.5px; opacity:.72; }
+  .toast .tot{ font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent-ink); }
+
+  /* ============================================================
+     WIZARD-SPECIFIC (shared between mobile + desktop)
+     ============================================================ */
+  .wiz-header{
+    flex:0 0 auto; background:var(--surface);
+    padding:14px 18px 16px; z-index:5;
+    box-shadow:0 10px 24px -18px rgba(0,0,0,.9);
+    border-bottom:1px solid var(--line);
+  }
+  .wiz-progress{ display:flex; gap:6px; }
+  .wiz-progress i{ flex:1; height:5px; border-radius:3px; background:var(--line-2); overflow:hidden; transition:background .3s var(--ease); }
+  .wiz-progress i.done{ background:var(--accent); }
+  .wiz-progress i.cur{ background:var(--accent); position:relative; }
+  .wiz-progress i.cur::after{ content:""; position:absolute; inset:0; background:linear-gradient(90deg,var(--accent),var(--accent-ink)); animation:shimmer 1.6s linear infinite; }
+  .wiz-meta{ display:flex; align-items:baseline; justify-content:space-between; margin-top:11px; }
+  .wiz-meta .step-of{ font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--ink-3); text-transform:uppercase; }
+  .wiz-meta .step-name{ font-family:var(--font-display); font-weight:700; font-size:17px; letter-spacing:-.02em; color:var(--ink); }
+  .wiz-meta .step-ico{ font-size:15px; color:var(--accent-ink); }
+
+  .step-panel{ display:none; }
+  .step-panel.active{ display:block; }
+  .step-panel.active > *{ animation:rise .5s var(--ease) both; }
+  .step-panel.active > *:nth-child(1){animation-delay:.02s}
+  .step-panel.active > *:nth-child(2){animation-delay:.07s}
+  .step-panel.active > *:nth-child(3){animation-delay:.12s}
+  .step-panel.active > *:nth-child(4){animation-delay:.17s}
+  .step-panel.active > *:nth-child(5){animation-delay:.22s}
+  .step-panel.active > *:nth-child(6){animation-delay:.27s}
+  .step-panel.active > *:nth-child(7){animation-delay:.32s}
+  .step-panel.active > *:nth-child(8){animation-delay:.37s}
+
+  /* ===== CLEAN UNDERLINE FIELDS ===== */
+  .field{ display:flex; flex-direction:column; gap:5px; margin-bottom:18px; position:relative; }
+  .field > label{
+    font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3);
+  }
+  .field input, .field select, .field textarea{
+    width:100%; background:transparent; color:var(--ink);
+    border:none; border-bottom:1.5px solid var(--line-2);
+    padding:8px 2px; font-family:var(--font-body); font-size:15px; font-weight:500;
+    outline:none; transition:border-color .25s var(--ease);
+    border-radius:0;
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:var(--ink-3); font-weight:400; }
+  .field input:focus, .field select:focus, .field textarea:focus{ border-bottom-color:var(--accent); }
+  .field textarea{ resize:none; min-height:74px; line-height:1.5; }
+  .field select{
+    -webkit-appearance:none; appearance:none; cursor:pointer;
+    padding-right:24px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b707c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 2px center;
+  }
+  .field select option{ background:var(--surface-2); color:var(--ink); }
+  .field--sm input, .field--sm select{ font-size:14px; }
+  .frow{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .frow-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .field-hint{ font-size:11px; color:var(--ink-3); font-weight:600; margin-top:-8px; margin-bottom:18px; }
+
+  /* avatar uploader */
+  .avatar-up{ display:flex; flex-direction:column; align-items:center; gap:9px; margin:2px 0 22px; }
+  .avatar-circle{
+    width:96px; height:96px; border-radius:50%;
+    background:var(--surface-2); border:1.5px dashed var(--line-2);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    position:relative; transition:border-color .25s var(--ease), transform .2s var(--ease);
+  }
+  .avatar-circle:active{ transform:scale(.96); }
+  .avatar-circle:hover{ border-color:var(--accent); }
+  .avatar-circle .cam{ font-size:26px; opacity:.55; }
+  .avatar-circle .badge{ position:absolute; right:2px; bottom:2px; width:30px; height:30px; border-radius:50%; background:var(--accent); color:#04130d; display:flex; align-items:center; justify-content:center; font-size:14px; border:3px solid var(--surface); }
+  .avatar-up .cap{ font-size:11px; color:var(--ink-3); font-weight:600; }
+
+  /* repeatable class rows */
+  .class-row{ display:grid; grid-template-columns:1fr 64px 30px; gap:12px; align-items:end; margin-bottom:14px; }
+  .class-row .field{ margin-bottom:0; }
+  .row-x{
+    width:30px; height:30px; border-radius:9px; border:none; cursor:pointer;
+    background:var(--surface-2); color:var(--ink-3); font-size:16px;
+    display:flex; align-items:center; justify-content:center; margin-bottom:7px;
+    transition:background .2s, color .2s, transform .15s var(--ease);
+  }
+  .row-x:hover{ background:var(--danger-soft); color:#fb7185; }
+  .row-x:active{ transform:scale(.85); }
+  .row-x.hidden{ visibility:hidden; pointer-events:none; }
+  .link-add{
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    color:var(--accent-ink); font-size:13px; font-weight:700;
+    background:none; border:none; font-family:var(--font-body); padding:2px 0;
+    transition:opacity .2s;
+  }
+  .link-add:hover{ opacity:.78; }
+  .lvl-total{ font-size:11px; color:var(--ink-3); font-weight:600; margin:2px 2px 0; }
+  .lvl-total b{ color:var(--accent-ink); font-family:var(--font-display); font-size:13px; }
+
+  /* attributes (wizard editable) */
+  .attr-fields{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px 16px; }
+  .attr-field{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .attr-field label{ font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .attr-field input{
+    width:100%; text-align:center; background:transparent; color:var(--ink);
+    border:none; border-bottom:1.5px solid var(--line-2);
+    font-family:var(--font-display); font-weight:700; font-size:34px; letter-spacing:-.03em;
+    padding:4px 0 6px; outline:none; transition:border-color .25s var(--ease);
+    border-radius:0;
+  }
+  .attr-field input:focus{ border-bottom-color:var(--accent); }
+
+  /* skills (wizard toggle) */
+  .skill-search{ margin-bottom:4px; }
+  .skill-line{ display:flex; align-items:center; gap:12px; padding:13px 4px; border-bottom:1px solid var(--line); }
+  .skill-line:last-child{ border-bottom:none; }
+  .skill-line .nm{ flex:1; font-size:14px; font-weight:600; }
+  .skill-line .base{ font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+  .toggle{ position:relative; width:44px; height:26px; flex:0 0 44px; cursor:pointer; }
+  .toggle input{ position:absolute; opacity:0; width:100%; height:100%; cursor:pointer; margin:0; }
+  .toggle .tk{ position:absolute; inset:0; border-radius:999px; background:var(--line-2); transition:background .25s var(--ease); }
+  .toggle .tk::after{ content:""; position:absolute; left:3px; top:3px; width:20px; height:20px; border-radius:50%; background:var(--ink-2); transition:transform .25s var(--ease), background .25s; }
+  .toggle input:checked + .tk{ background:var(--accent); }
+  .toggle input:checked + .tk::after{ transform:translateX(18px); background:#fff; }
+
+  /* powers / spells cards (wizard) */
+  .item-card{ padding:14px 15px; margin-bottom:11px; cursor:pointer; transition:border-color .2s, transform .15s var(--ease); }
+  .item-card:active{ transform:scale(.99); }
+  .item-card:hover{ border-color:var(--line-2); }
+  .item-card .ic-top{ display:flex; align-items:flex-start; gap:10px; }
+  .item-card h3{ font-size:14px; font-weight:700; letter-spacing:-.01em; flex:1; }
+  .item-card .tag{ font-size:8.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-ink); background:var(--accent-soft); padding:3px 8px; border-radius:6px; white-space:nowrap; }
+  .item-card .sub{ font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; }
+  .item-card p{ font-size:12px; color:var(--ink-2); line-height:1.45; margin-top:6px; }
+  .item-card .rm{
+    background:none; border:none; cursor:pointer; color:var(--ink-3); font-size:12px; font-weight:600;
+    padding:0; margin-top:8px; font-family:var(--font-body); transition:color .2s;
+  }
+  .item-card .rm:hover{ color:#fb7185; }
+
+  .btn-add{
+    width:100%; padding:13px; border-radius:13px; cursor:pointer; margin-top:4px;
+    background:var(--surface-2); color:var(--accent-ink); border:1px dashed var(--line-2);
+    font-family:var(--font-body); font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .15s var(--ease), background .2s, border-color .2s;
+  }
+  .btn-add:hover{ background:rgba(16,185,129,.08); border-color:var(--accent); }
+  .btn-add:active{ transform:scale(.98); }
+
+  .conj-mini{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:6px; }
+
+  /* equipment sections (wizard) */
+  .eq-group{ margin-bottom:8px; }
+  .eq-srchead{ font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:20px 4px 10px; display:flex; align-items:center; gap:8px; }
+  .eq-srchead::after{ content:""; flex:1; height:1px; background:var(--line-2); }
+  .eq-srchead:first-child{ margin-top:4px; }
+  .eq-item{ display:flex; align-items:center; gap:12px; padding:13px 4px; border-bottom:1px solid var(--line); }
+  .eq-item:last-child{ border-bottom:none; }
+  .eq-item .ei-main{ flex:1; min-width:0; }
+  .eq-item .ei-name{ font-size:13.5px; font-weight:600; }
+  .eq-item .ei-stats{ font-size:11px; color:var(--ink-3); font-weight:500; margin-top:2px; }
+  .eq-item .ei-qty{ font-family:var(--font-display); font-weight:700; font-size:13px; color:var(--ink-2); }
+
+  .tibares-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+  /* wizard footer (mobile) */
+  .wiz-footer{
+    flex:0 0 auto; background:var(--surface); border-top:1px solid var(--line);
+    display:flex; gap:12px; align-items:center;
+    padding:14px 18px calc(16px + env(safe-area-inset-bottom));
+    position:relative; z-index:5;
+  }
+  .btn-ghost{
+    flex:0 0 auto; padding:13px 20px; border-radius:14px; cursor:pointer;
+    background:transparent; color:var(--ink-2); border:1px solid var(--line-2);
+    font-family:var(--font-body); font-weight:700; font-size:14px;
+    transition:transform .15s var(--ease), background .2s, color .2s, opacity .2s;
+  }
+  .btn-ghost:hover{ background:var(--surface-2); color:var(--ink); }
+  .btn-ghost:active{ transform:scale(.97); }
+  .btn-ghost.disabled{ opacity:.35; pointer-events:none; }
+  .btn-next{
+    flex:1; padding:14px; border-radius:14px; border:none; cursor:pointer;
+    background:var(--accent); color:#04130d; font-family:var(--font-body); font-weight:800; font-size:14.5px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow:0 8px 20px -8px rgba(16,185,129,.6);
+    transition:transform .15s var(--ease), box-shadow .2s;
+  }
+  .btn-next:hover{ box-shadow:0 10px 26px -8px rgba(16,185,129,.8); }
+  .btn-next:active{ transform:scale(.98); }
+
+  /* ===== BOTTOM SHEET (mobile) / MODAL (desktop) ===== */
+  .overlay{
+    position:absolute; inset:0; background:rgba(4,5,8,.72); z-index:40;
+    opacity:0; pointer-events:none; transition:opacity .3s var(--ease);
+    backdrop-filter:blur(2px);
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; z-index:41;
+    background:var(--surface); border-radius:26px 26px 0 0;
+    border-top:1px solid var(--line-2);
+    box-shadow:0 -20px 60px -20px rgba(0,0,0,.8);
+    transform:translateY(100%); transition:transform .35s var(--ease);
+    display:flex; flex-direction:column;
+    max-height:88%;
+  }
+  .sheet.open{ transform:translateY(0); }
+  .sheet-head{ padding:16px 20px 12px; flex:0 0 auto; position:relative; }
+  .sheet-head::before{ content:""; position:absolute; top:7px; left:50%; transform:translateX(-50%); width:38px; height:4px; border-radius:3px; background:var(--line-2); }
+  .sheet-head .st-row{ display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+  .sheet-head h2{ font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:-.02em; }
+  .sheet-x{
+    width:32px; height:32px; border-radius:10px; border:none; cursor:pointer;
+    background:var(--surface-2); color:var(--ink-2); font-size:17px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s, transform .15s var(--ease);
+  }
+  .sheet-x:hover{ background:var(--line-2); color:var(--ink); }
+  .sheet-x:active{ transform:scale(.88); }
+  .sheet-body{ padding:8px 20px 16px; overflow-y:auto; scrollbar-width:none; flex:1; }
+  .sheet-body::-webkit-scrollbar{ display:none; }
+  .sheet-foot{
+    padding:14px 20px calc(18px + env(safe-area-inset-bottom)); flex:0 0 auto;
+    display:flex; gap:12px; border-top:1px solid var(--line);
+  }
+  .sheet-foot .btn-ghost{ flex:1; text-align:center; }
+  .sheet-foot .btn-next{ flex:1; }
+
+  /* desktop modal variant: same .sheet but centered dialog */
+  .sheet.modal{
+    position:absolute; left:50%; right:auto; bottom:auto; top:50%;
+    transform:translate(-50%,-46%); opacity:0;
+    width:min(560px,92%); max-height:84%;
+    border-radius:var(--r-lg); border:1px solid var(--line-2);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.85);
+    pointer-events:none;
+  }
+  .sheet.modal.open{ transform:translate(-50%,-50%); opacity:1; pointer-events:auto; }
+  .sheet.modal .sheet-head::before{ display:none; }
+
+  /* segmented / choice (sheet internals) */
+  .seg-label{ font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
+  .choice-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+  .choice{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:16px 14px; border-radius:14px; border:1px solid var(--line-2); background:var(--surface-2); color:var(--ink); cursor:pointer; text-align:left; transition:.15s; font-family:inherit; }
+  .choice:hover{ border-color:var(--accent); background:rgba(16,185,129,.08); transform:translateY(-1px); }
+  .choice:active{ transform:scale(.98); }
+  .choice b{ font-size:15px; font-weight:700; }
+  .choice span{ font-size:11px; color:var(--ink-3); line-height:1.3; }
+  .sheet-back{ background:none; border:none; color:var(--accent-ink); font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; padding:4px 0; margin-bottom:10px; display:inline-flex; align-items:center; gap:4px; }
+  .sheet-back:hover{ opacity:.8; }
+
+  .imp-row{ display:grid; grid-template-columns:70px 1fr 30px; gap:12px; align-items:end; margin-bottom:12px; }
+  .imp-row .field{ margin-bottom:0; }
+  .sheet-subhead{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:14px 2px 12px; display:flex; align-items:center; gap:8px; }
+  .sheet-subhead::after{ content:""; flex:1; height:1px; background:var(--line-2); }
+
+  /* ============================================================
+     DESKTOP / TABLET FRAME (shared chrome)
+     ============================================================ */
+  .desktop{
+    width:min(1100px,100%); flex:0 0 auto; background:var(--bg);
+    border-radius:26px; padding:0; overflow:hidden;
+    box-shadow:0 1px 2px rgba(0,0,0,.5), 0 40px 90px -40px rgba(0,0,0,.8);
+    animation:rise .8s var(--ease) .1s both;
+    border:1px solid var(--line);
+    position:relative;
+  }
+  .d-chrome{ height:42px; display:flex; align-items:center; gap:8px; padding:0 18px; background:var(--surface); border-bottom:1px solid var(--line); }
+  .d-chrome .tl{ display:flex; gap:7px; }
+  .d-chrome .tl i{ width:11px; height:11px; border-radius:50%; }
+  .d-chrome .tl i:nth-child(1){background:#ff5f57}
+  .d-chrome .tl i:nth-child(2){background:#febc2e}
+  .d-chrome .tl i:nth-child(3){background:#28c840}
+  .d-chrome .url{ margin:0 auto; font-size:11.5px; color:var(--ink-3); background:var(--surface-2); padding:5px 18px; border-radius:8px; font-weight:600; }
+  .d-inner{ padding:22px; }
+  .d-header{
+    background:var(--surface); border-radius:var(--r-lg); padding:18px 22px;
+    display:flex; align-items:center; gap:18px; box-shadow:var(--shadow-card); border:1px solid var(--line); margin-bottom:18px;
+  }
+  .d-header .avatar{ width:64px; height:64px; flex:0 0 64px; border-radius:19px; font-size:28px; }
+  .d-header .avatar::after{ width:26px; height:26px; font-size:13px; }
+  .d-id{ flex:1; }
+  .d-id .id-name{ font-size:24px; }
+  .d-id .id-line{ font-size:13px; margin-top:5px; }
+  .d-vitals{ display:flex; gap:11px; }
+  .d-vitals .vital{ width:118px; }
+  .d-grid{ display:grid; grid-template-columns:1.05fr 1.2fr 1fr; gap:18px; align-items:start; }
+  .d-col{ display:flex; flex-direction:column; gap:18px; }
+  .d-panel{ background:var(--surface); border-radius:var(--r-lg); padding:18px; box-shadow:var(--shadow-card); border:1px solid var(--line); }
+  .d-panel > .ph{ font-family:var(--font-display); font-weight:700; font-size:14px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+  .d-panel > .ph span{ font-size:10.5px; color:var(--ink-3); font-weight:600; }
+  .d-panel .attr-grid{ gap:9px; }
+  .d-panel .attr{ box-shadow:none; background:var(--surface-2); border-color:transparent; padding:13px 8px 12px; }
+  .d-panel .attr.key{ background:linear-gradient(160deg,#0e9d6f,#0a6f51); }
+  .d-panel .attr .mod{ font-size:27px; }
+  .d-panel .skill{ padding:10px 12px; border-radius:11px; border-bottom:none; }
+  .d-panel .skill:nth-child(even){ background:var(--surface-2); }
+  .d-panel .pow{ background:var(--surface-2); box-shadow:none; border:none; }
+  .d-panel .spell, .d-panel .weapon{ background:var(--surface-2); box-shadow:none; border:none; }
+  .d-panel .conj{ border-radius:var(--r-md); margin-bottom:14px; }
+
+  /* ============================================================
+     DESKTOP WIZARD (new layout)
+     ============================================================ */
+  .dwiz-card{
+    background:var(--surface); border-radius:var(--r-lg);
+    box-shadow:var(--shadow-card); border:1px solid var(--line);
+    display:grid; grid-template-columns:260px 1fr; overflow:hidden;
+    min-height:560px;
+  }
+  .dwiz-rail{
+    background:var(--surface-2); border-right:1px solid var(--line);
+    padding:24px 22px;
+  }
+  .dwiz-rail .rail-eyebrow{ font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .dwiz-rail .rail-title{ font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:-.02em; margin-top:4px; margin-bottom:6px; }
+  .dwiz-rail .rail-total{ font-size:11.5px; color:var(--ink-3); font-weight:600; margin-bottom:22px; }
+  .dwiz-rail .rail-total b{ color:var(--accent-ink); font-family:var(--font-display); }
+  .vstep{
+    display:flex; align-items:center; gap:13px; padding:11px 12px; border-radius:13px;
+    cursor:pointer; position:relative; margin-bottom:3px;
+    transition:background .2s var(--ease);
+    background:none; border:none; width:100%; text-align:left; font-family:var(--font-body);
+  }
+  .vstep:hover{ background:rgba(255,255,255,.03); }
+  .vstep .vcirc{
+    width:30px; height:30px; flex:0 0 30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:13px;
+    background:var(--surface); color:var(--ink-3); border:1.5px solid var(--line-2);
+    transition:.2s var(--ease);
+  }
+  .vstep .vlab{ font-size:13.5px; font-weight:600; color:var(--ink-3); transition:color .2s; }
+  .vstep .vlab small{ display:block; font-size:10px; font-weight:600; color:var(--ink-3); opacity:.7; margin-top:1px; }
+  .vstep.done .vcirc{ background:var(--accent-soft); border-color:transparent; color:var(--accent-ink); }
+  .vstep.done .vlab{ color:var(--ink-2); }
+  .vstep.cur{ background:var(--accent-soft); }
+  .vstep.cur .vcirc{ background:linear-gradient(160deg,#0e9d6f,#0a6f51); border-color:transparent; color:#fff; box-shadow:0 6px 16px -6px rgba(16,185,129,.7); }
+  .vstep.cur .vlab{ color:var(--ink); font-weight:700; }
+
+  .dwiz-main{ display:flex; flex-direction:column; min-width:0; }
+  .dwiz-content{ flex:1; padding:26px 28px; overflow-y:auto; }
+  .dwiz-step{ display:none; }
+  .dwiz-step.active{ display:block; animation:rise .4s var(--ease) both; }
+  .dwiz-steptitle{ font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:-.02em; }
+  .dwiz-stephelp{ font-size:13px; color:var(--ink-2); margin-top:5px; margin-bottom:24px; line-height:1.5; max-width:560px; }
+  .dwiz-foot{
+    flex:0 0 auto; border-top:1px solid var(--line); padding:16px 28px;
+    display:flex; align-items:center; justify-content:flex-end; gap:12px;
+  }
+  .dwiz-foot .btn-ghost{ flex:0 0 auto; }
+  .dwiz-foot .btn-next{ flex:0 0 auto; padding:13px 26px; }
+
+  /* desktop grids for steps */
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:0 26px; }
+  .grid-2 .full{ grid-column:1 / -1; }
+  .attr-fields.wide{ grid-template-columns:repeat(6,1fr); gap:14px; }
+  .card-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  .card-grid .full{ grid-column:1 / -1; }
+
+  /* ============================================================
+     FICHA — FAB speed-dial, popovers, buffs, edit mode, sidebar
+     ============================================================ */
+  /* FAB + speed dial (lives inside .screen / .desktop, positioned absolute) */
+  .fab-wrap{ position:absolute; z-index:35; display:flex; flex-direction:column-reverse; align-items:flex-end; gap:12px; }
+  .fab-wrap.in-phone{ right:18px; bottom:84px; }
+  .fab-wrap.in-desk{ right:26px; bottom:26px; }
+  .fab{
+    width:56px; height:56px; flex:0 0 56px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--accent); color:#04130d; font-size:28px; font-weight:600; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 12px 28px -8px rgba(16,185,129,.7);
+    transition:transform .25s var(--ease), box-shadow .2s;
+  }
+  .fab:active{ transform:scale(.9); }
+  .fab .fab-ico{ display:block; transition:transform .3s var(--ease); }
+  .fab-wrap.open .fab .fab-ico{ transform:rotate(45deg); }
+  .fab-menu{
+    display:flex; flex-direction:column-reverse; align-items:flex-end; gap:10px;
+    pointer-events:none;
+  }
+  .fab-wrap.open .fab-menu{ pointer-events:auto; }
+  .fab-opt{
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    background:none; border:none; font-family:var(--font-body);
+    opacity:0; transform:translateY(12px) scale(.9);
+    transition:opacity .22s var(--ease), transform .22s var(--ease);
+  }
+  .fab-wrap.open .fab-opt{ opacity:1; transform:translateY(0) scale(1); }
+  .fab-wrap.open .fab-opt:nth-child(1){ transition-delay:.02s; }
+  .fab-wrap.open .fab-opt:nth-child(2){ transition-delay:.06s; }
+  .fab-wrap.open .fab-opt:nth-child(3){ transition-delay:.10s; }
+  .fab-wrap.open .fab-opt:nth-child(4){ transition-delay:.14s; }
+  .fab-wrap.open .fab-opt:nth-child(5){ transition-delay:.18s; }
+  .fab-opt .fo-lab{
+    font-size:12.5px; font-weight:700; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line-2); border-radius:10px;
+    padding:7px 11px; box-shadow:var(--shadow-soft); white-space:nowrap;
+  }
+  .fab-opt .fo-ic{
+    width:42px; height:42px; flex:0 0 42px; border-radius:50%;
+    background:var(--surface-2); border:1px solid var(--line-2); color:var(--accent-ink);
+    display:flex; align-items:center; justify-content:center; font-size:17px;
+    box-shadow:var(--shadow-soft);
+  }
+  .fab-scrim{
+    position:absolute; inset:0; z-index:34; background:rgba(4,5,8,.45);
+    opacity:0; pointer-events:none; transition:opacity .25s var(--ease);
+  }
+  .fab-scrim.open{ opacity:1; pointer-events:auto; }
+
+  /* clickable vital + popover */
+  .vital.tappable{ cursor:pointer; transition:transform .15s var(--ease); }
+  .vital.tappable:active{ transform:scale(.96); }
+  .vital.tappable::after{
+    content:""; position:absolute; right:8px; bottom:8px; width:5px; height:5px;
+    border-radius:50%; background:var(--ink-3); opacity:.6;
+  }
+  .popover{
+    position:absolute; z-index:45; min-width:190px;
+    background:#22252e; border:1px solid var(--line-2); border-radius:16px;
+    box-shadow:0 24px 50px -16px rgba(0,0,0,.85); padding:14px;
+    opacity:0; pointer-events:none; transform:translateY(-6px) scale(.97);
+    transition:opacity .2s var(--ease), transform .2s var(--ease);
+  }
+  .popover.open{ opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
+  .popover .pop-h{ font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; }
+  .pop-stepper{ display:flex; align-items:center; justify-content:center; gap:14px; }
+  .pop-stepper .pv-now{ font-family:var(--font-display); font-weight:700; font-size:26px; min-width:74px; text-align:center; }
+  .pop-stepper .pv-now small{ font-size:14px; color:var(--ink-3); font-weight:600; }
+  .pop-row{ display:flex; align-items:baseline; justify-content:space-between; font-size:13px; padding:5px 0; }
+  .pop-row span{ color:var(--ink-2); }
+  .pop-row b{ font-family:var(--font-display); font-weight:600; }
+  .pop-row.tot{ border-top:1px solid var(--line-2); margin-top:6px; padding-top:9px; }
+  .pop-row.tot b{ color:var(--accent-ink); font-size:16px; }
+
+  /* buff toggle chips (interactive) */
+  .chip.buff{ cursor:pointer; user-select:none; }
+  .chip.buff .bx{ display:none; margin-left:4px; color:var(--ink-3); font-weight:700; }
+  .editing .chip.buff .bx{ display:inline; }
+  .chip.buff .bx:hover{ color:#fb7185; }
+  .editing .chip.buff{ box-shadow:0 0 0 1px var(--line-2), var(--shadow-soft); }
+  .editing .chip.buff:hover{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+
+  /* edit-mode affordances */
+  .ficha-tools{ display:flex; align-items:center; gap:8px; }
+  .btn-edit{
+    flex:0 0 auto; padding:7px 13px; border-radius:11px; cursor:pointer;
+    background:var(--surface-2); color:var(--ink-2); border:1px solid var(--line-2);
+    font-family:var(--font-body); font-weight:700; font-size:12px;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:background .2s, color .2s, transform .15s var(--ease);
+  }
+  .btn-edit:active{ transform:scale(.94); }
+  .editing .btn-edit{ background:var(--accent); color:#04130d; border-color:transparent; }
+
+  .edit-only{ display:none !important; }
+  .editing .edit-only{ display:inline-flex !important; }
+  .editing .edit-only.blk{ display:block !important; }
+  .editing .read-only-hide{ display:none !important; }
+
+  /* click-to-edit affordance (edit mode) */
+  .editing .card.pow,
+  .editing .card.spell,
+  .editing .card.weapon,
+  .editing .pow[data-model],
+  .editing .spell[data-model],
+  .editing .weapon[data-model],
+  .editing .inv-item[data-model]{
+    cursor:pointer; transition:border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .editing .card.pow:hover,
+  .editing .card.spell:hover,
+  .editing .card.weapon:hover,
+  .editing .pow[data-model]:hover,
+  .editing .spell[data-model]:hover,
+  .editing .weapon[data-model]:hover{
+    border-color:var(--accent); box-shadow:0 0 0 1px var(--accent);
+  }
+  .editing .inv-item[data-model]:hover{ background:rgba(16,185,129,.08); }
+
+  .edit-input{
+    background:transparent; color:var(--ink); border:none; border-bottom:1.5px solid var(--accent);
+    font-family:var(--font-display); font-weight:700; text-align:center; outline:none; border-radius:0;
+    width:48px; padding:2px 0;
+  }
+  .edit-input.lvl{ font-size:18px; width:40px; }
+  .edit-input.attr{ font-size:30px; width:56px; }
+  .edit-input.coin{ font-size:20px; width:54px; }
+  .edit-input.vmax{ font-size:15px; width:46px; }
+
+  .rm-x{
+    width:24px; height:24px; flex:0 0 24px; border-radius:7px; border:none; cursor:pointer;
+    background:var(--danger-soft); color:#fb7185; font-size:14px; line-height:1;
+    align-items:center; justify-content:center; margin-left:auto;
+    transition:transform .15s var(--ease);
+  }
+  .rm-x:active{ transform:scale(.85); }
+
+  /* desktop master-detail (replaces 3-col) */
+  .d-shell{ display:grid; grid-template-columns:228px 1fr; gap:18px; align-items:start; }
+  .d-side{
+    background:var(--surface); border-radius:var(--r-lg); padding:12px; border:1px solid var(--line);
+    box-shadow:var(--shadow-card); position:sticky; top:18px;
+  }
+  .d-nav{ display:flex; flex-direction:column; gap:3px; }
+  .d-navitem{
+    display:flex; align-items:center; gap:12px; padding:12px 13px; border-radius:13px;
+    cursor:pointer; background:none; border:none; width:100%; text-align:left;
+    font-family:var(--font-body); color:var(--ink-2); transition:background .2s, color .2s;
+  }
+  .d-navitem .dni{ width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:15px; }
+  .d-navitem .dnl{ font-size:14px; font-weight:700; }
+  .d-navitem:hover{ background:rgba(255,255,255,.03); color:var(--ink); }
+  .d-navitem.on{ background:var(--accent-soft); color:var(--accent-ink); }
+  .d-navitem.on .dni{ background:linear-gradient(160deg,#0e9d6f,#0a6f51); color:#fff; }
+  .d-detail{ min-width:0; display:flex; flex-direction:column; gap:18px; }
+  .d-section{ display:none; }
+  .d-section.active{ display:flex; flex-direction:column; gap:18px; animation:rise .4s var(--ease) both; }
+  .d-header .d-vitals .vital.tappable{ cursor:pointer; }
+
+  @keyframes rise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes toastIn{ to{ transform:translateY(0) scale(1); opacity:1; } }
+  @keyframes toastOut{ to{ transform:translateY(-8px) scale(.97); opacity:0; } }
+  @keyframes shimmer{ from{ transform:translateX(-100%);} to{ transform:translateX(100%);} }
+  @keyframes pop{ 0%{transform:scale(1)} 40%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .bump{ animation:pop .4s var(--ease); }
+
+  /* desktop toast (centered top of desktop frame) */
+  .d-toast-wrap{ position:absolute; left:0; right:0; top:58px; display:flex; flex-direction:column; align-items:center; gap:8px; z-index:60; pointer-events:none; padding:0 18px; }
+
+  @media (max-width:980px){
+    .d-grid{ grid-template-columns:1fr; }
+    .d-shell{ grid-template-columns:1fr; }
+    .d-side{ position:static; }
+    .d-nav{ flex-direction:row; flex-wrap:wrap; }
+    .d-navitem{ width:auto; }
+    .dwiz-card{ grid-template-columns:1fr; }
+    .dwiz-rail{ border-right:none; border-bottom:1px solid var(--line); }
+  }
+  @media (max-width:640px){
+    .stage{ padding:30px 12px 60px; }
+    .topnav{ padding:11px 14px; gap:12px; }
+    .grid-2, .card-grid{ grid-template-columns:1fr; }
+    .attr-fields.wide{ grid-template-columns:1fr 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ====================== TOP NAV (router) ====================== -->
+  <header class="topnav">
+    <div class="brand">
+      <div class="mark">時</div>
+      <div class="ttl">Ficha Tormenta 20 <em>— Protótipo</em></div>
+    </div>
+    <div class="controls">
+      <div class="segctl" id="segMode">
+        <button class="on" data-mode="ficha"><span class="gl">◈</span> Ficha</button>
+        <button data-mode="criar"><span class="gl">✦</span> Criar</button>
+      </div>
+      <div class="segctl" id="segDevice">
+        <button class="on" data-device="phone"><span class="gl">▢</span> Celular</button>
+        <button data-device="desk"><span class="gl">▭</span> iPad/Desktop</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- ============================================================
+         VIEW 1 · FICHA · CELULAR
+         ============================================================ -->
+    <section class="view active" id="view-ficha-phone">
+      <div class="view-head">
+        <span class="view-eyebrow">Ficha · Celular</span>
+        <h1 class="view-title">Ficha de Akihiro</h1>
+        <p class="view-sub">Visualização em celular com cinco abas: Atributos, Perícias, Poderes, Magias e Equipamentos.</p>
+      </div>
+      <div class="scroll-pad">
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar">
+            <span>9:41</span>
+            <div class="dots">
+              <div class="sig"><i></i><i></i><i></i><i></i></div>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.04em">5G</span>
+              <div class="batt"></div>
+            </div>
+          </div>
+
+          <div class="app-header">
+            <div class="id-row">
+              <div class="avatar">時</div>
+              <div class="id-meta">
+                <div class="id-name">Akihiro</div>
+                <div class="id-line">
+                  <span>Shugenja 2</span><span class="dot"></span>
+                  <span>Nível <span id="fphone-lvlText">2</span></span>
+                  <input class="edit-input lvl edit-only" id="fphone-lvlInput" type="number" value="2" min="1"><span class="dot"></span>
+                  <span class="div">✦ Lin-Wu</span>
+                </div>
+              </div>
+              <div class="ficha-tools">
+                <button class="btn-edit" id="fphone-editBtn"><span id="fphone-editIco">✎</span> <span id="fphone-editLab">Editar</span></button>
+                <div class="lvl-pill"><b id="fphone-lvlPill">2</b><span>Nível</span></div>
+              </div>
+            </div>
+            <div class="vitals" id="fphone-vitals">
+              <div class="vital pv tappable" id="fphone-vitPv" data-pop="pv">
+                <div class="lab">PV</div>
+                <div class="val"><span id="fphone-pvVal">26</span><small>/<span id="fphone-pvMaxLab">26</span></small></div>
+                <div class="track"><i id="fphone-pvTrack" style="width:100%;background:var(--accent)"></i></div>
+              </div>
+              <div class="vital pm tappable" id="fphone-vitPm" data-pop="pm">
+                <div class="lab">PM</div>
+                <div class="val"><span id="fphone-pmVal">18</span><small>/<span id="fphone-pmMaxLab">24</span></small></div>
+                <div class="track"><i id="fphone-pmTrack" style="width:75%;background:#3b82f6"></i></div>
+              </div>
+              <div class="vital def tappable" id="fphone-vitDef" data-pop="def">
+                <span class="shield">🛡</span>
+                <div class="lab">Defesa</div>
+                <div class="val" id="fphone-defVal">16</div>
+              </div>
+            </div>
+
+            <!-- popovers (PV / PM / Defesa) -->
+            <div class="popover" id="fphone-popPv" style="left:18px;top:118px">
+              <div class="pop-h">Pontos de Vida</div>
+              <div class="pop-stepper">
+                <button class="step-btn" data-vital="pv" data-delta="-1">−</button>
+                <div class="pv-now"><span id="fphone-pvPop">26</span><small>/<span id="fphone-pvPopMax">26</span></small></div>
+                <button class="step-btn plus" data-vital="pv" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="popover" id="fphone-popPm" style="left:50%;top:118px;transform:translateX(-50%) translateY(-6px) scale(.97)">
+              <div class="pop-h">Pontos de Mana</div>
+              <div class="pop-stepper">
+                <button class="step-btn" data-vital="pm" data-delta="-1">−</button>
+                <div class="pv-now"><span id="fphone-pmPop">18</span><small>/<span id="fphone-pmPopMax">24</span></small></div>
+                <button class="step-btn plus" data-vital="pm" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="popover" id="fphone-popDef" style="right:18px;top:118px">
+              <div class="pop-h">Defesa · detalhamento</div>
+              <div class="pop-row"><span>Base</span><b>10</b></div>
+              <div class="pop-row"><span>Destreza</span><b>+2</b></div>
+              <div class="pop-row"><span>Armadura</span><b>+3</b></div>
+              <div class="pop-row"><span>Outros (buffs)</span><b id="fphone-defOther">+1</b></div>
+              <div class="pop-row tot"><span>Defesa total</span><b id="fphone-defTot">16</b></div>
+            </div>
+          </div>
+
+          <div class="body" id="fichaPhone-body">
+
+            <!-- ATRIBUTOS -->
+            <section class="tab-panel active" id="fichaPhone-tab-atributos">
+              <div class="sec-head"><h2>Atributos</h2><span>Valor já é o modificador</span></div>
+              <div class="attr-grid" id="fphone-attrGrid">
+                <div class="attr" data-attr="FOR"><div class="lab">For</div><div class="mod" data-mod>0</div><div class="sub">Força</div></div>
+                <div class="attr" data-attr="DES"><div class="lab">Des</div><div class="mod" data-mod>+2</div><div class="sub">Destreza</div></div>
+                <div class="attr" data-attr="CON"><div class="lab">Con</div><div class="mod" data-mod>+1</div><div class="sub">Constituição</div></div>
+                <div class="attr" data-attr="INT"><div class="lab">Int</div><div class="mod" data-mod>+1</div><div class="sub">Inteligência</div></div>
+                <div class="attr key" data-attr="SAB"><span class="star">★</span><div class="lab">Sab</div><div class="mod" data-mod>+3</div><div class="sub">Chave · Sabedoria</div></div>
+                <div class="attr" data-attr="CAR"><div class="lab">Car</div><div class="mod" data-mod>0</div><div class="sub">Carisma</div></div>
+              </div>
+
+              <div class="sec-head gap"><h2>Condições & Buffs</h2><span id="fphone-buffCount">1 ativo</span></div>
+              <div class="chips" id="fphone-buffList">
+                <span class="chip buff on" data-buff data-kind="skill" data-target="Luta" data-value="2" data-pm="1" data-active="1">Concentração de Combate +2<span class="bx" data-rmbuff>×</span></span>
+                <span class="chip buff surge" data-buff data-kind="none" data-target="" data-value="0" data-pm="0" data-active="0">Surto Heroico<span class="bx" data-rmbuff>×</span></span>
+                <span class="chip buff bleed" data-buff data-kind="none" data-target="" data-value="0" data-pm="0" data-active="0">Sangrando<span class="bx" data-rmbuff>×</span></span>
+              </div>
+            </section>
+
+            <!-- PERÍCIAS -->
+            <section class="tab-panel" id="fichaPhone-tab-pericias">
+              <div class="sec-head"><h2>Perícias</h2><span>5 treinadas</span></div>
+              <div class="card skill-list">
+                <div class="skill trained"><div class="ico">⚡</div><div class="nm">Iniciativa<small>Destreza</small></div><div class="vl" data-skill="Iniciativa" data-base="7">+7</div></div>
+                <div class="skill trained"><div class="ico">👁</div><div class="nm">Percepção <span class="tag">Treinada</span><small>Sabedoria</small></div><div class="vl" data-skill="Percepção" data-base="10">+10</div></div>
+                <div class="skill trained"><div class="ico">🧠</div><div class="nm">Vontade <span class="tag">Treinada</span><small>Sabedoria</small></div><div class="vl" data-skill="Vontade" data-base="10">+10</div></div>
+                <div class="skill trained"><div class="ico">🔮</div><div class="nm">Misticismo <span class="tag">Treinada</span><small>Inteligência</small></div><div class="vl" data-skill="Misticismo" data-base="5">+5</div></div>
+                <div class="skill trained"><div class="ico">⚔</div><div class="nm">Luta <span class="tag">Treinada</span><small>Força</small></div><div class="vl" data-skill="Luta" data-base="2">+2</div></div>
+              </div>
+              <div class="sec-head gap"><h2>Não treinadas</h2><span></span></div>
+              <div class="card skill-list">
+                <div class="skill"><div class="ico">🏃</div><div class="nm">Atletismo<small>Força</small></div><div class="vl">+0</div></div>
+                <div class="skill"><div class="ico">💬</div><div class="nm">Diplomacia<small>Carisma</small></div><div class="vl">+0</div></div>
+                <div class="skill"><div class="ico">🤸</div><div class="nm">Reflexos<small>Destreza</small></div><div class="vl">+3</div></div>
+                <div class="skill"><div class="ico">🛡</div><div class="nm">Fortitude<small>Constituição</small></div><div class="vl">+1</div></div>
+                <div class="skill"><div class="ico">🌑</div><div class="nm">Furtividade<small>Destreza</small></div><div class="vl">+2</div></div>
+              </div>
+            </section>
+
+            <!-- PODERES & HABILIDADES -->
+            <section class="tab-panel" id="fichaPhone-tab-poderes">
+              <div class="sec-head"><h2>Poderes &amp; Habilidades</h2><span>Por fonte</span></div>
+              <div class="pow-group" id="fphone-powerList">
+                <div class="pow-src">Raça</div>
+                <div class="card pow hi"><div class="txt"><h3>Coração Heroico <span class="tag">Habilidade</span></h3><p>+3 pontos de mana; +3 PM a cada novo patamar (5º, 11º, 17º).</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                <div class="pow-src">Origem</div>
+                <div class="card pow"><div class="txt"><h3>Sortudo <span class="tag">Poder</span></h3><p>Gaste 3 PM para rolar um teste novamente.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                <div class="pow-src">Classe</div>
+                <div class="card pow hi"><div class="txt"><h3>Mente Vazia <span class="tag">Habilidade</span></h3><p>+2 em Iniciativa, Percepção e Vontade.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                <div class="card pow hi"><div class="txt"><h3>Tradição de Lin-Wu <span class="tag">Habilidade</span></h3><p>Considera a katana arma simples; +1 na margem de ameaça com ela.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+              </div>
+            </section>
+
+            <!-- MAGIAS -->
+            <section class="tab-panel" id="fichaPhone-tab-magias">
+              <div class="sec-head"><h2>Magias</h2><span>Conjuração</span></div>
+              <div class="card conj">
+                <div class="ic">🌙</div>
+                <div class="info">
+                  <div class="t">Atributo-chave · Sabedoria</div>
+                  <div class="stats">
+                    <div><b>+3</b><span>Chave</span></div>
+                    <div><b>14</b><span>CD de resistência</span></div>
+                    <div><b>18</b><span>PM disp.</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec-head gap"><h2>Conhecidas</h2><span id="fphone-spellCount">3 magias</span></div>
+
+              <div id="fphone-spellList">
+              <div class="card spell">
+                <div class="top">
+                  <div class="cost"><b>1</b><span>PM</span></div>
+                  <div class="meta"><h3>Concentração de Combate</h3><div class="sch">Abjuração</div><p>+2 em ataque enquanto concentrado.</p></div>
+                  <button class="rm-x edit-only" data-rmspell>×</button>
+                </div>
+                <button class="btn-cast read-only-hide" data-cast="Concentração de Combate" data-pm="1">✦ Lançar</button>
+              </div>
+              <div class="card spell">
+                <div class="top">
+                  <div class="cost"><b>2</b><span>PM</span></div>
+                  <div class="meta"><h3>Explosão de Chamas</h3><div class="sch">Evocação</div><p>2d6 de dano, cone de 6m, Reflexos CD 14 reduz à metade.</p></div>
+                  <button class="rm-x edit-only" data-rmspell>×</button>
+                </div>
+                <button class="btn-cast read-only-hide" data-cast="Explosão de Chamas" data-pm="2">✦ Lançar</button>
+              </div>
+              <div class="card spell">
+                <div class="top">
+                  <div class="cost"><b>1</b><span>PM</span></div>
+                  <div class="meta"><h3>Curar Ferimentos</h3><div class="sch">Evocação</div><p>Cura 2d8 pontos de vida em um toque.</p></div>
+                  <button class="rm-x edit-only" data-rmspell>×</button>
+                </div>
+                <button class="btn-cast read-only-hide" data-cast="Curar Ferimentos" data-pm="1">✦ Lançar</button>
+              </div>
+              </div>
+            </section>
+
+            <!-- EQUIPAMENTOS -->
+            <section class="tab-panel" id="fichaPhone-tab-equipamentos">
+              <div class="sec-head"><h2>Armas equipadas</h2><span>Pronto para rolar</span></div>
+              <div id="fphone-weaponList">
+              <div class="card weapon">
+                <div class="top">
+                  <div class="wname"><h3>Katana</h3><span>Corpo a corpo</span></div>
+                  <button class="rm-x edit-only" data-rmitem>×</button>
+                </div>
+                <div class="stats">
+                  <div><span>Ataque</span><b>+7</b></div>
+                  <div><span>Dano</span><b>1d10+2</b></div>
+                  <div><span>Crítico</span><b>18/×2</b></div>
+                </div>
+                <button class="btn-roll read-only-hide" data-atk="Katana" data-bonus="7" data-dmg="1d10+2">🎲 Rolar ataque</button>
+              </div>
+
+              <div class="card weapon">
+                <div class="top">
+                  <div class="wname"><h3>Arco curto</h3><span>Distância · 18m</span></div>
+                  <button class="rm-x edit-only" data-rmitem>×</button>
+                </div>
+                <div class="stats">
+                  <div><span>Ataque</span><b>+5</b></div>
+                  <div><span>Dano</span><b>1d6+2</b></div>
+                  <div><span>Crítico</span><b>×3</b></div>
+                </div>
+                <button class="btn-roll read-only-hide" data-atk="Arco curto" data-bonus="5" data-dmg="1d6+2">🎲 Rolar ataque</button>
+              </div>
+              </div>
+
+              <div class="sec-head gap"><h2>Inventário</h2><span>itens carregados</span></div>
+              <div class="card skill-list" id="fphone-invList">
+                <div class="inv-item"><div class="inm">Pincel de Lin-Wu</div><div class="qty">×1</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                <div class="inv-item"><div class="inm">Katana</div><div class="qty">×1</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                <div class="inv-item"><div class="inm">Kit de aventureiro</div><div class="qty">×1</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                <div class="inv-item"><div class="inm">Poção de cura menor</div><div class="qty">×2</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+              </div>
+
+              <div class="sec-head gap"><h2>Tibares</h2><span>Bolsa de moedas</span></div>
+              <div class="coins">
+                <div class="coin c-copper"><b><span class="read-only-hide" id="fphone-copperText">40</span><input class="edit-input coin edit-only" id="fphone-copperInput" type="number" value="40"></b><span>Cobre</span></div>
+                <div class="coin c-silver"><b><span class="read-only-hide" id="fphone-silverText">12</span><input class="edit-input coin edit-only" id="fphone-silverInput" type="number" value="12"></b><span>Prata</span></div>
+                <div class="coin c-gold"><b><span class="read-only-hide" id="fphone-goldText">8</span><input class="edit-input coin edit-only" id="fphone-goldInput" type="number" value="8"></b><span>Ouro</span></div>
+              </div>
+            </section>
+
+          </div>
+
+          <div class="toast-wrap" id="fichaPhone-toastWrap"></div>
+
+          <!-- FAB speed-dial (phone) -->
+          <div class="fab-scrim" id="fphone-fabScrim"></div>
+          <div class="fab-wrap in-phone" id="fphone-fabWrap">
+            <button class="fab" id="fphone-fab"><span class="fab-ico">+</span></button>
+            <div class="fab-menu">
+              <button class="fab-opt" data-create="magia"><span class="fo-lab">Magia</span><span class="fo-ic">🜂</span></button>
+              <button class="fab-opt" data-create="poder"><span class="fo-lab">Poder</span><span class="fo-ic">✦</span></button>
+              <button class="fab-opt" data-create="habilidade"><span class="fo-lab">Habilidade</span><span class="fo-ic">✧</span></button>
+              <button class="fab-opt" data-create="buff"><span class="fo-lab">Buff</span><span class="fo-ic">⚡</span></button>
+              <button class="fab-opt" data-create="item"><span class="fo-lab">Item</span><span class="fo-ic">🜸</span></button>
+            </div>
+          </div>
+
+          <!-- bottom sheet (phone) -->
+          <div class="overlay" id="fphone-overlay"></div>
+          <div class="sheet" id="fphone-sheet">
+            <div class="sheet-head">
+              <div class="st-row">
+                <h2 id="fphone-sheetTitle">Novo</h2>
+                <button class="sheet-x" id="fphone-sheetClose">×</button>
+              </div>
+            </div>
+            <div class="sheet-body" id="fphone-sheetBody"></div>
+            <div class="sheet-foot">
+              <button class="btn-ghost" id="fphone-sheetCancel">Cancelar</button>
+              <button class="btn-next" id="fphone-sheetSave">Salvar</button>
+            </div>
+          </div>
+
+          <nav class="tabbar" id="fichaPhone-tabbar">
+            <button class="tab active" data-tab="atributos"><span class="ti">◈</span><span class="tl">Atributos</span></button>
+            <button class="tab" data-tab="pericias"><span class="ti">✓</span><span class="tl">Perícias</span></button>
+            <button class="tab" data-tab="poderes"><span class="ti">✦</span><span class="tl">Poderes</span></button>
+            <button class="tab" data-tab="magias"><span class="ti">🜂</span><span class="tl">Magias</span></button>
+            <button class="tab" data-tab="equipamentos"><span class="ti">🜸</span><span class="tl">Equipam.</span></button>
+          </nav>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         VIEW 2 · FICHA · iPad/DESKTOP
+         ============================================================ -->
+    <section class="view" id="view-ficha-desk">
+      <div class="view-head">
+        <span class="view-eyebrow">Ficha · iPad/Desktop</span>
+        <h1 class="view-title">Painel master-detail</h1>
+        <p class="view-sub">Menu lateral à esquerda; só a seção selecionada aparece à direita, com respiro confortável de tablet.</p>
+      </div>
+      <div class="scroll-pad">
+      <div class="desktop">
+        <div class="d-chrome">
+          <div class="tl"><i></i><i></i><i></i></div>
+          <div class="url">arcanaforge.app / ficha / akihiro</div>
+        </div>
+        <div class="d-inner">
+          <div class="d-header">
+            <div class="avatar">時</div>
+            <div class="d-id">
+              <div class="id-name">Akihiro</div>
+              <div class="id-line"><span>Shugenja 2</span><span class="dot"></span><span>Nível <span id="fdesk-lvlText">2</span></span>
+                <input class="edit-input lvl edit-only" id="fdesk-lvlInput" type="number" value="2" min="1"><span class="dot"></span><span class="div">✦ Divindade Lin-Wu</span></div>
+            </div>
+            <div class="d-vitals">
+              <div class="vital pv tappable" id="fdesk-vitPv" data-pop="pv"><div class="lab">PV</div><div class="val"><span id="fdesk-pvVal">26</span><small>/<span id="fdesk-pvMaxLab">26</span></small></div><div class="track"><i id="fdesk-pvTrack" style="width:100%;background:var(--accent)"></i></div></div>
+              <div class="vital pm tappable" id="fdesk-vitPm" data-pop="pm"><div class="lab">PM</div><div class="val"><span id="fdesk-pmVal">18</span><small>/<span id="fdesk-pmMaxLab">24</span></small></div><div class="track"><i id="fdesk-pmTrack" style="width:75%;background:#3b82f6"></i></div></div>
+              <div class="vital def tappable" id="fdesk-vitDef" data-pop="def"><span class="shield">🛡</span><div class="lab">Defesa</div><div class="val" id="fdesk-defVal">16</div></div>
+            </div>
+            <div class="ficha-tools" style="margin-left:14px">
+              <button class="btn-edit" id="fdesk-editBtn"><span id="fdesk-editIco">✎</span> <span id="fdesk-editLab">Editar</span></button>
+            </div>
+
+            <!-- desktop popovers -->
+            <div class="popover" id="fdesk-popPv" style="right:150px;top:96px">
+              <div class="pop-h">Pontos de Vida</div>
+              <div class="pop-stepper">
+                <button class="step-btn" data-vital="pv" data-delta="-1">−</button>
+                <div class="pv-now"><span id="fdesk-pvPop">26</span><small>/<span id="fdesk-pvPopMax">26</span></small></div>
+                <button class="step-btn plus" data-vital="pv" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="popover" id="fdesk-popPm" style="right:30px;top:96px">
+              <div class="pop-h">Pontos de Mana</div>
+              <div class="pop-stepper">
+                <button class="step-btn" data-vital="pm" data-delta="-1">−</button>
+                <div class="pv-now"><span id="fdesk-pmPop">18</span><small>/<span id="fdesk-pmPopMax">24</span></small></div>
+                <button class="step-btn plus" data-vital="pm" data-delta="1">+</button>
+              </div>
+            </div>
+            <div class="popover" id="fdesk-popDef" style="right:30px;top:96px">
+              <div class="pop-h">Defesa · detalhamento</div>
+              <div class="pop-row"><span>Base</span><b>10</b></div>
+              <div class="pop-row"><span>Destreza</span><b>+2</b></div>
+              <div class="pop-row"><span>Armadura</span><b>+3</b></div>
+              <div class="pop-row"><span>Outros (buffs)</span><b id="fdesk-defOther">+1</b></div>
+              <div class="pop-row tot"><span>Defesa total</span><b id="fdesk-defTot">16</b></div>
+            </div>
+          </div>
+
+          <div class="d-shell">
+            <!-- sidebar -->
+            <aside class="d-side">
+              <nav class="d-nav" id="fdesk-nav">
+                <button class="d-navitem on" data-sec="atributos"><span class="dni">◈</span><span class="dnl">Atributos</span></button>
+                <button class="d-navitem" data-sec="pericias"><span class="dni">✓</span><span class="dnl">Perícias</span></button>
+                <button class="d-navitem" data-sec="poderes"><span class="dni">✦</span><span class="dnl">Poderes</span></button>
+                <button class="d-navitem" data-sec="magias"><span class="dni">🜂</span><span class="dnl">Magias</span></button>
+                <button class="d-navitem" data-sec="equipamentos"><span class="dni">🜸</span><span class="dnl">Equipamentos</span></button>
+              </nav>
+            </aside>
+
+            <!-- detail area -->
+            <div class="d-detail" id="fdesk-detail">
+
+              <!-- SEÇÃO ATRIBUTOS -->
+              <section class="d-section active" data-sec="atributos">
+                <div class="d-panel">
+                  <div class="ph">Atributos <span>valor = modificador</span></div>
+                  <div class="attr-grid" id="fdesk-attrGrid">
+                    <div class="attr" data-attr="FOR"><div class="lab">For</div><div class="mod" data-mod>0</div><div class="sub">Força</div></div>
+                    <div class="attr" data-attr="DES"><div class="lab">Des</div><div class="mod" data-mod>+2</div><div class="sub">Destreza</div></div>
+                    <div class="attr" data-attr="CON"><div class="lab">Con</div><div class="mod" data-mod>+1</div><div class="sub">Const.</div></div>
+                    <div class="attr" data-attr="INT"><div class="lab">Int</div><div class="mod" data-mod>+1</div><div class="sub">Intel.</div></div>
+                    <div class="attr key" data-attr="SAB"><span class="star">★</span><div class="lab">Sab</div><div class="mod" data-mod>+3</div><div class="sub">Chave</div></div>
+                    <div class="attr" data-attr="CAR"><div class="lab">Car</div><div class="mod" data-mod>0</div><div class="sub">Carisma</div></div>
+                  </div>
+                </div>
+                <div class="d-panel">
+                  <div class="ph">Condições &amp; Buffs <span id="fdesk-buffCount">1 ativo</span></div>
+                  <div class="chips" id="fdesk-buffList">
+                    <span class="chip buff on" data-buff data-kind="skill" data-target="Luta" data-value="2" data-pm="1" data-active="1">Concentração de Combate +2<span class="bx" data-rmbuff>×</span></span>
+                    <span class="chip buff surge" data-buff data-kind="none" data-target="" data-value="0" data-pm="0" data-active="0">Surto Heroico<span class="bx" data-rmbuff>×</span></span>
+                    <span class="chip buff bleed" data-buff data-kind="none" data-target="" data-value="0" data-pm="0" data-active="0">Sangrando<span class="bx" data-rmbuff>×</span></span>
+                  </div>
+                </div>
+                <div class="d-panel">
+                  <div class="ph">Tibares</div>
+                  <div class="coins">
+                    <div class="coin c-copper" style="box-shadow:none;background:var(--surface-2);border-color:transparent"><b><span class="read-only-hide" id="fdesk-copperText">40</span><input class="edit-input coin edit-only" id="fdesk-copperInput" type="number" value="40"></b><span>Cobre</span></div>
+                    <div class="coin c-silver" style="box-shadow:none;background:var(--surface-2);border-color:transparent"><b><span class="read-only-hide" id="fdesk-silverText">12</span><input class="edit-input coin edit-only" id="fdesk-silverInput" type="number" value="12"></b><span>Prata</span></div>
+                    <div class="coin c-gold" style="box-shadow:none;background:var(--surface-2);border-color:transparent"><b><span class="read-only-hide" id="fdesk-goldText">8</span><input class="edit-input coin edit-only" id="fdesk-goldInput" type="number" value="8"></b><span>Ouro</span></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SEÇÃO PERÍCIAS -->
+              <section class="d-section" data-sec="pericias">
+                <div class="d-panel">
+                  <div class="ph">Perícias <span>5 treinadas</span></div>
+                  <div class="skill trained"><div class="ico">⚡</div><div class="nm">Iniciativa<small>Destreza</small></div><div class="vl" data-skill="Iniciativa" data-base="7">+7</div></div>
+                  <div class="skill trained"><div class="ico">👁</div><div class="nm">Percepção<small>Sabedoria</small></div><div class="vl" data-skill="Percepção" data-base="10">+10</div></div>
+                  <div class="skill trained"><div class="ico">🧠</div><div class="nm">Vontade<small>Sabedoria</small></div><div class="vl" data-skill="Vontade" data-base="10">+10</div></div>
+                  <div class="skill trained"><div class="ico">🔮</div><div class="nm">Misticismo<small>Inteligência</small></div><div class="vl" data-skill="Misticismo" data-base="5">+5</div></div>
+                  <div class="skill trained"><div class="ico">⚔</div><div class="nm">Luta<small>Força</small></div><div class="vl" data-skill="Luta" data-base="2">+2</div></div>
+                  <div class="skill"><div class="ico">🤸</div><div class="nm">Reflexos<small>Destreza</small></div><div class="vl">+3</div></div>
+                  <div class="skill"><div class="ico">🌑</div><div class="nm">Furtividade<small>Destreza</small></div><div class="vl">+2</div></div>
+                  <div class="skill"><div class="ico">🛡</div><div class="nm">Fortitude<small>Const.</small></div><div class="vl">+1</div></div>
+                </div>
+              </section>
+
+              <!-- SEÇÃO PODERES -->
+              <section class="d-section" data-sec="poderes">
+                <div class="d-panel">
+                  <div class="ph">Poderes &amp; Habilidades <span>por fonte</span></div>
+                  <div id="fdesk-powerList">
+                  <div class="pow-src" style="margin-top:0">Raça · Origem</div>
+                  <div class="pow hi"><div class="txt"><h3>Coração Heroico <span class="tag">Habilidade</span></h3><p>+3 PM; +3 PM a cada patamar.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                  <div class="pow"><div class="txt"><h3>Sortudo <span class="tag">Poder</span></h3><p>3 PM para rolar de novo.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                  <div class="pow-src">Classe</div>
+                  <div class="pow hi"><div class="txt"><h3>Tradição de Lin-Wu <span class="tag">Habilidade</span></h3><p>Katana simples; +1 ameaça.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                  <div class="pow hi"><div class="txt"><h3>Mente Vazia <span class="tag">Habilidade</span></h3><p>+2 Inic., Perc. e Vontade.</p></div><button class="rm-x edit-only" data-rmpow>×</button></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SEÇÃO MAGIAS -->
+              <section class="d-section" data-sec="magias">
+                <div class="d-panel">
+                  <div class="ph">Magias <span id="fdesk-spellCount">3 magias</span></div>
+                  <div class="conj">
+                    <div class="ic">🌙</div>
+                    <div class="info">
+                      <div class="t">Chave · Sabedoria</div>
+                      <div class="stats"><div><b>+3</b><span>Chave</span></div><div><b>14</b><span>CD resist.</span></div></div>
+                    </div>
+                  </div>
+                  <div id="fdesk-spellList">
+                  <div class="spell"><div class="top"><div class="cost"><b>1</b><span>PM</span></div><div class="meta"><h3>Concentração de Combate</h3><div class="sch">Abjuração · +2 ataque</div></div><button class="rm-x edit-only" data-rmspell>×</button></div><button class="btn-cast read-only-hide" data-cast="Concentração de Combate" data-pm="1">✦ Lançar</button></div>
+                  <div class="spell"><div class="top"><div class="cost"><b>2</b><span>PM</span></div><div class="meta"><h3>Explosão de Chamas</h3><div class="sch">Evocação · 2d6 cone 6m</div></div><button class="rm-x edit-only" data-rmspell>×</button></div><button class="btn-cast read-only-hide" data-cast="Explosão de Chamas" data-pm="2">✦ Lançar</button></div>
+                  <div class="spell"><div class="top"><div class="cost"><b>1</b><span>PM</span></div><div class="meta"><h3>Curar Ferimentos</h3><div class="sch">Evocação · cura 2d8</div></div><button class="rm-x edit-only" data-rmspell>×</button></div><button class="btn-cast read-only-hide" data-cast="Curar Ferimentos" data-pm="1">✦ Lançar</button></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SEÇÃO EQUIPAMENTOS -->
+              <section class="d-section" data-sec="equipamentos">
+                <div class="d-panel">
+                  <div class="ph">Equipamentos <span>armas e itens</span></div>
+                  <div id="fdesk-weaponList">
+                  <div class="weapon">
+                    <div class="top"><div class="wname"><h3>Katana</h3><span>Corpo a corpo</span></div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                    <div class="stats"><div><span>Ataque</span><b>+7</b></div><div><span>Dano</span><b>1d10+2</b></div><div><span>Crít</span><b>18/×2</b></div></div>
+                    <button class="btn-roll read-only-hide" data-atk="Katana" data-bonus="7" data-dmg="1d10+2">🎲 Rolar ataque</button>
+                  </div>
+                  <div class="weapon">
+                    <div class="top"><div class="wname"><h3>Arco curto</h3><span>18m</span></div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                    <div class="stats"><div><span>Ataque</span><b>+5</b></div><div><span>Dano</span><b>1d6+2</b></div><div><span>Crít</span><b>×3</b></div></div>
+                    <button class="btn-roll read-only-hide" data-atk="Arco curto" data-bonus="5" data-dmg="1d6+2">🎲 Rolar ataque</button>
+                  </div>
+                  </div>
+                </div>
+                <div class="d-panel">
+                  <div class="ph">Inventário <span>itens carregados</span></div>
+                  <div class="skill-list" id="fdesk-invList">
+                    <div class="inv-item"><div class="inm">Pincel de Lin-Wu</div><div class="qty">×1</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                    <div class="inv-item"><div class="inm">Kit de aventureiro</div><div class="qty">×1</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                    <div class="inv-item"><div class="inm">Poção de cura menor</div><div class="qty">×2</div><button class="rm-x edit-only" data-rmitem>×</button></div>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+
+          <!-- FAB speed-dial (desktop) -->
+          <div class="fab-scrim" id="fdesk-fabScrim"></div>
+          <div class="fab-wrap in-desk" id="fdesk-fabWrap">
+            <button class="fab" id="fdesk-fab"><span class="fab-ico">+</span></button>
+            <div class="fab-menu">
+              <button class="fab-opt" data-create="magia"><span class="fo-lab">Magia</span><span class="fo-ic">🜂</span></button>
+              <button class="fab-opt" data-create="poder"><span class="fo-lab">Poder</span><span class="fo-ic">✦</span></button>
+              <button class="fab-opt" data-create="habilidade"><span class="fo-lab">Habilidade</span><span class="fo-ic">✧</span></button>
+              <button class="fab-opt" data-create="buff"><span class="fo-lab">Buff</span><span class="fo-ic">⚡</span></button>
+              <button class="fab-opt" data-create="item"><span class="fo-lab">Item</span><span class="fo-ic">🜸</span></button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- desktop modal (ficha) -->
+        <div class="overlay" id="fdesk-overlay"></div>
+        <div class="sheet modal" id="fdesk-sheet">
+          <div class="sheet-head">
+            <div class="st-row">
+              <h2 id="fdesk-sheetTitle">Novo</h2>
+              <button class="sheet-x" id="fdesk-sheetClose">×</button>
+            </div>
+          </div>
+          <div class="sheet-body" id="fdesk-sheetBody"></div>
+          <div class="sheet-foot">
+            <button class="btn-ghost" id="fdesk-sheetCancel">Cancelar</button>
+            <button class="btn-next" id="fdesk-sheetSave">Salvar</button>
+          </div>
+        </div>
+
+        <div class="d-toast-wrap" id="fichaDesk-toastWrap"></div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         VIEW 3 · CRIAR · CELULAR (wizard mobile)
+         ============================================================ -->
+    <section class="view" id="view-criar-phone">
+      <div class="view-head">
+        <span class="view-eyebrow">Criar · Celular</span>
+        <h1 class="view-title">Assistente de criação</h1>
+        <p class="view-sub">Seis etapas com inputs clean, multiclasse, perícias sem limite e bottom-sheets de Poder, Magia e Item.</p>
+      </div>
+      <div class="scroll-pad">
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="statusbar">
+            <span>9:41</span>
+            <div class="dots">
+              <div class="sig"><i></i><i></i><i></i><i></i></div>
+              <span style="font-size:11px;font-weight:700;letter-spacing:.04em">5G</span>
+              <div class="batt"></div>
+            </div>
+          </div>
+
+          <div class="wiz-header">
+            <div class="wiz-progress" id="wizPhone-progress">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div class="wiz-meta">
+              <div>
+                <div class="step-of" id="wizPhone-stepOf">Etapa 1 de 6</div>
+                <div class="step-name"><span class="step-ico" id="wizPhone-stepIco">◈</span> <span id="wizPhone-stepName">Identidade</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="body" id="wizPhone-body">
+
+            <!-- ETAPA 1 — IDENTIDADE -->
+            <section class="step-panel active" data-step="1">
+              <div class="avatar-up">
+                <div class="avatar-circle">
+                  <span class="cam">📷</span>
+                  <span class="badge">+</span>
+                </div>
+                <span class="cap">Toque para adicionar retrato</span>
+              </div>
+
+              <div class="field">
+                <label>Nome do personagem</label>
+                <input type="text" value="Akihiro" placeholder="Como será chamado?" />
+              </div>
+
+              <div class="sec-head"><h2>Classes</h2><span>Multiclasse livre</span></div>
+              <div id="wizPhone-classList">
+                <div class="class-row">
+                  <div class="field"><label>Classe</label><input type="text" value="Shugenja" placeholder="ex.: Guerreiro" /></div>
+                  <div class="field field--sm"><label>Nível</label><input type="number" value="2" min="1" data-lvlinput /></div>
+                  <button class="row-x hidden" data-removeclass>×</button>
+                </div>
+              </div>
+              <button class="link-add" id="wizPhone-addClass">+ Adicionar classe</button>
+              <div class="lvl-total" style="margin-top:10px;margin-bottom:8px">Nível total: <b id="wizPhone-lvlTotal">2</b></div>
+
+              <div class="sec-head gap"><h2>Origem & Crença</h2><span></span></div>
+              <div class="field">
+                <label>Raça</label>
+                <select>
+                  <option>Humano</option>
+                  <option selected>Suraggel (Aggelus)</option>
+                  <option>Suraggel (Sulfure)</option>
+                  <option>Anão</option>
+                  <option>Dahllan</option>
+                  <option>Elfo</option>
+                  <option>Goblin</option>
+                  <option>Lefou</option>
+                  <option>Minotauro</option>
+                  <option>Qareen</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Origem</label>
+                <select>
+                  <option selected>Herói Camponês</option>
+                  <option>Acólito</option>
+                  <option>Amnésico</option>
+                  <option>Aristocrata</option>
+                  <option>Artesão</option>
+                  <option>Batedor</option>
+                  <option>Charlatão</option>
+                  <option>Forasteiro</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Divindade</label>
+                <select>
+                  <option selected>Lin-Wu</option>
+                  <option>Khalmyr</option>
+                  <option>Tanna-Toh</option>
+                  <option>Marah</option>
+                  <option>Nimb</option>
+                  <option>Allihanna</option>
+                  <option>Wynna</option>
+                  <option>Nenhuma</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Tendência</label>
+                <select>
+                  <option selected>Leal e Bom</option>
+                  <option>Neutro e Bom</option>
+                  <option>Caótico e Bom</option>
+                  <option>Leal e Neutro</option>
+                  <option>Neutro</option>
+                  <option>Caótico e Neutro</option>
+                  <option>Leal e Mau</option>
+                  <option>Neutro e Mau</option>
+                  <option>Caótico e Mau</option>
+                </select>
+              </div>
+
+              <div class="sec-head gap"><h2>Físico</h2><span></span></div>
+              <div class="frow">
+                <div class="field field--sm">
+                  <label>Tamanho</label>
+                  <select>
+                    <option>Minúsculo</option>
+                    <option>Pequeno</option>
+                    <option selected>Médio</option>
+                    <option>Grande</option>
+                    <option>Enorme</option>
+                  </select>
+                </div>
+                <div class="field field--sm">
+                  <label>Deslocamento</label>
+                  <input type="text" value="9 m" placeholder="ex.: 9 m" />
+                </div>
+              </div>
+            </section>
+
+            <!-- ETAPA 2 — ATRIBUTOS -->
+            <section class="step-panel" data-step="2">
+              <div class="sec-head"><h2>Atributos</h2><span>Digite os valores</span></div>
+              <div class="attr-fields">
+                <div class="attr-field"><label>FOR</label><input type="text" value="0" /></div>
+                <div class="attr-field"><label>DES</label><input type="text" value="+2" /></div>
+                <div class="attr-field"><label>CON</label><input type="text" value="+1" /></div>
+                <div class="attr-field"><label>INT</label><input type="text" value="+1" /></div>
+                <div class="attr-field"><label>SAB</label><input type="text" value="+3" /></div>
+                <div class="attr-field"><label>CAR</label><input type="text" value="0" /></div>
+              </div>
+            </section>
+
+            <!-- ETAPA 3 — PERÍCIAS -->
+            <section class="step-panel" data-step="3">
+              <div class="field skill-search">
+                <label>Buscar perícia</label>
+                <input type="text" id="wizPhone-skillSearch" placeholder="Digite para filtrar…" />
+              </div>
+              <div class="card skill-list" id="wizPhone-skillList"></div>
+            </section>
+
+            <!-- ETAPA 4 — PODERES -->
+            <section class="step-panel" data-step="4">
+              <div class="sec-head"><h2>Poderes</h2><span id="wizPhone-powCount">3 poderes</span></div>
+              <div id="wizPhone-powerList">
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Coração Heroico</h3><span class="tag">Raça</span></div>
+                  <p>+3 pontos de mana; +3 PM a cada novo patamar (5º, 11º, 17º).</p>
+                  <button class="rm" data-rmcard="powCount">× Remover</button>
+                </div>
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Mente Vazia</h3><span class="tag">Classe</span></div>
+                  <p>+2 em Iniciativa, Percepção e Vontade.</p>
+                  <button class="rm" data-rmcard="powCount">× Remover</button>
+                </div>
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Sortudo</h3><span class="tag">Origem</span></div>
+                  <p>Gaste 3 PM para rolar um teste novamente.</p>
+                  <button class="rm" data-rmcard="powCount">× Remover</button>
+                </div>
+              </div>
+              <button class="btn-add" id="wizPhone-addPower">+ Adicionar poder</button>
+            </section>
+
+            <!-- ETAPA 5 — MAGIAS -->
+            <section class="step-panel" data-step="5">
+              <div class="sec-head"><h2>Conjuração</h2><span>Base de magia</span></div>
+              <div class="conj-mini">
+                <div class="field field--sm">
+                  <label>Atributo-chave</label>
+                  <select>
+                    <option selected>Sabedoria</option>
+                    <option>Inteligência</option>
+                    <option>Carisma</option>
+                  </select>
+                </div>
+                <div class="field field--sm">
+                  <label>CD de resistência</label>
+                  <input type="number" value="14" />
+                </div>
+              </div>
+
+              <div class="sec-head gap"><h2>Magias conhecidas</h2><span id="wizPhone-spellCount">3 magias</span></div>
+              <div id="wizPhone-spellList">
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Concentração de Combate</h3><span class="tag">1 PM</span></div>
+                  <div class="sub">1º Círculo · Abjuração</div>
+                  <button class="rm" data-rmcard="spellCount">× Remover</button>
+                </div>
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Explosão de Chamas</h3><span class="tag">2 PM</span></div>
+                  <div class="sub">1º Círculo · Evocação</div>
+                  <button class="rm" data-rmcard="spellCount">× Remover</button>
+                </div>
+                <div class="card item-card">
+                  <div class="ic-top"><h3>Curar Ferimentos</h3><span class="tag">1 PM</span></div>
+                  <div class="sub">1º Círculo · Evocação</div>
+                  <button class="rm" data-rmcard="spellCount">× Remover</button>
+                </div>
+              </div>
+              <button class="btn-add" id="wizPhone-addSpell">+ Adicionar magia</button>
+            </section>
+
+            <!-- ETAPA 6 — EQUIPAMENTOS -->
+            <section class="step-panel" data-step="6">
+              <div class="eq-group" id="wizPhone-eqEquip">
+                <div class="eq-srchead">Equipamentos</div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Katana</div><div class="ei-stats">+7 · 1d10+2 · 18/×2 · corte</div></div><div class="ei-qty">×1</div></div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Arco curto</div><div class="ei-stats">+5 · 1d6+2 · ×3 · 18 m</div></div><div class="ei-qty">×1</div></div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Armadura de couro</div><div class="ei-stats">Defesa +2</div></div><div class="ei-qty">×1</div></div>
+              </div>
+              <div class="eq-group" id="wizPhone-eqComum">
+                <div class="eq-srchead">Comuns</div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Pincel de Lin-Wu</div></div><div class="ei-qty">×1</div></div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Kit de aventureiro</div></div><div class="ei-qty">×1</div></div>
+              </div>
+              <div class="eq-group" id="wizPhone-eqConsum">
+                <div class="eq-srchead">Consumíveis</div>
+                <div class="eq-item"><div class="ei-main"><div class="ei-name">Poção de cura menor</div><div class="ei-stats">Cura 1d8+1 PV</div></div><div class="ei-qty">×2</div></div>
+              </div>
+
+              <button class="btn-add" style="margin-top:14px" id="wizPhone-addItem">+ Adicionar item</button>
+
+              <div class="sec-head gap"><h2>Tibares</h2><span>Bolsa de moedas</span></div>
+              <div class="tibares-row">
+                <div class="field field--sm"><label>Cobre</label><input type="number" value="40" /></div>
+                <div class="field field--sm"><label>Prata</label><input type="number" value="12" /></div>
+                <div class="field field--sm"><label>Ouro</label><input type="number" value="8" /></div>
+              </div>
+            </section>
+
+          </div>
+
+          <div class="toast-wrap" id="wizPhone-toastWrap"></div>
+
+          <div class="wiz-footer">
+            <button class="btn-ghost disabled" id="wizPhone-btnBack">Voltar</button>
+            <button class="btn-next" id="wizPhone-btnNext">Próximo</button>
+          </div>
+
+          <!-- bottom sheet (mobile) -->
+          <div class="overlay" id="wizPhone-overlay"></div>
+          <div class="sheet" id="wizPhone-sheet">
+            <div class="sheet-head">
+              <div class="st-row">
+                <h2 id="wizPhone-sheetTitle">Novo Poder</h2>
+                <button class="sheet-x" id="wizPhone-sheetClose">×</button>
+              </div>
+            </div>
+            <div class="sheet-body" id="wizPhone-sheetBody"></div>
+            <div class="sheet-foot">
+              <button class="btn-ghost" id="wizPhone-sheetCancel">Cancelar</button>
+              <button class="btn-next" id="wizPhone-sheetSave">Salvar</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         VIEW 4 · CRIAR · iPad/DESKTOP (new wizard layout)
+         ============================================================ -->
+    <section class="view" id="view-criar-desk">
+      <div class="view-head">
+        <span class="view-eyebrow">Criar · iPad/Desktop</span>
+        <h1 class="view-title">Assistente em tela grande</h1>
+        <p class="view-sub">Stepper vertical à esquerda, conteúdo largo em duas colunas e os mesmos formulários como modais centrais.</p>
+      </div>
+      <div class="scroll-pad">
+      <div class="desktop">
+        <div class="d-chrome">
+          <div class="tl"><i></i><i></i><i></i></div>
+          <div class="url">arcanaforge.app / criar</div>
+        </div>
+        <div class="d-inner">
+          <div class="dwiz-card">
+
+            <!-- rail esquerda -->
+            <aside class="dwiz-rail">
+              <div class="rail-eyebrow">Assistente</div>
+              <div class="rail-title">Novo personagem</div>
+              <div class="rail-total">Nível total <b id="wizDesk-lvlTotal">2</b></div>
+              <nav id="wizDesk-stepper">
+                <button class="vstep cur" data-step="1"><span class="vcirc">1</span><span class="vlab">Identidade<small>Nome, raça, origem</small></span></button>
+                <button class="vstep" data-step="2"><span class="vcirc">2</span><span class="vlab">Atributos<small>FOR a CAR</small></span></button>
+                <button class="vstep" data-step="3"><span class="vcirc">3</span><span class="vlab">Perícias<small>Treinos</small></span></button>
+                <button class="vstep" data-step="4"><span class="vcirc">4</span><span class="vlab">Poderes<small>Por fonte</small></span></button>
+                <button class="vstep" data-step="5"><span class="vcirc">5</span><span class="vlab">Magias<small>Conjuração</small></span></button>
+                <button class="vstep" data-step="6"><span class="vcirc">6</span><span class="vlab">Equipamentos<small>Itens e tibares</small></span></button>
+              </nav>
+            </aside>
+
+            <!-- área direita -->
+            <div class="dwiz-main">
+              <div class="dwiz-content" id="wizDesk-content">
+
+                <!-- ETAPA 1 — IDENTIDADE -->
+                <section class="dwiz-step active" data-step="1">
+                  <div class="dwiz-steptitle">Identidade</div>
+                  <p class="dwiz-stephelp">Defina quem é o personagem: nome, classes (multiclasse livre), origem, crença e dados físicos.</p>
+
+                  <div class="grid-2">
+                    <div class="field full">
+                      <label>Nome do personagem</label>
+                      <input type="text" value="Akihiro" placeholder="Como será chamado?" />
+                    </div>
+                  </div>
+
+                  <div class="sec-head"><h2>Classes</h2><span>Multiclasse livre</span></div>
+                  <div id="wizDesk-classList">
+                    <div class="class-row">
+                      <div class="field"><label>Classe</label><input type="text" value="Shugenja" placeholder="ex.: Guerreiro" /></div>
+                      <div class="field field--sm"><label>Nível</label><input type="number" value="2" min="1" data-lvlinput /></div>
+                      <button class="row-x hidden" data-removeclass>×</button>
+                    </div>
+                  </div>
+                  <button class="link-add" id="wizDesk-addClass">+ Adicionar classe</button>
+                  <div class="lvl-total" style="margin:10px 2px 18px">Nível total: <b id="wizDesk-lvlTotalInline">2</b></div>
+
+                  <div class="sec-head gap"><h2>Origem & Crença</h2><span></span></div>
+                  <div class="grid-2">
+                    <div class="field">
+                      <label>Raça</label>
+                      <select>
+                        <option>Humano</option>
+                        <option selected>Suraggel (Aggelus)</option>
+                        <option>Suraggel (Sulfure)</option>
+                        <option>Anão</option>
+                        <option>Dahllan</option>
+                        <option>Elfo</option>
+                        <option>Goblin</option>
+                        <option>Lefou</option>
+                        <option>Minotauro</option>
+                        <option>Qareen</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Origem</label>
+                      <select>
+                        <option selected>Herói Camponês</option>
+                        <option>Acólito</option>
+                        <option>Amnésico</option>
+                        <option>Aristocrata</option>
+                        <option>Artesão</option>
+                        <option>Batedor</option>
+                        <option>Charlatão</option>
+                        <option>Forasteiro</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Divindade</label>
+                      <select>
+                        <option selected>Lin-Wu</option>
+                        <option>Khalmyr</option>
+                        <option>Tanna-Toh</option>
+                        <option>Marah</option>
+                        <option>Nimb</option>
+                        <option>Allihanna</option>
+                        <option>Wynna</option>
+                        <option>Nenhuma</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label>Tendência</label>
+                      <select>
+                        <option selected>Leal e Bom</option>
+                        <option>Neutro e Bom</option>
+                        <option>Caótico e Bom</option>
+                        <option>Leal e Neutro</option>
+                        <option>Neutro</option>
+                        <option>Caótico e Neutro</option>
+                        <option>Leal e Mau</option>
+                        <option>Neutro e Mau</option>
+                        <option>Caótico e Mau</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="sec-head gap"><h2>Físico</h2><span></span></div>
+                  <div class="grid-2">
+                    <div class="field field--sm">
+                      <label>Tamanho</label>
+                      <select>
+                        <option>Minúsculo</option>
+                        <option>Pequeno</option>
+                        <option selected>Médio</option>
+                        <option>Grande</option>
+                        <option>Enorme</option>
+                      </select>
+                    </div>
+                    <div class="field field--sm">
+                      <label>Deslocamento</label>
+                      <input type="text" value="9 m" placeholder="ex.: 9 m" />
+                    </div>
+                  </div>
+                </section>
+
+                <!-- ETAPA 2 — ATRIBUTOS -->
+                <section class="dwiz-step" data-step="2">
+                  <div class="dwiz-steptitle">Atributos</div>
+                  <p class="dwiz-stephelp">Digite o modificador de cada atributo. Os seis aparecem lado a lado nesta tela.</p>
+                  <div class="attr-fields wide">
+                    <div class="attr-field"><label>FOR</label><input type="text" value="0" /></div>
+                    <div class="attr-field"><label>DES</label><input type="text" value="+2" /></div>
+                    <div class="attr-field"><label>CON</label><input type="text" value="+1" /></div>
+                    <div class="attr-field"><label>INT</label><input type="text" value="+1" /></div>
+                    <div class="attr-field"><label>SAB</label><input type="text" value="+3" /></div>
+                    <div class="attr-field"><label>CAR</label><input type="text" value="0" /></div>
+                  </div>
+                </section>
+
+                <!-- ETAPA 3 — PERÍCIAS -->
+                <section class="dwiz-step" data-step="3">
+                  <div class="dwiz-steptitle">Perícias</div>
+                  <p class="dwiz-stephelp">Marque as perícias treinadas. Sem contador — treine quantas o personagem tiver direito.</p>
+                  <div class="field skill-search" style="max-width:360px">
+                    <label>Buscar perícia</label>
+                    <input type="text" id="wizDesk-skillSearch" placeholder="Digite para filtrar…" />
+                  </div>
+                  <div class="card-grid" id="wizDesk-skillList"></div>
+                </section>
+
+                <!-- ETAPA 4 — PODERES -->
+                <section class="dwiz-step" data-step="4">
+                  <div class="dwiz-steptitle">Poderes</div>
+                  <p class="dwiz-stephelp">Poderes de raça, origem e classe. Adicione quantos quiser pelo botão.</p>
+                  <div class="sec-head"><h2>Lista</h2><span id="wizDesk-powCount">3 poderes</span></div>
+                  <div class="card-grid" id="wizDesk-powerList">
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Coração Heroico</h3><span class="tag">Raça</span></div>
+                      <p>+3 pontos de mana; +3 PM a cada novo patamar (5º, 11º, 17º).</p>
+                      <button class="rm" data-rmcard="powCount">× Remover</button>
+                    </div>
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Mente Vazia</h3><span class="tag">Classe</span></div>
+                      <p>+2 em Iniciativa, Percepção e Vontade.</p>
+                      <button class="rm" data-rmcard="powCount">× Remover</button>
+                    </div>
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Sortudo</h3><span class="tag">Origem</span></div>
+                      <p>Gaste 3 PM para rolar um teste novamente.</p>
+                      <button class="rm" data-rmcard="powCount">× Remover</button>
+                    </div>
+                  </div>
+                  <button class="btn-add" id="wizDesk-addPower" style="max-width:280px">+ Adicionar poder</button>
+                </section>
+
+                <!-- ETAPA 5 — MAGIAS -->
+                <section class="dwiz-step" data-step="5">
+                  <div class="dwiz-steptitle">Magias</div>
+                  <p class="dwiz-stephelp">Defina a base de conjuração e as magias conhecidas.</p>
+                  <div class="sec-head"><h2>Conjuração</h2><span>Base de magia</span></div>
+                  <div class="grid-2">
+                    <div class="field field--sm">
+                      <label>Atributo-chave</label>
+                      <select>
+                        <option selected>Sabedoria</option>
+                        <option>Inteligência</option>
+                        <option>Carisma</option>
+                      </select>
+                    </div>
+                    <div class="field field--sm">
+                      <label>CD de resistência</label>
+                      <input type="number" value="14" />
+                    </div>
+                  </div>
+
+                  <div class="sec-head gap"><h2>Magias conhecidas</h2><span id="wizDesk-spellCount">3 magias</span></div>
+                  <div class="card-grid" id="wizDesk-spellList">
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Concentração de Combate</h3><span class="tag">1 PM</span></div>
+                      <div class="sub">1º Círculo · Abjuração</div>
+                      <button class="rm" data-rmcard="spellCount">× Remover</button>
+                    </div>
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Explosão de Chamas</h3><span class="tag">2 PM</span></div>
+                      <div class="sub">1º Círculo · Evocação</div>
+                      <button class="rm" data-rmcard="spellCount">× Remover</button>
+                    </div>
+                    <div class="card item-card">
+                      <div class="ic-top"><h3>Curar Ferimentos</h3><span class="tag">1 PM</span></div>
+                      <div class="sub">1º Círculo · Evocação</div>
+                      <button class="rm" data-rmcard="spellCount">× Remover</button>
+                    </div>
+                  </div>
+                  <button class="btn-add" id="wizDesk-addSpell" style="max-width:280px">+ Adicionar magia</button>
+                </section>
+
+                <!-- ETAPA 6 — EQUIPAMENTOS -->
+                <section class="dwiz-step" data-step="6">
+                  <div class="dwiz-steptitle">Equipamentos</div>
+                  <p class="dwiz-stephelp">Adicione itens — o assistente pergunta o tipo primeiro (Arma, Armadura, Comum ou Consumível).</p>
+                  <div class="grid-2">
+                    <div class="eq-group full" id="wizDesk-eqEquip">
+                      <div class="eq-srchead">Equipamentos</div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Katana</div><div class="ei-stats">+7 · 1d10+2 · 18/×2 · corte</div></div><div class="ei-qty">×1</div></div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Arco curto</div><div class="ei-stats">+5 · 1d6+2 · ×3 · 18 m</div></div><div class="ei-qty">×1</div></div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Armadura de couro</div><div class="ei-stats">Defesa +2</div></div><div class="ei-qty">×1</div></div>
+                    </div>
+                    <div class="eq-group" id="wizDesk-eqComum">
+                      <div class="eq-srchead">Comuns</div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Pincel de Lin-Wu</div></div><div class="ei-qty">×1</div></div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Kit de aventureiro</div></div><div class="ei-qty">×1</div></div>
+                    </div>
+                    <div class="eq-group" id="wizDesk-eqConsum">
+                      <div class="eq-srchead">Consumíveis</div>
+                      <div class="eq-item"><div class="ei-main"><div class="ei-name">Poção de cura menor</div><div class="ei-stats">Cura 1d8+1 PV</div></div><div class="ei-qty">×2</div></div>
+                    </div>
+                  </div>
+
+                  <button class="btn-add" style="margin-top:14px;max-width:280px" id="wizDesk-addItem">+ Adicionar item</button>
+
+                  <div class="sec-head gap"><h2>Tibares</h2><span>Bolsa de moedas</span></div>
+                  <div class="tibares-row" style="max-width:420px">
+                    <div class="field field--sm"><label>Cobre</label><input type="number" value="40" /></div>
+                    <div class="field field--sm"><label>Prata</label><input type="number" value="12" /></div>
+                    <div class="field field--sm"><label>Ouro</label><input type="number" value="8" /></div>
+                  </div>
+                </section>
+
+              </div>
+
+              <div class="dwiz-foot">
+                <button class="btn-ghost disabled" id="wizDesk-btnBack">Voltar</button>
+                <button class="btn-next" id="wizDesk-btnNext">Próximo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- desktop modal -->
+        <div class="overlay" id="wizDesk-overlay"></div>
+        <div class="sheet modal" id="wizDesk-sheet">
+          <div class="sheet-head">
+            <div class="st-row">
+              <h2 id="wizDesk-sheetTitle">Novo Poder</h2>
+              <button class="sheet-x" id="wizDesk-sheetClose">×</button>
+            </div>
+          </div>
+          <div class="sheet-body" id="wizDesk-sheetBody"></div>
+          <div class="sheet-foot">
+            <button class="btn-ghost" id="wizDesk-sheetCancel">Cancelar</button>
+            <button class="btn-next" id="wizDesk-sheetSave">Salvar</button>
+          </div>
+        </div>
+
+        <div class="d-toast-wrap" id="wizDesk-toastWrap"></div>
+      </div>
+      </div>
+    </section>
+
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     SHARED DATA
+     ============================================================ */
+  const SKILLS = [
+    ['Acrobacia','DES'],['Adestramento','CAR'],['Atletismo','FOR'],['Atuação','CAR'],
+    ['Cavalgar','DES'],['Conhecimento','INT'],['Cura','SAB'],['Diplomacia','CAR'],
+    ['Enganação','CAR'],['Fortitude','CON'],['Furtividade','DES'],['Guerra','INT'],
+    ['Iniciativa','DES'],['Intimidação','CAR'],['Intuição','SAB'],['Investigação','INT'],
+    ['Jogatina','CAR'],['Ladinagem','DES'],['Luta','FOR'],['Misticismo','INT'],
+    ['Nobreza','INT'],['Ofício','INT'],['Percepção','SAB'],['Pilotagem','DES'],
+    ['Pontaria','DES'],['Reflexos','DES'],['Religião','SAB'],['Sobrevivência','SAB'],
+    ['Vontade','SAB']
+  ];
+  const TRAINED = new Set(['Percepção','Vontade','Misticismo','Luta','Iniciativa']);
+
+  const STEPS = [
+    {ico:'◈', name:'Identidade'},
+    {ico:'✦', name:'Atributos'},
+    {ico:'✓', name:'Perícias'},
+    {ico:'✶', name:'Poderes'},
+    {ico:'🜂', name:'Magias'},
+    {ico:'🜸', name:'Equipamentos'}
+  ];
+  const TOTAL = 6;
+
+  /* field-html builders (shared) */
+  const F = {
+    text:(label,val='',ph='')=>`<div class="field"><label>${label}</label><input type="text" value="${val}" placeholder="${ph}"></div>`,
+    num:(label,val='',ph='')=>`<div class="field"><label>${label}</label><input type="number" value="${val}" placeholder="${ph}"></div>`,
+    area:(label,ph='')=>`<div class="field"><label>${label}</label><textarea placeholder="${ph}"></textarea></div>`,
+    sel:(label,opts)=>`<div class="field"><label>${label}</label><select>${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`
+  };
+  function impRow(){
+    return `<div class="imp-row">`+
+      `<div class="field field--sm"><label>+PM</label><input type="number" placeholder="2"></div>`+
+      `<div class="field"><label>Efeito</label><input type="text" placeholder="ex.: +1d6 de dano"></div>`+
+      `<button class="row-x" data-impremove>×</button>`+
+    `</div>`;
+  }
+
+  /* ============================================================
+     HUB ROUTER  (mode × device → view)
+     ============================================================ */
+  const Router = {
+    mode:'ficha', device:'phone',
+    init(){
+      document.querySelectorAll('#segMode button').forEach(b=>{
+        b.addEventListener('click',()=>{ this.setSeg('segMode', b); this.mode = b.dataset.mode; this.apply(); });
+      });
+      document.querySelectorAll('#segDevice button').forEach(b=>{
+        b.addEventListener('click',()=>{ this.setSeg('segDevice', b); this.device = b.dataset.device; this.apply(); });
+      });
+      this.apply();
+    },
+    setSeg(ctlId, btn){
+      document.querySelectorAll('#'+ctlId+' button').forEach(x=>x.classList.remove('on'));
+      btn.classList.add('on');
+    },
+    apply(){
+      const id = 'view-'+(this.mode==='ficha'?'ficha':'criar')+'-'+(this.device==='phone'?'phone':'desk');
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      const v = document.getElementById(id);
+      if(v) v.classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  };
+
+  /* ============================================================
+     FICHA (read-only sheet) — shared behaviour, scoped by root id
+     ============================================================ */
+  function fmtMod(n){ return (n>=0?'+':'')+n; }
+  function parseMod(str){ return parseInt(String(str).replace('+',''),10)||0; }
+
+  function makeFicha(cfg){
+    // cfg.prefix 'fphone' | 'fdesk'  · cfg.mode 'phone' | 'desk'
+    const P = cfg.prefix;
+    const id = s => P+'-'+s;
+    const el = s => document.getElementById(id(s));
+    const view = document.getElementById(cfg.view);
+    const S = {
+      pv:{now:26,max:26}, pm:{now:18,max:24},
+      defBase:15, // 10 + Des(2) + armadura(3) = 15, "outros" fixos +1 → 16 sem buff; buffs adicionam
+      defOtherFixed:1
+    };
+
+    /* ---------- tabs (phone) ---------- */
+    if(cfg.tabbar){
+      const bar = document.getElementById(cfg.tabbar);
+      const bodyEl = document.getElementById(cfg.body);
+      bar.querySelectorAll('.tab').forEach(tab=>{
+        tab.addEventListener('click',()=>{
+          bar.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+          tab.classList.add('active');
+          const tid = cfg.body.replace('-body','')+'-tab-'+tab.dataset.tab;
+          bodyEl.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+          const panel = document.getElementById(tid);
+          panel.classList.add('active');
+          panel.querySelectorAll(':scope > *').forEach(e=>{ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+          bodyEl.scrollTo({top:0,behavior:'smooth'});
+        });
+      });
+    }
+
+    /* ---------- desktop master-detail nav ---------- */
+    if(cfg.mode==='desk'){
+      const nav = el('nav'), detail = el('detail');
+      nav.querySelectorAll('.d-navitem').forEach(item=>{
+        item.addEventListener('click',()=>{
+          nav.querySelectorAll('.d-navitem').forEach(x=>x.classList.remove('on'));
+          item.classList.add('on');
+          detail.querySelectorAll('.d-section').forEach(s=>s.classList.remove('active'));
+          detail.querySelector('.d-section[data-sec="'+item.dataset.sec+'"]').classList.add('active');
+        });
+      });
+    }
+
+    /* ---------- vitals: popovers + steppers (game action, always on) ---------- */
+    function closePops(){ view.querySelectorAll('.popover').forEach(p=>p.classList.remove('open')); }
+    const popMap = { pv:'popPv', pm:'popPm', def:'popDef' };
+    view.querySelectorAll('.vital.tappable').forEach(v=>{
+      v.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const pop = el(popMap[v.dataset.pop]);
+        const wasOpen = pop.classList.contains('open');
+        closePops();
+        if(!wasOpen) pop.classList.add('open');
+      });
+    });
+    view.querySelectorAll('.popover').forEach(p=>p.addEventListener('click',e=>e.stopPropagation()));
+    document.addEventListener('click',()=>closePops());
+
+    function renderVital(k){
+      const r = S[k];
+      el(k+'Val').textContent = r.now;
+      el(k+'MaxLab').textContent = r.max;
+      el(k+'Pop').textContent = r.now;
+      el(k+'PopMax').textContent = r.max;
+      const track = el(k+'Track');
+      const ratio = r.max>0 ? r.now/r.max : 0;
+      track.style.width = (ratio*100)+'%';
+      track.style.background = ratio<.3 ? 'var(--danger)' : (k==='pv'?'var(--accent)':'#3b82f6');
+      const wrap = el(k+'Val').parentElement;
+      wrap.classList.remove('bump'); void wrap.offsetWidth; wrap.classList.add('bump');
+    }
+    function changeVital(k,d){ const r=S[k]; r.now=Math.max(0,Math.min(r.max,r.now+d)); renderVital(k); }
+    view.querySelectorAll('.step-btn[data-vital]').forEach(b=>{
+      b.addEventListener('click',e=>{ e.stopPropagation(); changeVital(b.dataset.vital, parseInt(b.dataset.delta,10)); });
+    });
+
+    /* ---------- buffs (toggle + auto calc) ---------- */
+    function skillEls(name){ return view.querySelectorAll('.vl[data-skill="'+name+'"]'); }
+    function attrEl(code){ const a=view.querySelector('.attr[data-attr="'+code+'"]'); return a?a.querySelector('[data-mod]'):null; }
+    function recalcDefense(){
+      let bonus = S.defOtherFixed;
+      view.querySelectorAll('.chip.buff[data-kind="defense"]').forEach(c=>{
+        if(c.dataset.active==='1') bonus += parseInt(c.dataset.value,10)||0;
+      });
+      const tot = S.defBase + bonus; // defBase already includes the 10+Des+armor
+      el('defVal').textContent = tot;
+      el('defTot').textContent = tot;
+      el('defOther').textContent = fmtMod(bonus);
+    }
+    function applyBuff(chip, on){
+      const kind = chip.dataset.kind, val = parseInt(chip.dataset.value,10)||0, pm = parseInt(chip.dataset.pm,10)||0;
+      const sign = on ? 1 : -1;
+      if(kind==='attribute'){
+        const m = attrEl(chip.dataset.target);
+        if(m) m.textContent = fmtMod(parseMod(m.textContent)+sign*val);
+      } else if(kind==='skill'){
+        skillEls(chip.dataset.target).forEach(s=>{
+          const base = s.dataset.base!=null ? parseInt(s.dataset.base,10) : parseMod(s.textContent);
+          s.dataset.base = base; // keep base stable
+          const cur = parseMod(s.textContent);
+          s.textContent = fmtMod(cur+sign*val);
+        });
+      } else if(kind==='defense'){
+        recalcDefense();
+      }
+      // PM cost: turning on spends PM, off refunds
+      if(pm){ S.pm.now = Math.max(0, Math.min(S.pm.max, S.pm.now - sign*pm)); renderVital('pm'); }
+    }
+    function toggleBuff(chip){
+      const on = chip.dataset.active!=='1';
+      chip.dataset.active = on ? '1':'0';
+      chip.classList.toggle('on', on);
+      applyBuff(chip, on);
+      updateBuffCount();
+    }
+    function updateBuffCount(){
+      const n = view.querySelectorAll('.chip.buff[data-active="1"]').length;
+      el('buffCount').textContent = n+(n===1?' ativo':' ativos');
+    }
+    function bindBuff(chip){
+      chip.addEventListener('click',(e)=>{
+        if(e.target.matches('[data-rmbuff]')){
+          e.stopPropagation();
+          if(chip.dataset.active==='1') applyBuff(chip,false); // revert before removing
+          chip.remove(); updateBuffCount(); recalcDefense(); return;
+        }
+        if(editing){ editCard(chip); return; } // edit mode → open form, don't toggle
+        toggleBuff(chip);
+      });
+    }
+    /* reconstruct a buff model from chip datasets + name text */
+    function buffModel(chip){
+      const kind = chip.dataset.kind || 'none';
+      const target = chip.dataset.target || '';
+      const value = parseInt(chip.dataset.value,10)||0;
+      const pm = parseInt(chip.dataset.pm,10)||0;
+      const active = chip.dataset.active==='1';
+      let nome = chip.dataset.name;
+      if(nome==null){
+        // derive from text (everything before the × button), stripping a trailing ±N for valued buffs
+        const clone = chip.cloneNode(true);
+        const bx = clone.querySelector('.bx'); if(bx) bx.remove();
+        nome = clone.textContent.trim();
+        if(kind!=='none') nome = nome.replace(/\s*[+\-−]\s*\d+\s*$/,'').trim();
+        chip.dataset.name = nome; // cache so future edits keep the clean name
+      }
+      return {kind:'buff', buffKind:kind, target, value, pm, active, nome};
+    }
+    el('buffList').querySelectorAll('.chip.buff').forEach(chip=>{ buffModel(chip); bindBuff(chip); });
+    updateBuffCount();
+    recalcDefense();
+
+    /* ---------- edit mode ---------- */
+    let editing = false;
+    function syncCoins(toInputs){
+      [['copper'],['silver'],['gold']].forEach(([c])=>{
+        const t = el(c+'Text'), i = el(c+'Input');
+        if(!t||!i) return;
+        if(toInputs) i.value = t.textContent;
+        else t.textContent = i.value;
+      });
+    }
+    function setEditing(on){
+      editing = on;
+      view.classList.toggle('editing', on);
+      el('editLab').textContent = on ? 'Concluir' : 'Editar';
+      el('editIco').textContent = on ? '✓' : '✎';
+      if(on){
+        syncCoins(true);
+        el('lvlInput').value = el('lvlText').textContent;
+        view.querySelectorAll('.attr[data-attr]').forEach(a=>{
+          let inp = a.querySelector('.attr-edit');
+          const mod = a.querySelector('[data-mod]');
+          if(!inp){
+            inp = document.createElement('input');
+            inp.type='text'; inp.className='edit-input attr attr-edit edit-only';
+            inp.addEventListener('input',()=>{ mod.textContent = fmtMod(parseMod(inp.value)); });
+            mod.insertAdjacentElement('afterend', inp);
+            mod.classList.add('read-only-hide');
+          }
+          inp.value = mod.textContent;
+          inp.classList.remove('edit-only'); inp.style.display='';
+          mod.classList.add('read-only-hide');
+        });
+      } else {
+        // commit level
+        el('lvlText').textContent = el('lvlInput').value;
+        if(cfg.lvlPill) el('lvlPill').textContent = el('lvlInput').value;
+        if(view.querySelector('.avatar')) view.querySelector('.avatar').style.setProperty('--n', el('lvlInput').value);
+        syncCoins(false);
+        view.querySelectorAll('.attr[data-attr]').forEach(a=>{
+          const mod = a.querySelector('[data-mod]'); mod.classList.remove('read-only-hide');
+          const inp = a.querySelector('.attr-edit'); if(inp){ inp.style.display='none'; }
+        });
+      }
+    }
+    el('editBtn').addEventListener('click',()=>setEditing(!editing));
+
+    /* removals (powers/spells/items) — work only meaningfully in edit mode (buttons hidden otherwise) */
+    function bindRemovals(rootEl){
+      rootEl.querySelectorAll('[data-rmpow]').forEach(b=>{ if(!b._b){ b._b=1; b.addEventListener('click',e=>{ e.stopPropagation(); b.closest('.pow').remove(); }); }});
+      rootEl.querySelectorAll('[data-rmspell]').forEach(b=>{ if(!b._b){ b._b=1; b.addEventListener('click',e=>{ e.stopPropagation(); b.closest('.spell').remove(); updateSpellCount(); }); }});
+      rootEl.querySelectorAll('[data-rmitem]').forEach(b=>{ if(!b._b){ b._b=1; b.addEventListener('click',e=>{ e.stopPropagation(); const w=b.closest('.weapon')||b.closest('.inv-item'); if(w) w.remove(); }); }});
+    }
+    function updateSpellCount(){ const n=el('spellList').querySelectorAll('.spell').length; el('spellCount').textContent=n+(n===1?' magia':' magias'); }
+    bindRemovals(view);
+
+    /* ---------- FAB speed dial ---------- */
+    const fabWrap = el('fabWrap'), fabScrim = el('fabScrim');
+    function closeFab(){ fabWrap.classList.remove('open'); fabScrim.classList.remove('open'); }
+    el('fab').addEventListener('click',e=>{ e.stopPropagation(); fabWrap.classList.toggle('open'); fabScrim.classList.toggle('open'); });
+    fabScrim.addEventListener('click',closeFab);
+    fabWrap.querySelectorAll('.fab-opt').forEach(o=>{
+      o.addEventListener('click',()=>{ closeFab(); openForm(o.dataset.create); });
+    });
+
+    /* ---------- sheet / modal forms ---------- */
+    const overlay = el('overlay'), sheet = el('sheet');
+    let itemType = null;
+    let itemEdit = null;
+    function openSheet(){ overlay.classList.add('open'); sheet.classList.add('open'); }
+    function closeSheet(){ overlay.classList.remove('open'); sheet.classList.remove('open'); }
+    overlay.addEventListener('click', closeSheet);
+    el('sheetClose').addEventListener('click', closeSheet);
+    el('sheetCancel').addEventListener('click', closeSheet);
+    const sBody = ()=>el('sheetBody'), sSave = ()=>el('sheetSave');
+
+    function openForm(kind){
+      itemType = null; itemEdit = null;
+      sSave().style.display='';
+      if(kind==='magia') formMagia();
+      else if(kind==='poder') formPower('Poder');
+      else if(kind==='habilidade') formPower('Habilidade');
+      else if(kind==='buff') formBuff();
+      else if(kind==='item') formItemChooser();
+      openSheet();
+    }
+
+    /* open a form pre-filled to edit an existing card */
+    function editCard(card){
+      if(card.classList.contains('buff')){
+        const bm = buffModel(card);
+        sSave().style.display='';
+        formBuff({chip:card, model:bm}); openSheet(); return;
+      }
+      const m = getModel(card);
+      if(!m) return;
+      sSave().style.display='';
+      if(m.kind==='power'){ formPower(m.flag, {card, model:m}); openSheet(); }
+      else if(m.kind==='spell'){ formMagia({card, model:m}); openSheet(); }
+      else if(m.kind==='item'){
+        itemEdit = {card, model:m}; itemType = m.itemType;
+        renderItemForm();
+        el('sheetTitle').textContent='Editar item';
+        sSave().style.display=''; sSave().textContent='Salvar item'; sSave().onclick=saveItem;
+        openSheet();
+      }
+    }
+    function bindItemClick(card){
+      // inv-item / weapon individual click already covered by delegated listeners; kept for explicit rebinds
+    }
+
+    /* ---------- escaping + model helpers ---------- */
+    function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escAttr(s){ return escHtml(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+    function setModel(card, model){ card.dataset.model = JSON.stringify(model); }
+    function getModel(card){ try{ return card.dataset.model ? JSON.parse(card.dataset.model) : null; }catch(e){ return null; } }
+    /* fill a form (selects/inputs/textarea) inside sBody by an ordered list of values */
+    function setVal(input, val){ if(input!=null && val!=null) input.value = val; }
+    function setSelVal(sel, val){
+      if(!sel || val==null) return;
+      const opts = sel.querySelectorAll('option');
+      opts.forEach(o=>{ if(o.value===String(val) || o.textContent===String(val)) o.selected=true; });
+    }
+
+    /* ---------- card renderers (mode-aware, match existing visual structure) ---------- */
+    function powerCardHtml(m){
+      // phone: .card pow ; desktop: .pow  (caller sets className). innerHTML identical.
+      const hi = '';
+      const src = m.fonte ? `<div class="pow-src" style="margin:6px 0 0;font-size:9.5px">${escHtml(m.fonte)}</div>` : '';
+      return `<div class="txt"><h3>${escHtml(m.nome)} <span class="tag">${escHtml(m.flag)}</span></h3><p>${escHtml(m.desc)}</p>${src}</div><button class="rm-x edit-only" data-rmpow>×</button>`;
+    }
+    function spellCardHtml(m){
+      const pm = m.pm || '1';
+      const descBlock = cfg.mode==='phone'
+        ? (m.desc ? `<p>${escHtml(m.desc)}</p>` : '')
+        : '';
+      const sch = cfg.mode==='phone'
+        ? escHtml(m.escola||'')
+        : escHtml((m.escola||'') + (m.desc ? ' · '+m.desc : ''));
+      return `<div class="top"><div class="cost"><b>${escHtml(pm)}</b><span>PM</span></div>`+
+        `<div class="meta"><h3>${escHtml(m.nome)}</h3><div class="sch">${sch}</div>${descBlock}</div>`+
+        `<button class="rm-x edit-only" data-rmspell>×</button></div>`+
+        `<button class="btn-cast read-only-hide" data-cast="${escAttr(m.nome)}" data-pm="${escAttr(pm)}">✦ Lançar</button>`;
+    }
+    function weaponCardHtml(m){
+      const critLab = cfg.mode==='phone' ? 'Crítico' : 'Crít';
+      const crit = m.margem ? (escHtml(m.margem)+'/'+escHtml(m.mult||'×2')) : escHtml(m.mult||'×2');
+      const dano = m.dano || '—';
+      const bonus = m.atk!=null ? m.atk : '0';
+      const sub = m.empunhadura || '';
+      return `<div class="top"><div class="wname"><h3>${escHtml(m.nome)}</h3><span>${escHtml(sub)}</span></div><button class="rm-x edit-only" data-rmitem>×</button></div>`+
+        `<div class="stats"><div><span>Ataque</span><b>${fmtMod(parseInt(bonus,10)||0)}</b></div><div><span>Dano</span><b>${escHtml(dano)}</b></div><div><span>${critLab}</span><b>${crit}</b></div></div>`+
+        `<button class="btn-roll read-only-hide" data-atk="${escAttr(m.nome)}" data-bonus="${escAttr(parseInt(bonus,10)||0)}" data-dmg="${escAttr(dano)}">🎲 Rolar ataque</button>`;
+    }
+    function invItemHtml(m){
+      let stats='', qty='×1';
+      if(m.itemType==='Armadura'){ stats = m.bonus ? ('Defesa '+m.bonus) : 'Armadura'; }
+      else if(m.itemType==='Acessório'){ stats = m.efeito || 'Acessório'; }
+      else if(m.itemType==='Consumível'){ qty='×'+(m.qtd||'1'); stats = m.efeito || ''; }
+      else { qty='×'+(m.qtd||'1'); }
+      return `<div class="inm">${escHtml(m.nome)}${stats?` <small style="color:var(--ink-3);font-weight:500">· ${escHtml(stats)}</small>`:''}</div><div class="qty">${escHtml(qty)}</div><button class="rm-x edit-only" data-rmitem>×</button>`;
+    }
+    function bindCastBtns(card){ card.querySelectorAll('.btn-cast[data-cast]').forEach(x=>x.addEventListener('click',()=>cast(cfg.toast,x.dataset.cast,parseInt(x.dataset.pm,10)))); }
+    function bindRollBtns(card){ card.querySelectorAll('.btn-roll[data-atk]').forEach(x=>x.addEventListener('click',()=>rollAtk(cfg.toast,x.dataset.atk,parseInt(x.dataset.bonus,10),x.dataset.dmg))); }
+
+    function formPower(flag, edit){
+      const m = edit && edit.model ? edit.model : null;
+      const useFlag = m ? m.flag : flag;
+      el('sheetTitle').textContent = (m?'Editar ':'Nov'+(useFlag==='Poder'?'o ':'a '))+(m?(useFlag==='Poder'?'Poder':'Habilidade'):(useFlag==='Poder'?'Poder':'Habilidade'));
+      sBody().innerHTML =
+        F.text('Nome','','ex.: Coração Heroico')+
+        F.sel('Fonte',['Raça','Origem','Classe','Poder Geral','Poder de Combate','Poder Concedido','Tormenta'])+
+        F.num('Custo de PM (opcional)','','ex.: 2')+
+        F.area('Descrição','Efeito…');
+      const b=sBody();
+      if(m){
+        setVal(b.querySelector('input[type=text]'), m.nome);
+        setSelVal(b.querySelector('select'), m.fonte);
+        setVal(b.querySelector('input[type=number]'), m.pm);
+        b.querySelector('textarea').value = m.desc||'';
+      }
+      sSave().textContent = 'Salvar';
+      sSave().onclick = ()=>{
+        const nome=b.querySelector('input[type=text]').value||('Nov'+(useFlag==='Poder'?'o poder':'a habilidade'));
+        const fonte=b.querySelector('select').value;
+        const pm=b.querySelector('input[type=number]').value||'';
+        const desc=b.querySelector('textarea').value||'Sem descrição.';
+        const model={kind:'power', flag:useFlag, nome, fonte, pm, desc};
+        if(edit && edit.card){
+          edit.card.innerHTML = powerCardHtml(model);
+          setModel(edit.card, model);
+          bindRemovals(edit.card);
+          closeSheet(); toast('✦','Atualizado',nome);
+        } else {
+          const card=document.createElement('div');
+          card.className = cfg.mode==='phone' ? 'card pow' : 'pow';
+          card.innerHTML = powerCardHtml(model);
+          setModel(card, model);
+          el('powerList').appendChild(card);
+          bindRemovals(card);
+          closeSheet(); toast('✦',useFlag+' adicionad'+(useFlag==='Poder'?'o':'a'),nome);
+        }
+      };
+    }
+
+    function formMagia(edit){
+      const m = edit && edit.model ? edit.model : null;
+      el('sheetTitle').textContent = m ? 'Editar Magia' : 'Nova Magia';
+      sBody().innerHTML =
+        F.text('Nome','','ex.: Bola de Fogo')+
+        F.sel('Escola',['Abjuração','Adivinhação','Convocação','Encantamento','Evocação','Ilusão','Necromancia','Transmutação'])+
+        F.sel('Círculo',['1º','2º','3º','4º','5º'])+
+        `<div class="frow">`+F.sel('Execução',['Ação padrão','Movimento','Completa','Reação','Livre'])+F.sel('Alcance',['Pessoal','Toque','Curto','Médio','Longo','Ilimitado'])+`</div>`+
+        F.text('Alvo / Área','','ex.: 1 criatura')+
+        F.text('Duração','','ex.: Instantânea')+
+        F.text('Resistência','','ex.: Reflexos CD 14')+
+        F.num('Custo de PM','','ex.: 2')+
+        F.area('Descrição','Efeito da magia…')+
+        `<div class="sheet-subhead">Aprimoramentos</div><div id="${id('impList')}">`+impRow()+`</div>`+
+        `<button class="link-add" data-addimp>+ Adicionar aprimoramento</button>`;
+      const b=sBody();
+      if(m){
+        const sels=b.querySelectorAll('select');
+        const txt=b.querySelectorAll('input[type=text]');
+        setVal(txt[0], m.nome);
+        setSelVal(sels[0], m.escola); setSelVal(sels[1], m.circulo);
+        setSelVal(sels[2], m.execucao); setSelVal(sels[3], m.alcance);
+        setVal(txt[1], m.alvo); setVal(txt[2], m.duracao); setVal(txt[3], m.resist);
+        setVal(b.querySelector('input[type=number]'), m.pm);
+        b.querySelector('textarea').value = m.desc||'';
+        // rebuild improvement rows from model
+        const list=document.getElementById(id('impList'));
+        if(list && m.imps && m.imps.length){
+          list.innerHTML='';
+          m.imps.forEach(im=>{
+            list.insertAdjacentHTML('beforeend', impRow());
+            const row=list.lastElementChild;
+            const in1=row.querySelector('input[type=number]'), in2=row.querySelector('input[type=text]');
+            setVal(in1, im.pm); setVal(in2, im.efeito);
+          });
+        }
+      }
+      bindImps();
+      sSave().textContent='Salvar';
+      sSave().onclick=()=>{
+        const sels=b.querySelectorAll('select');
+        const txt=b.querySelectorAll('input[type=text]');
+        const nome=txt[0].value||'Nova magia';
+        const escola=sels[0].value, circulo=sels[1].value, execucao=sels[2].value, alcance=sels[3].value;
+        const alvo=txt[1]?txt[1].value:'', duracao=txt[2]?txt[2].value:'', resist=txt[3]?txt[3].value:'';
+        const pm=b.querySelector('input[type=number]').value||'1';
+        const desc=b.querySelector('textarea').value||'';
+        const imps=[];
+        const list=document.getElementById(id('impList'));
+        if(list) list.querySelectorAll('.imp-row').forEach(r=>{
+          const p=r.querySelector('input[type=number]'), e=r.querySelector('input[type=text]');
+          if((p&&p.value)||(e&&e.value)) imps.push({pm:p?p.value:'', efeito:e?e.value:''});
+        });
+        const model={kind:'spell', nome, escola, circulo, execucao, alcance, alvo, duracao, resist, pm, desc, imps};
+        if(edit && edit.card){
+          edit.card.innerHTML = spellCardHtml(model);
+          setModel(edit.card, model);
+          bindRemovals(edit.card); bindCastBtns(edit.card);
+          updateSpellCount();
+          closeSheet(); toast('🜂','Atualizada',nome);
+        } else {
+          const sp=document.createElement('div'); sp.className='card spell';
+          sp.innerHTML = spellCardHtml(model);
+          setModel(sp, model);
+          el('spellList').appendChild(sp);
+          bindRemovals(sp); bindCastBtns(sp);
+          updateSpellCount();
+          closeSheet(); toast('🜂','Magia adicionada',nome);
+        }
+      };
+    }
+    function bindImps(){
+      const list=document.getElementById(id('impList')); if(!list) return;
+      list.querySelectorAll('[data-impremove]').forEach(x=>x.onclick=()=>x.closest('.imp-row').remove());
+      const add=sBody().querySelector('[data-addimp]');
+      if(add) add.onclick=()=>{ list.insertAdjacentHTML('beforeend',impRow()); bindImps(); };
+    }
+
+    /* map internal buffKind ↔ the "Aumenta" select label */
+    function kindToAumenta(k){ return k==='attribute'?'Atributo':(k==='skill'?'Perícia':(k==='defense'?'Defesa':'Atributo')); }
+    /* write the chip's datasets + visible text from a model */
+    function writeBuffChip(chip, model){
+      chip.dataset.buff=''; chip.dataset.kind=model.buffKind; chip.dataset.target=model.target||'';
+      chip.dataset.value=model.value; chip.dataset.pm=model.pm; chip.dataset.name=model.nome;
+      const valTxt = model.buffKind==='none' ? '' : (' '+fmtMod(model.value));
+      chip.innerHTML=`${escHtml(model.nome)}${valTxt}<span class="bx" data-rmbuff>×</span>`;
+    }
+    function formBuff(edit){
+      const m = edit && edit.model ? edit.model : null;
+      el('sheetTitle').textContent = m ? 'Editar Buff' : 'Novo Buff';
+      sBody().innerHTML =
+        F.text('Nome','','ex.: Bênção')+
+        F.sel('Aumenta',['Atributo','Perícia','Defesa'])+
+        `<div id="${id('buffTarget')}"></div>`+
+        `<div class="frow">`+F.num('Valor','','ex.: 2')+F.num('Custo de PM','','ex.: 1')+`</div>`;
+      const selAumenta = sBody().querySelectorAll('select')[0];
+      const tgtWrap = document.getElementById(id('buffTarget'));
+      function renderTarget(preset){
+        const v=selAumenta.value;
+        if(v==='Atributo') tgtWrap.innerHTML = F.sel('Atributo-alvo',['FOR','DES','CON','INT','SAB','CAR']);
+        else if(v==='Perícia') tgtWrap.innerHTML = F.sel('Perícia-alvo', SKILLS.map(s=>s[0]));
+        else tgtWrap.innerHTML = '<div class="field-hint">Defesa não precisa de alvo.</div>';
+        if(preset!=null) setSelVal(tgtWrap.querySelector('select'), preset);
+      }
+      if(m){
+        setVal(sBody().querySelector('input[type=text]'), m.nome);
+        setSelVal(selAumenta, kindToAumenta(m.buffKind));
+        renderTarget(m.target);
+        const nums=sBody().querySelectorAll('input[type=number]');
+        setVal(nums[0], m.value); setVal(nums[1], m.pm);
+      } else {
+        renderTarget();
+      }
+      selAumenta.addEventListener('change',()=>renderTarget());
+      sSave().textContent='Salvar';
+      sSave().onclick=()=>{
+        const b=sBody();
+        const nome=b.querySelector('input[type=text]').value||'Buff';
+        const aum=selAumenta.value;
+        const nums=b.querySelectorAll('input[type=number]');
+        const val=parseInt(nums[0].value,10)||0;
+        const pm=parseInt(nums[1].value,10)||0;
+        let kind='none', target='';
+        if(aum==='Atributo'){ kind='attribute'; target=tgtWrap.querySelector('select').value; }
+        else if(aum==='Perícia'){ kind='skill'; target=tgtWrap.querySelector('select').value; }
+        else { kind='defense'; }
+        const model={kind:'buff', buffKind:kind, target, value:val, pm, nome};
+        if(edit && edit.chip){
+          const chip=edit.chip;
+          const wasActive = chip.dataset.active==='1';
+          // revert current effect (value back on target + PM refund) before mutating data
+          if(wasActive) applyBuff(chip, false);
+          writeBuffChip(chip, model);
+          chip.dataset.active='0';
+          // re-apply with new values, keeping it active so numbers stay consistent
+          if(wasActive){ chip.dataset.active='1'; applyBuff(chip, true); }
+          chip.classList.toggle('on', wasActive);
+          updateBuffCount(); recalcDefense();
+          closeSheet(); toast('⚡','Buff atualizado',nome+' · '+fmtMod(val)+(pm?(' · '+pm+' PM'):''));
+        } else {
+          const chip=document.createElement('span');
+          chip.className='chip buff';
+          chip.dataset.active='0';
+          writeBuffChip(chip, model);
+          el('buffList').appendChild(chip);
+          bindBuff(chip); updateBuffCount();
+          closeSheet(); toast('⚡','Buff adicionado',nome+' · '+fmtMod(val)+(pm?(' · '+pm+' PM'):''));
+        }
+      };
+    }
+
+    function formItemChooser(){
+      el('sheetTitle').textContent='Adicionar item';
+      itemEdit = null; itemType = null;
+      sSave().style.display='none';
+      sBody().innerHTML =
+        `<div class="seg-label">Que tipo de item?</div><div class="choice-grid">`+
+        `<button class="choice" data-itype="Arma"><b>⚔ Arma</b><span>Dano, margem, tipo…</span></button>`+
+        `<button class="choice" data-itype="Armadura"><b>🛡 Armadura</b><span>Defesa e penalidade</span></button>`+
+        `<button class="choice" data-itype="Acessório"><b>💍 Acessório</b><span>Anel, colar, manto…</span></button>`+
+        `<button class="choice" data-itype="Comum"><b>🎒 Comum</b><span>Item geral</span></button>`+
+        `<button class="choice" data-itype="Consumível"><b>🧪 Consumível</b><span>Poções, uso único</span></button>`+
+        `</div>`;
+      sBody().querySelectorAll('.choice[data-itype]').forEach(c=>c.addEventListener('click',()=>chooseItem(c.dataset.itype)));
+    }
+    function chooseItem(t){
+      itemType=t; renderItemForm();
+      sSave().style.display=''; sSave().textContent='Salvar item'; sSave().onclick=saveItem;
+    }
+    function renderItemForm(){
+      const m = itemEdit && itemEdit.model ? itemEdit.model : null;
+      // when editing we keep the type fixed (no "trocar tipo" to avoid losing the card binding context isn't an issue, but keep simple)
+      let html=`<button class="sheet-back" data-itemback>‹ Trocar tipo</button><div class="seg-label">${itemType}</div>`;
+      if(itemType==='Arma'){
+        html+=F.text('Nome','','ex.: Katana')+F.sel('Categoria',['Simples','Marcial','Exótica'])+
+          F.sel('Empunhadura',['Corpo a corpo','Distância','Arremesso'])+F.text('Dano','','ex.: 1d8')+
+          `<div class="frow">`+F.num('Margem de ameaça','','ex.: 19')+F.sel('Multiplicador',['×2','×3'])+`</div>`+
+          F.sel('Tipo de dano',['Corte','Perfuração','Impacto'])+F.text('Alcance','','ex.: 9 m');
+      } else if(itemType==='Armadura'){
+        html+=F.text('Nome','','ex.: Armadura de couro')+F.sel('Tipo',['Leve','Pesada','Escudo'])+
+          F.text('Bônus na Defesa','','ex.: +5')+F.text('Penalidade de Armadura','','ex.: −2');
+      } else if(itemType==='Comum'){
+        html+=F.text('Nome','','ex.: Corda de seda')+F.num('Quantidade','1');
+      } else if(itemType==='Acessório'){
+        html+=F.text('Nome','','ex.: Anel de proteção')+
+          F.sel('Local',['Cabeça','Olhos','Pescoço','Manto','Corpo','Mãos','Anel','Cintura','Pés'])+F.text('Efeito','','ex.: +1 na Defesa');
+      } else {
+        html+=F.text('Nome','','ex.: Poção de cura')+F.num('Quantidade','1')+F.area('Efeito','O que faz quando usado…');
+      }
+      sBody().innerHTML=html;
+      const b=sBody();
+      if(m){
+        const txt=b.querySelectorAll('input[type=text]');
+        const sels=b.querySelectorAll('select');
+        const nums=b.querySelectorAll('input[type=number]');
+        setVal(txt[0], m.nome);
+        if(itemType==='Arma'){
+          setSelVal(sels[0], m.categoria); setSelVal(sels[1], m.empunhadura);
+          setVal(txt[1], m.dano); setVal(nums[0], m.margem); setSelVal(sels[2], m.mult);
+          setSelVal(sels[3], m.tipoDano); setVal(txt[2], m.alcance);
+        } else if(itemType==='Armadura'){
+          setSelVal(sels[0], m.tipo); setVal(txt[1], m.bonus); setVal(txt[2], m.penalidade);
+        } else if(itemType==='Comum'){
+          setVal(nums[0], m.qtd);
+        } else if(itemType==='Acessório'){
+          setSelVal(sels[0], m.local); setVal(txt[1], m.efeito);
+        } else {
+          setVal(nums[0], m.qtd); if(b.querySelector('textarea')) b.querySelector('textarea').value = m.efeito||'';
+        }
+      }
+      const back=sBody().querySelector('[data-itemback]'); if(back) back.addEventListener('click',formItemChooser);
+    }
+    function buildItemModel(){
+      const b=sBody();
+      const txt=b.querySelectorAll('input[type=text]');
+      const sels=b.querySelectorAll('select');
+      const nums=b.querySelectorAll('input[type=number]');
+      const nome=(txt[0]&&txt[0].value)||'Novo item';
+      // preserve attack bonus across edits (the weapon form has no atk field)
+      const prevAtk = (itemEdit && itemEdit.model && itemEdit.model.atk!=null) ? itemEdit.model.atk : 0;
+      if(itemType==='Arma'){
+        return {kind:'item', itemType:'Arma', nome,
+          categoria:sels[0]?sels[0].value:'', empunhadura:sels[1]?sels[1].value:'',
+          dano:(txt[1]&&txt[1].value)||'', margem:(nums[0]&&nums[0].value)||'',
+          mult:sels[2]?sels[2].value:'×2', tipoDano:sels[3]?sels[3].value:'',
+          alcance:(txt[2]&&txt[2].value)||'', atk:prevAtk};
+      } else if(itemType==='Armadura'){
+        return {kind:'item', itemType:'Armadura', nome,
+          tipo:sels[0]?sels[0].value:'', bonus:(txt[1]&&txt[1].value)||'', penalidade:(txt[2]&&txt[2].value)||''};
+      } else if(itemType==='Comum'){
+        return {kind:'item', itemType:'Comum', nome, qtd:(nums[0]&&nums[0].value)||'1'};
+      } else if(itemType==='Acessório'){
+        return {kind:'item', itemType:'Acessório', nome,
+          local:sels[0]?sels[0].value:'', efeito:(txt[1]&&txt[1].value)||''};
+      } else {
+        return {kind:'item', itemType:'Consumível', nome,
+          qtd:(nums[0]&&nums[0].value)||'1', efeito:b.querySelector('textarea')?b.querySelector('textarea').value:''};
+      }
+    }
+    function saveItem(){
+      const model = buildItemModel();
+      const nome = model.nome;
+      const isWeapon = model.itemType==='Arma';
+      if(itemEdit && itemEdit.card){
+        const oldCard = itemEdit.card;
+        const wasWeapon = oldCard.classList.contains('weapon');
+        if(isWeapon === wasWeapon){
+          // type stayed in same list family → update in place
+          oldCard.innerHTML = isWeapon ? weaponCardHtml(model) : invItemHtml(model);
+          setModel(oldCard, model);
+          bindRemovals(oldCard);
+          if(isWeapon) bindRollBtns(oldCard);
+        } else {
+          // moved between weaponList and invList → recreate in correct container, remove old
+          const card=document.createElement('div');
+          card.className = isWeapon ? 'card weapon' : 'inv-item';
+          card.innerHTML = isWeapon ? weaponCardHtml(model) : invItemHtml(model);
+          setModel(card, model);
+          (isWeapon?el('weaponList'):el('invList')).appendChild(card);
+          bindRemovals(card); bindItemClick(card);
+          if(isWeapon) bindRollBtns(card);
+          oldCard.remove();
+        }
+        closeSheet(); toast('🜸','Item atualizado',nome); return;
+      }
+      if(isWeapon){
+        const w=document.createElement('div'); w.className='card weapon';
+        w.innerHTML = weaponCardHtml(model);
+        setModel(w, model);
+        el('weaponList').appendChild(w); bindRemovals(w); bindRollBtns(w);
+      } else {
+        const it=document.createElement('div'); it.className='inv-item';
+        it.innerHTML = invItemHtml(model);
+        setModel(it, model);
+        el('invList').appendChild(it); bindRemovals(it);
+      }
+      closeSheet(); toast('🜸','Item adicionado',nome);
+    }
+
+    /* ---------- roll / cast / toast ---------- */
+    function toastHtml(html){ document.getElementById(cfg.toast).innerHTML=html; }
+    function rollAtk(wrapId,name,bonus,dmg){
+      const d=Math.floor(Math.random()*20)+1, total=d+bonus;
+      const crit=d===20?' · CRÍTICO!':(d===1?' · falha crítica':'');
+      toastHtml(`<div class="toast"><div class="roll-d">${d}</div><div class="tt"><b>${name} · ataque${crit}</b><span>d20 (${d}) + ${bonus} → dano ${dmg}</span></div><div class="tot">${total}</div></div>`);
+    }
+    function cast(wrapId,name,pm){
+      // casting also spends PM
+      S.pm.now=Math.max(0,S.pm.now-pm); renderVital('pm');
+      toastHtml(`<div class="toast cast"><div class="roll-d">✦</div><div class="tt"><b>Conjurou ${name}</b><span>Gastou ${pm} PM · CD 14</span></div></div>`);
+    }
+    function toast(ic,title,sub){ toastHtml(`<div class="toast"><div class="roll-d">${ic}</div><div class="tt"><b>${title}</b><span>${sub}</span></div></div>`); }
+
+    view.querySelectorAll('.btn-roll[data-atk]').forEach(b=>b.addEventListener('click',()=>rollAtk(cfg.toast,b.dataset.atk,parseInt(b.dataset.bonus,10),b.dataset.dmg)));
+    view.querySelectorAll('.btn-cast[data-cast]').forEach(b=>b.addEventListener('click',()=>cast(cfg.toast,b.dataset.cast,parseInt(b.dataset.pm,10))));
+
+    /* ---------- hydrate existing static cards → data-model ---------- */
+    function txt(node){ return node ? node.textContent.trim() : ''; }
+    function hydratePower(card){
+      if(getModel(card)) return;
+      const h3 = card.querySelector('h3');
+      const tag = card.querySelector('.tag');
+      const flag = txt(tag) || 'Poder';
+      let nome='';
+      if(h3){ const clone=h3.cloneNode(true); const t=clone.querySelector('.tag'); if(t) t.remove(); nome=clone.textContent.trim(); }
+      const desc = txt(card.querySelector('p'));
+      const fonte = txt(card.querySelector('.pow-src'));
+      setModel(card, {kind:'power', flag, nome, fonte, pm:'', desc});
+    }
+    function hydrateSpell(card){
+      if(getModel(card)) return;
+      const nome = txt(card.querySelector('h3'));
+      const pm = txt(card.querySelector('.cost b')) || '1';
+      const schText = txt(card.querySelector('.sch'));
+      const p = txt(card.querySelector('.meta p'));
+      // phone: .sch is escola only, desc is in <p>. desktop: .sch holds "escola · resumo", no <p>.
+      let escola = schText, desc = p;
+      setModel(card, {kind:'spell', nome, escola, circulo:'', execucao:'', alcance:'', alvo:'', duracao:'', resist:'', pm, desc, imps:[]});
+    }
+    function hydrateWeapon(card){
+      if(getModel(card)) return;
+      const nome = txt(card.querySelector('.wname h3'));
+      const sub = txt(card.querySelector('.wname span'));
+      const stats = card.querySelectorAll('.stats > div b');
+      const atkTxt = txt(stats[0]);
+      const dano = txt(stats[1]) || '—';
+      const critTxt = txt(stats[2]) || '×2';
+      let margem='', mult='×2';
+      if(critTxt.indexOf('/')>=0){ const parts=critTxt.split('/'); margem=parts[0].trim(); mult=parts[1].trim(); }
+      else { mult=critTxt; }
+      const atk = parseMod(atkTxt);
+      setModel(card, {kind:'item', itemType:'Arma', nome, categoria:'', empunhadura:sub, dano, margem, mult, tipoDano:'', alcance:'', atk});
+    }
+    function hydrateInv(card){
+      if(getModel(card)) return;
+      const inm = card.querySelector('.inm');
+      let nome='', efeito='';
+      if(inm){
+        const small = inm.querySelector('small');
+        if(small){ efeito = small.textContent.replace(/^[·\s]+/,'').trim(); }
+        const clone = inm.cloneNode(true); const s=clone.querySelector('small'); if(s) s.remove();
+        nome = clone.textContent.trim();
+      }
+      const qtyTxt = txt(card.querySelector('.qty')).replace(/[×x]/,'').trim() || '1';
+      // generic static inventory items → treat as Comum (or Consumível if it has an effect)
+      const itemType = efeito ? 'Consumível' : 'Comum';
+      const m = {kind:'item', itemType, nome, qtd:qtyTxt};
+      if(efeito) m.efeito = efeito;
+      setModel(card, m);
+    }
+    function hydrateAll(){
+      el('powerList').querySelectorAll('.pow').forEach(hydratePower);
+      el('spellList').querySelectorAll('.spell').forEach(hydrateSpell);
+      el('weaponList').querySelectorAll('.weapon').forEach(hydrateWeapon);
+      el('invList').querySelectorAll('.inv-item').forEach(hydrateInv);
+    }
+    hydrateAll();
+
+    /* ---------- click-to-edit (only while editing) ---------- */
+    function delegateEdit(listEl, cardSel){
+      if(!listEl) return;
+      listEl.addEventListener('click', e=>{
+        if(!editing) return;
+        // ignore action buttons / remove × (they stopPropagation, but guard anyway)
+        if(e.target.closest('.rm-x, .btn-roll, .btn-cast')) return;
+        const card = e.target.closest(cardSel);
+        if(card && listEl.contains(card)) editCard(card);
+      });
+    }
+    delegateEdit(el('powerList'), '.pow');
+    delegateEdit(el('spellList'), '.spell');
+    delegateEdit(el('weaponList'), '.weapon');
+    delegateEdit(el('invList'), '.inv-item');
+
+    /* init */
+    renderVital('pv'); renderVital('pm');
+  }
+
+  /* ============================================================
+     WIZARD factory — one engine, two instances (phone / desk)
+     id() prefixes every element id so the two never collide.
+     ============================================================ */
+  function makeWizard(cfg){
+    // cfg.prefix e.g. 'wizPhone' or 'wizDesk'
+    // cfg.mode 'mobile' | 'desktop'
+    const P = cfg.prefix;
+    const id = s => P+'-'+s;
+    const el = s => document.getElementById(id(s));
+    const W = { cur:1, itemType:null };
+
+    /* ---- step rendering ---- */
+    function renderStep(){
+      // panels
+      const stepSel = cfg.mode==='mobile' ? '.step-panel' : '.dwiz-step';
+      document.querySelectorAll('#'+id(cfg.mode==='mobile'?'body':'content')+' '+stepSel).forEach(p=>p.classList.remove('active'));
+      const panel = document.querySelector('#'+id(cfg.mode==='mobile'?'body':'content')+' '+stepSel+'[data-step="'+W.cur+'"]');
+      if(panel){
+        panel.classList.add('active');
+        panel.querySelectorAll(':scope > *').forEach(e=>{ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+      }
+
+      if(cfg.mode==='mobile'){
+        const bars = el('progress').querySelectorAll('i');
+        bars.forEach((b,i)=>{
+          b.className='';
+          if(i < W.cur-1) b.classList.add('done');
+          else if(i === W.cur-1) b.classList.add('cur');
+        });
+        el('stepOf').textContent = 'Etapa '+W.cur+' de '+TOTAL;
+        el('stepName').textContent = STEPS[W.cur-1].name;
+        el('stepIco').textContent = STEPS[W.cur-1].ico;
+        el('body').scrollTo({top:0,behavior:'smooth'});
+      } else {
+        el('stepper').querySelectorAll('.vstep').forEach(s=>{
+          const n = parseInt(s.dataset.step,10);
+          s.classList.remove('cur','done');
+          if(n < W.cur){ s.classList.add('done'); s.querySelector('.vcirc').textContent='✓'; }
+          else { s.querySelector('.vcirc').textContent = n; if(n===W.cur) s.classList.add('cur'); }
+        });
+        el('content').scrollTo({top:0,behavior:'smooth'});
+      }
+
+      el('btnBack').classList.toggle('disabled', W.cur===1);
+      el('btnNext').textContent = W.cur===TOTAL ? '✦ Criar ficha' : 'Próximo';
+    }
+    function gotoStep(n){ if(n>=1 && n<=TOTAL){ W.cur=n; renderStep(); } }
+    function nextStep(){
+      if(W.cur < TOTAL){ W.cur++; renderStep(); }
+      else { toast('✦','Ficha criada!','Akihiro · Suraggel · Shugenja 2'); }
+    }
+    function prevStep(){ if(W.cur>1){ W.cur--; renderStep(); } }
+
+    el('btnNext').addEventListener('click', nextStep);
+    el('btnBack').addEventListener('click', prevStep);
+    if(cfg.mode==='desktop'){
+      el('stepper').querySelectorAll('.vstep').forEach(s=>{
+        s.addEventListener('click',()=>gotoStep(parseInt(s.dataset.step,10)));
+      });
+    }
+
+    /* ---- step 1: classes / level ---- */
+    function recalcLevel(){
+      let sum = 0;
+      el('classList').querySelectorAll('input[data-lvlinput]').forEach(i=>{ sum += parseInt(i.value)||0; });
+      // inline total + rail total share the value
+      const t1 = el(cfg.mode==='mobile'?'lvlTotal':'lvlTotalInline');
+      if(t1) t1.textContent = sum;
+      if(cfg.mode==='desktop'){ const r = el('lvlTotal'); if(r) r.textContent = sum; }
+      refreshRemoveBtns();
+    }
+    function refreshRemoveBtns(){
+      const rows = el('classList').querySelectorAll('.class-row');
+      rows.forEach(r=>{
+        const x = r.querySelector('.row-x');
+        if(rows.length<=1) x.classList.add('hidden'); else x.classList.remove('hidden');
+      });
+    }
+    function addClass(){
+      const list = el('classList');
+      const row = document.createElement('div');
+      row.className = 'class-row';
+      row.innerHTML =
+        '<div class="field"><label>Classe</label><input type="text" placeholder="ex.: Guerreiro" /></div>'+
+        '<div class="field field--sm"><label>Nível</label><input type="number" value="1" min="1" data-lvlinput /></div>'+
+        '<button class="row-x" data-removeclass>×</button>';
+      list.appendChild(row);
+      bindClassRow(row);
+      recalcLevel();
+    }
+    function bindClassRow(row){
+      row.querySelectorAll('input[data-lvlinput]').forEach(i=>i.addEventListener('input',recalcLevel));
+      const x = row.querySelector('[data-removeclass]');
+      if(x) x.addEventListener('click',()=>{ row.remove(); recalcLevel(); });
+    }
+    el('addClass').addEventListener('click', addClass);
+    el('classList').querySelectorAll('.class-row').forEach(bindClassRow);
+
+    /* ---- step 3: skills ---- */
+    function buildSkills(){
+      el('skillList').innerHTML = SKILLS.map(([nm,base])=>{
+        const on = TRAINED.has(nm) ? 'checked' : '';
+        return '<div class="skill-line" data-name="'+nm.toLowerCase()+'">'+
+          '<div class="nm">'+nm+'</div>'+
+          '<span class="base">'+base+'</span>'+
+          '<label class="toggle"><input type="checkbox" '+on+'><span class="tk"></span></label>'+
+          '</div>';
+      }).join('');
+    }
+    function filterSkills(q){
+      q = (q||'').toLowerCase().trim();
+      el('skillList').querySelectorAll('.skill-line').forEach(l=>{
+        l.style.display = l.dataset.name.includes(q) ? '' : 'none';
+      });
+    }
+    buildSkills();
+    el('skillSearch').addEventListener('input', e=>filterSkills(e.target.value));
+
+    /* ---- cards remove (powers / spells) ---- */
+    function counterId(which){ return which; } // 'powCount' | 'spellCount'
+    function updateCount(which){
+      let n, word;
+      if(which==='powCount'){ n = el('powerList').querySelectorAll('.item-card').length; word='poder'; }
+      else { n = el('spellList').querySelectorAll('.item-card').length; word='magia'; }
+      el(which).textContent = n+' '+word+(n===1?'':'s');
+    }
+    function bindRemove(btn){
+      btn.addEventListener('click',()=>{
+        const which = btn.dataset.rmcard;
+        btn.closest('.item-card').remove();
+        updateCount(which);
+      });
+    }
+    document.querySelectorAll('#'+id('powerList')+' .rm[data-rmcard], #'+id('spellList')+' .rm[data-rmcard]').forEach(bindRemove);
+
+    /* ---- sheet / modal ---- */
+    const overlay = el('overlay');
+    const sheet = el('sheet');
+    function openSheet(){ overlay.classList.add('open'); sheet.classList.add('open'); }
+    function closeSheet(){ overlay.classList.remove('open'); sheet.classList.remove('open'); }
+    overlay.addEventListener('click', closeSheet);
+    el('sheetClose').addEventListener('click', closeSheet);
+    el('sheetCancel').addEventListener('click', closeSheet);
+
+    /* POWER sheet */
+    function openPowerSheet(){
+      el('sheetTitle').textContent = 'Novo Poder';
+      el('sheetBody').innerHTML =
+        F.text('Nome','','ex.: Coração Heroico')+
+        F.sel('Fonte',['Raça','Origem','Classe','Poder Geral','Poder de Combate','Poder Concedido','Tormenta'])+
+        F.num('Custo de PM (opcional)','','ex.: 2')+
+        F.area('Descrição','Efeito do poder…');
+      const save = el('sheetSave');
+      save.style.display=''; save.textContent = 'Salvar poder';
+      save.onclick = ()=>{
+        const b = el('sheetBody');
+        const nome = b.querySelector('input[type=text]').value || 'Novo poder';
+        const fonte = b.querySelector('select').value;
+        const desc = b.querySelector('textarea').value || 'Sem descrição.';
+        const card = document.createElement('div');
+        card.className='card item-card';
+        card.innerHTML = `<div class="ic-top"><h3>${nome}</h3><span class="tag">${fonte}</span></div>`+
+          `<p>${desc}</p><button class="rm" data-rmcard="powCount">× Remover</button>`;
+        el('powerList').appendChild(card);
+        bindRemove(card.querySelector('.rm'));
+        updateCount('powCount');
+        closeSheet();
+        toast('✦','Poder adicionado',nome);
+      };
+      openSheet();
+    }
+    el('addPower').addEventListener('click', openPowerSheet);
+
+    /* SPELL sheet */
+    function openSpellSheet(){
+      el('sheetTitle').textContent = 'Nova Magia';
+      el('sheetBody').innerHTML =
+        F.text('Nome','','ex.: Bola de Fogo')+
+        F.sel('Escola',['Abjuração','Adivinhação','Convocação','Encantamento','Evocação','Ilusão','Necromancia','Transmutação'])+
+        F.sel('Círculo',['1º','2º','3º','4º','5º'])+
+        `<div class="frow">`+
+          F.sel('Execução',['Ação padrão','Movimento','Completa','Reação','Livre'])+
+          F.sel('Alcance',['Pessoal','Toque','Curto','Médio','Longo','Ilimitado'])+
+        `</div>`+
+        F.text('Alvo / Área','','ex.: 1 criatura')+
+        F.text('Duração','','ex.: Instantânea')+
+        F.text('Resistência','','ex.: Reflexos CD 14')+
+        F.num('Custo de PM','','ex.: 2')+
+        F.area('Descrição','Efeito da magia…')+
+        `<div class="sheet-subhead">Aprimoramentos</div>`+
+        `<div id="${id('impList')}">`+impRow()+`</div>`+
+        `<button class="link-add" data-addimp>+ Adicionar aprimoramento</button>`;
+      bindImps();
+      const save = el('sheetSave');
+      save.style.display=''; save.textContent = 'Salvar magia';
+      save.onclick = ()=>{
+        const b = el('sheetBody');
+        const nome = b.querySelector('input[type=text]').value || 'Nova magia';
+        const sels = b.querySelectorAll('select');
+        const escola = sels[0].value, circ = sels[1].value;
+        const pm = b.querySelector('input[type=number]').value || '1';
+        const card = document.createElement('div');
+        card.className='card item-card';
+        card.innerHTML = `<div class="ic-top"><h3>${nome}</h3><span class="tag">${pm} PM</span></div>`+
+          `<div class="sub">${circ} Círculo · ${escola}</div>`+
+          `<button class="rm" data-rmcard="spellCount">× Remover</button>`;
+        el('spellList').appendChild(card);
+        bindRemove(card.querySelector('.rm'));
+        updateCount('spellCount');
+        closeSheet();
+        toast('🜂','Magia adicionada',nome);
+      };
+      openSheet();
+    }
+    function bindImps(){
+      const list = document.getElementById(id('impList'));
+      if(!list) return;
+      list.querySelectorAll('[data-impremove]').forEach(x=>{
+        x.onclick = ()=>x.closest('.imp-row').remove();
+      });
+      const add = el('sheetBody').querySelector('[data-addimp]');
+      if(add) add.onclick = ()=>{ list.insertAdjacentHTML('beforeend', impRow()); bindImps(); };
+    }
+    el('addSpell').addEventListener('click', openSpellSheet);
+
+    /* ITEM sheet (asks type first) */
+    function openItemSheet(){
+      el('sheetTitle').textContent = 'Adicionar item';
+      W.itemType = null;
+      renderItemChooser();
+      openSheet();
+    }
+    function renderItemChooser(){
+      el('sheetSave').style.display = 'none';
+      el('sheetBody').innerHTML =
+        `<div class="seg-label">Que tipo de item?</div>`+
+        `<div class="choice-grid">`+
+          `<button class="choice" data-itype="Arma"><b>⚔ Arma</b><span>Dano, margem, tipo…</span></button>`+
+          `<button class="choice" data-itype="Armadura"><b>🛡 Armadura</b><span>Defesa e penalidade</span></button>`+
+          `<button class="choice" data-itype="Acessório"><b>💍 Acessório</b><span>Anel, colar, manto…</span></button>`+
+          `<button class="choice" data-itype="Comum"><b>🎒 Comum</b><span>Item geral</span></button>`+
+          `<button class="choice" data-itype="Consumível"><b>🧪 Consumível</b><span>Poções, uso único</span></button>`+
+        `</div>`;
+      el('sheetBody').querySelectorAll('.choice[data-itype]').forEach(c=>{
+        c.addEventListener('click',()=>chooseItemType(c.dataset.itype));
+      });
+    }
+    function chooseItemType(t){
+      W.itemType = t;
+      renderItemForm();
+      const save = el('sheetSave');
+      save.style.display=''; save.textContent = 'Salvar item';
+      save.onclick = saveItem;
+    }
+    function renderItemForm(){
+      let html =
+        `<button class="sheet-back" data-itemback>‹ Trocar tipo</button>`+
+        `<div class="seg-label">${W.itemType}</div>`;
+      if(W.itemType==='Arma'){
+        html += F.text('Nome','','ex.: Katana')+
+          F.sel('Categoria',['Simples','Marcial','Exótica'])+
+          F.sel('Empunhadura',['Corpo a corpo','Distância','Arremesso'])+
+          F.text('Dano','','ex.: 1d8')+
+          `<div class="frow">`+
+            F.num('Margem de ameaça','','ex.: 19')+
+            F.sel('Multiplicador',['×2','×3'])+
+          `</div>`+
+          F.sel('Tipo de dano',['Corte','Perfuração','Impacto'])+
+          F.text('Alcance','','ex.: 9 m')+
+          F.num('Espaços','','ex.: 1');
+      } else if(W.itemType==='Armadura'){
+        html += F.text('Nome','','ex.: Armadura de couro')+
+          F.sel('Tipo',['Leve','Pesada','Escudo'])+
+          F.text('Bônus na Defesa','','ex.: +5')+
+          F.text('Penalidade de Armadura','','ex.: −2')+
+          F.num('Espaços','','ex.: 2');
+      } else if(W.itemType==='Comum'){
+        html += F.text('Nome','','ex.: Corda de seda')+
+          F.num('Quantidade','1')+
+          F.num('Espaços','','ex.: 1');
+      } else if(W.itemType==='Acessório'){
+        html += F.text('Nome','','ex.: Anel de proteção')+
+          F.sel('Local',['Cabeça','Olhos','Pescoço','Manto','Corpo','Mãos','Anel','Cintura','Pés'])+
+          F.text('Efeito','','ex.: +1 na Defesa')+
+          F.num('Espaços','','ex.: 0');
+      } else {
+        html += F.text('Nome','','ex.: Poção de cura')+
+          F.num('Quantidade','1')+
+          F.area('Efeito','O que faz quando usado…')+
+          F.num('Espaços','','ex.: 0');
+      }
+      el('sheetBody').innerHTML = html;
+      const back = el('sheetBody').querySelector('[data-itemback]');
+      if(back) back.addEventListener('click', renderItemChooser);
+    }
+    function saveItem(){
+      const b = el('sheetBody');
+      const nome = (b.querySelector('input[type=text]') && b.querySelector('input[type=text]').value) || 'Novo item';
+      let target, stats='', qty='×1';
+      if(W.itemType==='Arma'){
+        target = el('eqEquip');
+        const dano = b.querySelectorAll('input[type=text]')[1];
+        stats = (dano && dano.value) ? dano.value : 'Arma';
+      } else if(W.itemType==='Armadura'){
+        target = el('eqEquip');
+        const def = b.querySelectorAll('input[type=text]')[1];
+        stats = (def && def.value) ? 'Defesa '+def.value : 'Armadura';
+      } else if(W.itemType==='Comum'){
+        target = el('eqComum');
+        const q = b.querySelector('input[type=number]');
+        qty = '×'+((q && q.value) || '1');
+      } else if(W.itemType==='Acessório'){
+        target = el('eqEquip');
+        const eff = b.querySelectorAll('input[type=text]')[1];
+        stats = (eff && eff.value) ? eff.value : 'Acessório';
+      } else {
+        target = el('eqConsum');
+        const q = b.querySelector('input[type=number]');
+        qty = '×'+((q && q.value) || '1');
+        const eff = b.querySelector('textarea');
+        stats = (eff && eff.value) || '';
+      }
+      const item = document.createElement('div');
+      item.className = 'eq-item';
+      item.innerHTML = `<div class="ei-main"><div class="ei-name">${nome}</div>`+
+        (stats?`<div class="ei-stats">${stats}</div>`:'')+`</div><div class="ei-qty">${qty}</div>`;
+      target.appendChild(item);
+      closeSheet();
+      toast('🜸','Item adicionado',nome);
+    }
+    el('addItem').addEventListener('click', openItemSheet);
+
+    /* ---- toast ---- */
+    function toast(ic,title,sub){
+      document.getElementById(id('toastWrap')).innerHTML =
+        `<div class="toast"><div class="roll-d">${ic}</div><div class="tt"><b>${title}</b><span>${sub}</span></div></div>`;
+    }
+
+    /* init */
+    recalcLevel();
+    refreshRemoveBtns();
+    renderStep();
+  }
+
+  /* ============================================================
+     BOOT
+     ============================================================ */
+  Router.init();
+
+  makeFicha({
+    prefix:'fphone', mode:'phone', view:'view-ficha-phone',
+    body:'fichaPhone-body', tabbar:'fichaPhone-tabbar',
+    toast:'fichaPhone-toastWrap', lvlPill:true
+  });
+  makeFicha({
+    prefix:'fdesk', mode:'desk', view:'view-ficha-desk',
+    toast:'fichaDesk-toastWrap', lvlPill:false
+  });
+
+  makeWizard({ prefix:'wizPhone', mode:'mobile' });
+  makeWizard({ prefix:'wizDesk', mode:'desktop' });
+
+})();
+</script>
+</body>
+</html>

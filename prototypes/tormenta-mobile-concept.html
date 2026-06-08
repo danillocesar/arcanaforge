@@ -1,0 +1,1860 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcanaForge - Conceito Mobile Tormenta</title>
+  <style>
+    :root {
+      --void: #101114;
+      --iron: #171a20;
+      --iron-2: #20232b;
+      --iron-3: #292d36;
+      --mist: #e9e3d6;
+      --muted: #9c968a;
+      --faint: #68635b;
+      --blood: #b6383a;
+      --blood-2: #f06455;
+      --mana: #3e78ad;
+      --mana-2: #85b9e4;
+      --gold: #d6b15f;
+      --green: #76b878;
+      --line: rgba(214, 177, 95, .18);
+      --soft-line: rgba(255, 255, 255, .08);
+      --radius: 18px;
+      --shadow: 0 26px 80px rgba(0, 0, 0, .45);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--mist);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(182, 56, 58, .24), transparent 30%),
+        radial-gradient(circle at 82% 4%, rgba(214, 177, 95, .16), transparent 26%),
+        linear-gradient(145deg, #0d0e12, #17150f 48%, #0f1013);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .stage {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(320px, 620px);
+      gap: 34px;
+      align-items: center;
+      justify-content: center;
+      padding: 34px;
+    }
+
+    .phone {
+      width: min(100%, 414px);
+      height: min(900px, calc(100vh - 36px));
+      min-height: 720px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 34px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .045), transparent 18%),
+        #111217;
+      box-shadow: var(--shadow);
+    }
+
+    .app {
+      height: 100%;
+      overflow-y: auto;
+      padding: 16px 14px 92px;
+      scrollbar-width: none;
+    }
+
+    .app::-webkit-scrollbar { display: none; }
+
+    .hero {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 0 14px;
+      background: linear-gradient(180deg, #111217 70%, rgba(17, 18, 23, .72));
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 64px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .name {
+      min-width: 0;
+    }
+
+    .name small {
+      display: block;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .name strong {
+      display: block;
+      overflow: hidden;
+      color: var(--mist);
+      font-family: ui-serif, Georgia, serif;
+      font-size: 24px;
+      line-height: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .save-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid rgba(118, 184, 120, .24);
+      border-radius: 999px;
+      background: rgba(118, 184, 120, .09);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .mode {
+      display: none;
+      animation: rise .22s ease both;
+    }
+
+    .mode.active {
+      display: block;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .session-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .combat-attrs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 6px 0 10px;
+    }
+
+    .combat-attr {
+      min-height: 88px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(214, 177, 95, .12), rgba(255, 255, 255, .025)),
+        #14161b;
+      text-align: center;
+    }
+
+    .combat-attr span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .combat-attr strong {
+      margin-top: 2px;
+      color: var(--mist);
+      font-family: ui-serif, Georgia, serif;
+      font-size: 34px;
+      line-height: .95;
+    }
+
+    .combat-attr.primary {
+      border-color: rgba(240, 100, 85, .36);
+      background:
+        linear-gradient(180deg, rgba(182, 56, 58, .22), rgba(255, 255, 255, .03)),
+        #17161a;
+    }
+
+    .combat-attr.primary span {
+      color: var(--blood-2);
+    }
+
+    .resource-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 0 0 10px;
+    }
+
+    .mode[data-mode="combate"] > .session-strip,
+    .mode[data-mode="combate"] > .focus-board,
+    .mode[data-mode="combate"] > .mini-attrs,
+    .mode[data-mode="combate"] > .quick-panel,
+    .mode[data-mode="combate"] > .section-title:not(.combat-title),
+    .mode[data-mode="combate"] > .action-stack:not(.combat-actions) {
+      display: none;
+    }
+
+    .vital {
+      min-height: 112px;
+      padding: 12px;
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015));
+    }
+
+    .vital label,
+    .kicker {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .vital strong {
+      display: block;
+      margin-top: 5px;
+      color: var(--mist);
+      font-size: 34px;
+      line-height: .95;
+    }
+
+    .combat-strip {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr .8fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .luta-card,
+    .combat-stat {
+      min-height: 74px;
+      padding: 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .luta-card {
+      border-color: rgba(240, 100, 85, .24);
+      background: linear-gradient(180deg, rgba(182, 56, 58, .14), rgba(255, 255, 255, .025));
+    }
+
+    .luta-card span,
+    .combat-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .luta-card strong,
+    .combat-stat strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--mist);
+      font-size: 27px;
+      line-height: 1;
+    }
+
+    .buff-ribbon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      min-height: 46px;
+      margin: 0 0 12px;
+      scrollbar-width: none;
+    }
+
+    .buff-ribbon::-webkit-scrollbar {
+      display: none;
+    }
+
+    .buff-token {
+      position: relative;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 35% 25%, rgba(214, 177, 95, .24), transparent 45%),
+        #171a20;
+      color: var(--gold);
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .buff-token small {
+      position: absolute;
+      right: -3px;
+      bottom: -3px;
+      display: grid;
+      place-items: center;
+      min-width: 18px;
+      height: 18px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 50%;
+      background: #101114;
+      color: var(--mist);
+      font-size: 10px;
+    }
+
+    .buff-add {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border: 1px dashed rgba(214, 177, 95, .34);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--gold);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .bar {
+      height: 7px;
+      margin-top: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blood), var(--blood-2));
+    }
+
+    .bar.mana i {
+      background: linear-gradient(90deg, var(--mana), var(--mana-2));
+    }
+
+    .focus-board {
+      display: grid;
+      grid-template-columns: 156px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin: 10px 0 16px;
+    }
+
+    .turn-ring {
+      position: relative;
+      width: 156px;
+      height: 156px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background:
+        conic-gradient(from -18deg, rgba(182, 56, 58, .28), rgba(214, 177, 95, .16), rgba(62, 120, 173, .22), rgba(182, 56, 58, .28)),
+        radial-gradient(circle, #171a20 0 41%, transparent 42%);
+    }
+
+    .turn-ring::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px dashed rgba(214, 177, 95, .32);
+      border-radius: inherit;
+    }
+
+    .turn-center {
+      position: absolute;
+      inset: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #101114;
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+    }
+
+    .turn-center b {
+      display: block;
+      color: var(--gold);
+      font-family: ui-serif, Georgia, serif;
+      font-size: 28px;
+      line-height: .8;
+    }
+
+    .turn-center span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .slot {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px;
+      min-height: 32px;
+      border: 1px solid rgba(255, 255, 255, .11);
+      border-radius: 999px;
+      background: rgba(16, 17, 20, .82);
+      color: var(--mist);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .slot.standard { left: 50%; top: -6px; transform: translateX(-50%); }
+    .slot.move { right: -8px; top: 58px; }
+    .slot.free { left: 50%; bottom: -6px; transform: translateX(-50%); }
+    .slot.react { left: -8px; top: 58px; }
+
+    .turn-notes {
+      display: grid;
+      gap: 8px;
+    }
+
+    .statline {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .stat {
+      min-height: 58px;
+      padding: 8px;
+      border: 1px solid var(--soft-line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .stat span {
+      color: var(--faint);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 2px;
+      font-size: 19px;
+    }
+
+    .condition-lane {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .mini-attrs {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin: 12px 0;
+    }
+
+    .mini-attr {
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(214, 177, 95, .06);
+      text-align: center;
+    }
+
+    .mini-attr span {
+      color: var(--faint);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .mini-attr strong {
+      display: block;
+      color: var(--mist);
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(214, 177, 95, .07);
+      color: var(--mist);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .quick-panel {
+      padding: 12px;
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+      margin: 12px 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .panel-head strong {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .ghost-btn {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(214, 177, 95, .08);
+      color: var(--gold);
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .skill-search {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--soft-line);
+      border-radius: 14px;
+      background: #0d0e12;
+      color: var(--mist);
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .quick-skills {
+      display: grid;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .quick-skill {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 2px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .quick-skill strong {
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .quick-skill span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .effect-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .effect-card {
+      min-height: 84px;
+      padding: 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(118, 184, 120, .1), rgba(255, 255, 255, .025));
+    }
+
+    .effect-card strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .effect-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .switch {
+      width: 42px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(118, 184, 120, .34);
+    }
+
+    .switch i {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .action-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) auto;
+      gap: 11px;
+      align-items: center;
+      min-height: 78px;
+      padding: 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 18px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .018));
+    }
+
+    .action-type {
+      display: grid;
+      place-items: center;
+      min-height: 58px;
+      border-radius: 14px;
+      background: rgba(182, 56, 58, .14);
+      color: var(--blood-2);
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .action-copy {
+      min-width: 0;
+    }
+
+    .action-copy strong {
+      display: block;
+      overflow: hidden;
+      font-size: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .action-copy span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .use {
+      min-width: 58px;
+      min-height: 48px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--gold);
+      color: #15110a;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .sub-action {
+      min-height: 34px;
+      border: 1px solid var(--soft-line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .action-buttons {
+      display: grid;
+      gap: 5px;
+    }
+
+    .section-title {
+      margin: 18px 0 8px;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .sheet-core {
+      display: grid;
+      gap: 12px;
+    }
+
+    .identity-slab,
+    .rune-panel,
+    .gear-panel {
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .identity-slab {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .portrait {
+      height: 110px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, rgba(214, 177, 95, .18), transparent),
+        #0b0c0f;
+    }
+
+    .identity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field {
+      min-height: 48px;
+      padding: 8px;
+      border-bottom: 1px solid var(--soft-line);
+    }
+
+    .field small {
+      display: block;
+      color: var(--faint);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .field b {
+      display: block;
+      margin-top: 2px;
+      color: var(--mist);
+      font-size: 13px;
+    }
+
+    .attribute-wheel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .attr {
+      min-height: 72px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(214, 177, 95, .06);
+      text-align: center;
+    }
+
+    .attr span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .attr strong {
+      display: block;
+      color: var(--mist);
+      font-family: ui-serif, Georgia, serif;
+      font-size: 28px;
+    }
+
+    .skill-groups {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .skill-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .skill-line strong {
+      overflow: hidden;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .skill-line span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .spell-filter {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+
+    .spell-filter::-webkit-scrollbar { display: none; }
+
+    .spell-card {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-left: 3px solid var(--mana-2);
+      border-radius: 0 16px 16px 0;
+      background: linear-gradient(90deg, rgba(62, 120, 173, .18), rgba(255, 255, 255, .035));
+      margin-bottom: 10px;
+    }
+
+    .spell-card h3 {
+      margin: 0;
+      font-family: ui-serif, Georgia, serif;
+      font-size: 20px;
+    }
+
+    .spell-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .spell-meta span,
+    .load-meta span {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--soft-line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .spell-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .spell-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .spell-actions button {
+      min-height: 42px;
+      border: 1px solid var(--soft-line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, .045);
+      color: var(--mist);
+      font-size: 12px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .spell-actions button:first-child {
+      border: 0;
+      background: var(--mana-2);
+      color: #08111c;
+    }
+
+    .load-card {
+      padding: 14px;
+      border: 1px solid var(--soft-line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .load-hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .load-hero strong {
+      display: block;
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .load-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .equip-ring {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .equip {
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(214, 177, 95, .06);
+    }
+
+    .equip small {
+      color: var(--faint);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .equip strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 13px;
+    }
+
+    .bottom-nav {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 22px;
+      background: rgba(17, 18, 23, .92);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav-btn {
+      min-height: 58px;
+      border: 0;
+      border-radius: 16px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .nav-btn.active {
+      background: rgba(214, 177, 95, .14);
+      color: var(--gold);
+    }
+
+    .buff-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .buff-row {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 74px;
+      padding: 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .buff-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(214, 177, 95, .08);
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .buff-text {
+      min-width: 0;
+    }
+
+    .buff-text strong {
+      display: block;
+      overflow: hidden;
+      font-size: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .buff-text span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .buff-row.off {
+      opacity: .62;
+    }
+
+    .buff-row.off .switch {
+      justify-content: flex-start;
+      background: rgba(255, 255, 255, .11);
+    }
+
+    .buff-row.off .switch i {
+      background: var(--faint);
+    }
+
+    .fab {
+      position: absolute;
+      right: 20px;
+      bottom: 92px;
+      z-index: 22;
+      width: 62px;
+      height: 62px;
+      border: 0;
+      border-radius: 22px;
+      background: var(--gold);
+      color: #161109;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, .48);
+      font-size: 30px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .creator-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 28;
+      display: none;
+      background: rgba(0, 0, 0, .5);
+    }
+
+    .creator-backdrop.active {
+      display: block;
+    }
+
+    .creator-sheet {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      max-height: calc(100% - 70px);
+      overflow-y: auto;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 26px;
+      background: #15171d;
+      box-shadow: 0 -22px 70px rgba(0, 0, 0, .58);
+    }
+
+    .creator-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .creator-header h2 {
+      margin: 0;
+      color: var(--mist);
+      font-family: ui-serif, Georgia, serif;
+      font-size: 24px;
+    }
+
+    .close {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--soft-line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .04);
+      color: var(--mist);
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .builder-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .creator-menu {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .create-option {
+      min-height: 56px;
+      border: 1px solid var(--soft-line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .04);
+      color: var(--mist);
+      font-size: 13px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .create-option.active {
+      border-color: rgba(214, 177, 95, .44);
+      background: rgba(214, 177, 95, .14);
+      color: var(--gold);
+    }
+
+    .builder-card {
+      padding: 12px;
+      border: 1px solid var(--soft-line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .builder-card.form-card {
+      display: none;
+    }
+
+    .builder-card.form-card.active {
+      display: block;
+    }
+
+    .builder-card h3 {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .builder-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .builder-fields label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .builder-fields input {
+      min-width: 0;
+      min-height: 42px;
+      border: 1px solid var(--soft-line);
+      border-radius: 12px;
+      background: #0e0f14;
+      color: var(--mist);
+      padding: 0 10px;
+    }
+
+    .builder-fields .wide {
+      grid-column: 1 / -1;
+    }
+
+    .blueprint {
+      max-width: 620px;
+    }
+
+    .blueprint img {
+      width: 148px;
+      height: auto;
+      margin-bottom: 22px;
+    }
+
+    .blueprint h1 {
+      margin: 0;
+      font-family: ui-serif, Georgia, serif;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: .95;
+    }
+
+    .blueprint p {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .principles {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .principle {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 0;
+      border-top: 1px solid var(--soft-line);
+    }
+
+    .principle b {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--gold);
+    }
+
+    .principle strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .principle span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        background: #101114;
+      }
+
+      .stage {
+        display: block;
+        min-height: 100vh;
+        padding: 0;
+      }
+
+      .phone {
+        width: 100%;
+        height: 100vh;
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .blueprint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone" aria-label="Mockup mobile">
+      <div class="app">
+        <header class="hero">
+          <div class="brand">
+            <img src="../assets/tormenta_logo.png" alt="Tormenta20">
+            <div class="name">
+              <small>Guerreira devota de Lin-Wu</small>
+              <strong>Akemi da Tempestade</strong>
+            </div>
+          </div>
+          <span class="save-pill">Salvo</span>
+        </header>
+
+        <section class="mode" data-mode="combate">
+          <div class="combat-attrs" aria-label="Atributos basicos em combate">
+            <div class="combat-attr primary"><span>For</span><strong>+4</strong></div>
+            <div class="combat-attr"><span>Des</span><strong>+2</strong></div>
+            <div class="combat-attr"><span>Con</span><strong>+3</strong></div>
+            <div class="combat-attr"><span>Int</span><strong>+1</strong></div>
+            <div class="combat-attr"><span>Sab</span><strong>+0</strong></div>
+            <div class="combat-attr"><span>Car</span><strong>-1</strong></div>
+          </div>
+
+          <div class="resource-row">
+            <div class="vital">
+              <label>Pontos de vida</label>
+              <strong>42/58</strong>
+              <div class="bar"><i style="width:72%"></i></div>
+            </div>
+            <div class="vital">
+              <label>Pontos de mana</label>
+              <strong>11/24</strong>
+              <div class="bar mana"><i style="width:46%"></i></div>
+            </div>
+          </div>
+
+          <div class="combat-strip">
+            <div class="luta-card">
+              <span>Luta</span>
+              <strong>+15</strong>
+            </div>
+            <div class="combat-stat">
+              <span>Defesa</span>
+              <strong>26</strong>
+            </div>
+            <div class="combat-stat">
+              <span>Desloc.</span>
+              <strong>9m</strong>
+            </div>
+          </div>
+
+          <div class="buff-ribbon" aria-label="Buffs ativos">
+            <button class="buff-token" type="button" title="Inspirada">I<small>+1</small></button>
+            <button class="buff-token" type="button" title="Arma Magica">A<small>+1</small></button>
+            <button class="buff-token" type="button" title="Reducao de dano">RD<small>3</small></button>
+            <button class="buff-add js-open-buffs" type="button" aria-label="Ver buffs">+</button>
+          </div>
+
+          <h2 class="section-title combat-title">Ataques</h2>
+          <div class="action-stack combat-actions">
+            <div class="action-row">
+              <div class="action-type">Ataque</div>
+              <div class="action-copy">
+                <strong>Corte Relampago</strong>
+                <span>Luta +15 / dano 2d8+7 / critico 19</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Usar</button>
+                <button class="sub-action js-open-creator" type="button" data-create="attack">Editar</button>
+              </div>
+            </div>
+            <div class="action-row">
+              <div class="action-type">Ataque</div>
+              <div class="action-copy">
+                <strong>Arco curto</strong>
+                <span>Pontaria +10 / dano 1d6+2 / alcance medio</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Usar</button>
+                <button class="sub-action js-open-creator" type="button" data-create="attack">Editar</button>
+              </div>
+            </div>
+            <div class="action-row">
+              <div class="action-type">Poder</div>
+              <div class="action-copy">
+                <strong>Golpe Pessoal</strong>
+                <span>2 PM / aplica no proximo ataque</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Ativar</button>
+                <button class="sub-action js-open-creator" type="button" data-create="power">Editar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="session-strip">
+            <div class="vital">
+              <label>Pontos de vida</label>
+              <strong>42/58</strong>
+              <div class="bar"><i style="width:72%"></i></div>
+            </div>
+            <div class="vital">
+              <label>Pontos de mana</label>
+              <strong>11/24</strong>
+              <div class="bar mana"><i style="width:46%"></i></div>
+            </div>
+          </div>
+
+          <div class="focus-board">
+            <div class="turn-ring" aria-label="Anel de turno">
+              <span class="slot standard">Padrão</span>
+              <span class="slot move">Mov.</span>
+              <span class="slot free">Livre</span>
+              <span class="slot react">Reação</span>
+              <div class="turn-center"><b>d20</b><span>turno</span></div>
+            </div>
+            <div class="turn-notes">
+              <div class="statline">
+                <div class="stat"><span>Defesa</span><strong>26</strong></div>
+                <div class="stat"><span>Desloc.</span><strong>9m</strong></div>
+                <div class="stat"><span>Inic.</span><strong>+8</strong></div>
+              </div>
+              <div class="condition-lane">
+                <span class="chip">Inspirada</span>
+                <span class="chip">Armadura pesada</span>
+                <span class="chip">RD 3</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mini-attrs" aria-label="Atributos basicos em combate">
+            <div class="mini-attr"><span>For</span><strong>+4</strong></div>
+            <div class="mini-attr"><span>Des</span><strong>+2</strong></div>
+            <div class="mini-attr"><span>Con</span><strong>+3</strong></div>
+            <div class="mini-attr"><span>Int</span><strong>+1</strong></div>
+            <div class="mini-attr"><span>Sab</span><strong>+0</strong></div>
+            <div class="mini-attr"><span>Car</span><strong>-1</strong></div>
+          </div>
+
+          <div class="quick-panel">
+            <div class="panel-head">
+              <strong>Pericias durante a cena</strong>
+              <button class="ghost-btn" type="button">Ver todas</button>
+            </div>
+            <input class="skill-search" value="" placeholder="Buscar pericia, ex: Percepcao, Luta, Reflexos">
+            <div class="quick-skills">
+              <div class="quick-skill"><strong>Luta</strong><span>For / treinada</span><b>+15</b></div>
+              <div class="quick-skill"><strong>Percepcao</strong><span>Sab / treinada</span><b>+8</b></div>
+              <div class="quick-skill"><strong>Reflexos</strong><span>Des / resistencia</span><b>+9</b></div>
+              <div class="quick-skill"><strong>Fortitude</strong><span>Con / resistencia</span><b>+11</b></div>
+            </div>
+          </div>
+
+          <div class="quick-panel">
+            <div class="panel-head">
+              <strong>Buffs e efeitos ativos</strong>
+              <button class="ghost-btn js-open-creator" type="button">+ Buff</button>
+            </div>
+            <div class="effect-board">
+              <div class="effect-card">
+                <strong>Inspirada</strong>
+                <span>+1 em testes ate fim da cena</span>
+                <span class="switch"><i></i></span>
+              </div>
+              <div class="effect-card">
+                <strong>Arma Magica</strong>
+                <span>+1 ataque / +1 dano</span>
+                <span class="switch"><i></i></span>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="section-title">Ações prováveis deste turno</h2>
+          <div class="action-stack">
+            <div class="action-row">
+              <div class="action-type">Padrão</div>
+              <div class="action-copy">
+                <strong>Corte Relâmpago</strong>
+                <span>Teste +14 / dano 2d8+7 / crítico 19</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Usar</button>
+                <button class="sub-action js-open-creator" type="button">Editar</button>
+              </div>
+            </div>
+            <div class="action-row">
+              <div class="action-type">Mov.</div>
+              <div class="action-copy">
+                <strong>Sacar poção ou reposicionar</strong>
+                <span>9m de deslocamento / carga normal</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Abrir</button>
+                <button class="sub-action" type="button">Item</button>
+              </div>
+            </div>
+            <div class="action-row">
+              <div class="action-type">Reação</div>
+              <div class="action-copy">
+                <strong>Bloqueio com escudo</strong>
+                <span>Gasta 1 PM / reduz dano recebido</span>
+              </div>
+              <div class="action-buttons">
+                <button class="use">Marcar</button>
+                <button class="sub-action js-open-creator" type="button">Buff</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mode active" data-mode="ficha">
+          <h2 class="section-title">Identidade e números permanentes</h2>
+          <div class="sheet-core">
+            <div class="identity-slab">
+              <div class="portrait"></div>
+              <div class="identity-grid">
+                <div class="field"><small>Raça</small><b>Humana</b></div>
+                <div class="field"><small>Origem</small><b>Guarda</b></div>
+                <div class="field"><small>Classe</small><b>Guerreira 6</b></div>
+                <div class="field"><small>Divindade</small><b>Lin-Wu</b></div>
+                <div class="field"><small>Tamanho</small><b>Médio</b></div>
+                <div class="field"><small>XP</small><b>12.400</b></div>
+              </div>
+            </div>
+
+            <div class="resource-row">
+              <div class="vital">
+                <label>Pontos de vida</label>
+                <strong>42/58</strong>
+                <div class="bar"><i style="width:72%"></i></div>
+              </div>
+              <div class="vital">
+                <label>Pontos de mana</label>
+                <strong>11/24</strong>
+                <div class="bar mana"><i style="width:46%"></i></div>
+              </div>
+            </div>
+
+            <div class="rune-panel">
+              <div class="attribute-wheel">
+                <div class="attr"><span>For</span><strong>+4</strong></div>
+                <div class="attr"><span>Des</span><strong>+2</strong></div>
+                <div class="attr"><span>Con</span><strong>+3</strong></div>
+                <div class="attr"><span>Int</span><strong>+1</strong></div>
+                <div class="attr"><span>Sab</span><strong>+0</strong></div>
+                <div class="attr"><span>Car</span><strong>-1</strong></div>
+              </div>
+            </div>
+
+            <div class="rune-panel">
+              <div class="skill-groups">
+                <span class="kicker">Perícias em destaque</span>
+                <div class="skill-line"><strong>Luta</strong><span>For</span><b>+15</b></div>
+                <div class="skill-line"><strong>Fortitude</strong><span>Con</span><b>+11</b></div>
+                <div class="skill-line"><strong>Reflexos</strong><span>Des</span><b>+9</b></div>
+                <div class="skill-line"><strong>Vontade</strong><span>Sab</span><b>+7</b></div>
+                <div class="skill-line"><strong>Percepção</strong><span>Sab</span><b>+8</b></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mode" data-mode="grimorio">
+          <h2 class="section-title">Grimório e poderes por uso</h2>
+          <div class="spell-filter">
+            <span class="chip">Todos</span>
+            <span class="chip">1 PM</span>
+            <span class="chip">Padrão</span>
+            <span class="chip">Movimento</span>
+            <span class="chip">Cena</span>
+          </div>
+
+          <article class="spell-card">
+            <h3>Golpe Pessoal</h3>
+            <div class="spell-meta">
+              <span>2 PM</span>
+              <span>Padrão</span>
+              <span>Alvo</span>
+            </div>
+            <p>Mostra custo, ação e efeito antes da descrição. A descrição completa abre em folha inferior.</p>
+            <div class="spell-actions">
+              <button type="button">Ativar</button>
+              <button class="js-open-creator" type="button" data-create="power">Editar poder</button>
+            </div>
+          </article>
+
+          <article class="spell-card">
+            <h3>Arma Mágica</h3>
+            <div class="spell-meta">
+              <span>1º círculo</span>
+              <span>Padrão</span>
+              <span>Toque</span>
+            </div>
+            <p>Magias ficam agrupadas por execução e custo, não só por ordem de cadastro.</p>
+            <div class="spell-actions">
+              <button type="button">Conjurar</button>
+              <button class="js-open-creator" type="button" data-create="spell">Editar magia</button>
+            </div>
+          </article>
+
+          <article class="spell-card">
+            <h3>Inspiração</h3>
+            <div class="spell-meta">
+              <span>2 PM</span>
+              <span>Padrão</span>
+              <span>Cena</span>
+            </div>
+            <p>Poderes de classe entram no mesmo repertório de ações quando são usados em mesa.</p>
+            <div class="spell-actions">
+              <button type="button">Ativar buff</button>
+              <button class="js-open-creator" type="button" data-create="power">Editar poder</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="mode" data-mode="mochila">
+          <h2 class="section-title">Carga, equipamento e recursos</h2>
+          <div class="load-card">
+            <div class="load-hero">
+              <div>
+                <span class="kicker">Carga usada</span>
+                <strong>6 / 18</strong>
+              </div>
+              <span class="chip">Normal</span>
+            </div>
+            <div class="bar"><i style="width:33%"></i></div>
+            <div class="load-meta">
+              <span>T$ 148</span>
+              <span>Pen. -2</span>
+              <span>Slots 6</span>
+            </div>
+          </div>
+
+          <div class="equip-ring">
+            <div class="equip"><small>Arma</small><strong>Katana superior</strong></div>
+            <div class="equip"><small>Armadura</small><strong>Couraça reforçada</strong></div>
+            <div class="equip"><small>Escudo</small><strong>Escudo pesado</strong></div>
+            <div class="equip"><small>Item rápido</small><strong>Poção de cura</strong></div>
+          </div>
+
+          <h2 class="section-title">Inventário pesquisável</h2>
+          <div class="rune-panel">
+            <div class="skill-groups">
+              <div class="skill-line"><strong>Equipamento de viagem</strong><span>2 slots</span><b>x1</b></div>
+              <div class="skill-line"><strong>Corda</strong><span>1 slot</span><b>x1</b></div>
+              <div class="skill-line"><strong>Rações</strong><span>1 slot</span><b>x5</b></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <button class="fab js-open-creator" type="button" aria-label="Criar na ficha" data-create="menu">+</button>
+
+      <div class="creator-backdrop" id="buffPicker">
+        <div class="creator-sheet" role="dialog" aria-label="Ativar buffs">
+          <div class="creator-header">
+            <div>
+              <span class="kicker">Combate</span>
+              <h2>Ativar buffs</h2>
+            </div>
+            <button class="close buffs-close" type="button" aria-label="Fechar">×</button>
+          </div>
+          <div class="buff-list">
+            <div class="buff-row">
+              <div class="buff-icon">I</div>
+              <div class="buff-text">
+                <strong>Inspirada</strong>
+                <span>+1 em testes ate fim da cena / 2 PM</span>
+              </div>
+              <span class="switch"><i></i></span>
+            </div>
+            <div class="buff-row">
+              <div class="buff-icon">A</div>
+              <div class="buff-text">
+                <strong>Arma Magica</strong>
+                <span>+1 ataque e +1 dano / toque</span>
+              </div>
+              <span class="switch"><i></i></span>
+            </div>
+            <div class="buff-row">
+              <div class="buff-icon">RD</div>
+              <div class="buff-text">
+                <strong>Reducao de dano</strong>
+                <span>RD 3 enquanto a postura estiver ativa</span>
+              </div>
+              <span class="switch"><i></i></span>
+            </div>
+            <div class="buff-row off">
+              <div class="buff-icon">B</div>
+              <div class="buff-text">
+                <strong>Bencao</strong>
+                <span>Inativo / +1 em ataques e medo</span>
+              </div>
+              <span class="switch"><i></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creator-backdrop" id="creator">
+        <div class="creator-sheet" role="dialog" aria-label="Criar ou editar recursos">
+          <div class="creator-header">
+            <div>
+              <span class="kicker">Oficina do personagem</span>
+              <h2>Criar para jogar</h2>
+            </div>
+            <button class="close creator-close" type="button" aria-label="Fechar">×</button>
+          </div>
+
+          <div class="creator-menu">
+            <button class="create-option active" type="button" data-form="attack">Ataque</button>
+            <button class="create-option" type="button" data-form="spell">Magia</button>
+            <button class="create-option" type="button" data-form="power">Poder</button>
+            <button class="create-option" type="button" data-form="buff">Buff</button>
+          </div>
+
+          <div class="builder-grid">
+            <div class="builder-card form-card active" data-form-panel="attack">
+              <h3>Ataque consolidado</h3>
+              <div class="builder-fields">
+                <label class="wide">Nome <input value="Corte Relampago"></label>
+                <label>Teste <input value="+14"></label>
+                <label>Dano <input value="2d8+7"></label>
+                <label>Acao <input value="Padrao"></label>
+                <label>Custo <input value="0 PM"></label>
+              </div>
+            </div>
+
+            <div class="builder-card form-card" data-form-panel="spell">
+              <h3>Magia</h3>
+              <div class="builder-fields">
+                <label class="wide">Nome <input value="Arma Magica"></label>
+                <label>Execucao <input value="Padrao"></label>
+                <label>PM <input value="1"></label>
+                <label>Alcance <input value="Toque"></label>
+                <label>Resistencia <input value="Nenhuma"></label>
+                <label class="wide">Efeito <input value="+1 em ataque e dano"></label>
+              </div>
+            </div>
+
+            <div class="builder-card form-card" data-form-panel="power">
+              <h3>Poder</h3>
+              <div class="builder-fields">
+                <label class="wide">Nome <input value="Golpe Pessoal"></label>
+                <label>Tipo <input value="Classe"></label>
+                <label>PM <input value="2"></label>
+                <label>Ativacao <input value="Antes do ataque"></label>
+                <label class="wide">Efeito <input value="Modifica o proximo ataque"></label>
+              </div>
+            </div>
+
+            <div class="builder-card form-card" data-form-panel="buff">
+              <h3>Buff ativavel</h3>
+              <div class="builder-fields">
+                <label class="wide">Nome <input value="Inspirada"></label>
+                <label>Afeta <input value="Pericias"></label>
+                <label>Bonus <input value="+1"></label>
+                <label>Duracao <input value="Cena"></label>
+                <label>Custo <input value="2 PM"></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav" aria-label="Modos do protótipo">
+        <button class="nav-btn active" data-target="ficha">Ficha</button>
+        <button class="nav-btn" data-target="grimorio">Grimório</button>
+        <button class="nav-btn" data-target="mochila">Mochila</button>
+        <button class="nav-btn" data-target="combate">Combate</button>
+      </nav>
+    </section>
+
+    <aside class="blueprint">
+      <img src="../assets/tormenta_logo.png" alt="Tormenta20">
+      <h1>Ficha como console de sessão</h1>
+      <p>
+        Este conceito abandona a ordem da ficha impressa. A tela inicial responde
+        ao que o jogador precisa no celular durante a mesa: sobreviver, escolher
+        uma ação, gastar PM e consultar números sem abrir oito cards.
+      </p>
+      <div class="principles">
+        <div class="principle">
+          <b>1</b>
+          <div><strong>Mesa antes de cadastro</strong><span>PV, PM, Defesa, deslocamento, condições e ações ficam no primeiro plano. Dados de criação vão para Ficha.</span></div>
+        </div>
+        <div class="principle">
+          <b>2</b>
+          <div><strong>Anel de turno</strong><span>A navegação principal nasce das ações de Tormenta: padrão, movimento, completa, livre e reação.</span></div>
+        </div>
+        <div class="principle">
+          <b>3</b>
+          <div><strong>Sem apagar em modo de jogo</strong><span>Ações destrutivas saem da superfície principal. Em mesa, tocar errado não deve destruir ficha.</span></div>
+        </div>
+        <div class="principle">
+          <b>4</b>
+          <div><strong>Consulta progressiva</strong><span>Resumo primeiro, detalhe em folha inferior ou expandido. O celular mostra decisão, não planilha.</span></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const buttons = document.querySelectorAll('.nav-btn');
+    const modes = document.querySelectorAll('.mode');
+    const creator = document.querySelector('#creator');
+    const buffPicker = document.querySelector('#buffPicker');
+    const openCreatorButtons = document.querySelectorAll('.js-open-creator');
+    const openBuffButtons = document.querySelectorAll('.js-open-buffs');
+    const closeCreatorButton = document.querySelector('.creator-close');
+    const closeBuffsButton = document.querySelector('.buffs-close');
+    const createOptions = document.querySelectorAll('.create-option');
+    const formPanels = document.querySelectorAll('[data-form-panel]');
+
+    function selectCreatorForm(form) {
+      const selected = form === 'menu' ? 'attack' : form;
+      createOptions.forEach((item) => item.classList.toggle('active', item.dataset.form === selected));
+      formPanels.forEach((panel) => panel.classList.toggle('active', panel.dataset.formPanel === selected));
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.target;
+        buttons.forEach((item) => item.classList.toggle('active', item === button));
+        modes.forEach((mode) => mode.classList.toggle('active', mode.dataset.mode === target));
+      });
+    });
+
+    openCreatorButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        selectCreatorForm(button.dataset.create || 'attack');
+        creator.classList.add('active');
+      });
+    });
+
+    createOptions.forEach((button) => {
+      button.addEventListener('click', () => selectCreatorForm(button.dataset.form));
+    });
+
+    openBuffButtons.forEach((button) => {
+      button.addEventListener('click', () => buffPicker.classList.add('active'));
+    });
+
+    closeCreatorButton.addEventListener('click', () => creator.classList.remove('active'));
+    closeBuffsButton.addEventListener('click', () => buffPicker.classList.remove('active'));
+
+    creator.addEventListener('click', (event) => {
+      if (event.target === creator) creator.classList.remove('active');
+    });
+
+    buffPicker.addEventListener('click', (event) => {
+      if (event.target === buffPicker) buffPicker.classList.remove('active');
+    });
+  </script>
+</body>
+</html>
