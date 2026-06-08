@@ -3,6 +3,8 @@ import { formatMod } from '../../../utils/calculations';
 import type { InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import { useSheetForm } from '../SheetForm/SheetFormProvider';
+import type { EntityKind } from '../SheetForm/entityForms';
 import styles from './EquipamentosPanel.module.css';
 
 interface EquipamentosPanelProps {
@@ -25,6 +27,7 @@ function isComum(item: InventoryItem): boolean {
  */
 function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
   const { character, updateCharacter } = useCharacterContext();
+  const { openEdit } = useSheetForm();
 
   if (!character) return null;
 
@@ -65,6 +68,17 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
 
   const proficiencies = character.proficiencies?.trim();
 
+  // Row props: in editMode the row is clickable to open the edit form.
+  const rowProps = (kind: EntityKind, idx: number) =>
+    editMode
+      ? {
+          className: `${styles.row} ${styles.clickable}`,
+          role: 'button' as const,
+          tabIndex: 0,
+          onClick: () => openEdit(kind, idx),
+        }
+      : { className: styles.row };
+
   return (
     <div className={styles.panel}>
       {/* ─── 1. EQUIPAMENTOS ─── */}
@@ -74,7 +88,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {attacks.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {attacks.map((arma, idx) => (
-            <div key={idx} className={styles.row}>
+            <div key={idx} {...rowProps('arma', idx)}>
               <div className={styles.rowName}>
                 {arma.name || 'Arma'}
                 {arma.type && <small className={styles.effect}>{arma.type}</small>}
@@ -87,7 +101,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={() => removeArma(idx)}
+                  onClick={(e) => { e.stopPropagation(); removeArma(idx); }}
                   title="Remover arma"
                   aria-label="Remover arma"
                 >
@@ -105,7 +119,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {armaduras.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {armaduras.map((arm, idx) => (
-            <div key={idx} className={styles.row}>
+            <div key={idx} {...rowProps('armadura', idx)}>
               <div className={styles.rowName}>{arm.name || 'Armadura'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.badge}>{formatMod(arm.value)}</span>
@@ -117,7 +131,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={() => removeArmadura(idx)}
+                  onClick={(e) => { e.stopPropagation(); removeArmadura(idx); }}
                   title="Remover armadura"
                   aria-label="Remover armadura"
                 >
@@ -135,7 +149,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {acessorios.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {acessorios.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('acessorio', index)}>
               <div className={styles.rowName}>
                 {item.name || 'Acessório'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -147,7 +161,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={() => removeInventoryItem(index)}
+                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
                   title="Remover acessório"
                   aria-label="Remover acessório"
                 >
@@ -166,7 +180,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {comuns.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {comuns.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('comum', index)}>
               <div className={styles.rowName}>{item.name || 'Item'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
@@ -175,7 +189,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={() => removeInventoryItem(index)}
+                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
                   title="Remover item"
                   aria-label="Remover item"
                 >
@@ -194,7 +208,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {consumiveis.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {consumiveis.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('consumivel', index)}>
               <div className={styles.rowName}>
                 {item.name || 'Consumível'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -206,7 +220,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={() => removeInventoryItem(index)}
+                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
                   title="Remover consumível"
                   aria-label="Remover consumível"
                 >

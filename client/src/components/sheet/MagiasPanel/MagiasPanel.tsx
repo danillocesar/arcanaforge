@@ -2,18 +2,19 @@ import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import Card from '../../ui/Card/Card';
 import SpellCard from '../SpellCard/SpellCard';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import { calcSpellResistance, formatMod, getEffectiveAttribute } from '../../../utils/calculations';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import styles from './MagiasPanel.module.css';
 
 interface MagiasPanelProps {
   editMode?: boolean;
-  onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
 }
 
-function MagiasPanel({ editMode = false, onEdit, onRemove }: MagiasPanelProps) {
+function MagiasPanel({ editMode = false, onRemove }: MagiasPanelProps) {
   const { character, updateCharacter, sendSpellCast } = useCharacterContext();
+  const { openEdit } = useSheetForm();
 
   if (!character) return null;
 
@@ -100,7 +101,7 @@ function MagiasPanel({ editMode = false, onEdit, onRemove }: MagiasPanelProps) {
               index={index}
               editMode={editMode}
               onCast={castSpell}
-              onEdit={onEdit}
+              onEdit={(i) => openEdit('magia', i)}
               onRemove={handleRemove}
             />
           ))}

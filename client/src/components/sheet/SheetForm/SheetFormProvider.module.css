@@ -1,0 +1,4 @@
+/* Pin the FAB to the viewport so it stays put while the sheet body scrolls. */
+.fab {
+  position: fixed !important;
+}

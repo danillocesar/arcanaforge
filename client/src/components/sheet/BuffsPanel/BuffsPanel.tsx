@@ -1,15 +1,16 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import ConditionChip from '../ConditionChip/ConditionChip';
+import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './BuffsPanel.module.css';
 
 interface BuffsPanelProps {
   editMode?: boolean;
-  onEdit?: (i: number) => void;
 }
 
-function BuffsPanel({ editMode = false, onEdit }: BuffsPanelProps) {
+function BuffsPanel({ editMode = false }: BuffsPanelProps) {
   const { character } = useCharacterContext();
+  const { openEdit } = useSheetForm();
 
   if (!character) return null;
 
@@ -23,7 +24,7 @@ function BuffsPanel({ editMode = false, onEdit }: BuffsPanelProps) {
             buff={buff}
             index={idx}
             editMode={editMode}
-            onEdit={onEdit}
+            onEdit={(i) => openEdit('buff', i)}
           />
         ))}
       </div>

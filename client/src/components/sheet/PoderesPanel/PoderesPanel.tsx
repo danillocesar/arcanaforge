@@ -1,20 +1,24 @@
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import AbilityCard from '../AbilityCard/AbilityCard';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './PoderesPanel.module.css';
 
 interface PoderesPanelProps {
   editMode?: boolean;
-  onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
 }
 
-function PoderesPanel({ editMode = false, onEdit, onRemove }: PoderesPanelProps) {
+function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
   const { character, updateCharacter } = useCharacterContext();
+  const { openEdit } = useSheetForm();
 
   if (!character) return null;
 
   const abilities = character.abilities ?? [];
+
+  const handleEdit = (index: number) =>
+    openEdit(abilities[index]?.kind === 'Habilidade' ? 'habilidade' : 'poder', index);
 
   const handleRemove = (index: number) => {
     if (onRemove) {
@@ -43,7 +47,7 @@ function PoderesPanel({ editMode = false, onEdit, onRemove }: PoderesPanelProps)
               ability={ability}
               index={index}
               editMode={editMode}
-              onEdit={onEdit}
+              onEdit={handleEdit}
               onRemove={handleRemove}
             />
           ))}

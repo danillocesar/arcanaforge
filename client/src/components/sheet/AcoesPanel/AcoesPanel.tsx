@@ -1,6 +1,7 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import ActionCard from '../ActionCard/ActionCard';
+import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './AcoesPanel.module.css';
 
 interface AcoesPanelProps {
@@ -14,6 +15,7 @@ interface AcoesPanelProps {
  */
 function AcoesPanel({ editMode = false }: AcoesPanelProps) {
   const { character } = useCharacterContext();
+  const { openEdit } = useSheetForm();
 
   if (!character) return null;
 
@@ -25,7 +27,13 @@ function AcoesPanel({ editMode = false }: AcoesPanelProps) {
       {attacks.length > 0 ? (
         <div className={styles.grid}>
           {attacks.map((attack, idx) => (
-            <ActionCard key={idx} attack={attack} index={idx} editMode={editMode} />
+            <ActionCard
+              key={idx}
+              attack={attack}
+              index={idx}
+              editMode={editMode}
+              onEdit={(i) => openEdit('arma', i)}
+            />
           ))}
         </div>
       ) : (

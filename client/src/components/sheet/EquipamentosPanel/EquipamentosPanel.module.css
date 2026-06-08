@@ -41,6 +41,15 @@
   border-bottom: none;
 }
 
+.clickable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.clickable:hover {
+  background: var(--surface-2);
+}
+
 .rowName {
   flex: 1;
   font-size: 13px;

@@ -13,6 +13,7 @@ import SkillsPanel from '../../components/sheet/SkillsPanel/SkillsPanel';
 import PoderesPanel from '../../components/sheet/PoderesPanel/PoderesPanel';
 import MagiasPanel from '../../components/sheet/MagiasPanel/MagiasPanel';
 import EquipamentosPanel from '../../components/sheet/EquipamentosPanel/EquipamentosPanel';
+import { SheetFormProvider, SheetFab } from '../../components/sheet/SheetForm/SheetFormProvider';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import styles from './CharacterSheetPage.module.css';
@@ -92,34 +93,40 @@ function CharacterSheetInner() {
 
   if (isDesktop) {
     return (
-      <div className={styles.shell}>
-        <Topbar title={character.name} systemBrand="tormenta" />
-        <div className={styles.desktopBody}>
-          <VitalBar desktop editMode={editMode} onToggleEdit={toggleEdit} />
-          <div className={styles.desktopGrid}>
-            <aside className={styles.sidebar}>
-              <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
-            </aside>
-            <main className={styles.detail}>{panel}</main>
+      <SheetFormProvider>
+        <div className={styles.shell}>
+          <Topbar title={character.name} systemBrand="tormenta" />
+          <div className={styles.desktopBody}>
+            <VitalBar desktop editMode={editMode} onToggleEdit={toggleEdit} />
+            <div className={styles.desktopGrid}>
+              <aside className={styles.sidebar}>
+                <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
+              </aside>
+              <main className={styles.detail}>{panel}</main>
+            </div>
           </div>
+          <SheetFab position="desk" />
         </div>
-      </div>
+      </SheetFormProvider>
     );
   }
 
   return (
-    <div className={styles.shell}>
-      <VitalBar editMode={editMode} onToggleEdit={toggleEdit} />
-      <main className={styles.mobileBody}>{panel}</main>
-      <TabNav
-        sections={SECTIONS}
-        active={active}
-        onChange={(id) => setActive(id as SectionId)}
-        variant="tabs"
-        trailing={{ label: 'Menu', icon: '☰', onClick: () => setMenuOpen(true), active: menuOpen }}
-      />
-      <MobileAppMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-    </div>
+    <SheetFormProvider>
+      <div className={styles.shell}>
+        <VitalBar editMode={editMode} onToggleEdit={toggleEdit} />
+        <main className={styles.mobileBody}>{panel}</main>
+        <TabNav
+          sections={SECTIONS}
+          active={active}
+          onChange={(id) => setActive(id as SectionId)}
+          variant="tabs"
+          trailing={{ label: 'Menu', icon: '☰', onClick: () => setMenuOpen(true), active: menuOpen }}
+        />
+        <SheetFab position="phone" />
+        <MobileAppMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      </div>
+    </SheetFormProvider>
   );
 }
 
