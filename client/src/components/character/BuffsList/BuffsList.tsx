@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import Section from '../../ui/Section/Section';
 import Button from '../../ui/Button/Button';
+import { toggleBuffState } from '../../../utils/calculations';
 import { BUFF_TYPES } from '../../../data/constants';
 import { SKILLS_CONFIG } from '../../../data/pericias';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
@@ -40,36 +41,7 @@ export default function BuffsList() {
   };
 
   const toggleBuff = (idx: number) => {
-    updateCharacter((f) => {
-      const buffs = [...f.buffs];
-      const b = { ...buffs[idx] };
-      const wasActive = b.active;
-      b.active = !wasActive;
-
-      let mpCurrent = f.mp.current;
-      let hpTemp = f.temporaryHp;
-      let mpTemp = f.temporaryMp;
-      const mpCost = Number(b.mp) || 0;
-      const val = Number(b.value) || 0;
-
-      if (!wasActive) {
-        if (mpCost > 0) mpCurrent = Math.max(0, mpCurrent - mpCost);
-        if (b.type === 'hp') hpTemp += val;
-        if (b.type === 'mp') mpTemp += val;
-      } else {
-        if (b.type === 'hp') hpTemp = Math.max(0, hpTemp - val);
-        if (b.type === 'mp') mpTemp = Math.max(0, mpTemp - val);
-      }
-
-      buffs[idx] = b;
-      return {
-        ...f,
-        buffs,
-        mp: { ...f.mp, current: mpCurrent },
-        temporaryHp: hpTemp,
-        temporaryMp: mpTemp,
-      };
-    });
+    updateCharacter((f) => toggleBuffState(f, idx));
   };
 
   const buffToRemove = removeIdx != null ? character.buffs[removeIdx] : null;

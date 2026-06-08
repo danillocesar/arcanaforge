@@ -113,7 +113,90 @@ export function calcTotalDefense(character: Character): number {
       total += item.value || 0;
     });
   }
+  if (character.buffs) {
+    character.buffs.forEach((b) => {
+      if (b.active && b.type === 'defense') total += Number(b.value) || 0;
+    });
+  }
   return total;
+}
+
+/** Alias for the buff-aware total defense (centralized selector). */
+export const effectiveDefense = calcTotalDefense;
+
+/** All six attribute modifiers with active buffs applied. */
+export function effectiveAttributes(character: Character): Record<AttributeId, number> {
+  return {
+    str: getEffectiveAttribute(character, 'str'),
+    dex: getEffectiveAttribute(character, 'dex'),
+    con: getEffectiveAttribute(character, 'con'),
+    int: getEffectiveAttribute(character, 'int'),
+    wis: getEffectiveAttribute(character, 'wis'),
+    cha: getEffectiveAttribute(character, 'cha'),
+  };
+}
+
+export interface DefenseBreakdownRow {
+  name: string;
+  value: number;
+}
+
+export interface DefenseBreakdown {
+  base: number;
+  items: DefenseBreakdownRow[];
+  buffs: DefenseBreakdownRow[];
+  total: number;
+}
+
+/** Structured breakdown for the Defense popover (base + protections + active defense buffs). */
+export function getDefenseBreakdown(character: Character): DefenseBreakdown {
+  const base = character.defense.base || 10;
+  const items: DefenseBreakdownRow[] = (character.defense.items || [])
+    .filter((it) => (it.value || 0) !== 0)
+    .map((it) => ({ name: it.name || 'Proteção', value: it.value || 0 }));
+  const buffs: DefenseBreakdownRow[] = (character.buffs || [])
+    .filter((b) => b.active && b.type === 'defense')
+    .map((b) => ({ name: b.name || 'Buff', value: Number(b.value) || 0 }));
+  return { base, items, buffs, total: calcTotalDefense(character) };
+}
+
+/**
+ * Toggle a buff's active state, applying its game effects as a pure transform:
+ * spends/refunds MP cost, and adds/removes temporary HP/MP for hp/mp buffs.
+ * Attribute/skill/defense/damage buffs are reflected live by the effective
+ * selectors, so they only need the `active` flip (+ MP cost). Centralizes the
+ * logic previously inline in BuffsList.
+ */
+export function toggleBuffState(character: Character, idx: number): Character {
+  const buffs = [...character.buffs];
+  const b = { ...buffs[idx] };
+  if (!b) return character;
+  const wasActive = b.active;
+  b.active = !wasActive;
+
+  let mpCurrent = character.mp.current;
+  let hpTemp = character.temporaryHp;
+  let mpTemp = character.temporaryMp;
+  const mpCost = Number(b.mp) || 0;
+  const val = Number(b.value) || 0;
+
+  if (!wasActive) {
+    if (mpCost > 0) mpCurrent = Math.max(0, mpCurrent - mpCost);
+    if (b.type === 'hp') hpTemp += val;
+    if (b.type === 'mp') mpTemp += val;
+  } else {
+    if (b.type === 'hp') hpTemp = Math.max(0, hpTemp - val);
+    if (b.type === 'mp') mpTemp = Math.max(0, mpTemp - val);
+  }
+
+  buffs[idx] = b;
+  return {
+    ...character,
+    buffs,
+    mp: { ...character.mp, current: mpCurrent },
+    temporaryHp: hpTemp,
+    temporaryMp: mpTemp,
+  };
 }
 
 export function calcCarryCapacity(character: Character): number {

@@ -21,7 +21,8 @@ export type BuffType =
   | 'attribute'
   | 'hp'
   | 'mp'
-  | 'skill';
+  | 'skill'
+  | 'defense';
 
 export type RangeType = string;
 
@@ -78,18 +79,30 @@ export interface Spell {
   description: string;
 }
 
+export type AbilityKind = 'Poder' | 'Habilidade';
+
 export interface Ability {
   name: string;
   source: string;
   type: string;
+  /** Redesign etiqueta: distinguishes a Poder from a Habilidade in the unified list. */
+  kind?: AbilityKind;
   mpCost: number;
   description: string;
 }
+
+export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio';
 
 export interface InventoryItem {
   name: string;
   quantity: number;
   weight: number;
+  /** Redesign: groups items into Comuns / Consumíveis / Acessórios. Legacy items → 'comum'. */
+  category?: InventoryCategory;
+  /** Free-text effect (consumíveis / acessórios). */
+  effect?: string;
+  /** Equip slot / location (acessórios). */
+  slot?: string;
 }
 
 export interface EquippedItem {

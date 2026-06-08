@@ -13,6 +13,7 @@ export const BUFF_TYPES: Record<string, string> = {
   hp: 'Vida',
   mp: 'Mana',
   skill: 'Perícia',
+  defense: 'Defesa',
 };
 
 /** Keys = English `id` on `<Section>`; values = nav labels (PT UI). */
