@@ -1,0 +1,15 @@
+.search {
+  margin-bottom: 11px;
+}
+
+.list {
+  overflow: hidden;
+}
+
+.empty {
+  padding: 18px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}

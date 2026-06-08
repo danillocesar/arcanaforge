@@ -1,0 +1,140 @@
+.panel {
+  display: block;
+}
+
+.subHead {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 16px 4px 9px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subHead::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
+
+.gap {
+  margin-top: 24px;
+}
+
+.list {
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.effect {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qty {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.badge {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.penalty {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.slot {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.rmX {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.rmX:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+  padding: 4px 4px 2px;
+}
+
+.proficiencies {
+  margin-top: 20px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.proficienciesLabel {
+  font-weight: 700;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10.5px;
+}

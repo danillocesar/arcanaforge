@@ -1,0 +1,10 @@
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 8px 2px;
+}

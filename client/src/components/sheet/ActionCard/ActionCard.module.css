@@ -1,0 +1,125 @@
+.weapon {
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wname {
+  flex: 1;
+}
+
+.wname h3 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.wname span {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.rmX {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.rmX:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.stats div {
+  flex: 1;
+}
+
+.stats div span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+}
+
+.stats div b {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 1px;
+  display: block;
+}
+
+.btnRoll {
+  margin-top: 13px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 13px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: #04130d;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.6);
+  transition: transform 0.15s var(--ease), box-shadow 0.2s;
+}
+
+.btnRoll:hover {
+  box-shadow: 0 10px 26px -8px rgba(16, 185, 129, 0.8);
+}
+
+.btnRoll:active {
+  transform: scale(0.97);
+}
+
+.editLink {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 11px;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line-2);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.editLink:hover {
+  background: var(--line-2);
+  border-color: var(--ink-3);
+}

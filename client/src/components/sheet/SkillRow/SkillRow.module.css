@@ -1,0 +1,78 @@
+.skill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.skill:last-child {
+  border-bottom: none;
+}
+
+.ico {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.nm {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nm small {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.tag {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 5px;
+  margin-left: 7px;
+  vertical-align: middle;
+}
+
+.vl {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.skill.trained .ico {
+  background: var(--accent-soft);
+}
+
+.skill.trained .vl {
+  color: var(--accent-ink);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.miscField {
+  width: 64px;
+}
