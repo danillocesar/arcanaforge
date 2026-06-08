@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../../components/ui/Button/Button';
 import Input from '../../../components/ui/Input/Input';
 import { useAuth } from '../useAuth';
+import AuthLoading from './AuthLoading';
 import VerifyEmailNotice from './VerifyEmailNotice';
 import styles from './AuthPage.module.css';
 
@@ -66,7 +67,7 @@ export default function AuthPage() {
   }, [isAuthenticated]);
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }} />;
+    return <AuthLoading />;
   }
 
   if (isAuthenticated && !requiresEmailVerification) {

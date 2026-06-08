@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { X } from 'lucide-react';
 import styles from './Drawer.module.css';
 
 interface DrawerProps {
@@ -19,8 +20,8 @@ export default function Drawer({ open, onClose, title, children }: DrawerProps) 
       <div className={`${styles.drawer} ${open ? styles.open : ''}`}>
         <div className={styles.header}>
           <h2>{title}</h2>
-          <button type="button" className={styles.closeBtn} onClick={onClose}>
-            ×
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Fechar painel">
+            <X size={22} aria-hidden="true" />
           </button>
         </div>
         <div className={styles.body}>{children}</div>

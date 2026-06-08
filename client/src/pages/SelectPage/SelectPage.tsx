@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetchCharacterSummaries, apiSaveCharacter, apiDeleteCharacter } from '../../api';
-import { apiRestoreCharacter } from '../../api/billing';
+import {
+  apiFetchCharacterSummaries,
+  apiSaveCharacter,
+  apiDeleteCharacter,
+  apiRestoreCharacter,
+} from '../../api';
 import { createEmptyCharacter, createEmptyNarutoCharacter } from '../../utils/calculations';
 import type { RPGSystem, CharacterSummary } from '../../types/character';
 import { SYSTEM_ROUTES } from '../../data/constants';
-import { usePlan } from '../../contexts/PlanContext';
 import Topbar from '../../components/layout/Topbar/Topbar';
 import SystemFilter from '../../components/ui/SystemFilter/SystemFilter';
 import SelectGrid from '../../components/select/SelectGrid/SelectGrid';
@@ -30,25 +33,16 @@ export default function SelectPage() {
   const [newSystem, setNewSystem] = useState<RPGSystem>('tormenta');
   const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
   const navigate = useNavigate();
-  const { status, setSlotsUsed } = usePlan();
 
   useEffect(() => {
     apiFetchCharacterSummaries()
-      .then((data) => {
-        setResumos(data);
-        const activeCount = data.filter((r) => !r.deletedAt).length;
-        setSlotsUsed(activeCount);
-      })
+      .then(setResumos)
       .catch(console.error);
-  }, [setSlotsUsed]);
+  }, []);
 
   const activeChars = resumos.filter((r) => !r.deletedAt);
   const pendingDeleteChars = resumos.filter((r) => r.deletedAt);
   const filtered = tab === 'todos' ? activeChars : activeChars.filter((r) => r.system === tab);
-
-  const slotLimit = status?.characterSlots ?? null;
-  const slotsUsedCount = activeChars.length;
-  const atLimit = slotLimit !== null && slotsUsedCount >= slotLimit;
 
   const openNewModal = () => {
     setNewName('');
@@ -78,7 +72,6 @@ export default function SelectPage() {
           : r,
       ),
     );
-    setSlotsUsed(activeChars.length - 1);
   };
 
   const handleRestore = async (char: CharacterSummary) => {
@@ -88,57 +81,19 @@ export default function SelectPage() {
         r._id === char._id ? { ...r, deletedAt: null, pendingDeleteAt: null } : r,
       ),
     );
-    setSlotsUsed(activeChars.length + 1);
   };
-
-  const trialBanner = status?.isTrial && !status.isExpired && status.trialDaysLeft <= 7;
-  const expiredBanner = status?.isExpired;
 
   return (
     <div className={styles.page}>
       <Topbar title="Seleção de Personagens" />
 
       <div className={styles.content}>
-        {expiredBanner && (
-          <div className={styles.bannerExpired}>
-            ⚠️ Seu plano expirou. <a href="/billing">Renove agora</a> para criar e editar personagens.
-          </div>
-        )}
-
-        {trialBanner && !expiredBanner && (
-          <div className={styles.bannerTrial}>
-            🕐 Seu trial expira em <strong>{status!.trialDaysLeft} dia(s)</strong>.{' '}
-            <a href="/billing">Assine o Pro</a> para continuar com acesso completo.
-          </div>
-        )}
-
-        {slotLimit !== null && (
-          <div className={styles.slotCounter}>
-            <span>
-              Personagens: <strong>{slotsUsedCount}</strong> / <strong>{slotLimit}</strong>
-            </span>
-            {atLimit && (
-              <a href="/billing" className={styles.slotBuyLink}>
-                + Comprar slot
-              </a>
-            )}
-          </div>
-        )}
-
         <SystemFilter value={tab} onChange={setTab} />
 
         <SelectGrid
           resumos={filtered}
           onNewCharacter={openNewModal}
           onDelete={setDeleteTarget}
-          newDisabled={atLimit || !!expiredBanner}
-          newDisabledTooltip={
-            expiredBanner
-              ? 'Plano expirado'
-              : atLimit
-                ? `Limite de ${slotLimit} personagem(ns) atingido`
-                : undefined
-          }
         />
 
         {pendingDeleteChars.length > 0 && (

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../features/auth';
-import { usePlan } from '../../../contexts/PlanContext';
 import styles from './Topbar.module.css';
 
 /** Marca do sistema RPG ao lado da logo Arcana Forge (ficha ou grupo). */
@@ -29,7 +28,6 @@ export function systemParamToBrand(system: string | undefined): SystemBrand | un
 export default function Topbar({ title, right, systemBrand }: TopbarProps) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
-  const { status: planStatus } = usePlan();
   const [openMenu, setOpenMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -39,8 +37,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
 
   /** Lista principal de grupos */
   const isGrupos = pathname === '/parties';
-
-  const isBilling = pathname === '/billing';
 
   const displayName = useMemo(() => {
     if (!user) return 'Conta';
@@ -138,20 +134,7 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
                 <div className={styles.dropdownUserInfo}>
                   <span className={styles.dropdownUserName}>{displayName}</span>
                   <span className={styles.dropdownUserEmail}>{displayEmail}</span>
-                  {planStatus && (
-                    <span className={styles.dropdownPlanBadge}>
-                      {planStatus.isExpired ? 'Expirado' : planStatus.plan === 'pro' ? 'Pro' : planStatus.isTrial ? 'Trial' : 'Free'}
-                    </span>
-                  )}
                 </div>
-                <Link
-                  to="/billing"
-                  className={styles.dropdownItem}
-                  role="menuitem"
-                  onClick={() => setOpenMenu(false)}
-                >
-                  Plano & Cobrança
-                </Link>
                 <button
                   type="button"
                   className={`${styles.dropdownItem} ${styles.dropdownDanger}`}
@@ -177,12 +160,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
           className={`${styles.navLink} ${isGrupos ? styles.navLinkActive : ''}`}
         >
           Grupos
-        </Link>
-        <Link
-          to="/billing"
-          className={`${styles.navLink} ${isBilling ? styles.navLinkActive : ''}`}
-        >
-          Plano
         </Link>
       </div>
     </nav>

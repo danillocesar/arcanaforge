@@ -5,7 +5,7 @@ const characterRepository = require('../repositories/character.repository');
 const characterContentRepository = require('../repositories/characterContent.repository');
 const characterLogsRepository = require('../repositories/characterLogs.repository');
 const avatarService = require('./avatar.service');
-const userService = require('./user.service');
+const jutsuImageService = require('./jutsuImage.service');
 const { SOFT_DELETE_DELAY_DAYS } = require('../config/plans');
 
 const CONTENT_FIELDS = ['spells', 'abilities', 'powers', 'aptitudes', 'weapons', 'narpiItems'];
@@ -57,15 +57,6 @@ async function saveCharacter(id, body, req) {
     throw new AppError(403, 'Acesso negado');
   }
 
-  if (!existing) {
-    const count = await characterRepository.countByOwner(req.user.uid);
-    const subUser = req.subscriptionUser;
-    const limit = userService.getSlotLimit(subUser);
-    if (count >= limit) {
-      throw new AppError(403, 'Limite de personagens atingido. Adquira mais slots.');
-    }
-  }
-
   // eslint-disable-next-line no-unused-vars
   const { deletedAt, pendingDeleteAt, ownerUid, ownerEmail, _id: _bodyId, ...safeBody } = body;
 
@@ -113,6 +104,10 @@ async function uploadCharacterAvatar(req) {
   return avatarService.uploadAvatar(req);
 }
 
+async function uploadJutsuImage(req) {
+  return jutsuImageService.uploadJutsuImage(req);
+}
+
 module.exports = {
   listCharacterIds,
   listCharacterSummary,
@@ -121,5 +116,6 @@ module.exports = {
   deleteCharacter,
   restoreCharacter,
   uploadCharacterAvatar,
+  uploadJutsuImage,
   mergeCharacterDocs,
 };

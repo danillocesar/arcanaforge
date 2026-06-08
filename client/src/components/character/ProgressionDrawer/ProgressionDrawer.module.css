@@ -1,8 +1,9 @@
 .item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) var(--touch-target);
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -16,12 +17,13 @@
 
 .desc {
   flex: 1;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid transparent;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--text-primary);
-  font-size: 0.85rem;
-  padding: 2px 4px;
+  font-size: 0.95rem;
+  padding: 8px 10px;
+  min-height: var(--touch-target);
 }
 
 .desc:hover {
@@ -30,5 +32,22 @@
 
 .desc:focus {
   outline: none;
-  border-bottom-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+
+.removeProgression {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 30%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.removeProgression:hover {
+  color: var(--accent-red);
 }

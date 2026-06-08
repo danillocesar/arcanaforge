@@ -114,3 +114,32 @@
   outline: none;
   border-color: var(--accent-gold);
 }
+
+@media (max-width: 600px) {
+  .max {
+    font-size: 0.9rem;
+  }
+
+  .maxEditBtn {
+    opacity: 1;
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+  }
+
+  .temp {
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .tempLabel {
+    font-size: 0.82rem;
+  }
+
+  .tempInput,
+  .maxInput,
+  .rdInput {
+    min-height: var(--touch-target);
+    font-size: 1rem;
+  }
+}

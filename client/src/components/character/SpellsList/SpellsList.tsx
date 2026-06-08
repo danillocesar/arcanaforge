@@ -17,7 +17,7 @@ export default function SpellsList() {
   const spellRes = calcSpellResistance(character);
 
   const addSpell = () => {
-    updateCharacter(f => ({
+    updateCharacter((f) => ({
       ...f,
       spells: [
         ...f.spells,
@@ -44,15 +44,15 @@ export default function SpellsList() {
         <label>Atributo-chave</label>
         <select
           value={character.spellcastingAttribute}
-          onChange={e =>
-            updateCharacter(f => ({ ...f, spellcastingAttribute: e.target.value as AttributeId }))
+          onChange={(e) =>
+            updateCharacter((f) => ({ ...f, spellcastingAttribute: e.target.value as AttributeId }))
           }
         >
           {(Object.entries(ATTRIBUTE_LABELS) as [AttributeId, string][]).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
         </select>
-        <label>Teste de Resistência</label>
+        <span className={styles.headerLabel}>Teste de Resistência</span>
         <span className={styles.resistencia}>{spellRes}</span>
       </div>
       {character.spells.map((_, idx) => (

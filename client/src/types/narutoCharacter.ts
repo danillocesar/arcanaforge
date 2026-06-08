@@ -103,6 +103,7 @@ export interface Jutsu {
   techniqueId: string;
   damageMod: number;
   hitMod: number;
+  image?: string;
 }
 
 /* ─── Weapon Attacks ─── */

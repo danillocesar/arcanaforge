@@ -131,6 +131,33 @@ async function deleteAvatarByPublicUrl(publicUrl, userEmail, uid) {
   }
 }
 
+async function deleteJutsuImageByPublicUrl(publicUrl, userEmail) {
+  const cfg = getR2Config();
+  const client = getClient();
+  if (!cfg || !client) return;
+
+  const key = objectKeyFromPublicUrl(publicUrl);
+  if (!key) return;
+
+  const emailRoot = sanitizeEmailForPath(userEmail);
+  const okEmail = emailRoot && key.startsWith(`${emailRoot}/jutsus/`);
+  if (!okEmail) {
+    console.warn('[r2] deleteJutsuImageByPublicUrl: chave fora das pastas permitidas');
+    return;
+  }
+
+  try {
+    await client.send(
+      new DeleteObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+      }),
+    );
+  } catch (err) {
+    console.warn('[r2] deleteJutsuImageByPublicUrl:', err.message);
+  }
+}
+
 /**
  * @param {object} opts
  * @param {string} opts.email - obrigatório (já resolvido)
@@ -170,6 +197,40 @@ async function uploadAvatarBuffer(opts) {
   return { publicUrl, key };
 }
 
+/**
+ * Sobe uma imagem associada a um jutsu específico para a pasta `${root}/jutsus/`.
+ */
+async function uploadJutsuImageBuffer(opts) {
+  const { email, originalFilename, characterName, jutsuName, buffer, contentType } = opts;
+  const cfg = getR2Config();
+  const client = getClient();
+  if (!cfg || !client || !buffer?.length) return null;
+
+  const root = sanitizeEmailForPath(email);
+  if (!root) return null;
+
+  const parsed = path.parse(originalFilename || 'jutsu.png');
+  const baseOriginal = sanitizeFileSegment(parsed.name, 32);
+  const charPart = sanitizeFileSegment(characterName, 32);
+  const jutsuPart = sanitizeFileSegment(jutsuName || 'jutsu', 32);
+  const ext = extFromContentType(contentType);
+  const id = crypto.randomUUID();
+  const fileName = `${charPart}_${jutsuPart}_${baseOriginal}_${id}${ext}`;
+  const key = `${root}/jutsus/${fileName}`;
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: cfg.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType || 'image/png',
+    }),
+  );
+
+  const publicUrl = `${cfg.publicBase}/${key}`;
+  return { publicUrl, key };
+}
+
 function isR2Configured() {
   return getR2Config() !== null;
 }
@@ -177,5 +238,7 @@ function isR2Configured() {
 module.exports = {
   uploadAvatarBuffer,
   deleteAvatarByPublicUrl,
+  uploadJutsuImageBuffer,
+  deleteJutsuImageByPublicUrl,
   isR2Configured,
 };

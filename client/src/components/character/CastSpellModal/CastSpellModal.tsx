@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Sparkles, X } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import Modal from '../../ui/Modal/Modal';
 import { getTotalLevel } from '../../../utils/calculations';
@@ -39,9 +40,9 @@ export default function CastSpellModal({ spellIdx, onClose }: CastSpellModalProp
   const confirm = () => {
     const selectedEnhancements = enhancements
       .filter((_, i) => selected[i])
-      .map(enh => ({ desc: enh.description || 'Aprimoramento', pm: Number(enh.mpCost) || 0 }));
+      .map((enh) => ({ desc: enh.description || 'Aprimoramento', pm: Number(enh.mpCost) || 0 }));
 
-    updateCharacter(f => ({
+    updateCharacter((f) => ({
       ...f,
       mp: { ...f.mp, current: Math.max(0, f.mp.current - totalCost) },
       logs: [
@@ -51,7 +52,7 @@ export default function CastSpellModal({ spellIdx, onClose }: CastSpellModalProp
           name: spell.name || 'Magia',
           mpSpent: totalCost,
           timestamp: Date.now(),
-          details: { baseMpCost: baseCost, enhancements: selectedEnhancements, totalCost: totalCost },
+          details: { baseMpCost: baseCost, enhancements: selectedEnhancements, totalCost },
         },
       ],
     }));
@@ -75,8 +76,13 @@ export default function CastSpellModal({ spellIdx, onClose }: CastSpellModalProp
     <Modal open onClose={onClose}>
       <div className={styles.modal}>
         <div className={styles.header}>
-          <h3 className={styles.title}>✨ {spell.name || 'Magia'}</h3>
-          <button className={styles.closeBtn} onClick={onClose} title="Fechar">✕</button>
+          <h3 className={styles.title}>
+            <Sparkles size={18} aria-hidden="true" />
+            {spell.name || 'Magia'}
+          </h3>
+          <button className={styles.closeBtn} onClick={onClose} title="Fechar" aria-label="Fechar conjuração">
+            <X size={22} aria-hidden="true" />
+          </button>
         </div>
         <div className={styles.body}>
           <div className={styles.baseCost}>
@@ -126,7 +132,10 @@ export default function CastSpellModal({ spellIdx, onClose }: CastSpellModalProp
         </div>
         <div className={styles.actions}>
           <button className={styles.cancelBtn} onClick={onClose}>Cancelar</button>
-          <button className={styles.confirmBtn} onClick={confirm}>✨ Conjurar</button>
+          <button className={styles.confirmBtn} onClick={confirm}>
+            <Sparkles size={17} aria-hidden="true" />
+            Conjurar
+          </button>
         </div>
       </div>
     </Modal>

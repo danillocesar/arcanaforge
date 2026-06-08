@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-type TokenGetter = () => Promise<string | null>;
+type TokenGetter = (forceRefresh?: boolean) => Promise<string | null>;
 type UnauthorizedHandler = () => void | Promise<void>;
 
 let getToken: TokenGetter | null = null;
@@ -21,17 +21,35 @@ export function setAuthConfig(config: {
   onUnauthorized = config.onUnauthorized ?? null;
 }
 
-export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+async function sendRequest(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  token: string | null,
+): Promise<Response> {
   const headers = new Headers(init?.headers || {});
-  const token = getToken ? await getToken() : null;
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
+  } else {
+    headers.delete('Authorization');
   }
+  return fetch(input, { ...init, headers });
+}
 
-  const response = await fetch(input, {
-    ...init,
-    headers,
-  });
+export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const token = getToken ? await getToken() : null;
+  let response = await sendRequest(input, init, token);
+
+  if (response.status === 401 && getToken) {
+    let freshToken: string | null = null;
+    try {
+      freshToken = await getToken(true);
+    } catch {
+      freshToken = null;
+    }
+    if (freshToken && freshToken !== token) {
+      response = await sendRequest(input, init, freshToken);
+    }
+  }
 
   if (response.status === 401 && onUnauthorized) {
     await onUnauthorized();

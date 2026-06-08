@@ -5,6 +5,7 @@ export {
   apiLoadCharacter,
   apiSaveCharacter,
   apiDeleteCharacter,
+  apiRestoreCharacter,
   apiUploadAvatar,
 } from './characters';
 export {

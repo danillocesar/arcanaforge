@@ -38,8 +38,18 @@ export async function refreshUser(user: User) {
   return auth.currentUser;
 }
 
-export async function getCurrentUserToken() {
+let authReadyPromise: Promise<void> | null = null;
+
+export function ensureAuthReady(): Promise<void> {
+  if (!authReadyPromise) {
+    authReadyPromise = auth.authStateReady();
+  }
+  return authReadyPromise;
+}
+
+export async function getCurrentUserToken(forceRefresh = false): Promise<string | null> {
+  await ensureAuthReady();
   const user = auth.currentUser;
   if (!user) return null;
-  return user.getIdToken();
+  return user.getIdToken(forceRefresh);
 }

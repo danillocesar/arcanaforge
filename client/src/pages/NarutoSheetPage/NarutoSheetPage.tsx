@@ -24,6 +24,7 @@ import NarutoDatabook from '../../features/naruto/components/NarutoDatabook/Naru
 import NotesDrawer from '../../components/character/NotesDrawer/NotesDrawer';
 import LogsDrawer from '../../components/character/LogsDrawer/LogsDrawer';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
+import { downloadCharacterJson } from '../../utils/exportCharacter';
 import styles from './NarutoSheetPage.module.css';
 
 type DrawerKind = 'skills' | 'config' | 'databook' | 'notes' | 'logs' | null;
@@ -115,6 +116,20 @@ function NarutoSheetInner() {
         <button className={styles.drawerTab} onClick={() => setDrawerOpen('config')} title="Configurações">⚙️</button>
         <button className={styles.drawerTab} onClick={() => setDrawerOpen('notes')} title="Anotações">📝</button>
         <button className={styles.drawerTab} onClick={() => setDrawerOpen('logs')} title="Logs">📋</button>
+        <button
+          className={styles.drawerTab}
+          onClick={() => downloadCharacterJson(character)}
+          title="Exportar personagem (JSON)"
+        >
+          💾
+        </button>
+        <button
+          className={styles.drawerTab}
+          onClick={() => window.open(`/naruto/view?id=${encodeURIComponent(character._id)}`, '_blank', 'noopener')}
+          title="Visualizar ficha"
+        >
+          👁️
+        </button>
       </div>
 
       <Drawer open={drawerOpen === 'skills'} onClose={() => setDrawerOpen(null)} title="Perícias">

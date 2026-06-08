@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useCharacterContextOptional } from '../../../contexts/CharacterContext';
 import { isSectionKeyActive, SECTION_ID_LEGACY_PT } from '../../../data/constants';
 import styles from './Section.module.css';
@@ -55,14 +56,21 @@ export default function Section({
     .join(' ');
 
   return (
-    <div id={id} className={cls}>
-      <h2 onClick={toggleCollapse}>
-        {title}
-        <button type="button" className={styles.collapseBtn}>▼</button>
-      </h2>
+    <section id={id} className={cls}>
+      <header className={styles.header}>
+        <button
+          type="button"
+          className={styles.titleButton}
+          onClick={toggleCollapse}
+          aria-expanded={!collapsed}
+        >
+          <span className={styles.titleText}>{title}</span>
+          <ChevronDown className={styles.collapseIcon} size={18} aria-hidden="true" />
+        </button>
+      </header>
       <div className={styles.contentWrapper}>
         <div className={styles.content}>{children}</div>
       </div>
-    </div>
+    </section>
   );
 }

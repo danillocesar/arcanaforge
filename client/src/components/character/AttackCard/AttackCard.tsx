@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Copy, Sword, Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import {
@@ -12,6 +14,7 @@ import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim, type AnimationStyle } from '../../../utils/animations';
 import type { AttributeId, ExtraBonus, ExtraDamage } from '../../../types/character';
 import NumericInput from '../../ui/NumericInput/NumericInput';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './AttackCard.module.css';
 
 interface AttackCardProps {
@@ -20,13 +23,15 @@ interface AttackCardProps {
 
 export default function AttackCard({ index }: AttackCardProps) {
   const { character, updateCharacter } = useCharacterContext();
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
   if (!character) return null;
 
   const atk = character.attacks[index];
   if (!atk) return null;
 
   const updateAttack = (updates: Partial<typeof atk>) => {
-    updateCharacter(f => {
+    updateCharacter((f) => {
       const attacks = [...f.attacks];
       attacks[index] = { ...attacks[index], ...updates };
       return { ...f, attacks };
@@ -34,24 +39,41 @@ export default function AttackCard({ index }: AttackCardProps) {
   };
 
   const removeAttack = () => {
-    updateCharacter(f => ({ ...f, attacks: f.attacks.filter((_, i) => i !== index) }));
+    updateCharacter((f) => ({ ...f, attacks: f.attacks.filter((_, i) => i !== index) }));
   };
 
   const duplicateAttack = () => {
-    updateCharacter(f => {
+    updateCharacter((f) => {
       const attacks = [...f.attacks];
       attacks.splice(index + 1, 0, {
         ...attacks[index],
-        extraBonuses: attacks[index].extraBonuses.map(b => ({ ...b })),
-        extraDamage: attacks[index].extraDamage.map(d => ({ ...d })),
+        extraBonuses: attacks[index].extraBonuses.map((b) => ({ ...b })),
+        extraDamage: attacks[index].extraDamage.map((d) => ({ ...d })),
       });
       return { ...f, attacks };
     });
   };
 
+  const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
+  const skillBase = calcTotalSkill(character, skillId);
+  const attackRollTotal = calcAttackRoll(character, atk);
+  const damageSummary = buildDamageSummary(character, atk);
+  const damageAttrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
+  const damageAttrVal = getEffectiveAttribute(character, damageAttrKey);
+  const pmTotal = calcTotalMp(atk);
+  const activeRollBuffs = character.buffs.filter((b) =>
+    b.active && (
+      b.type === 'attack_roll' ||
+      (b.type === 'skill' && b.skillId === skillId)
+    )
+  );
+  const activeDamageBuffs = character.buffs.filter(
+    (b) => b.active && (b.type === 'fixed_damage' || b.type === 'extra_damage'),
+  );
+
   const useAttack = () => {
     const pm = calcTotalMp(atk);
-    updateCharacter(f => ({
+    updateCharacter((f) => ({
       ...f,
       mp: { ...f.mp, current: Math.max(0, f.mp.current - pm) },
       logs: [...f.logs, {
@@ -62,7 +84,7 @@ export default function AttackCard({ index }: AttackCardProps) {
         details: {
           attackRoll: attackRollTotal,
           damage: damageSummary,
-          rangeType: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
+          rangeType: atk.rangeType === 'ranged' ? 'A distância' : 'Corpo a corpo',
         },
       }],
     }));
@@ -109,39 +131,30 @@ export default function AttackCard({ index }: AttackCardProps) {
     updateAttack({ extraDamage: [...atk.extraDamage, { name: '', value: '', mp: 0 }] });
   };
 
-  const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
-  const skillBase = calcTotalSkill(character, skillId);
-  const attackRollTotal = calcAttackRoll(character, atk);
-  const damageSummary = buildDamageSummary(character, atk);
-  const damageAttrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
-  const damageAttrVal = getEffectiveAttribute(character, damageAttrKey);
-  const pmTotal = calcTotalMp(atk);
-  const activeRollBuffs = character.buffs.filter(b =>
-    b.active && (
-      b.type === 'attack_roll' ||
-      (b.type === 'skill' && b.skillId === skillId)
-    )
-  );
-  const activeDamageBuffs = character.buffs.filter(
-    b => b.active && (b.type === 'fixed_damage' || b.type === 'extra_damage'),
-  );
-
   return (
     <div className={styles.card}>
-      <button className={styles.use} onClick={useAttack} title="Usar">⚔</button>
-      <button className={styles.duplicate} onClick={duplicateAttack} title="Duplicar">⧉</button>
-      <button className={styles.remove} onClick={removeAttack} title="Remover">✕</button>
+      <div className={styles.cardActions}>
+        <button className={styles.use} onClick={useAttack} title="Usar" aria-label="Usar ataque">
+          <Sword size={18} aria-hidden="true" />
+        </button>
+        <button className={styles.duplicate} onClick={duplicateAttack} title="Duplicar" aria-label="Duplicar ataque">
+          <Copy size={18} aria-hidden="true" />
+        </button>
+        <button className={styles.remove} onClick={() => setConfirmRemove(true)} title="Remover" aria-label="Remover ataque">
+          <Trash2 size={18} aria-hidden="true" />
+        </button>
+      </div>
 
       <div className={styles.topRow}>
         <div className={`${styles.infoField} ${styles.nomeField}`}>
           <label>Nome</label>
-          <input value={atk.name ?? ''} onChange={e => updateAttack({ name: e.target.value })} />
+          <input value={atk.name ?? ''} onChange={(e) => updateAttack({ name: e.target.value })} />
         </div>
         <div className={styles.infoField}>
           <label>Alcance</label>
           <select
             value={atk.rangeType ?? 'melee'}
-            onChange={e => updateAttack({ rangeType: e.target.value })}
+            onChange={(e) => updateAttack({ rangeType: e.target.value })}
           >
             <option value="melee">Corpo a corpo</option>
             <option value="ranged">À distância</option>
@@ -149,11 +162,11 @@ export default function AttackCard({ index }: AttackCardProps) {
         </div>
         <div className={styles.infoField}>
           <label>Crítico</label>
-          <input value={atk.critical ?? ''} onChange={e => updateAttack({ critical: e.target.value })} />
+          <input value={atk.critical ?? ''} onChange={(e) => updateAttack({ critical: e.target.value })} />
         </div>
         <div className={styles.infoField}>
           <label>Tipo Dano</label>
-          <input value={atk.type ?? ''} onChange={e => updateAttack({ type: e.target.value })} />
+          <input value={atk.type ?? ''} onChange={(e) => updateAttack({ type: e.target.value })} />
         </div>
         <div className={styles.infoField}>
           <label>Custo PM</label>
@@ -184,7 +197,7 @@ export default function AttackCard({ index }: AttackCardProps) {
               <div key={bIdx} className={styles.bonusRow}>
                 <input
                   value={b.name ?? ''}
-                  onChange={e => updateBonusTeste(bIdx, { name: e.target.value })}
+                  onChange={(e) => updateBonusTeste(bIdx, { name: e.target.value })}
                   placeholder="Bônus"
                 />
                 <NumericInput
@@ -196,8 +209,8 @@ export default function AttackCard({ index }: AttackCardProps) {
                   onChange={(n) => updateBonusTeste(bIdx, { mp: n })}
                   placeholder="PM"
                 />
-                <button className={styles.removeSm} onClick={() => removeBonusTeste(bIdx)}>
-                  ✕
+                <button className={styles.removeSm} onClick={() => removeBonusTeste(bIdx)} aria-label="Remover bônus de ataque">
+                  <Trash2 size={16} aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -222,7 +235,7 @@ export default function AttackCard({ index }: AttackCardProps) {
               <input
                 className={styles.damageDice}
                 value={atk.damage ?? ''}
-                onChange={e => updateAttack({ damage: e.target.value })}
+                onChange={(e) => updateAttack({ damage: e.target.value })}
                 placeholder="2d8"
               />
             </div>
@@ -230,7 +243,7 @@ export default function AttackCard({ index }: AttackCardProps) {
               <select
                 className={styles.damageAttrSel}
                 value={atk.attributeDamageBonus || 'str'}
-                onChange={e => updateAttack({ attributeDamageBonus: e.target.value })}
+                onChange={(e) => updateAttack({ attributeDamageBonus: e.target.value })}
               >
                 {(Object.entries(ATTRIBUTE_LABELS) as [AttributeId, string][]).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
@@ -242,12 +255,12 @@ export default function AttackCard({ index }: AttackCardProps) {
               <div key={dIdx} className={styles.bonusRow}>
                 <input
                   value={d.name ?? ''}
-                  onChange={e => updateBonusDano(dIdx, { name: e.target.value })}
+                  onChange={(e) => updateBonusDano(dIdx, { name: e.target.value })}
                   placeholder="Bônus"
                 />
                 <input
                   value={d.value ?? ''}
-                  onChange={e => updateBonusDano(dIdx, { value: e.target.value })}
+                  onChange={(e) => updateBonusDano(dIdx, { value: e.target.value })}
                   placeholder="Valor"
                 />
                 <NumericInput
@@ -255,8 +268,8 @@ export default function AttackCard({ index }: AttackCardProps) {
                   onChange={(n) => updateBonusDano(dIdx, { mp: n })}
                   placeholder="PM"
                 />
-                <button className={styles.removeSm} onClick={() => removeBonusDano(dIdx)}>
-                  ✕
+                <button className={styles.removeSm} onClick={() => removeBonusDano(dIdx)} aria-label="Remover bônus de dano">
+                  <Trash2 size={16} aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -270,6 +283,17 @@ export default function AttackCard({ index }: AttackCardProps) {
           <button className={styles.addBonus} onClick={addBonusDano}>+ Bônus</button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        onConfirm={removeAttack}
+        title="Remover ataque?"
+        message={`Isso apaga "${atk.name || 'Ataque'}" da ficha.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
     </div>
   );
 }

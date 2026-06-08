@@ -16,6 +16,10 @@ async function uploadAvatar(req, res) {
   res.json(await characterService.uploadCharacterAvatar(req));
 }
 
+async function uploadJutsuImage(req, res) {
+  res.json(await characterService.uploadJutsuImage(req));
+}
+
 async function saveCharacter(req, res) {
   res.json(await characterService.saveCharacter(req.params.id, req.body, req));
 }
@@ -33,6 +37,7 @@ module.exports = {
   listCharacterSummary,
   getCharacter,
   uploadAvatar,
+  uploadJutsuImage,
   saveCharacter,
   deleteCharacter,
   restoreCharacter,

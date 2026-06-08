@@ -112,3 +112,60 @@
   font-weight: 700;
   color: var(--text-primary);
 }
+
+@media (max-width: 600px) {
+  .headerInfo {
+    font-size: 0.92rem;
+    margin-bottom: 12px;
+  }
+
+  .grid {
+    gap: 8px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--touch-target-sm) minmax(0, 1fr) 58px 54px;
+    gap: 8px;
+    padding: 10px;
+    min-height: 58px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .check {
+    width: 24px;
+    height: 24px;
+    justify-self: center;
+  }
+
+  .nome,
+  .labelCustom {
+    font-size: 1rem;
+  }
+
+  .labelCustom {
+    width: 100%;
+    min-height: var(--touch-target-sm);
+  }
+
+  .attrSelect,
+  .outros {
+    min-height: var(--touch-target-sm);
+    font-size: 0.95rem;
+    width: 100%;
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .total {
+    grid-column: 1 / -1;
+    justify-self: end;
+    min-width: 64px;
+    font-size: 1.15rem;
+    padding-top: 4px;
+  }
+}

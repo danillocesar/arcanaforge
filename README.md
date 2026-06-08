@@ -66,20 +66,22 @@ Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto 
 
 ## Tecnologias
 
-| Camada | Tecnologia |
-|--------|------------|
-| **Runtime** | Node.js 22 |
-| **Backend HTTP** | Express 4 |
-| **WebSocket** | `ws` (WebSocketServer) |
+
+| Camada                        | Tecnologia                                               |
+| ----------------------------- | -------------------------------------------------------- |
+| **Runtime**                   | Node.js 22                                               |
+| **Backend HTTP**              | Express 4                                                |
+| **WebSocket**                 | `ws` (WebSocketServer)                                   |
 | **Armazenamento de avatares** | Cloudflare R2 (upload via API, servidor grava no bucket) |
-| **Autenticação** | Firebase Auth (Google + Email/Senha) |
-| **Frontend** | React 19, TypeScript, Vite 8 |
-| **Roteamento** | React Router v7 |
-| **Estado** | React Context + useState |
-| **Estilização** | CSS Modules com variáveis CSS |
-| **Persistência** | Sistema de arquivos (JSON) + MongoDB (em migração) |
-| **Infra** | Docker Compose, Cloudflare Tunnel |
-| **Estilo visual** | Dark mode, glassmorphism, acento dourado |
+| **Autenticação**              | Firebase Auth (Google + Email/Senha)                     |
+| **Frontend**                  | React 19, TypeScript, Vite 8                             |
+| **Roteamento**                | React Router v7                                          |
+| **Estado**                    | React Context + useState                                 |
+| **Estilização**               | CSS Modules com variáveis CSS                            |
+| **Persistência**              | Sistema de arquivos (JSON) + MongoDB (em migração)       |
+| **Infra**                     | Docker Compose, Cloudflare Tunnel                        |
+| **Estilo visual**             | Dark mode, glassmorphism, acento dourado                 |
+
 
 ---
 
@@ -105,7 +107,9 @@ docker compose logs -f
 # Parar tudo
 docker compose --profile tunnel down
 ```
+
 # Buildar e rodar denovo
+
 docker compose build app && docker compose up -d app
 
 A app fica acessível em `http://localhost:3000`. O MongoDB fica em `localhost:27017`.
@@ -188,47 +192,53 @@ Personagens guardam o campo `avatar` como URL HTTPS absoluta. Fichas antigas com
 
 ## Rotas da Aplicação
 
-| Página | URL |
-|--------|-----|
-| Auth (login) | `/auth` |
-| Character Selection | `/characters` |
-| Party Selection | `/parties` |
-| Party Members | `/parties/new/:partyId` |
-| Tormenta 20 Sheet | `/tormenta/char?char=<id>` |
-| Naruto d20 Sheet | `/naruto/char?char=<id>` |
+
+| Página                    | URL                        |
+| ------------------------- | -------------------------- |
+| Auth (login)              | `/auth`                    |
+| Character Selection       | `/characters`              |
+| Party Selection           | `/parties`                 |
+| Party Members             | `/parties/new/:partyId`    |
+| Tormenta 20 Sheet         | `/tormenta/char?char=<id>` |
+| Naruto d20 Sheet          | `/naruto/char?char=<id>`   |
 | Combat Tracker (Tormenta) | `/tormenta/party/:partyId` |
-| Combat Tracker (Naruto) | `/naruto/party/:partyId` |
+| Combat Tracker (Naruto)   | `/naruto/party/:partyId`   |
+
 
 ---
 
 ## API REST
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/api/characters` | Lista IDs de todos os personagens do usuário |
-| `GET` | `/api/characters/summary` | Resumo de cada personagem (nome, avatar, classes) |
-| `GET` | `/api/characters/:id` | Carrega um personagem completo |
-| `POST` | `/api/characters/:id` | Salva/atualiza um personagem |
-| `POST` | `/api/characters/:id/avatar` | Upload de avatar (multipart, campo `avatar`, máx. 5 MB) → R2 |
-| `DELETE` | `/api/characters/:id` | Exclui um personagem |
-| `GET` | `/api/parties` | Lista todos os grupos do usuário |
-| `POST` | `/api/parties` | Cria um novo grupo |
-| `PUT` | `/api/parties/:id` | Atualiza um grupo |
-| `DELETE` | `/api/parties/:id` | Exclui um grupo |
-| `GET` | `/api/parties/:id/combat` | Retorna o estado de combate de um grupo |
-| `POST` | `/api/parties/:id/combat` | Salva estado de combate e notifica via WebSocket |
 
-Rotas protegidas exigem `Authorization: Bearer <idToken>`. Rotas públicas: `/health`, `/assets/*`.
+| Método   | Endpoint                     | Descrição                                                    |
+| -------- | ---------------------------- | ------------------------------------------------------------ |
+| `GET`    | `/api/characters`            | Lista IDs de todos os personagens do usuário                 |
+| `GET`    | `/api/characters/summary`    | Resumo de cada personagem (nome, avatar, classes)            |
+| `GET`    | `/api/characters/:id`        | Carrega um personagem completo                               |
+| `POST`   | `/api/characters/:id`        | Salva/atualiza um personagem                                 |
+| `POST`   | `/api/characters/:id/avatar` | Upload de avatar (multipart, campo `avatar`, máx. 5 MB) → R2 |
+| `DELETE` | `/api/characters/:id`        | Exclui um personagem                                         |
+| `GET`    | `/api/parties`               | Lista todos os grupos do usuário                             |
+| `POST`   | `/api/parties`               | Cria um novo grupo                                           |
+| `PUT`    | `/api/parties/:id`           | Atualiza um grupo                                            |
+| `DELETE` | `/api/parties/:id`           | Exclui um grupo                                              |
+| `GET`    | `/api/parties/:id/combat`    | Retorna o estado de combate de um grupo                      |
+| `POST`   | `/api/parties/:id/combat`    | Salva estado de combate e notifica via WebSocket             |
+
+
+Rotas protegidas exigem `Authorization: Bearer <idToken>`. Rotas públicas: `/health`, `/assets/`*.
 
 ---
 
 ## WebSocket Messages
 
-| Sent | Received | Description |
-|------|----------|-------------|
-| `combat_update` | `combat_sync` | Atualiza estado completo do combate (enemies, initiative, turn) |
-| `character_hp_update` | `character_hp_sync` | Jogador alterou HP/MP na ficha → reflete no tracker |
-| `master_hp_update` | `master_hp_sync` | Mestre alterou HP no tracker → reflete na ficha do jogador |
+
+| Sent                  | Received            | Description                                                     |
+| --------------------- | ------------------- | --------------------------------------------------------------- |
+| `combat_update`       | `combat_sync`       | Atualiza estado completo do combate (enemies, initiative, turn) |
+| `character_hp_update` | `character_hp_sync` | Jogador alterou HP/MP na ficha → reflete no tracker             |
+| `master_hp_update`    | `master_hp_sync`    | Mestre alterou HP no tracker → reflete na ficha do jogador      |
+
 
 Na conexão inicial, o servidor envia `combat_sync` com o estado atual para o novo cliente.
 
@@ -393,10 +403,12 @@ arcanaforge/
 
 ## Dados em Disco
 
-| Caminho | Conteúdo |
-|---------|----------|
+
+| Caminho                  | Conteúdo                                                |
+| ------------------------ | ------------------------------------------------------- |
 | `data/characters/<uid>/` | Um JSON por personagem, organizado por usuário Firebase |
-| `data/parties/` | Grupos (`<partyId>.json`) |
+| `data/parties/`          | Grupos (`<partyId>.json`)                               |
+
 
 Imagens de avatar ficam no **Cloudflare R2** (`<email>/avatars/<ficheiro>_<personagem>_<uuid>.<ext>`); o campo `avatar` no MongoDB é uma URL HTTPS pública.
 
@@ -418,20 +430,26 @@ graph LR
   Mongo --> MongoVol[mongo-data]
 ```
 
+
+
 ### Serviços
 
-| Serviço | Imagem | Porta | Descrição |
-|---------|--------|-------|-----------|
-| `mongo` | `mongo:7` | 27017 | MongoDB sem autenticação (local dev) |
-| `app` | build local | 3000 | Backend Express + frontend built |
-| `tunnel` | `cloudflare/cloudflared` | — | Cloudflare Tunnel (profile: `tunnel`) |
+
+| Serviço  | Imagem                   | Porta | Descrição                             |
+| -------- | ------------------------ | ----- | ------------------------------------- |
+| `mongo`  | `mongo:7`                | 27017 | MongoDB sem autenticação (local dev)  |
+| `app`    | build local              | 3000  | Backend Express + frontend built      |
+| `tunnel` | `cloudflare/cloudflared` | —     | Cloudflare Tunnel (profile: `tunnel`) |
+
 
 ### Volumes
 
-| Volume | Mount | Conteúdo |
-|--------|-------|----------|
-| `mongo-data` | `/data/db` | Dados do MongoDB |
+
+| Volume             | Mount       | Conteúdo                   |
+| ------------------ | ----------- | -------------------------- |
+| `mongo-data`       | `/data/db`  | Dados do MongoDB           |
 | `arcanaforge-data` | `/app/data` | Characters, parties (JSON) |
+
 
 ### Rebuild após alterações
 
@@ -445,27 +463,31 @@ docker compose build && docker compose up -d
 
 ### Componentes UI Reutilizáveis
 
-| Componente | Uso |
-|------------|-----|
-| `Button` | 7 variantes: `default`, `add`, `remove`, `remove-sm`, `gold`, `ghost`, `primary` |
-| `Section` | Seção colapsável com título e toggle |
-| `Modal` | Overlay com backdrop blur e click-outside |
-| `ConfirmModal` | Modal de confirmação (delete, etc.) |
-| `Drawer` | Painel lateral deslizante |
-| `Toast` | Notificações com auto-dismiss |
-| `Badge` | Badge inline (`default`, `pm`, `gold`) |
-| `HealthBar` | Barra de HP/MP reutilizável |
-| `SystemFilter` | Filtro por sistema de RPG |
-| `Input` | Input estilizado |
+
+| Componente     | Uso                                                                              |
+| -------------- | -------------------------------------------------------------------------------- |
+| `Button`       | 7 variantes: `default`, `add`, `remove`, `remove-sm`, `gold`, `ghost`, `primary` |
+| `Section`      | Seção colapsável com título e toggle                                             |
+| `Modal`        | Overlay com backdrop blur e click-outside                                        |
+| `ConfirmModal` | Modal de confirmação (delete, etc.)                                              |
+| `Drawer`       | Painel lateral deslizante                                                        |
+| `Toast`        | Notificações com auto-dismiss                                                    |
+| `Badge`        | Badge inline (`default`, `pm`, `gold`)                                           |
+| `HealthBar`    | Barra de HP/MP reutilizável                                                      |
+| `SystemFilter` | Filtro por sistema de RPG                                                        |
+| `Input`        | Input estilizado                                                                 |
+
 
 ### Contexts
 
-| Context | Escopo | Descrição |
-|---------|--------|-----------|
+
+| Context            | Escopo          | Descrição                                       |
+| ------------------ | --------------- | ----------------------------------------------- |
 | `CharacterContext` | Character sheet | Estado da ficha, auto-save, WebSocket (HP sync) |
-| `CombatContext` | Combat tracker | Estado do combate, jogadores, turnos, WebSocket |
-| `AuthContext` | App-wide | Autenticação Firebase |
-| `ToastProvider` | App-wide | Sistema de notificações |
+| `CombatContext`    | Combat tracker  | Estado do combate, jogadores, turnos, WebSocket |
+| `AuthContext`      | App-wide        | Autenticação Firebase                           |
+| `ToastProvider`    | App-wide        | Sistema de notificações                         |
+
 
 ### Estilização
 
@@ -473,3 +495,4 @@ docker compose build && docker compose up -d
 - **Variáveis CSS** em `tokens.css` para temas e consistência
 - **Sem frameworks CSS** — estilos custom com identidade visual dark/dourada
 - **Responsividade** — media queries (breakpoints: 900px, 700px, 600px, 450px)
+

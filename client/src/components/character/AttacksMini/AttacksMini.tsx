@@ -1,11 +1,12 @@
+import { Sparkles, Swords } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import {
-  formatMod,
-  calcAttackRoll,
   buildDamageSummary,
+  calcAttackRoll,
   calcTotalMp,
+  formatMod,
 } from '../../../utils/calculations';
-import { playSwordSound, playArrowSound } from '../../../utils/sounds';
+import { playArrowSound, playSwordSound } from '../../../utils/sounds';
 import { triggerAttackAnim, type AnimationStyle } from '../../../utils/animations';
 import styles from './AttacksMini.module.css';
 
@@ -23,7 +24,8 @@ export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
   const useAttack = (idx: number) => {
     const atk = character.attacks[idx];
     const pm = calcTotalMp(atk);
-    updateCharacter(f => ({
+
+    updateCharacter((f) => ({
       ...f,
       mp: { ...f.mp, current: Math.max(0, f.mp.current - pm) },
       logs: [...f.logs, {
@@ -34,7 +36,7 @@ export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
         details: {
           attackRoll: calcAttackRoll(f, atk),
           damage: buildDamageSummary(f, atk),
-          rangeType: atk.rangeType === 'ranged' ? 'A Distância' : 'Corpo a Corpo',
+          rangeType: atk.rangeType === 'ranged' ? 'A distancia' : 'Corpo a corpo',
         },
       }],
     }));
@@ -44,6 +46,7 @@ export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
     } else {
       playSwordSound();
     }
+
     triggerAttackAnim(animationStyle, {
       type: atk.rangeType === 'ranged' ? 'ranged' : 'melee',
       name: atk.name || 'Ataque',
@@ -53,23 +56,29 @@ export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
 
   if (type === 'attacks') {
     if (character.attacks.length === 0) return null;
+
     return (
-      <div>
-        <div className={styles.title}>Ataques</div>
+      <div className={styles.quickList}>
+        <div className={styles.title}>Golpes prontos</div>
         {character.attacks.map((atk, idx) => {
           const roll = calcAttackRoll(character, atk);
           const damage = buildDamageSummary(character, atk);
           const pm = calcTotalMp(atk);
+
           return (
-            <div key={idx} className={styles.row}>
-              <span className={styles.nome}>{atk.name || '—'}</span>
-              <span className={styles.badge}>{formatMod(roll)}</span>
-              <span className={`${styles.badge} ${styles.badgeDamage}`}>{damage}</span>
-              {pm > 0 && (
-                <span className={`${styles.badge} ${styles.badgePm}`}>{pm} PM</span>
-              )}
-              <button className={styles.useBtn} onClick={() => useAttack(idx)}>⚔</button>
-            </div>
+            <button key={idx} type="button" className={styles.actionRow} onClick={() => useAttack(idx)}>
+              <span className={styles.actionIcon}>
+                <Swords size={18} aria-hidden="true" />
+              </span>
+              <span className={styles.actionMain}>
+                <strong>{atk.name || 'Ataque'}</strong>
+                <span>{formatMod(roll)} no teste</span>
+              </span>
+              <span className={styles.actionMeta}>
+                <span className={styles.damage}>{damage}</span>
+                {pm > 0 && <span className={styles.pm}>{pm} PM</span>}
+              </span>
+            </button>
           );
         })}
       </div>
@@ -77,15 +86,23 @@ export default function AttacksMini({ type, onCast }: AttacksMiniProps) {
   }
 
   if (character.spells.length === 0) return null;
+
   return (
-    <div>
-      <div className={styles.title}>Magias</div>
+    <div className={styles.quickList}>
+      <div className={styles.title}>Magias prontas</div>
       {character.spells.map((spell, idx) => (
-        <div key={idx} className={styles.row}>
-          <span className={styles.nome}>{spell.name || '—'}</span>
-          <span className={`${styles.badge} ${styles.badgePm}`}>{spell.mpCost} PM</span>
-          <button className={styles.useBtn} onClick={() => onCast?.(idx)}>✨</button>
-        </div>
+        <button key={idx} type="button" className={styles.actionRow} onClick={() => onCast?.(idx)}>
+          <span className={styles.actionIcon}>
+            <Sparkles size={18} aria-hidden="true" />
+          </span>
+          <span className={styles.actionMain}>
+            <strong>{spell.name || 'Magia'}</strong>
+            <span>{spell.school || 'Escola'} / {spell.castingTime || 'Acao'}</span>
+          </span>
+          <span className={styles.actionMeta}>
+            <span className={styles.pm}>{spell.mpCost} PM</span>
+          </span>
+        </button>
       ))}
     </div>
   );

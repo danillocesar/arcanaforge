@@ -8,7 +8,8 @@
       "Bash(where python3:*)",
       "Bash(where python:*)",
       "Bash(node -e \":*)",
-      "Bash(python3 -c \"print\\(''hello''\\)\")"
+      "Bash(python3 -c \"print\\(''hello''\\)\")",
+      "Bash(git commit -q -m '@ *)"
     ]
   }
 }

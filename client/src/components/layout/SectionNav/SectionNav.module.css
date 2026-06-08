@@ -93,10 +93,12 @@
 
 @media (max-width: 600px) {
   .nav {
-    padding: 0 8px;
-    top: 66px;
+    padding: 8px 10px;
+    top: 82px;
     overflow-x: auto;
     flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 8px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -104,10 +106,18 @@
     display: none;
   }
   .link {
-    padding: 8px 8px;
-    font-size: 0.68rem;
+    padding: 9px 12px;
+    font-size: 0.72rem;
     min-height: var(--touch-target-sm);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-input);
+    border-bottom-width: 1px;
     flex-shrink: 0;
+  }
+  .active {
+    background: color-mix(in srgb, var(--accent-gold) 13%, var(--bg-input));
+    border-color: var(--accent-gold-dim);
   }
   .rightSlot {
     right: 8px;

@@ -1,44 +1,101 @@
 .card {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 16px;
   background: var(--bg-input);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.use,
+.duplicate,
+.remove,
+.removeSm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
   border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 10px;
-  position: relative;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.use {
+  border: 1px solid color-mix(in srgb, var(--accent-blue-bar) 32%, var(--border));
+  background: color-mix(in srgb, var(--accent-blue-bar) 10%, var(--bg-card));
+  color: var(--accent-blue-bar);
+}
+
+.duplicate {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+}
+
+.remove,
+.removeSm {
+  border: 1px solid color-mix(in srgb, var(--accent-red) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent-red) 8%, var(--bg-card));
+  color: var(--text-muted);
+}
+
+.use:hover,
+.duplicate:hover {
+  border-color: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  background: var(--bg-card-hover);
+}
+
+.remove:hover,
+.removeSm:hover {
+  border-color: color-mix(in srgb, var(--accent-red) 55%, var(--border));
+  color: var(--accent-red);
+  background: color-mix(in srgb, var(--accent-red) 12%, var(--bg-card));
 }
 
 .topRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: flex-end;
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(110px, 0.6fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
 }
 
 .infoField {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .infoField label {
-  font-size: 0.72rem;
-  font-weight: 600;
   color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .infoField input,
 .infoField select {
+  width: 100%;
+  min-height: var(--touch-target);
+  box-sizing: border-box;
   background: var(--bg-body);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 7px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.85rem;
-  padding: 8px 10px;
-  min-height: var(--touch-target-sm);
+  font-size: 0.98rem;
+  padding: 9px 11px;
 }
 
 .infoField input:focus,
@@ -47,321 +104,248 @@
   border-color: var(--accent-gold);
 }
 
-.nomeField {
-  flex: 1;
-  min-width: 120px;
-}
-
-.sectionsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-@media (max-width: 600px) {
-  .sectionsRow {
-    grid-template-columns: 1fr;
-  }
-  .topRow {
-    gap: 6px;
-  }
-}
-
-.checkSection {
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-
-.checkHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.checkHeader label {
-  font-size: var(--font-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.checkTotal {
-  font-size: 1.3rem;
+.nomeField input {
   font-weight: 800;
-  color: var(--accent-gold);
-}
-
-.damageTotal {
-  color: var(--accent-red);
-}
-
-.bonusList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.bonusRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  min-height: var(--touch-target-sm);
-}
-
-.bonusRow input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-family: var(--font);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 4px 6px;
-  width: 54px;
-  text-align: right;
-  min-height: 32px;
-}
-
-.bonusRow input:focus {
-  outline: none;
-  border-bottom-color: var(--accent-gold);
-}
-
-.bonusRow input:first-of-type {
-  flex: 1;
-  width: auto;
-  text-align: left;
-}
-
-.bonusRow input[placeholder="PM"] {
-  width: 42px;
-  background: var(--accent-blue-bg);
-  border: 1px solid transparent;
-  border-radius: 3px;
-  color: var(--accent-blue-bar);
-  font-size: 0.78rem;
-  font-weight: 600;
-  text-align: center;
-  padding: 3px 4px;
-  min-height: 32px;
-}
-
-.bonusRow input[placeholder="PM"]:focus {
-  border-color: var(--accent-blue);
-}
-
-.bonusRow select {
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-primary);
-  font-size: 0.82rem;
-  padding: 4px 8px;
-  min-height: 32px;
-}
-
-.bonusRow input.damageDice {
-  flex: 0 0 70px;
-  width: 70px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-align: right;
-}
-
-.bonusRow select.damageAttrSel {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--accent-gold);
-  font-family: var(--font);
-  font-size: 0.82rem;
-  font-weight: 600;
-  padding: 4px 6px;
-  cursor: pointer;
-  min-width: 48px;
-  min-height: 32px;
-}
-
-.bonusRow select.damageAttrSel:focus {
-  outline: none;
-  border-bottom-color: var(--accent-gold);
-  background: var(--bg-input);
-}
-
-.bonusBase {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
-  margin-bottom: 2px;
-}
-
-.bonusFixed {
-  flex: 1;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.bonusValorFixed {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  min-width: 40px;
-  text-align: right;
-}
-
-.buffRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(46, 204, 64, 0.07);
-  border-left: 2px solid #2ecc40;
-  padding: 4px 0 4px 8px;
-  opacity: 0.85;
-  min-height: var(--touch-target-sm);
-}
-
-.addBonus {
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: 4px;
-  color: var(--text-muted);
-  font-family: var(--font);
-  font-size: var(--font-xs);
-  padding: 8px 12px;
-  min-height: var(--touch-target);
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 6px;
-  align-self: flex-start;
-}
-
-.addBonus:hover {
-  color: var(--accent-gold);
-  border-color: var(--accent-gold-dim);
-}
-
-.buffNome {
-  flex: 1;
-  font-size: 0.8rem;
-  color: #2ecc40;
-  font-weight: 500;
-  font-style: italic;
-}
-
-.buffValor {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #2ecc40;
-  min-width: 40px;
-  text-align: right;
 }
 
 .pmBadgeWrap {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
+  padding-bottom: 0;
 }
 
 .pmBadge {
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius);
   background: var(--accent-blue-bg);
   color: var(--accent-blue-bar);
-  border: 1px solid var(--accent-blue);
   font-family: var(--font);
-  font-size: 0.82rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 900;
   white-space: nowrap;
 }
 
-.use {
-  position: absolute;
-  top: 4px;
-  right: 48px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 1rem;
-  min-width: var(--touch-target);
-  min-height: var(--touch-target);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
+.sectionsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.use:hover {
-  color: var(--accent-blue-bar);
-}
-
-.duplicate {
-  position: absolute;
-  top: 4px;
-  right: 26px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 1rem;
-  min-width: var(--touch-target);
-  min-height: var(--touch-target);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.duplicate:hover {
-  color: var(--accent-gold);
-}
-
-.remove {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 1.1rem;
-  min-width: var(--touch-target);
-  min-height: var(--touch-target);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.remove:hover {
-  color: var(--accent-red);
-}
-
-.removeSm {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 0.95rem;
-  padding: 4px 6px;
-  min-width: var(--touch-target-sm);
-  min-height: var(--touch-target-sm);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s;
-}
-
-.removeSm:hover {
-  color: var(--accent-red);
+.checkSection {
+  padding: 14px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .damageSection {
-  border-left: 2px solid var(--accent-red);
+  border-color: color-mix(in srgb, var(--accent-red-bar) 34%, var(--border));
+}
+
+.checkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.checkHeader label {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.checkTotal {
+  color: var(--accent-gold);
+  font-size: 1.7rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.damageTotal {
+  color: var(--accent-red-bar);
+}
+
+.bonusList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bonusRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 64px var(--touch-target);
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch-target);
+}
+
+.bonusRow input,
+.bonusRow select {
+  min-height: var(--touch-target-sm);
+  box-sizing: border-box;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.92rem;
+  padding: 8px 9px;
+}
+
+.bonusRow input {
+  min-width: 0;
+  text-align: right;
+}
+
+.bonusRow input:first-of-type {
+  text-align: left;
+}
+
+.bonusRow input:focus,
+.bonusRow select:focus {
+  outline: none;
+  border-color: var(--accent-gold);
+}
+
+.bonusRow input[placeholder="PM"] {
+  background: var(--accent-blue-bg);
+  border-color: rgba(37, 99, 235, 0.28);
+  color: var(--accent-blue-bar);
+  text-align: center;
+}
+
+.bonusRow input.damageDice {
+  width: 100%;
+  text-align: right;
+}
+
+.bonusRow select.damageAttrSel {
+  color: var(--accent-gold);
+  font-weight: 800;
+}
+
+.bonusBase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.bonusFixed {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.bonusValorFixed {
+  min-width: 48px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.buffRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch-target-sm);
+  padding: 8px 10px;
+  border-left: 3px solid var(--accent-success);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent-success) 9%, transparent);
+}
+
+.buffNome {
+  color: var(--accent-success);
+  font-size: 0.88rem;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.buffValor {
+  min-width: 42px;
+  color: var(--accent-success);
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.addBonus {
+  min-height: var(--touch-target);
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px dashed color-mix(in srgb, var(--accent-gold) 28%, var(--border));
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.addBonus:hover {
+  border-color: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  background: color-mix(in srgb, var(--accent-gold) 6%, transparent);
+}
+
+@media (max-width: 1180px) {
+  .topRow {
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(110px, 0.7fr));
+  }
+
+  .pmBadgeWrap {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .card {
+    padding: 14px;
+  }
+
+  .cardActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .topRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .nomeField {
+    grid-column: 1 / -1;
+  }
+
+  .sectionsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bonusRow {
+    grid-template-columns: minmax(0, 1fr) 62px 58px var(--touch-target);
+  }
+}
+
+@media (max-width: 430px) {
+  .topRow {
+    grid-template-columns: 1fr;
+  }
 }

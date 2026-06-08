@@ -15,6 +15,7 @@ async function requireAuth(req, res, next) {
 
   const token = parseBearerToken(req.headers.authorization);
   if (!token) {
+    res.set('Cache-Control', 'no-store');
     return res.status(401).json({ error: 'Token ausente' });
   }
 
@@ -22,11 +23,11 @@ async function requireAuth(req, res, next) {
     const decoded = await adminAuth.verifyIdToken(token);
     req.user = decoded;
 
-    const { user } = await userService.ensureUserExists(decoded.uid, decoded.email || '');
-    req.subscriptionUser = user;
+    await userService.ensureUserExists(decoded.uid, decoded.email || '');
 
     return next();
   } catch (_) {
+    res.set('Cache-Control', 'no-store');
     return res.status(401).json({ error: 'Token inválido' });
   }
 }

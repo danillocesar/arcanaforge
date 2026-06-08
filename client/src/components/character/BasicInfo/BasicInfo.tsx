@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { apiUploadAvatar } from '../../../api';
 import { getTotalLevel } from '../../../utils/calculations';
@@ -6,11 +7,13 @@ import { getInitials } from '../../../utils/formatters';
 import { TORMENTA_CLASSES, getClassIconUrl } from '../../../features/tormenta/data/tormentaClasses';
 import Section from '../../ui/Section/Section';
 import NumericInput from '../../ui/NumericInput/NumericInput';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './BasicInfo.module.css';
 
 export default function BasicInfo() {
   const { character, updateCharacter } = useCharacterContext();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [removeClassIdx, setRemoveClassIdx] = useState<number | null>(null);
 
   if (!character) return null;
 
@@ -50,6 +53,7 @@ export default function BasicInfo() {
 
   const firstClassName = character.classes[0]?.name || '';
   const classIconSrc = getClassIconUrl(firstClassName);
+  const classToRemove = removeClassIdx != null ? character.classes[removeClassIdx] : null;
 
   return (
     <Section id="secHeader" title="Dados do Personagem">
@@ -112,7 +116,9 @@ export default function BasicInfo() {
                     onChange={(n) => updateClassRow(i, 'level', n)}
                   />
                   {character.classes.length > 1 && (
-                    <button type="button" className={styles.classRemove} onClick={() => removeClassRow(i)}>✕</button>
+                    <button type="button" className={styles.classRemove} onClick={() => setRemoveClassIdx(i)} aria-label="Remover classe">
+                      <Trash2 size={16} aria-hidden="true" />
+                    </button>
                   )}
                 </div>
               ))}
@@ -166,6 +172,19 @@ export default function BasicInfo() {
           />
         </div>
       </div>
+
+      <ConfirmModal
+        open={removeClassIdx != null}
+        onClose={() => setRemoveClassIdx(null)}
+        onConfirm={() => {
+          if (removeClassIdx != null) removeClassRow(removeClassIdx);
+        }}
+        title="Remover classe?"
+        message={`Isso remove "${classToRemove?.name || 'Classe'}" da progressão do personagem.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
     </Section>
   );
 }
