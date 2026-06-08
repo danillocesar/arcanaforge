@@ -12,6 +12,11 @@
   transform-origin: top center;
 }
 
+/* Neutral shadow (no accent glow) — opt-in via the `glow={false}` prop. */
+.noGlow {
+  box-shadow: var(--shadow-card);
+}
+
 @keyframes popIn {
   from {
     opacity: 0;

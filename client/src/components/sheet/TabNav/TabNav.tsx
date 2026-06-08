@@ -7,14 +7,23 @@ interface TabNavSection {
   icon?: ReactNode;
 }
 
+interface TabNavTrailing {
+  label: string;
+  icon?: ReactNode;
+  onClick: () => void;
+  active?: boolean;
+}
+
 interface TabNavProps {
   sections: TabNavSection[];
   active: string;
   onChange: (id: string) => void;
   variant: 'tabs' | 'sidebar';
+  /** Optional trailing action rendered as an extra cell in the bottom bar (tabs variant). */
+  trailing?: TabNavTrailing;
 }
 
-function TabNav({ sections, active, onChange, variant }: TabNavProps) {
+function TabNav({ sections, active, onChange, variant, trailing }: TabNavProps) {
   if (variant === 'sidebar') {
     return (
       <nav className={styles.dSide} aria-label="Seções">
@@ -39,11 +48,13 @@ function TabNav({ sections, active, onChange, variant }: TabNavProps) {
     );
   }
 
+  const columns = sections.length + (trailing ? 1 : 0);
+
   return (
     <nav
       className={styles.tabbar}
       aria-label="Seções"
-      style={{ gridTemplateColumns: `repeat(${sections.length || 1}, 1fr)` }}
+      style={{ gridTemplateColumns: `repeat(${columns || 1}, 1fr)` }}
     >
       {sections.map((s) => {
         const isActive = s.id === active;
@@ -60,6 +71,19 @@ function TabNav({ sections, active, onChange, variant }: TabNavProps) {
           </button>
         );
       })}
+
+      {trailing && (
+        <button
+          type="button"
+          className={[styles.tab, trailing.active ? styles.active : ''].filter(Boolean).join(' ')}
+          aria-haspopup="menu"
+          aria-expanded={trailing.active ?? undefined}
+          onClick={trailing.onClick}
+        >
+          {trailing.icon != null && <span className={styles.ti}>{trailing.icon}</span>}
+          <span className={styles.tl}>{trailing.label}</span>
+        </button>
+      )}
     </nav>
   );
 }

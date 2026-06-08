@@ -137,6 +137,46 @@
   transform: scale(0.9);
 }
 
+.btnMenuEditing {
+  background: var(--accent);
+  color: #04130d;
+  border-color: transparent;
+}
+
+/* ---------- ⋯ dropdown menu (inside ui Popover) ---------- */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 190px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: none;
+  background: none;
+  border-radius: 11px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.menuItem:hover {
+  background: var(--surface-2);
+}
+
+.menuItem:active {
+  transform: scale(0.99);
+}
+
 .lvlPill {
   flex: 0 0 auto;
   text-align: center;
@@ -270,6 +310,52 @@
   top: 9px;
   font-size: 13px;
   opacity: 0.5;
+}
+
+/* ============================================================
+   DESKTOP — single horizontal bar (avatar | id | vitals | tools)
+   ============================================================ */
+.desktop {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 18px;
+}
+
+.desktop .avatar {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 19px;
+  font-size: 28px;
+}
+
+.desktop .idMeta {
+  flex: 1;
+}
+
+.desktop .idName {
+  font-size: 24px;
+}
+
+.desktop .idLine {
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.vitalsRow {
+  display: flex;
+  gap: 11px;
+  flex: 0 0 auto;
+}
+
+.vitalsRow .vital {
+  width: 118px;
 }
 
 /* ---------- popover headings (reused inside ui Popover) ---------- */

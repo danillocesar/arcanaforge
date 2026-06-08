@@ -3,7 +3,6 @@ import { formatMod } from '../../../utils/calculations';
 import type { InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
-import ActionCard from '../ActionCard/ActionCard';
 import styles from './EquipamentosPanel.module.css';
 
 interface EquipamentosPanelProps {
@@ -43,6 +42,13 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.category === 'consumivel');
 
+  const removeArma = (idx: number) => {
+    updateCharacter((f) => ({
+      ...f,
+      attacks: f.attacks.filter((_, i) => i !== idx),
+    }));
+  };
+
   const removeArmadura = (idx: number) => {
     updateCharacter((f) => ({
       ...f,
@@ -66,9 +72,31 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
 
       <div className={styles.subHead}>Armas</div>
       {attacks.length > 0 ? (
-        attacks.map((attack, idx) => (
-          <ActionCard key={idx} attack={attack} index={idx} editMode={editMode} />
-        ))
+        <Card padding={false} className={styles.list}>
+          {attacks.map((arma, idx) => (
+            <div key={idx} className={styles.row}>
+              <div className={styles.rowName}>
+                {arma.name || 'Arma'}
+                {arma.type && <small className={styles.effect}>{arma.type}</small>}
+              </div>
+              <div className={styles.rowMeta}>
+                {arma.damage && <span className={styles.badge}>{arma.damage}</span>}
+                {arma.critical && <span className={styles.slot}>{arma.critical}</span>}
+              </div>
+              {editMode && (
+                <button
+                  type="button"
+                  className={styles.rmX}
+                  onClick={() => removeArma(idx)}
+                  title="Remover arma"
+                  aria-label="Remover arma"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </Card>
       ) : (
         <p className={styles.empty}>Nenhuma arma cadastrada.</p>
       )}

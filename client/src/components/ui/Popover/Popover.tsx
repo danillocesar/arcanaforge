@@ -16,6 +16,8 @@ interface PopoverProps {
   children: ReactNode;
   align?: 'start' | 'center' | 'end';
   className?: string;
+  /** Accent glow shadow (default). Set false for a neutral shadow (e.g. menus). */
+  glow?: boolean;
 }
 
 function Popover({
@@ -25,6 +27,7 @@ function Popover({
   children,
   align = 'center',
   className,
+  glow = true,
 }: PopoverProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -103,7 +106,7 @@ function Popover({
     <div
       ref={panelRef}
       role="dialog"
-      className={`${styles.popover} ${className ?? ''}`.trim()}
+      className={`${styles.popover} ${glow ? '' : styles.noGlow} ${className ?? ''}`.trim()}
       style={{ top: pos.top, left: pos.left }}
     >
       {children}

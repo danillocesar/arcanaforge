@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
+import Topbar from '../../components/layout/Topbar/Topbar';
 import VitalBar from '../../components/sheet/VitalBar/VitalBar';
 import TabNav from '../../components/sheet/TabNav/TabNav';
+import MobileAppMenu from '../../components/sheet/MobileAppMenu/MobileAppMenu';
 import AttributesPanel from '../../components/sheet/AttributesPanel/AttributesPanel';
 import BuffsPanel from '../../components/sheet/BuffsPanel/BuffsPanel';
+import AcoesPanel from '../../components/sheet/AcoesPanel/AcoesPanel';
 import SkillsPanel from '../../components/sheet/SkillsPanel/SkillsPanel';
 import PoderesPanel from '../../components/sheet/PoderesPanel/PoderesPanel';
 import MagiasPanel from '../../components/sheet/MagiasPanel/MagiasPanel';
@@ -31,6 +34,7 @@ function renderSection(id: SectionId, editMode: boolean) {
         <>
           <AttributesPanel editMode={editMode} />
           <BuffsPanel editMode={editMode} />
+          <AcoesPanel editMode={editMode} />
         </>
       );
     case 'pericias':
@@ -52,6 +56,7 @@ function CharacterSheetInner() {
   const [loadDone, setLoadDone] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [active, setActive] = useState<SectionId>('atributos');
+  const [menuOpen, setMenuOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 900px)');
 
   useEffect(() => {
@@ -83,27 +88,37 @@ function CharacterSheetInner() {
 
   const panel = renderSection(active, editMode);
 
+  const toggleEdit = () => setEditMode((e) => !e);
+
+  if (isDesktop) {
+    return (
+      <div className={styles.shell}>
+        <Topbar title={character.name} systemBrand="tormenta" />
+        <div className={styles.desktopBody}>
+          <VitalBar desktop editMode={editMode} onToggleEdit={toggleEdit} />
+          <div className={styles.desktopGrid}>
+            <aside className={styles.sidebar}>
+              <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
+            </aside>
+            <main className={styles.detail}>{panel}</main>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.shell}>
-      <VitalBar
-        editMode={editMode}
-        onToggleEdit={() => setEditMode((e) => !e)}
-        onOpenMenu={() => { /* identity/notes/logs menu — Phase G */ }}
+      <VitalBar editMode={editMode} onToggleEdit={toggleEdit} />
+      <main className={styles.mobileBody}>{panel}</main>
+      <TabNav
+        sections={SECTIONS}
+        active={active}
+        onChange={(id) => setActive(id as SectionId)}
+        variant="tabs"
+        trailing={{ label: 'Menu', icon: '☰', onClick: () => setMenuOpen(true), active: menuOpen }}
       />
-
-      {isDesktop ? (
-        <div className={styles.desktopBody}>
-          <aside className={styles.sidebar}>
-            <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
-          </aside>
-          <main className={styles.detail}>{panel}</main>
-        </div>
-      ) : (
-        <>
-          <main className={styles.mobileBody}>{panel}</main>
-          <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="tabs" />
-        </>
-      )}
+      <MobileAppMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }
