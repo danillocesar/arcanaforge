@@ -57,37 +57,41 @@ const rangeOptions = [
 
 /* ─────────────────────────── Poder / Habilidade ─────────────────────────── */
 
+const kindOptions: Array<{ value: string; label: string }> = [
+  { value: 'Poder', label: 'Poder' },
+  { value: 'Habilidade', label: 'Habilidade' },
+];
+
 const abilityFields: FieldDescriptor[] = [
-  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome' },
+  { key: 'kind', label: 'Tipo', type: 'select', options: kindOptions, half: true },
+  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
   { key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
 ];
 
-function abilityConfig(kind: AbilityKind): EntityConfig {
-  return {
-    title: kind,
-    fields: abilityFields,
-    empty: () => ({ name: '', source: '', mpCost: 0, description: '' }),
-    fromEntry: (c, i) => {
-      const a = c.abilities[i];
-      return { name: a.name, source: a.source, mpCost: a.mpCost, description: a.description };
-    },
-    apply: (c, v, i) => {
-      const base = i != null ? c.abilities[i] : { name: '', source: '', type: '', mpCost: 0, description: '' };
-      const entry = {
-        ...base,
-        name: s(v.name),
-        source: s(v.source),
-        kind,
-        mpCost: n(v.mpCost),
-        description: s(v.description),
-      };
-      return { ...c, abilities: upsert(c.abilities, entry, i) };
-    },
-    remove: (c, i) => ({ ...c, abilities: c.abilities.filter((_, idx) => idx !== i) }),
-  };
-}
+const abilidadeConfig: EntityConfig = {
+  title: 'Poder / Habilidade',
+  fields: abilityFields,
+  empty: () => ({ kind: 'Poder', name: '', source: '', mpCost: 0, description: '' }),
+  fromEntry: (c, i) => {
+    const a = c.abilities[i];
+    return { kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost, description: a.description };
+  },
+  apply: (c, v, i) => {
+    const base = i != null ? c.abilities[i] : { type: '' };
+    const entry = {
+      ...base,
+      name: s(v.name),
+      source: s(v.source),
+      kind: (s(v.kind) || 'Poder') as AbilityKind,
+      mpCost: n(v.mpCost),
+      description: s(v.description),
+    };
+    return { ...c, abilities: upsert(c.abilities, entry, i) };
+  },
+  remove: (c, i) => ({ ...c, abilities: c.abilities.filter((_, idx) => idx !== i) }),
+};
 
 /* ─────────────────────────────── Magia ─────────────────────────────────── */
 
@@ -319,8 +323,8 @@ const armaConfig = inventoryConfig('arma', 'Arma', [
 ]);
 
 export const ENTITY_FORMS: Record<EntityKind, EntityConfig> = {
-  poder: abilityConfig('Poder'),
-  habilidade: abilityConfig('Habilidade'),
+  poder: abilidadeConfig,
+  habilidade: abilidadeConfig,
   magia: magiaConfig,
   buff: buffConfig,
   ataque: ataqueConfig,

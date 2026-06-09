@@ -36,14 +36,7 @@ function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
     <section>
       <SectionHeader
         title="Poderes & Habilidades"
-        action={
-          !readOnly && (
-            <div className={styles.addRow}>
-              <AddButton label="Poder" onClick={() => openCreate('poder')} />
-              <AddButton label="Habilidade" onClick={() => openCreate('habilidade')} />
-            </div>
-          )
-        }
+        action={!readOnly && <AddButton label="Poder / Hab." onClick={() => openCreate('poder')} />}
       />
       {abilities.length === 0 ? (
         <p className={styles.empty}>Nenhum poder ou habilidade cadastrado.</p>
