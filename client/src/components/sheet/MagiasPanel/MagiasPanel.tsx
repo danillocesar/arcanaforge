@@ -9,11 +9,10 @@ import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import styles from './MagiasPanel.module.css';
 
 interface MagiasPanelProps {
-  editMode?: boolean;
   onRemove?: (index: number) => void;
 }
 
-function MagiasPanel({ editMode = false, onRemove }: MagiasPanelProps) {
+function MagiasPanel({ onRemove }: MagiasPanelProps) {
   const { character, updateCharacter, sendSpellCast, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
 
@@ -100,7 +99,6 @@ function MagiasPanel({ editMode = false, onRemove }: MagiasPanelProps) {
               key={index}
               spell={spell}
               index={index}
-              editMode={editMode}
               onCast={castSpell}
               onEdit={(i) => openEdit('magia', i)}
               onRemove={handleRemove}

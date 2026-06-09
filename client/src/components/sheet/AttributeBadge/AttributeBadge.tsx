@@ -7,11 +7,10 @@ import styles from './AttributeBadge.module.css';
 
 interface AttributeBadgeProps {
   attr: AttributeId;
-  editMode?: boolean;
 }
 
-function AttributeBadge({ attr, editMode = false }: AttributeBadgeProps) {
-  const { character, updateCharacter } = useCharacterContext();
+function AttributeBadge({ attr }: AttributeBadgeProps) {
+  const { character, updateCharacter, readOnly } = useCharacterContext();
 
   if (!character) return null;
 
@@ -30,7 +29,7 @@ function AttributeBadge({ attr, editMode = false }: AttributeBadgeProps) {
     <div className={styles.attr}>
       <div className={styles.lab}>{ATTRIBUTE_LABELS[attr]}</div>
 
-      {editMode ? (
+      {!readOnly ? (
         <div className={styles.edit}>
           <Stepper value={raw} onChange={setRaw} step={1} />
         </div>

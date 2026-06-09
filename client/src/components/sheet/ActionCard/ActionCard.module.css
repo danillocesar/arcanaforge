@@ -104,22 +104,25 @@
   transform: scale(0.97);
 }
 
-.editLink {
-  margin-top: 8px;
-  width: 100%;
-  padding: 8px;
-  border-radius: 11px;
-  cursor: pointer;
-  background: var(--surface-2);
-  color: var(--ink-2);
+.pen {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   border: 1px solid var(--line-2);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 12px;
-  transition: background 0.2s, border-color 0.2s;
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.editLink:hover {
-  background: var(--line-2);
-  border-color: var(--ink-3);
+.pen:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-color: var(--accent-ink);
 }

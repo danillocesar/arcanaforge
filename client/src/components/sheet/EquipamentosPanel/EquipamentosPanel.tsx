@@ -8,25 +8,12 @@ import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import type { EntityKind } from '../SheetForm/entityForms';
 import styles from './EquipamentosPanel.module.css';
 
-interface EquipamentosPanelProps {
-  editMode?: boolean;
-}
-
 /** Legacy inventory items have no category → treated as 'comum'. */
 function isComum(item: InventoryItem): boolean {
   return item.category === 'comum' || item.category == null;
 }
 
-/**
- * "C dark" Equipamentos panel. Three sub-sections:
- *   1. Equipamentos — Armas (ActionCard), Armaduras (defense.items), Acessórios (inventory).
- *   2. Comuns — inventory items categorised 'comum' (or legacy/undefined).
- *   3. Consumíveis — inventory items categorised 'consumivel'.
- *
- * No Carga/weight UI and no per-item icons (plan constraint). In editMode each
- * row exposes a × that removes the entry from its source array via updateCharacter.
- */
-function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
+function EquipamentosPanel() {
   const { character, updateCharacter, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
 
@@ -64,16 +51,13 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
 
   const proficiencies = character.proficiencies?.trim();
 
-  // Row props: in editMode the row is clickable to open the edit form.
-  const rowProps = (kind: EntityKind, idx: number) =>
-    editMode
-      ? {
-          className: `${styles.row} ${styles.clickable}`,
-          role: 'button' as const,
-          tabIndex: 0,
-          onClick: () => openEdit(kind, idx),
-        }
-      : { className: styles.row };
+  const rowCtrl = (kind: EntityKind, idx: number, onRemove: () => void) =>
+    !readOnly ? (
+      <>
+        <button type="button" className={styles.pen} aria-label="Editar" onClick={() => openEdit(kind, idx)}>✎</button>
+        <button type="button" className={styles.rmX} aria-label="Remover" onClick={onRemove}>×</button>
+      </>
+    ) : null;
 
   return (
     <div className={styles.panel}>
@@ -87,7 +71,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {armas.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {armas.map(({ item, index }) => (
-            <div key={index} {...rowProps('arma', index)}>
+            <div key={index} className={styles.row}>
               <div className={styles.rowName}>
                 {item.name || 'Arma'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -95,17 +79,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
               <div className={styles.rowMeta}>
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {editMode && (
-                <button
-                  type="button"
-                  className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
-                  title="Remover arma"
-                  aria-label="Remover arma"
-                >
-                  ×
-                </button>
-              )}
+              {rowCtrl('arma', index, () => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -117,7 +91,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {armaduras.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {armaduras.map((arm, idx) => (
-            <div key={idx} {...rowProps('armadura', idx)}>
+            <div key={idx} className={styles.row}>
               <div className={styles.rowName}>{arm.name || 'Armadura'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.badge}>{formatMod(arm.value)}</span>
@@ -125,17 +99,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
                   <span className={styles.penalty}>Pen {formatMod(arm.penalty)}</span>
                 )}
               </div>
-              {editMode && (
-                <button
-                  type="button"
-                  className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeArmadura(idx); }}
-                  title="Remover armadura"
-                  aria-label="Remover armadura"
-                >
-                  ×
-                </button>
-              )}
+              {rowCtrl('armadura', idx, () => removeArmadura(idx))}
             </div>
           ))}
         </Card>
@@ -147,7 +111,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {acessorios.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {acessorios.map(({ item, index }) => (
-            <div key={index} {...rowProps('acessorio', index)}>
+            <div key={index} className={styles.row}>
               <div className={styles.rowName}>
                 {item.name || 'Acessório'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -155,17 +119,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
               <div className={styles.rowMeta}>
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {editMode && (
-                <button
-                  type="button"
-                  className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
-                  title="Remover acessório"
-                  aria-label="Remover acessório"
-                >
-                  ×
-                </button>
-              )}
+              {rowCtrl('acessorio', index, () => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -178,22 +132,12 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {comuns.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {comuns.map(({ item, index }) => (
-            <div key={index} {...rowProps('comum', index)}>
+            <div key={index} className={styles.row}>
               <div className={styles.rowName}>{item.name || 'Item'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {editMode && (
-                <button
-                  type="button"
-                  className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
-                  title="Remover item"
-                  aria-label="Remover item"
-                >
-                  ×
-                </button>
-              )}
+              {rowCtrl('comum', index, () => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -206,7 +150,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       {consumiveis.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {consumiveis.map(({ item, index }) => (
-            <div key={index} {...rowProps('consumivel', index)}>
+            <div key={index} className={styles.row}>
               <div className={styles.rowName}>
                 {item.name || 'Consumível'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -214,17 +158,7 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {editMode && (
-                <button
-                  type="button"
-                  className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
-                  title="Remover consumível"
-                  aria-label="Remover consumível"
-                >
-                  ×
-                </button>
-              )}
+              {rowCtrl('consumivel', index, () => removeInventoryItem(index))}
             </div>
           ))}
         </Card>

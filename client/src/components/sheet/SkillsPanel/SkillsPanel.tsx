@@ -7,11 +7,7 @@ import TextField from '../../ui/TextField/TextField';
 import SkillRow from '../SkillRow/SkillRow';
 import styles from './SkillsPanel.module.css';
 
-interface SkillsPanelProps {
-  editMode?: boolean;
-}
-
-function SkillsPanel({ editMode = false }: SkillsPanelProps) {
+function SkillsPanel() {
   const { character } = useCharacterContext();
   const [search, setSearch] = useState('');
 
@@ -43,7 +39,7 @@ function SkillsPanel({ editMode = false }: SkillsPanelProps) {
 
       <Card padding={false} className={styles.list}>
         {visible.map((cfg) => (
-          <SkillRow key={cfg.id} skillId={cfg.id} editMode={editMode} />
+          <SkillRow key={cfg.id} skillId={cfg.id} />
         ))}
         {visible.length === 0 && <div className={styles.empty}>Nenhuma perícia encontrada.</div>}
       </Card>

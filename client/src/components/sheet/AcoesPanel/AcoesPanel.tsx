@@ -5,16 +5,12 @@ import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './AcoesPanel.module.css';
 
-interface AcoesPanelProps {
-  editMode?: boolean;
-}
-
 /**
  * Combat actions (rollable attacks) — lives in the main "Atributos" tab.
  * Reuses ActionCard (attack roll / damage); the Equipamentos tab lists the
  * same weapons as plain gear rows instead.
  */
-function AcoesPanel({ editMode = false }: AcoesPanelProps) {
+function AcoesPanel() {
   const { character, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
 
@@ -35,7 +31,6 @@ function AcoesPanel({ editMode = false }: AcoesPanelProps) {
               key={idx}
               attack={attack}
               index={idx}
-              editMode={editMode}
               onEdit={(i) => openEdit('ataque', i)}
             />
           ))}

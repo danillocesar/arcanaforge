@@ -12,15 +12,13 @@ import DefenseBreakdown from '../DefenseBreakdown/DefenseBreakdown';
 import styles from './VitalBar.module.css';
 
 interface VitalBarProps {
-  editMode?: boolean;
-  onToggleEdit?: () => void;
   /** Desktop renders a single horizontal bar (avatar | id | vitals | tools). */
   desktop?: boolean;
 }
 
 type OpenPop = 'pv' | 'pm' | 'def' | null;
 
-function VitalBar({ editMode = false, onToggleEdit, desktop = false }: VitalBarProps) {
+function VitalBar({ desktop = false }: VitalBarProps) {
   const { character, updateCharacter, sendHpUpdate } = useCharacterContext();
   const [openPop, setOpenPop] = useState<OpenPop>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -93,7 +91,7 @@ function VitalBar({ editMode = false, onToggleEdit, desktop = false }: VitalBarP
       <button
         type="button"
         ref={menuRef}
-        className={`${styles.btnMenu} ${editMode ? styles.btnMenuEditing : ''}`}
+        className={styles.btnMenu}
         onClick={() => setMenuOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={menuOpen}
@@ -171,11 +169,7 @@ function VitalBar({ editMode = false, onToggleEdit, desktop = false }: VitalBarP
 
   return (
     <header
-      className={[
-        styles.appHeader,
-        desktop ? styles.desktop : '',
-        editMode ? styles.editing : '',
-      ].filter(Boolean).join(' ')}
+      className={[styles.appHeader, desktop ? styles.desktop : ''].filter(Boolean).join(' ')}
     >
       {desktop ? (
         <>
@@ -232,19 +226,8 @@ function VitalBar({ editMode = false, onToggleEdit, desktop = false }: VitalBarP
         glow={false}
       >
         <div className={styles.menu} role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            className={styles.menuItem}
-            onClick={() => {
-              onToggleEdit?.();
-              setMenuOpen(false);
-            }}
-          >
-            <span aria-hidden="true">{editMode ? '✓' : '✎'}</span>
-            <span>{editMode ? 'Concluir edição' : 'Editar ficha'}</span>
-          </button>
           {/* Fase G: Identidade, Notas, Logs, Progressão */}
+          <span className={styles.menuEmpty}>Em breve</span>
         </div>
       </Popover>
     </header>

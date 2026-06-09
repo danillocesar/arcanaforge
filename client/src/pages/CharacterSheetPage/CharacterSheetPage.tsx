@@ -28,24 +28,24 @@ const SECTIONS: Array<{ id: SectionId; label: string; icon: string }> = [
   { id: 'equipamentos', label: 'Equipamentos', icon: '🜸' },
 ];
 
-function renderSection(id: SectionId, editMode: boolean) {
+function renderSection(id: SectionId) {
   switch (id) {
     case 'atributos':
       return (
         <>
-          <AttributesPanel editMode={editMode} />
-          <BuffsPanel editMode={editMode} />
-          <AcoesPanel editMode={editMode} />
+          <AttributesPanel />
+          <BuffsPanel />
+          <AcoesPanel />
         </>
       );
     case 'pericias':
-      return <SkillsPanel editMode={editMode} />;
+      return <SkillsPanel />;
     case 'poderes':
-      return <PoderesPanel editMode={editMode} />;
+      return <PoderesPanel />;
     case 'magias':
-      return <MagiasPanel editMode={editMode} />;
+      return <MagiasPanel />;
     case 'equipamentos':
-      return <EquipamentosPanel editMode={editMode} />;
+      return <EquipamentosPanel />;
     default:
       return null;
   }
@@ -55,7 +55,6 @@ function CharacterSheetInner() {
   const { character, loadCharacter, refreshList } = useCharacterContext();
   const navigate = useNavigate();
   const [loadDone, setLoadDone] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [active, setActive] = useState<SectionId>('atributos');
   const [menuOpen, setMenuOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 900px)');
@@ -87,9 +86,7 @@ function CharacterSheetInner() {
     return <div className={styles.loading}>Carregando personagem...</div>;
   }
 
-  const panel = renderSection(active, editMode);
-
-  const toggleEdit = () => setEditMode((e) => !e);
+  const panel = renderSection(active);
 
   if (isDesktop) {
     return (
@@ -97,7 +94,7 @@ function CharacterSheetInner() {
         <div className={styles.shell}>
           <Topbar title={character.name} systemBrand="tormenta" />
           <div className={styles.desktopBody}>
-            <VitalBar desktop editMode={editMode} onToggleEdit={toggleEdit} />
+            <VitalBar desktop />
             <div className={styles.desktopGrid}>
               <aside className={styles.sidebar}>
                 <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
@@ -113,7 +110,7 @@ function CharacterSheetInner() {
   return (
     <SheetFormProvider>
       <div className={styles.shell}>
-        <VitalBar editMode={editMode} onToggleEdit={toggleEdit} />
+        <VitalBar />
         <main className={styles.mobileBody}>{panel}</main>
         <TabNav
           sections={SECTIONS}

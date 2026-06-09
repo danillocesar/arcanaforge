@@ -177,6 +177,14 @@
   transform: scale(0.99);
 }
 
+.menuEmpty {
+  display: block;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
 .lvlPill {
   flex: 0 0 auto;
   text-align: center;

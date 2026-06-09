@@ -20,6 +20,75 @@
   flex: 1;
 }
 
+/* ── list field (repeatable rows, e.g. attack modifiers) ── */
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 8px;
+}
+
+.listLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.listAdd {
+  border: none;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.listAdd:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.listEmpty {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 2px 2px 8px;
+}
+
+.listRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.listCell {
+  flex: 1;
+  min-width: 0;
+}
+
+.listRemove {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.listRemove:hover {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--line-2));
+}
+
 @media (max-width: 560px) {
   .grid {
     grid-template-columns: 1fr;

@@ -6,7 +6,6 @@ import Chip from '../../ui/Chip/Chip';
 interface ConditionChipProps {
   buff: Buff;
   index: number;
-  editMode?: boolean;
   onEdit?: (i: number) => void;
 }
 
@@ -34,23 +33,18 @@ function buildLabel(buff: Buff): string {
   return `${buff.name} ${signed}`;
 }
 
-function ConditionChip({ buff, index, editMode = false, onEdit }: ConditionChipProps) {
+function ConditionChip({ buff, index, onEdit }: ConditionChipProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
 
   if (!character) return null;
 
   const handleToggle = () => updateCharacter((f) => toggleBuffState(f, index));
 
-  const handleRemove =
-    editMode && !readOnly
-      ? () =>
-          updateCharacter((f) => ({
-            ...f,
-            buffs: f.buffs.filter((_, i) => i !== index),
-          }))
-      : undefined;
+  const handleRemove = !readOnly
+    ? () => updateCharacter((f) => ({ ...f, buffs: f.buffs.filter((_, i) => i !== index) }))
+    : undefined;
 
-  const handleEdit = editMode && !readOnly ? () => onEdit?.(index) : undefined;
+  const handleEdit = !readOnly ? () => onEdit?.(index) : undefined;
 
   return (
     <Chip

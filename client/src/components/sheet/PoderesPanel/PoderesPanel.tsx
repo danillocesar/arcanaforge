@@ -6,11 +6,10 @@ import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './PoderesPanel.module.css';
 
 interface PoderesPanelProps {
-  editMode?: boolean;
   onRemove?: (index: number) => void;
 }
 
-function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
+function PoderesPanel({ onRemove }: PoderesPanelProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
 
@@ -47,7 +46,6 @@ function PoderesPanel({ editMode = false, onRemove }: PoderesPanelProps) {
               key={index}
               ability={ability}
               index={index}
-              editMode={editMode}
               onEdit={handleEdit}
               onRemove={handleRemove}
             />

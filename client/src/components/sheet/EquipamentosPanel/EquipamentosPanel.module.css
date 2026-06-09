@@ -41,13 +41,27 @@
   border-bottom: none;
 }
 
-.clickable {
+.pen {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 1;
   cursor: pointer;
-  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.clickable:hover {
-  background: var(--surface-2);
+.pen:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-color: var(--accent-ink);
 }
 
 .rowName {

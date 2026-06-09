@@ -9,7 +9,6 @@ import styles from './SkillRow.module.css';
 
 interface SkillRowProps {
   skillId: string;
-  editMode?: boolean;
 }
 
 /**
@@ -53,8 +52,8 @@ const SKILL_ICONS: Record<string, string> = {
 
 const NEUTRAL_GLYPH = '◆';
 
-function SkillRow({ skillId, editMode = false }: SkillRowProps) {
-  const { character, updateCharacter } = useCharacterContext();
+function SkillRow({ skillId }: SkillRowProps) {
+  const { character, updateCharacter, readOnly } = useCharacterContext();
 
   if (!character) return null;
 
@@ -98,7 +97,7 @@ function SkillRow({ skillId, editMode = false }: SkillRowProps) {
         <small>{ATTRIBUTE_FULL_NAMES[usedAttr]}</small>
       </div>
 
-      {editMode ? (
+      {!readOnly ? (
         <div className={styles.controls}>
           <Switch checked={!!skill.trained} onChange={setTrained} aria-label="Treinada" />
           <NumberField

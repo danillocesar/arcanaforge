@@ -7,41 +7,19 @@ import styles from './AbilityCard.module.css';
 interface AbilityCardProps {
   ability: Ability;
   index: number;
-  editMode?: boolean;
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
 }
 
-function AbilityCard({ ability, index, editMode = false, onEdit, onRemove }: AbilityCardProps) {
+function AbilityCard({ ability, index, onEdit, onRemove }: AbilityCardProps) {
   const { readOnly } = useCharacterContext();
 
   const kind = ability.kind ?? 'Poder';
   const chipVariant = kind === 'Habilidade' ? 'warn' : 'buff';
   const mpCost = Number(ability.mpCost) || 0;
 
-  const editable = editMode && !readOnly;
-
-  const handleCardClick = () => {
-    if (editable && onEdit) onEdit(index);
-  };
-
   return (
-    <Card
-      className={`${styles.pow} ${editable ? styles.editable : ''}`.trim()}
-      onClick={handleCardClick}
-      role={editable ? 'button' : undefined}
-      tabIndex={editable ? 0 : undefined}
-      onKeyDown={
-        editable
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onEdit?.(index);
-              }
-            }
-          : undefined
-      }
-    >
+    <Card className={styles.pow}>
       <div className={styles.txt}>
         <div className={styles.head}>
           <h3 className={styles.name}>{ability.name || 'Sem nome'}</h3>
@@ -55,18 +33,11 @@ function AbilityCard({ ability, index, editMode = false, onEdit, onRemove }: Abi
         )}
         {ability.description && <p className={styles.desc}>{ability.description}</p>}
       </div>
-      {editable && (
-        <button
-          type="button"
-          className={styles.rmX}
-          aria-label="Remover poder"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove?.(index);
-          }}
-        >
-          ×
-        </button>
+      {!readOnly && (
+        <div className={styles.cardCtrl}>
+          <button type="button" className={styles.pen} aria-label="Editar" onClick={() => onEdit?.(index)}>✎</button>
+          <button type="button" className={styles.rmX} aria-label="Remover" onClick={() => onRemove?.(index)}>×</button>
+        </div>
       )}
     </Card>
   );

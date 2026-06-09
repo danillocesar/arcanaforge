@@ -7,45 +7,23 @@ import styles from './SpellCard.module.css';
 interface SpellCardProps {
   spell: Spell;
   index: number;
-  editMode?: boolean;
   onCast: (index: number) => void;
   onEdit?: (index: number) => void;
   onRemove?: (index: number) => void;
 }
 
-function SpellCard({ spell, index, editMode = false, onCast, onEdit, onRemove }: SpellCardProps) {
+function SpellCard({ spell, index, onCast, onEdit, onRemove }: SpellCardProps) {
   const { readOnly } = useCharacterContext();
 
   const mpCost = Number(spell.mpCost) || 0;
   const circulo = Number(spell.spellLevel) || 0;
   const enhancements = Array.isArray(spell.enhancements) ? spell.enhancements : [];
-  const editable = editMode && !readOnly;
 
-  // One-line summary: school · area/effect snippet.
   const summaryBits = [spell.school, spell.area].filter((b) => b && b.trim());
   const summary = summaryBits.join(' · ');
 
-  const handleCardClick = () => {
-    if (editable && onEdit) onEdit(index);
-  };
-
   return (
-    <Card
-      className={`${styles.spell} ${editable ? styles.editable : ''}`.trim()}
-      onClick={handleCardClick}
-      role={editable ? 'button' : undefined}
-      tabIndex={editable ? 0 : undefined}
-      onKeyDown={
-        editable
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onEdit?.(index);
-              }
-            }
-          : undefined
-      }
-    >
+    <Card className={styles.spell}>
       <div className={styles.top}>
         <div className={styles.cost}>
           <b>{mpCost}</b>
@@ -71,29 +49,16 @@ function SpellCard({ spell, index, editMode = false, onCast, onEdit, onRemove }:
             </ul>
           )}
         </div>
-        {editable && (
-          <button
-            type="button"
-            className={styles.rmX}
-            aria-label="Remover magia"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove?.(index);
-            }}
-          >
-            ×
-          </button>
+        {!readOnly && (
+          <div className={styles.cardCtrl}>
+            <button type="button" className={styles.pen} aria-label="Editar" onClick={() => onEdit?.(index)}>✎</button>
+            <button type="button" className={styles.rmX} aria-label="Remover" onClick={() => onRemove?.(index)}>×</button>
+          </div>
         )}
       </div>
 
       {!readOnly && (
-        <Button
-          className={styles.btnCast}
-          onClick={(e) => {
-            e.stopPropagation();
-            onCast(index);
-          }}
-        >
+        <Button className={styles.btnCast} onClick={() => onCast(index)}>
           ✦ Lançar
         </Button>
       )}

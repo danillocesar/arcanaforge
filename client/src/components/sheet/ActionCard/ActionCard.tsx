@@ -14,8 +14,6 @@ import styles from './ActionCard.module.css';
 interface ActionCardProps {
   attack: Attack;
   index: number;
-  editMode?: boolean;
-  /** Optional: bubble up a click-to-edit request (editMode only). */
   onEdit?: (index: number) => void;
 }
 
@@ -29,7 +27,7 @@ interface ActionCardProps {
  * combat selectors (calcAttackRoll / buildDamageSummary / calcTotalMp) — no new
  * dice engine is invented.
  */
-function ActionCard({ attack, index, editMode = false, onEdit }: ActionCardProps) {
+function ActionCard({ attack, index, onEdit }: ActionCardProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
 
   if (!character) return null;
@@ -88,16 +86,11 @@ function ActionCard({ attack, index, editMode = false, onEdit }: ActionCardProps
           <h3>{attack.name || 'Arma sem nome'}</h3>
           <span>{rangeLabel}</span>
         </div>
-        {editMode && (
-          <button
-            type="button"
-            className={styles.rmX}
-            onClick={removeAttack}
-            title="Remover arma"
-            aria-label="Remover arma"
-          >
-            ×
-          </button>
+        {!readOnly && (
+          <button type="button" className={styles.pen} aria-label="Editar" onClick={() => onEdit?.(index)}>✎</button>
+        )}
+        {!readOnly && (
+          <button type="button" className={styles.rmX} onClick={removeAttack} aria-label="Remover">×</button>
         )}
       </div>
 
@@ -128,15 +121,6 @@ function ActionCard({ attack, index, editMode = false, onEdit }: ActionCardProps
         </button>
       )}
 
-      {editMode && onEdit && (
-        <button
-          type="button"
-          className={styles.editLink}
-          onClick={() => onEdit(index)}
-        >
-          Editar arma
-        </button>
-      )}
     </Card>
   );
 }

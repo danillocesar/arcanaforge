@@ -5,11 +5,7 @@ import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './BuffsPanel.module.css';
 
-interface BuffsPanelProps {
-  editMode?: boolean;
-}
-
-function BuffsPanel({ editMode = false }: BuffsPanelProps) {
+function BuffsPanel() {
   const { character, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
 
@@ -27,7 +23,6 @@ function BuffsPanel({ editMode = false }: BuffsPanelProps) {
             key={idx}
             buff={buff}
             index={idx}
-            editMode={editMode}
             onEdit={(i) => openEdit('buff', i)}
           />
         ))}
