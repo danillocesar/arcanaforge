@@ -15,6 +15,7 @@ export type EntityKind =
   | 'habilidade'
   | 'magia'
   | 'buff'
+  | 'ataque'
   | 'arma'
   | 'armadura'
   | 'acessorio'
@@ -178,39 +179,64 @@ const buffConfig: EntityConfig = {
   remove: (c, i) => ({ ...c, buffs: c.buffs.filter((_, idx) => idx !== i) }),
 };
 
-/* ─────────────────────────────── Arma ──────────────────────────────────── */
+/* ───────────────── Ataque (combinação: base + modificadores) ────────────── */
 
-const armaFields: FieldDescriptor[] = [
-  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome da arma' },
-  { key: 'damage', label: 'Dano', type: 'text', placeholder: 'Ex.: 1d8', half: true },
-  { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
-  { key: 'rangeType', label: 'Alcance', type: 'select', options: rangeOptions, half: true },
-  { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
-  { key: 'type', label: 'Tipo de dano', type: 'text', placeholder: 'Corte, perfuração…', half: true },
+const ataqueFields: FieldDescriptor[] = [
+  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Katana, Bola de Fogo…' },
+  { key: 'rangeType', label: 'Alcance (base)', type: 'select', options: rangeOptions, half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+  { key: 'damage', label: 'Dano (dados)', type: 'text', placeholder: 'Ex.: 2d8', half: true },
+  { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
+  { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
+  { key: 'type', label: 'Tipo de dano', type: 'text', placeholder: 'Corte, fogo…', half: true },
+  {
+    key: 'extraBonuses', label: 'Modificadores de ataque', type: 'list', addLabel: 'Modificador',
+    itemFields: [
+      { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Ataque Poderoso' },
+      { key: 'value', label: 'Bônus', type: 'number' },
+      { key: 'mp', label: 'PM', type: 'number' },
+    ],
+  },
+  {
+    key: 'extraDamage', label: 'Dano extra', type: 'list', addLabel: 'Dano',
+    itemFields: [
+      { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Chama' },
+      { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 1d6 ou 2' },
+      { key: 'mp', label: 'PM', type: 'number' },
+    ],
+  },
 ];
 
-const armaConfig: EntityConfig = {
-  title: 'Arma',
-  fields: armaFields,
-  empty: () => ({ name: '', damage: '', critical: '', rangeType: 'melee', attributeDamageBonus: 'str', type: '', mpCost: 0 }),
+const ataqueConfig: EntityConfig = {
+  title: 'Ataque',
+  fields: ataqueFields,
+  empty: () => ({
+    name: '', rangeType: 'melee', mpCost: 0, damage: '', attributeDamageBonus: 'str',
+    critical: '', type: '', extraBonuses: [], extraDamage: [],
+  }),
   fromEntry: (c, i) => {
     const a = c.attacks[i];
     return {
-      name: a.name, damage: a.damage, critical: a.critical, rangeType: a.rangeType,
-      attributeDamageBonus: a.attributeDamageBonus || 'str', type: a.type, mpCost: a.mpCost,
+      name: a.name, rangeType: a.rangeType, mpCost: a.mpCost, damage: a.damage,
+      attributeDamageBonus: a.attributeDamageBonus || 'str', critical: a.critical, type: a.type,
+      extraBonuses: (a.extraBonuses ?? []).map((b) => ({ name: b.name, value: b.value, mp: b.mp })),
+      extraDamage: (a.extraDamage ?? []).map((d) => ({ name: d.name, value: d.value, mp: d.mp })),
     };
   },
   apply: (c, v, i) => {
-    const base = i != null ? c.attacks[i] : { extraBonuses: [], extraDamage: [] };
-    const entry = {
-      ...base,
-      name: s(v.name), damage: s(v.damage), critical: s(v.critical),
-      rangeType: s(v.rangeType), attributeDamageBonus: s(v.attributeDamageBonus),
-      type: s(v.type), mpCost: n(v.mpCost),
-      extraBonuses: (base as { extraBonuses?: unknown[] }).extraBonuses ?? [],
-      extraDamage: (base as { extraDamage?: unknown[] }).extraDamage ?? [],
-    } as Character['attacks'][number];
+    const bonuses = Array.isArray(v.extraBonuses) ? v.extraBonuses : [];
+    const dmg = Array.isArray(v.extraDamage) ? v.extraDamage : [];
+    const entry: Character['attacks'][number] = {
+      name: s(v.name),
+      damage: s(v.damage),
+      critical: s(v.critical),
+      type: s(v.type),
+      rangeType: s(v.rangeType),
+      mpCost: n(v.mpCost),
+      attributeDamageBonus: s(v.attributeDamageBonus),
+      extraBonuses: bonuses.map((b) => ({ name: s(b.name), value: n(b.value), mp: n(b.mp) })),
+      extraDamage: dmg.map((d) => ({ name: s(d.name), value: s(d.value), mp: n(d.mp) })),
+    };
     return { ...c, attacks: upsert(c.attacks, entry, i) };
   },
   remove: (c, i) => ({ ...c, attacks: c.attacks.filter((_, idx) => idx !== i) }),
@@ -237,7 +263,7 @@ const armaduraConfig: EntityConfig = {
   remove: (c, i) => ({ ...c, defense: { ...c.defense, items: c.defense.items.filter((_, idx) => idx !== i) } }),
 };
 
-/* ──────────────── Inventory items (acessório / comum / consumível) ──────── */
+/* ──────────────── Inventory items (arma / acessório / comum / consumível) ── */
 
 function inventoryConfig(
   category: InventoryCategory,
@@ -286,11 +312,18 @@ const consumivelConfig = inventoryConfig('consumivel', 'Consumível', [
   { key: 'effect', label: 'Efeito', type: 'text', half: true },
 ]);
 
+const armaConfig = inventoryConfig('arma', 'Arma', [
+  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Espada longa, Arco' },
+  { key: 'slot', label: 'Empunhadura', type: 'text', placeholder: 'Ex.: 1 mão, 2 mãos', half: true },
+  { key: 'effect', label: 'Descrição', type: 'text', placeholder: 'Material, encantamento…', half: true },
+]);
+
 export const ENTITY_FORMS: Record<EntityKind, EntityConfig> = {
   poder: abilityConfig('Poder'),
   habilidade: abilityConfig('Habilidade'),
   magia: magiaConfig,
   buff: buffConfig,
+  ataque: ataqueConfig,
   arma: armaConfig,
   armadura: armaduraConfig,
   acessorio: acessorioConfig,

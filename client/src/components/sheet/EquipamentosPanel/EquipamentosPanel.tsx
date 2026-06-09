@@ -32,10 +32,12 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
 
   if (!character) return null;
 
-  const attacks = character.attacks ?? [];
   const armaduras = character.defense?.items ?? [];
   const inventory = character.inventory ?? [];
 
+  const armas = inventory
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.category === 'arma');
   const acessorios = inventory
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.category === 'acessorio');
@@ -45,13 +47,6 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
   const consumiveis = inventory
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.category === 'consumivel');
-
-  const removeArma = (idx: number) => {
-    updateCharacter((f) => ({
-      ...f,
-      attacks: f.attacks.filter((_, i) => i !== idx),
-    }));
-  };
 
   const removeArmadura = (idx: number) => {
     updateCharacter((f) => ({
@@ -89,23 +84,22 @@ function EquipamentosPanel({ editMode = false }: EquipamentosPanelProps) {
       />
 
       <div className={styles.subHead}>Armas</div>
-      {attacks.length > 0 ? (
+      {armas.length > 0 ? (
         <Card padding={false} className={styles.list}>
-          {attacks.map((arma, idx) => (
-            <div key={idx} {...rowProps('arma', idx)}>
+          {armas.map(({ item, index }) => (
+            <div key={index} {...rowProps('arma', index)}>
               <div className={styles.rowName}>
-                {arma.name || 'Arma'}
-                {arma.type && <small className={styles.effect}>{arma.type}</small>}
+                {item.name || 'Arma'}
+                {item.effect && <small className={styles.effect}>{item.effect}</small>}
               </div>
               <div className={styles.rowMeta}>
-                {arma.damage && <span className={styles.badge}>{arma.damage}</span>}
-                {arma.critical && <span className={styles.slot}>{arma.critical}</span>}
+                {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
               {editMode && (
                 <button
                   type="button"
                   className={styles.rmX}
-                  onClick={(e) => { e.stopPropagation(); removeArma(idx); }}
+                  onClick={(e) => { e.stopPropagation(); removeInventoryItem(index); }}
                   title="Remover arma"
                   aria-label="Remover arma"
                 >

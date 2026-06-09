@@ -26,7 +26,7 @@ function AcoesPanel({ editMode = false }: AcoesPanelProps) {
     <div className={styles.panel}>
       <SectionHeader
         title="Ataques"
-        action={!readOnly && <AddButton label="Ataque" onClick={() => openCreate('arma')} />}
+        action={!readOnly && <AddButton label="Ataque" onClick={() => openCreate('ataque')} />}
       />
       {attacks.length > 0 ? (
         <div className={styles.grid}>
@@ -36,7 +36,7 @@ function AcoesPanel({ editMode = false }: AcoesPanelProps) {
               attack={attack}
               index={idx}
               editMode={editMode}
-              onEdit={(i) => openEdit('arma', i)}
+              onEdit={(i) => openEdit('ataque', i)}
             />
           ))}
         </div>
