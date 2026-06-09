@@ -106,6 +106,13 @@ const spellFields: FieldDescriptor[] = [
   { key: 'duration', label: 'Duração', type: 'text', half: true },
   { key: 'resistance', label: 'Resistência', type: 'text', half: true },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito da magia' },
+  {
+    key: 'enhancements', label: 'Aprimoramentos', type: 'list', addLabel: 'Aprimoramento',
+    itemFields: [
+      { key: 'mpCost', label: 'PM extra', type: 'number' },
+      { key: 'description', label: 'Efeito', type: 'text', placeholder: 'Ex.: +1d6 de dano' },
+    ],
+  },
 ];
 
 const magiaConfig: EntityConfig = {
@@ -113,7 +120,7 @@ const magiaConfig: EntityConfig = {
   fields: spellFields,
   empty: () => ({
     name: '', school: '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
-    area: '', duration: '', resistance: '', description: '',
+    area: '', duration: '', resistance: '', description: '', enhancements: [],
   }),
   fromEntry: (c, i) => {
     const sp = c.spells[i];
@@ -121,16 +128,18 @@ const magiaConfig: EntityConfig = {
       name: sp.name, school: sp.school, spellLevel: sp.spellLevel, mpCost: sp.mpCost,
       castingTime: sp.castingTime, range: sp.range, area: sp.area, duration: sp.duration,
       resistance: sp.resistance, description: sp.description,
+      enhancements: (sp.enhancements ?? []).map((e) => ({ mpCost: e.mpCost, description: e.description })),
     };
   },
   apply: (c, v, i) => {
-    const base = i != null ? c.spells[i] : { enhancements: [] };
+    const base = i != null ? c.spells[i] : {};
+    const rawEnhancements = Array.isArray(v.enhancements) ? v.enhancements : [];
     const entry = {
       ...base,
       name: s(v.name), school: s(v.school), spellLevel: n(v.spellLevel), mpCost: n(v.mpCost),
       castingTime: s(v.castingTime), range: s(v.range), area: s(v.area), duration: s(v.duration),
       resistance: s(v.resistance), description: s(v.description),
-      enhancements: (base as { enhancements?: unknown[] }).enhancements ?? [],
+      enhancements: rawEnhancements.map((e) => ({ mpCost: n(e.mpCost), description: s(e.description) })),
     } as Character['spells'][number];
     return { ...c, spells: upsert(c.spells, entry, i) };
   },
