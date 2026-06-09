@@ -19,7 +19,12 @@ function AbilityCard({ ability, index, onEdit, onRemove }: AbilityCardProps) {
   const mpCost = Number(ability.mpCost) || 0;
 
   return (
-    <Card className={styles.pow}>
+    <Card
+      className={`${styles.pow} ${!readOnly ? styles.tappable : ''}`.trim()}
+      onClick={!readOnly ? () => onEdit?.(index) : undefined}
+      role={!readOnly ? 'button' : undefined}
+      tabIndex={!readOnly ? 0 : undefined}
+    >
       <div className={styles.txt}>
         <div className={styles.head}>
           <h3 className={styles.name}>{ability.name || 'Sem nome'}</h3>
@@ -34,10 +39,14 @@ function AbilityCard({ ability, index, onEdit, onRemove }: AbilityCardProps) {
         {ability.description && <p className={styles.desc}>{ability.description}</p>}
       </div>
       {!readOnly && (
-        <div className={styles.cardCtrl}>
-          <button type="button" className={styles.pen} aria-label="Editar" onClick={() => onEdit?.(index)}>✎</button>
-          <button type="button" className={styles.rmX} aria-label="Remover" onClick={() => onRemove?.(index)}>×</button>
-        </div>
+        <button
+          type="button"
+          className={styles.rmX}
+          aria-label="Remover"
+          onClick={(e) => { e.stopPropagation(); onRemove?.(index); }}
+        >
+          ×
+        </button>
       )}
     </Card>
   );

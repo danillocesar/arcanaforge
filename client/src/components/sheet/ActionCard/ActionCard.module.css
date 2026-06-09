@@ -104,25 +104,11 @@
   transform: scale(0.97);
 }
 
-.pen {
-  flex: 0 0 auto;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: 1px solid var(--line-2);
-  background: var(--surface-2);
-  color: var(--ink-3);
-  font-size: 13px;
-  line-height: 1;
+.tappable {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.pen:hover {
-  background: var(--accent-soft);
-  color: var(--accent-ink);
-  border-color: var(--accent-ink);
+.tappable:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: 8px;
 }

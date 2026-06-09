@@ -3,33 +3,64 @@
   margin-bottom: 9px;
 }
 
-.cardCtrl {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.btnDots {
   flex: 0 0 auto;
-}
-
-.pen {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-  border-radius: 7px;
-  border: none;
-  cursor: pointer;
-  background: var(--surface-3);
-  color: var(--ink-3);
-  font-size: 13px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 16px;
   line-height: 1;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.pen:hover {
-  background: var(--accent-soft);
-  color: var(--accent-ink);
+.btnDots:hover {
+  background: var(--surface-3);
+  border-color: var(--ink-3);
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 140px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.menuItem:hover {
+  background: var(--surface-2);
+}
+
+.menuDanger {
+  color: var(--danger);
+}
+
+.menuDanger:hover {
+  background: var(--danger-soft);
 }
 
 .top {

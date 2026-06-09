@@ -81,16 +81,18 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
 
   return (
     <Card padding={false} className={styles.weapon}>
-      <div className={styles.top}>
+      <div
+        className={`${styles.top} ${!readOnly ? styles.tappable : ''}`.trim()}
+        onClick={!readOnly ? () => onEdit?.(index) : undefined}
+        role={!readOnly ? 'button' : undefined}
+        tabIndex={!readOnly ? 0 : undefined}
+      >
         <div className={styles.wname}>
           <h3>{attack.name || 'Arma sem nome'}</h3>
           <span>{rangeLabel}</span>
         </div>
         {!readOnly && (
-          <button type="button" className={styles.pen} aria-label="Editar" onClick={() => onEdit?.(index)}>✎</button>
-        )}
-        {!readOnly && (
-          <button type="button" className={styles.rmX} onClick={removeAttack} aria-label="Remover">×</button>
+          <button type="button" className={styles.rmX} onClick={(e) => { e.stopPropagation(); removeAttack(); }} aria-label="Remover">×</button>
         )}
       </div>
 

@@ -51,12 +51,26 @@ function EquipamentosPanel() {
 
   const proficiencies = character.proficiencies?.trim();
 
-  const rowCtrl = (kind: EntityKind, idx: number, onRemove: () => void) =>
+  const rowProps = (kind: EntityKind, idx: number) =>
+    !readOnly
+      ? {
+          className: `${styles.row} ${styles.tappable}`,
+          role: 'button' as const,
+          tabIndex: 0,
+          onClick: () => openEdit(kind, idx),
+        }
+      : { className: styles.row };
+
+  const rmBtn = (onRemove: () => void) =>
     !readOnly ? (
-      <>
-        <button type="button" className={styles.pen} aria-label="Editar" onClick={() => openEdit(kind, idx)}>✎</button>
-        <button type="button" className={styles.rmX} aria-label="Remover" onClick={onRemove}>×</button>
-      </>
+      <button
+        type="button"
+        className={styles.rmX}
+        aria-label="Remover"
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+      >
+        ×
+      </button>
     ) : null;
 
   return (
@@ -71,7 +85,7 @@ function EquipamentosPanel() {
       {armas.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {armas.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('arma', index)}>
               <div className={styles.rowName}>
                 {item.name || 'Arma'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -79,7 +93,7 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {rowCtrl('arma', index, () => removeInventoryItem(index))}
+              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -91,7 +105,7 @@ function EquipamentosPanel() {
       {armaduras.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {armaduras.map((arm, idx) => (
-            <div key={idx} className={styles.row}>
+            <div key={idx} {...rowProps('armadura', idx)}>
               <div className={styles.rowName}>{arm.name || 'Armadura'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.badge}>{formatMod(arm.value)}</span>
@@ -99,7 +113,7 @@ function EquipamentosPanel() {
                   <span className={styles.penalty}>Pen {formatMod(arm.penalty)}</span>
                 )}
               </div>
-              {rowCtrl('armadura', idx, () => removeArmadura(idx))}
+              {rmBtn(() => removeArmadura(idx))}
             </div>
           ))}
         </Card>
@@ -111,7 +125,7 @@ function EquipamentosPanel() {
       {acessorios.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {acessorios.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('acessorio', index)}>
               <div className={styles.rowName}>
                 {item.name || 'Acessório'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -119,7 +133,7 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {rowCtrl('acessorio', index, () => removeInventoryItem(index))}
+              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -132,12 +146,12 @@ function EquipamentosPanel() {
       {comuns.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {comuns.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('comum', index)}>
               <div className={styles.rowName}>{item.name || 'Item'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {rowCtrl('comum', index, () => removeInventoryItem(index))}
+              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -150,7 +164,7 @@ function EquipamentosPanel() {
       {consumiveis.length > 0 ? (
         <Card padding={false} className={styles.list}>
           {consumiveis.map(({ item, index }) => (
-            <div key={index} className={styles.row}>
+            <div key={index} {...rowProps('consumivel', index)}>
               <div className={styles.rowName}>
                 {item.name || 'Consumível'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
@@ -158,7 +172,7 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {rowCtrl('consumivel', index, () => removeInventoryItem(index))}
+              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
