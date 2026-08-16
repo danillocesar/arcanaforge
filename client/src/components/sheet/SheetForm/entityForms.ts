@@ -134,11 +134,20 @@ const spellFields: FieldDescriptor[] = [
   { key: 'duration', label: 'Duração', type: 'text', half: true },
   { key: 'resistance', label: 'Resistência', type: 'text', half: true },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito da magia' },
+  { key: 'buffTargetScope', label: 'Alvo do buff', type: 'select', options: buffTargetScopeOptions, half: true },
+  {
+    key: 'buffs', label: 'Efeitos de Buff (base)', type: 'list', addLabel: 'Efeito',
+    itemFields: BUFF_EFFECT_ITEM_FIELDS,
+  },
   {
     key: 'enhancements', label: 'Aprimoramentos', type: 'list', addLabel: 'Aprimoramento',
     itemFields: [
       { key: 'mpCost', label: 'PM extra', type: 'number' },
       { key: 'description', label: 'Efeito', type: 'textarea', placeholder: 'Ex.: +1d6 de dano' },
+      {
+        key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
+        itemFields: BUFF_EFFECT_ITEM_FIELDS,
+      },
     ],
   },
 ];
@@ -149,6 +158,7 @@ const magiaConfig: EntityConfig = {
   empty: () => ({
     name: '', school: '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
     area: '', duration: '', resistance: '', description: '', enhancements: [],
+    buffTargetScope: 'self', buffs: [],
   }),
   fromEntry: (c, i) => {
     const sp = c.spells[i];
@@ -156,7 +166,13 @@ const magiaConfig: EntityConfig = {
       name: sp.name, school: sp.school, spellLevel: sp.spellLevel, mpCost: sp.mpCost,
       castingTime: sp.castingTime, range: sp.range, area: sp.area, duration: sp.duration,
       resistance: sp.resistance, description: sp.description,
-      enhancements: (sp.enhancements ?? []).map((e) => ({ mpCost: e.mpCost, description: e.description })),
+      buffTargetScope: sp.buffTargetScope ?? 'self',
+      buffs: effectsToForm(sp.buffs),
+      enhancements: (sp.enhancements ?? []).map((e) => ({
+        mpCost: e.mpCost,
+        description: e.description,
+        buffs: effectsToForm(e.buffs),
+      })),
     };
   },
   apply: (c, v, i) => {
@@ -167,7 +183,13 @@ const magiaConfig: EntityConfig = {
       name: s(v.name), school: s(v.school), spellLevel: n(v.spellLevel), mpCost: n(v.mpCost),
       castingTime: s(v.castingTime), range: s(v.range), area: s(v.area), duration: s(v.duration),
       resistance: s(v.resistance), description: s(v.description),
-      enhancements: rawEnhancements.map((e) => ({ mpCost: n(e.mpCost), description: s(e.description) })),
+      buffTargetScope: s(v.buffTargetScope) || 'self',
+      buffs: effectsFromValues(v.buffs),
+      enhancements: rawEnhancements.map((e) => ({
+        mpCost: n(e.mpCost),
+        description: s(e.description),
+        buffs: effectsFromValues(e.buffs),
+      })),
     } as Character['spells'][number];
     return { ...c, spells: upsert(c.spells, entry, i) };
   },
@@ -195,6 +217,12 @@ function effectsFromValues(raw: unknown): BuffEffect[] {
   }));
 }
 
+function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
+  return (effects ?? []).map((eff) => ({
+    type: eff.type, attributeId: eff.attributeId ?? 'str', skillId: eff.skillId ?? '', value: eff.value,
+  }));
+}
+
 const buffConfig: EntityConfig = {
   title: 'Buff / Condição',
   fields: buffFields,
@@ -204,9 +232,7 @@ const buffConfig: EntityConfig = {
     return {
       name: b.name,
       mp: b.mp,
-      effects: (b.effects || []).map((eff) => ({
-        type: eff.type, attributeId: eff.attributeId ?? 'str', skillId: eff.skillId ?? '', value: eff.value,
-      })),
+      effects: effectsToForm(b.effects),
     };
   },
   apply: (c, v, i) => {
