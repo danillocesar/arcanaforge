@@ -36,6 +36,9 @@ function createPartyController(partyService) {
     async getPartyCharacter(req, res) {
       res.json(await partyService.getPartyCharacter(req.params.id, req.params.characterId, req.user.uid));
     },
+    async applyBuff(req, res) {
+      res.json(await partyService.applyBuff(req.params.id, req.body, req.user.uid));
+    },
   };
 }
 

@@ -19,6 +19,7 @@ function createPartyRoutes(refs) {
   router.post('/api/parties/:id/regenerate-code', asyncHandler(partyController.regenerateCode));
   router.get('/api/parties/:id/characters', asyncHandler(partyController.listPartyCharacters));
   router.get('/api/parties/:id/characters/:characterId', asyncHandler(partyController.getPartyCharacter));
+  router.post('/api/parties/:id/apply-buff', asyncHandler(partyController.applyBuff));
   return router;
 }
 

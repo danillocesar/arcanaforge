@@ -83,6 +83,9 @@ async function start() {
     broadcastPartyRoster() {
       /* filled by attachWebSocket */
     },
+    broadcastBuffApplied() {
+      /* filled by attachWebSocket */
+    },
   };
 
   registerRoutes(app, { refs });

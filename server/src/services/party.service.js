@@ -196,6 +196,67 @@ function createPartyService(refs) {
     return toCharacterDetailDTO(mergeCharacterDocs(character, content, logsDoc));
   }
 
+  function sumEffectsByType(effects, type) {
+    return (effects || [])
+      .filter((eff) => eff && eff.type === type)
+      .reduce((sum, eff) => sum + (Number(eff.value) || 0), 0);
+  }
+
+  async function applyBuff(partyId, body, uid) {
+    const { targetCharacterIds, buff } = body || {};
+    if (!Array.isArray(targetCharacterIds) || targetCharacterIds.length === 0) {
+      throw new AppError(400, 'targetCharacterIds é obrigatório');
+    }
+    if (!buff || typeof buff !== 'object' || !Array.isArray(buff.effects)) {
+      throw new AppError(400, 'buff inválido');
+    }
+    const hasNegativeHpMp = buff.effects.some(
+      (eff) => eff && (eff.type === 'hp' || eff.type === 'mp') && Number(eff.value) < 0,
+    );
+    if (hasNegativeHpMp) {
+      throw new AppError(400, 'Efeitos de PV/PM em um buff não podem ser negativos');
+    }
+
+    const party = await partyRepository.findMemberPartyLean(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const validIds = new Set(party.members.flatMap((m) => m.characterIds || []));
+    const targets = targetCharacterIds.filter((id) => validIds.has(id));
+    if (targets.length === 0) throw new AppError(400, 'Nenhum alvo válido neste grupo');
+
+    const entry = {
+      name: String(buff.name || ''),
+      effects: buff.effects.map((eff) => ({
+        type: String(eff.type || ''),
+        attributeId: eff.attributeId ? String(eff.attributeId) : undefined,
+        skillId: eff.skillId ? String(eff.skillId) : undefined,
+        value: String(eff.value ?? ''),
+      })),
+      mp: 0,
+      active: true,
+      source: buff.source ? String(buff.source) : undefined,
+    };
+
+    const tempDelta = {
+      hp: sumEffectsByType(entry.effects, 'hp'),
+      mp: sumEffectsByType(entry.effects, 'mp'),
+    };
+
+    const results = await Promise.allSettled(
+      targets.map((id) =>
+        characterRepository.pushBuffs(id, [entry], tempDelta).then(() => {
+          refs.broadcastBuffApplied(partyId, { characterId: id, buff: entry });
+          return id;
+        }),
+      ),
+    );
+
+    const appliedTo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    const failed = targets.filter((id) => !appliedTo.includes(id));
+
+    return { ok: true, appliedTo, failed };
+  }
+
   return {
     listParties,
     createParty,
@@ -209,6 +270,7 @@ function createPartyService(refs) {
     regenerateCode,
     listPartyCharacters,
     getPartyCharacter,
+    applyBuff,
   };
 }
 

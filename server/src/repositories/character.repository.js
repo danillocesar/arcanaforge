@@ -100,6 +100,20 @@ async function findActiveById(id) {
   return Character.findOne({ _id: id, ...ACTIVE_FILTER }).lean();
 }
 
+async function pushBuffs(id, buffs, tempDelta) {
+  const update = { $push: { buffs: { $each: buffs } } };
+  if (tempDelta.hp || tempDelta.mp) {
+    update.$inc = {};
+    if (tempDelta.hp) update.$inc.temporaryHp = tempDelta.hp;
+    if (tempDelta.mp) update.$inc.temporaryMp = tempDelta.mp;
+  }
+  const updated = await Character.findOneAndUpdate({ _id: id, ...ACTIVE_FILTER }, update, { new: true })
+    .select('_id')
+    .lean();
+  if (!updated) throw new Error(`Character ${id} not found or inactive`);
+  return updated;
+}
+
 module.exports = {
   findIdsByOwner,
   findSummaryByOwner,
@@ -118,4 +132,5 @@ module.exports = {
   findByIds,
   findOwnedCharacterById,
   findActiveById,
+  pushBuffs,
 };

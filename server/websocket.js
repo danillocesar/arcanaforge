@@ -46,6 +46,15 @@ function attachWebSocket(server, opts) {
     });
   };
 
+  refs.broadcastBuffApplied = function broadcastBuffApplied(partyId, payload) {
+    const msg = JSON.stringify({ type: 'buff_applied', partyId, ...payload });
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1 && client.partyIds?.has(partyId)) {
+        client.send(msg);
+      }
+    });
+  };
+
   wss.on('connection', (ws, req) => {
     if (!adminAuth) {
       ws.close(1011, 'Auth unavailable');
