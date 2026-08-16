@@ -90,21 +90,44 @@ const kindOptions: Array<{ value: string; label: string }> = [
   { value: 'Habilidade', label: 'Habilidade' },
 ];
 
+const castableOptions = [
+  { value: 'false', label: 'Não' },
+  { value: 'true', label: 'Sim' },
+];
+
 const abilityFields: FieldDescriptor[] = [
   { key: 'kind', label: 'Tipo', type: 'select', options: kindOptions, half: true },
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
   { key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
+  { key: 'castable', label: 'Conjurável', type: 'select', options: castableOptions, half: true },
+  {
+    key: 'buffTargetScope', label: 'Alvo do buff', type: 'select', options: buffTargetScopeOptions, half: true,
+    showIf: (v) => v.castable === 'true',
+  },
+  {
+    key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
+    itemFields: BUFF_EFFECT_ITEM_FIELDS,
+    showIf: (v) => v.castable === 'true',
+  },
 ];
 
 const abilidadeConfig: EntityConfig = {
   title: 'Poder / Habilidade',
   fields: abilityFields,
-  empty: () => ({ kind: 'Poder', name: '', source: '', mpCost: 0, description: '' }),
+  empty: () => ({
+    kind: 'Poder', name: '', source: '', mpCost: 0, description: '',
+    castable: 'false', buffTargetScope: 'self', buffs: [],
+  }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
-    return { kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost, description: a.description };
+    return {
+      kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost, description: a.description,
+      castable: a.castable ? 'true' : 'false',
+      buffTargetScope: a.buffTargetScope ?? 'self',
+      buffs: effectsToForm(a.buffs),
+    };
   },
   apply: (c, v, i) => {
     const base = i != null ? c.abilities[i] : { type: '' };
@@ -115,7 +138,10 @@ const abilidadeConfig: EntityConfig = {
       kind: (s(v.kind) || 'Poder') as AbilityKind,
       mpCost: n(v.mpCost),
       description: s(v.description),
-    };
+      castable: s(v.castable) === 'true',
+      buffTargetScope: s(v.buffTargetScope) || 'self',
+      buffs: effectsFromValues(v.buffs),
+    } as Character['abilities'][number];
     return { ...c, abilities: upsert(c.abilities, entry, i) };
   },
   remove: (c, i) => ({ ...c, abilities: c.abilities.filter((_, idx) => idx !== i) }),
