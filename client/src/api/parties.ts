@@ -1,4 +1,4 @@
-import type { RPGSystem } from '../types/character';
+import type { RPGSystem, BuffEffect } from '../types/character';
 import type { Party } from '../types/party';
 import type { CombatData } from '../types/combat';
 import type { CharacterSummary } from '../types/character';
@@ -127,6 +127,24 @@ export async function apiSaveCombat(partyId: string, data: CombatData): Promise<
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
+  });
+  await assertOk(res);
+}
+
+export interface ApplyBuffPayload {
+  targetCharacterIds: string[];
+  buff: {
+    name: string;
+    effects: BuffEffect[];
+    source: string;
+  };
+}
+
+export async function apiApplyBuffToParty(partyId: string, payload: ApplyBuffPayload): Promise<void> {
+  const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/apply-buff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
   await assertOk(res);
 }

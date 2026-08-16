@@ -23,6 +23,8 @@ export {
   apiLoadPartyCharacter,
   apiLoadCombat,
   apiSaveCombat,
+  apiApplyBuffToParty,
 } from './parties';
+export type { PartyCharacter, ApplyBuffPayload } from './parties';
 export { apiFetchNarutoClans, apiFetchNarutoTechTemplates } from './naruto';
 export type { NarutoClanOption, NarutoTechTemplateOption } from './naruto';
