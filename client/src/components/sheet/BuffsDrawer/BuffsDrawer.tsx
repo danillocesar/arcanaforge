@@ -78,6 +78,7 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
                 />
                 <div className={styles.info}>
                   <span className={styles.name}>{buff.name || 'Sem nome'}</span>
+                  {buff.source && <span className={styles.sourceText}>{buff.source}</span>}
                   {buff.mp > 0 && <span className={styles.source}>{buff.mp} PM</span>}
                 </div>
                 {signed && (
