@@ -7,7 +7,7 @@ import { toggleBuffState } from '../../../utils/calculations';
 import { BUFF_TYPES } from '../../../data/constants';
 import { SKILLS_CONFIG } from '../../../data/pericias';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
-import type { Buff, BuffType, AttributeId } from '../../../types/character';
+import type { Buff, BuffEffect, BuffType, AttributeId } from '../../../types/character';
 import NumericInput from '../../ui/NumericInput/NumericInput';
 import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './BuffsList.module.css';
@@ -26,12 +26,22 @@ export default function BuffsList() {
     });
   };
 
+  const updateEffect = (idx: number, effIdx: number, updates: Partial<BuffEffect>) => {
+    updateCharacter((f) => {
+      const buffs = [...f.buffs];
+      const effects = [...(buffs[idx].effects || [])];
+      effects[effIdx] = { ...effects[effIdx], ...updates };
+      buffs[idx] = { ...buffs[idx], effects };
+      return { ...f, buffs };
+    });
+  };
+
   const addBuff = () => {
     updateCharacter((f) => ({
       ...f,
       buffs: [
         ...f.buffs,
-        { name: '', type: 'attack_roll' as BuffType, value: '', mp: 0, active: false },
+        { name: '', effects: [{ type: 'attack_roll' as BuffType, value: '' }], mp: 0, active: false },
       ],
     }));
   };
@@ -59,45 +69,49 @@ export default function BuffsList() {
             onChange={(e) => updateBuff(idx, { name: e.target.value })}
             placeholder="Nome"
           />
-          <select
-            className={styles.tipoSel}
-            value={buff.type}
-            onChange={(e) => updateBuff(idx, { type: e.target.value as BuffType })}
-          >
-            {Object.entries(BUFF_TYPES).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </select>
-          {buff.type === 'skill' && (
-            <select
-              className={styles.extraSel}
-              value={buff.skillId || ''}
-              onChange={(e) => updateBuff(idx, { skillId: e.target.value })}
-            >
-              <option value="">-</option>
-              {SKILLS_CONFIG.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          )}
-          {buff.type === 'attribute' && (
-            <select
-              className={styles.extraSel}
-              value={buff.attributeId || ''}
-              onChange={(e) => updateBuff(idx, { attributeId: e.target.value as AttributeId })}
-            >
-              <option value="">-</option>
-              {(Object.entries(ATTRIBUTE_LABELS) as [AttributeId, string][]).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
-          )}
-          <input
-            className={styles.valor}
-            value={buff.value}
-            onChange={(e) => updateBuff(idx, { value: e.target.value })}
-            placeholder="Valor"
-          />
+          {(buff.effects || []).map((eff, effIdx) => (
+            <div key={effIdx} className={styles.effectRow}>
+              <select
+                className={styles.tipoSel}
+                value={eff.type}
+                onChange={(e) => updateEffect(idx, effIdx, { type: e.target.value as BuffType })}
+              >
+                {Object.entries(BUFF_TYPES).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+              {eff.type === 'skill' && (
+                <select
+                  className={styles.extraSel}
+                  value={eff.skillId || ''}
+                  onChange={(e) => updateEffect(idx, effIdx, { skillId: e.target.value })}
+                >
+                  <option value="">-</option>
+                  {SKILLS_CONFIG.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+              {eff.type === 'attribute' && (
+                <select
+                  className={styles.extraSel}
+                  value={eff.attributeId || ''}
+                  onChange={(e) => updateEffect(idx, effIdx, { attributeId: e.target.value as AttributeId })}
+                >
+                  <option value="">-</option>
+                  {(Object.entries(ATTRIBUTE_LABELS) as [AttributeId, string][]).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              )}
+              <input
+                className={styles.valor}
+                value={eff.value}
+                onChange={(e) => updateEffect(idx, effIdx, { value: e.target.value })}
+                placeholder="Valor"
+              />
+            </div>
+          ))}
           <div className={styles.pmField}>
             <span className={styles.pmLabel}>PM</span>
             <NumericInput

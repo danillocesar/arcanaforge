@@ -16,6 +16,13 @@
   background: color-mix(in srgb, var(--accent-success) 8%, var(--bg-body));
 }
 
+.effectRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
 .name,
 .tipoSel,
 .extraSel,

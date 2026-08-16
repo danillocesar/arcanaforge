@@ -61,14 +61,19 @@ export default function AttackCard({ index }: AttackCardProps) {
   const damageAttrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
   const damageAttrVal = getEffectiveAttribute(character, damageAttrKey);
   const pmTotal = calcTotalMp(atk);
-  const activeRollBuffs = character.buffs.filter((b) =>
-    b.active && (
-      b.type === 'attack_roll' ||
-      (b.type === 'skill' && b.skillId === skillId)
-    )
+  const activeRollBuffs = character.buffs.flatMap((b) =>
+    b.active
+      ? (b.effects || [])
+          .filter((eff) => eff.type === 'attack_roll' || (eff.type === 'skill' && eff.skillId === skillId))
+          .map((eff) => ({ name: b.name, value: eff.value }))
+      : []
   );
-  const activeDamageBuffs = character.buffs.filter(
-    (b) => b.active && (b.type === 'fixed_damage' || b.type === 'extra_damage'),
+  const activeDamageBuffs = character.buffs.flatMap((b) =>
+    b.active
+      ? (b.effects || [])
+          .filter((eff) => eff.type === 'fixed_damage' || eff.type === 'extra_damage')
+          .map((eff) => ({ name: b.name, value: eff.value }))
+      : []
   );
 
   const useAttack = () => {
