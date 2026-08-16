@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
-import { createEmptyCharacter } from '../utils/calculations';
+import { createEmptyCharacter, normalizeBuffs } from '../utils/calculations';
 import {
   apiFetchCharacters,
   apiLoadCharacter,
@@ -171,7 +171,8 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   const loadCharacter = useCallback(async (id: string) => {
     const data = await apiLoadCharacter(id);
     if (data) {
-      setCharacter(data);
+      const normalized = { ...data, buffs: normalizeBuffs(data.buffs) };
+      setCharacter(normalized);
       setCharacterOriginalId(data._id);
       lastBroadcastRef.current = {
         hp: { ...data.hp },
@@ -222,7 +223,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   }, [readOnly]);
 
   const setCharacterDirect = useCallback((char: Character) => {
-    setCharacter(char);
+    setCharacter({ ...char, buffs: normalizeBuffs(char.buffs) });
     setCharacterOriginalId(char._id);
   }, []);
 
