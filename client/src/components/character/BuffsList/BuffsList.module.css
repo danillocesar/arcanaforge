@@ -1,6 +1,6 @@
 .card {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(160px, 0.9fr) minmax(90px, 0.45fr) minmax(90px, 0.42fr) var(--touch-target) var(--touch-target);
+  grid-template-columns: minmax(150px, 1fr) minmax(200px, 1.2fr) minmax(90px, 0.5fr) var(--touch-target) var(--touch-target);
   gap: 10px;
   align-items: center;
   margin-bottom: 10px;
@@ -21,6 +21,12 @@
   gap: 8px;
   align-items: center;
   margin-top: 4px;
+}
+
+.effects {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .name,
@@ -118,10 +124,6 @@
   .card {
     grid-template-columns: minmax(0, 1fr) minmax(130px, 0.8fr) minmax(80px, 0.4fr) var(--touch-target) var(--touch-target);
   }
-
-  .extraSel {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 600px) {
@@ -131,9 +133,7 @@
   }
 
   .name,
-  .tipoSel,
-  .extraSel,
-  .valor,
+  .effects,
   .pmField {
     grid-column: 1 / -1;
   }
