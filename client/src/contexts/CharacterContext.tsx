@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
-import { createEmptyCharacter, normalizeBuffs } from '../utils/calculations';
+import { createEmptyCharacter, normalizeBuffs, applyBuffToCharacter } from '../utils/calculations';
 import {
   apiFetchCharacters,
   apiLoadCharacter,
@@ -104,6 +104,14 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       const mpCost = Number(msg.mpCost) || 0;
       const casterName = (msg.name as string) || characterRef.current.name;
       showToast?.(`${casterName} usou ${spellName}!`, 'attack', mpCost);
+    }
+
+    if (msg.type === 'buff_applied' && msg.characterId === characterRef.current._id) {
+      const buff = msg.buff as Character['buffs'][number] | undefined;
+      if (buff && Array.isArray(buff.effects)) {
+        setCharacter((prev) => (prev ? applyBuffToCharacter(prev, buff) : prev));
+        showToast?.(`Você recebeu o buff "${buff.name}"${buff.source ? ` ${buff.source}` : ''}!`, 'info');
+      }
     }
   });
 
