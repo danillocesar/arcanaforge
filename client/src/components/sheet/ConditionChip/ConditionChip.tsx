@@ -6,45 +6,42 @@ import Chip from '../../ui/Chip/Chip';
 interface ConditionChipProps {
   buff: Buff;
   index: number;
-  onEdit?: (i: number) => void;
 }
 
 type ChipVariant = 'buff' | 'warn' | 'danger';
 
-/** Best-effort mapping of a buff to a chip visual variant. */
 function inferVariant(buff: Buff): ChipVariant {
-  const raw = (buff.value ?? '').toString().trim();
-  const numeric = Number(raw);
-  const hasTarget = Boolean(buff.attributeId || buff.skillId);
-  const isNegative = raw.startsWith('-') || numeric < 0;
-
-  // A damaging / debuff-style effect → danger.
+  const effects = buff.effects || [];
+  if (effects.length === 0) return 'warn';
+  const isNegative = effects.some((eff) => {
+    const raw = (eff.value ?? '').toString().trim();
+    return raw.startsWith('-') || Number(raw) < 0;
+  });
   if (isNegative) return 'danger';
-  // No numeric target value and no attribute/skill target → treat as a condition.
-  if (!hasTarget && (raw === '' || numeric === 0)) return 'warn';
   return 'buff';
 }
 
-/** Builds the chip label, appending the buff value when it reads like a modifier. */
-function buildLabel(buff: Buff): string {
-  const raw = (buff.value ?? '').toString().trim();
-  if (!raw || raw === '0') return buff.name;
-  const signed = /^[+-]/.test(raw) ? raw : `+${raw}`;
-  return `${buff.name} ${signed}`;
+function formatEffectValue(raw: string): string | null {
+  const trimmed = (raw ?? '').toString().trim();
+  if (!trimmed || trimmed === '0') return null;
+  return /^[+-]/.test(trimmed) ? trimmed : `+${trimmed}`;
 }
 
-function ConditionChip({ buff, index, onEdit }: ConditionChipProps) {
+function buildLabel(buff: Buff): string {
+  const values = (buff.effects || [])
+    .map((eff) => formatEffectValue(eff.value))
+    .filter((v): v is string => v != null);
+  const summary = values.length > 0 ? ` ${values.join('/')}` : '';
+  const sourceSuffix = buff.source ? ` (${buff.source})` : '';
+  return `${buff.name}${summary}${sourceSuffix}`;
+}
+
+function ConditionChip({ buff, index }: ConditionChipProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
 
   if (!character) return null;
 
   const handleToggle = () => updateCharacter((f) => toggleBuffState(f, index));
-
-  const handleRemove = !readOnly
-    ? () => updateCharacter((f) => ({ ...f, buffs: f.buffs.filter((_, i) => i !== index) }))
-    : undefined;
-
-  const handleEdit = !readOnly ? () => onEdit?.(index) : undefined;
 
   return (
     <Chip
@@ -52,8 +49,6 @@ function ConditionChip({ buff, index, onEdit }: ConditionChipProps) {
       active={buff.active}
       variant={inferVariant(buff)}
       onToggle={readOnly ? undefined : handleToggle}
-      onEdit={handleEdit}
-      onRemove={handleRemove}
     />
   );
 }
