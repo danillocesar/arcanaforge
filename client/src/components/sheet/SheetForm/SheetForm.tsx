@@ -9,7 +9,10 @@ import styles from './SheetForm.module.css';
 
 export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'list';
 export type ScalarValue = string | number;
-export type ListValue = Array<Record<string, ScalarValue>>;
+export interface ListRow {
+  [key: string]: ScalarValue | ListValue;
+}
+export type ListValue = ListRow[];
 export type FieldValue = ScalarValue | ListValue;
 export type FormValues = Record<string, FieldValue>;
 
@@ -37,6 +40,7 @@ interface SheetFormProps {
   submitLabel?: string;
   onSubmit: (values: FormValues) => void;
   onClose: () => void;
+  onRemove?: () => void;
   /** Optional control rendered above the fields (e.g. an item-type selector). */
   header?: ReactNode;
 }
@@ -91,6 +95,94 @@ function ScalarField({
   );
 }
 
+interface ListFieldProps {
+  field: FieldDescriptor;
+  items: ListValue;
+  onChange: (items: ListValue) => void;
+}
+
+/** Editor de lista genérico e recursivo — um sub-campo pode ele mesmo ser `type: 'list'`. */
+function ListField({ field, items, onChange }: ListFieldProps) {
+  const subFields = field.itemFields ?? [];
+
+  const blankRow = (): ListRow => {
+    const blank: ListRow = {};
+    subFields.forEach((sf) => {
+      blank[sf.key] = sf.type === 'list' ? [] : sf.type === 'number' ? 0 : '';
+    });
+    return blank;
+  };
+
+  const addRow = () => onChange([...items, blankRow()]);
+  const updateRow = (i: number, key: string, v: ScalarValue | ListValue) => {
+    onChange(items.map((row, idx) => (idx === i ? { ...row, [key]: v } : row)));
+  };
+  const removeRow = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+
+  return (
+    <div className={styles.full}>
+      <div className={styles.listHead}>
+        <span className={styles.listLabel}>{field.label}</span>
+        <button type="button" className={styles.listAdd} onClick={addRow}>
+          + {field.addLabel ?? 'Adicionar'}
+        </button>
+      </div>
+      {items.length === 0 ? (
+        <p className={styles.listEmpty}>Nenhum item.</p>
+      ) : (
+        items.map((row, i) => {
+          const rowValues = row as FormValues;
+          const visible = subFields.filter((sf) => !sf.showIf || sf.showIf(rowValues));
+          const inlineFields = visible.filter((sf) => sf.type !== 'textarea' && sf.type !== 'list');
+          const blockFields = visible.filter((sf) => sf.type === 'textarea');
+          const listFields = visible.filter((sf) => sf.type === 'list');
+          return (
+            <div key={i} className={styles.listItem}>
+              <div className={styles.listRow}>
+                {inlineFields.map((sf) => (
+                  <div key={sf.key} className={styles.listCell}>
+                    <ScalarField
+                      field={sf}
+                      value={(row[sf.key] as ScalarValue) ?? (sf.type === 'number' ? 0 : '')}
+                      onChange={(v) => updateRow(i, sf.key, v)}
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className={styles.listRemove}
+                  onClick={() => removeRow(i)}
+                  aria-label="Remover"
+                >
+                  ×
+                </button>
+              </div>
+              {blockFields.map((sf) => (
+                <Textarea
+                  key={sf.key}
+                  label={sf.label}
+                  placeholder={sf.placeholder}
+                  value={String(row[sf.key] ?? '')}
+                  onChange={(v) => updateRow(i, sf.key, v)}
+                  compact
+                />
+              ))}
+              {listFields.map((sf) => (
+                <ListField
+                  key={sf.key}
+                  field={sf}
+                  items={(Array.isArray(row[sf.key]) ? (row[sf.key] as ListValue) : [])}
+                  onChange={(next) => updateRow(i, sf.key, next)}
+                />
+              ))}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 /**
  * Descriptor-driven form rendered inside a responsive Sheet (bottom-sheet on
  * mobile, modal on desktop). Owns the draft state; on submit hands the values
@@ -104,12 +196,15 @@ function SheetForm({
   submitLabel = 'Salvar',
   onSubmit,
   onClose,
+  onRemove,
   header,
 }: SheetFormProps) {
   const [values, setValues] = useState<FormValues>(initialValues);
+  const [confirmRemove, setConfirmRemove] = useState(false);
 
-  // Reset the draft each time the form is (re)opened.
+  // Reset draft and confirm state each time the form is (re)opened.
   useEffect(() => {
+    setConfirmRemove(false);
     if (open) setValues(initialValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialValues]);
@@ -124,8 +219,27 @@ function SheetForm({
 
   const visibleFields = fields.filter((f) => !f.showIf || f.showIf(values));
 
-  const footer = (
+  const footer = confirmRemove ? (
     <>
+      <span className={styles.confirmTxt}>Remover este item?</span>
+      <Button variant="ghost" className={styles.flex} onClick={() => setConfirmRemove(false)}>
+        Não
+      </Button>
+      <button
+        type="button"
+        className={`${styles.flex} ${styles.btnDel}`}
+        onClick={() => { onRemove?.(); onClose(); }}
+      >
+        Sim, remover
+      </button>
+    </>
+  ) : (
+    <>
+      {onRemove && (
+        <button type="button" className={styles.btnDelGhost} onClick={() => setConfirmRemove(true)}>
+          Remover
+        </button>
+      )}
       <Button variant="ghost" onClick={onClose} className={styles.flex}>
         Cancelar
       </Button>
@@ -135,61 +249,14 @@ function SheetForm({
     </>
   );
 
-  const renderListField = (f: FieldDescriptor) => {
-    const items = (Array.isArray(values[f.key]) ? values[f.key] : []) as ListValue;
-    const subFields = f.itemFields ?? [];
-
-    const addRow = () => {
-      const blank: Record<string, ScalarValue> = {};
-      subFields.forEach((sf) => {
-        blank[sf.key] = sf.type === 'number' ? 0 : '';
-      });
-      setValue(f.key, [...items, blank]);
-    };
-    const updateRow = (i: number, key: string, v: ScalarValue) => {
-      const next = items.map((row, idx) => (idx === i ? { ...row, [key]: v } : row));
-      setValue(f.key, next);
-    };
-    const removeRow = (i: number) => {
-      setValue(f.key, items.filter((_, idx) => idx !== i));
-    };
-
-    return (
-      <div key={f.key} className={styles.full}>
-        <div className={styles.listHead}>
-          <span className={styles.listLabel}>{f.label}</span>
-          <button type="button" className={styles.listAdd} onClick={addRow}>
-            + {f.addLabel ?? 'Adicionar'}
-          </button>
-        </div>
-        {items.length === 0 ? (
-          <p className={styles.listEmpty}>Nenhum item.</p>
-        ) : (
-          items.map((row, i) => (
-            <div key={i} className={styles.listRow}>
-              {subFields.map((sf) => (
-                <div key={sf.key} className={styles.listCell}>
-                  <ScalarField
-                    field={sf}
-                    value={row[sf.key] ?? (sf.type === 'number' ? 0 : '')}
-                    onChange={(v) => updateRow(i, sf.key, v)}
-                  />
-                </div>
-              ))}
-              <button
-                type="button"
-                className={styles.listRemove}
-                onClick={() => removeRow(i)}
-                aria-label="Remover"
-              >
-                ×
-              </button>
-            </div>
-          ))
-        )}
-      </div>
-    );
-  };
+  const renderListField = (f: FieldDescriptor) => (
+    <ListField
+      key={f.key}
+      field={f}
+      items={(Array.isArray(values[f.key]) ? values[f.key] : []) as ListValue}
+      onChange={(next) => setValue(f.key, next)}
+    />
+  );
 
   return (
     <Sheet open={open} title={title} onClose={onClose} footer={footer}>
