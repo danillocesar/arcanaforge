@@ -1,17 +1,17 @@
+import { useState } from 'react';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import AbilityCard from '../AbilityCard/AbilityCard';
 import AddButton from '../AddButton/AddButton';
+import CastActionSheet from '../CastActionSheet/CastActionSheet';
+import type { CastActionSpec } from '../CastActionSheet/CastActionSheet';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import styles from './PoderesPanel.module.css';
 
-interface PoderesPanelProps {
-  onRemove?: (index: number) => void;
-}
-
-function PoderesPanel({ onRemove }: PoderesPanelProps) {
-  const { character, updateCharacter, readOnly } = useCharacterContext();
+function PoderesPanel() {
+  const { character, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
+  const [castAction, setCastAction] = useState<CastActionSpec | null>(null);
 
   if (!character) return null;
 
@@ -20,15 +20,15 @@ function PoderesPanel({ onRemove }: PoderesPanelProps) {
   const handleEdit = (index: number) =>
     openEdit(abilities[index]?.kind === 'Habilidade' ? 'habilidade' : 'poder', index);
 
-  const handleRemove = (index: number) => {
-    if (onRemove) {
-      onRemove(index);
-      return;
-    }
-    updateCharacter((f) => ({
-      ...f,
-      abilities: f.abilities.filter((_, i) => i !== index),
-    }));
+  const handleUse = (index: number) => {
+    const ab = abilities[index];
+    if (!ab) return;
+    setCastAction({
+      name: ab.name,
+      mpCost: Number(ab.mpCost) || 0,
+      buffs: ab.buffs,
+      buffTargetScope: ab.buffTargetScope,
+    });
   };
 
   return (
@@ -47,11 +47,13 @@ function PoderesPanel({ onRemove }: PoderesPanelProps) {
               ability={ability}
               index={index}
               onEdit={handleEdit}
-              onRemove={handleRemove}
+              onUse={handleUse}
             />
           ))}
         </div>
       )}
+
+      <CastActionSheet action={castAction} onClose={() => setCastAction(null)} />
     </section>
   );
 }

@@ -8,24 +8,26 @@ interface AbilityCardProps {
   ability: Ability;
   index: number;
   onEdit?: (index: number) => void;
-  onRemove?: (index: number) => void;
+  onUse?: (index: number) => void;
 }
 
-function AbilityCard({ ability, index, onEdit, onRemove }: AbilityCardProps) {
+function AbilityCard({ ability, index, onEdit, onUse }: AbilityCardProps) {
   const { readOnly } = useCharacterContext();
 
   const kind = ability.kind ?? 'Poder';
   const chipVariant = kind === 'Habilidade' ? 'warn' : 'buff';
   const mpCost = Number(ability.mpCost) || 0;
+  const hasBuffs = (ability.buffs ?? []).length > 0;
+  const showUse = onUse && (mpCost > 0 || hasBuffs);
 
   return (
-    <Card
-      className={`${styles.pow} ${!readOnly ? styles.tappable : ''}`.trim()}
-      onClick={!readOnly ? () => onEdit?.(index) : undefined}
-      role={!readOnly ? 'button' : undefined}
-      tabIndex={!readOnly ? 0 : undefined}
-    >
-      <div className={styles.txt}>
+    <Card className={styles.pow}>
+      <div
+        className={`${styles.txt} ${!readOnly ? styles.tappable : ''}`.trim()}
+        onClick={!readOnly ? () => onEdit?.(index) : undefined}
+        role={!readOnly ? 'button' : undefined}
+        tabIndex={!readOnly ? 0 : undefined}
+      >
         <div className={styles.head}>
           <h3 className={styles.name}>{ability.name || 'Sem nome'}</h3>
           <Chip label={kind} variant={chipVariant} active className={styles.tag} />
@@ -38,14 +40,9 @@ function AbilityCard({ ability, index, onEdit, onRemove }: AbilityCardProps) {
         )}
         {ability.description && <p className={styles.desc}>{ability.description}</p>}
       </div>
-      {!readOnly && (
-        <button
-          type="button"
-          className={styles.rmX}
-          aria-label="Remover"
-          onClick={(e) => { e.stopPropagation(); onRemove?.(index); }}
-        >
-          ×
+      {!readOnly && showUse && (
+        <button type="button" className={styles.btnUse} onClick={() => onUse?.(index)}>
+          ▶ Usar
         </button>
       )}
     </Card>
