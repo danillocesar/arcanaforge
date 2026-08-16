@@ -2,6 +2,7 @@ import type {
   Character,
   AttributeId,
   BuffType,
+  BuffEffect,
   AbilityKind,
   InventoryCategory,
 } from '../../../types/character';
@@ -50,6 +51,33 @@ const attrOptions = (Object.entries(ATTRIBUTE_FULL_NAMES) as [AttributeId, strin
 );
 const buffTypeOptions = Object.entries(BUFF_TYPES).map(([value, label]) => ({ value, label }));
 const skillOptions = SKILLS_CONFIG.map((sk) => ({ value: sk.id, label: sk.name }));
+
+/** Sub-campos de um efeito de buff — reutilizado no buff manual, em magias e em poderes. */
+const BUFF_EFFECT_ITEM_FIELDS: FieldDescriptor[] = [
+  { key: 'type', label: 'Tipo', type: 'select', options: buffTypeOptions, half: true },
+  {
+    key: 'attributeId', label: 'Atributo', type: 'select', options: attrOptions, half: true,
+    showIf: (v) => v.type === 'attribute',
+  },
+  {
+    key: 'skillId', label: 'Perícia', type: 'select', options: skillOptions, half: true,
+    showIf: (v) => v.type === 'skill',
+  },
+  { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 2 ou 1d6', half: true },
+];
+
+const emptyBuffEffect = (): FormValues => ({ type: 'attack_roll', attributeId: 'str', skillId: '', value: '' });
+
+/**
+ * Usado tanto pela Magia (Task 8) quanto pelo Poder/Habilidade (Task 9). Definido aqui
+ * (antes de `abilityFields` mais abaixo no arquivo) para não ser referenciado antes de
+ * declarado — `abilityFields` vem antes de `spellFields` na ordem atual do arquivo.
+ */
+const buffTargetScopeOptions = [
+  { value: 'self', label: 'Só eu' },
+  { value: 'party', label: 'Posso escolher outros' },
+];
+
 const rangeOptions = [
   { value: 'melee', label: 'Corpo a corpo' },
   { value: 'ranged', label: 'À distância' },
@@ -110,7 +138,7 @@ const spellFields: FieldDescriptor[] = [
     key: 'enhancements', label: 'Aprimoramentos', type: 'list', addLabel: 'Aprimoramento',
     itemFields: [
       { key: 'mpCost', label: 'PM extra', type: 'number' },
-      { key: 'description', label: 'Efeito', type: 'text', placeholder: 'Ex.: +1d6 de dano' },
+      { key: 'description', label: 'Efeito', type: 'textarea', placeholder: 'Ex.: +1d6 de dano' },
     ],
   },
 ];
@@ -150,41 +178,44 @@ const magiaConfig: EntityConfig = {
 
 const buffFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do buff/condição' },
-  { key: 'type', label: 'Tipo', type: 'select', options: buffTypeOptions, half: true },
-  { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 2 ou 1d6', half: true },
-  {
-    key: 'attributeId', label: 'Atributo', type: 'select', options: attrOptions, half: true,
-    showIf: (v) => v.type === 'attribute',
-  },
-  {
-    key: 'skillId', label: 'Perícia', type: 'select', options: skillOptions, half: true,
-    showIf: (v) => v.type === 'skill',
-  },
   { key: 'mp', label: 'Custo (PM)', type: 'number', half: true },
+  {
+    key: 'effects', label: 'Efeitos', type: 'list', addLabel: 'Efeito',
+    itemFields: BUFF_EFFECT_ITEM_FIELDS,
+  },
 ];
+
+function effectsFromValues(raw: unknown): BuffEffect[] {
+  const list = Array.isArray(raw) ? raw : [];
+  return list.map((row) => ({
+    type: (s(row.type) || buffTypeOptions[0]?.value || 'attack_roll') as BuffType,
+    attributeId: row.type === 'attribute' ? ((s(row.attributeId) || 'str') as AttributeId) : undefined,
+    skillId: row.type === 'skill' ? s(row.skillId) : undefined,
+    value: s(row.value),
+  }));
+}
 
 const buffConfig: EntityConfig = {
   title: 'Buff / Condição',
   fields: buffFields,
-  empty: () => ({ name: '', type: 'attribute', value: '', attributeId: 'str', skillId: '', mp: 0 }),
+  empty: () => ({ name: '', mp: 0, effects: [emptyBuffEffect()] }),
   fromEntry: (c, i) => {
     const b = c.buffs[i];
     return {
-      name: b.name, type: b.type, value: b.value, mp: b.mp,
-      attributeId: b.attributeId ?? 'str', skillId: b.skillId ?? '',
+      name: b.name,
+      mp: b.mp,
+      effects: (b.effects || []).map((eff) => ({
+        type: eff.type, attributeId: eff.attributeId ?? 'str', skillId: eff.skillId ?? '', value: eff.value,
+      })),
     };
   },
   apply: (c, v, i) => {
-    const type = s(v.type) as BuffType;
     const base = i != null ? c.buffs[i] : { active: false };
     const entry = {
       ...base,
       name: s(v.name),
-      type,
-      value: s(v.value),
       mp: n(v.mp),
-      attributeId: type === 'attribute' ? (s(v.attributeId) as AttributeId) : undefined,
-      skillId: type === 'skill' ? s(v.skillId) : undefined,
+      effects: effectsFromValues(v.effects),
       active: (base as { active?: boolean }).active ?? false,
     } as Character['buffs'][number];
     return { ...c, buffs: upsert(c.buffs, entry, i) };
