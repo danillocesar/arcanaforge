@@ -1,4 +1,4 @@
-import type { Character, AttributeId } from '../types/character';
+import type { Character, AttributeId, Buff, BuffEffect, BuffType } from '../types/character';
 import { SKILLS_CONFIG } from '../data/pericias';
 
 export function createEmptyCharacter(name?: string): Character {
@@ -62,9 +62,12 @@ export function getEffectiveAttribute(character: Character, attr: AttributeId): 
   let val = character.attributes[attr] || 0;
   if (character.buffs) {
     character.buffs.forEach((b) => {
-      if (b.active && b.type === 'attribute' && b.attributeId === attr) {
-        val += Number(b.value) || 0;
-      }
+      if (!b.active) return;
+      (b.effects || []).forEach((eff) => {
+        if (eff.type === 'attribute' && eff.attributeId === attr) {
+          val += Number(eff.value) || 0;
+        }
+      });
     });
   }
   return val;
@@ -98,9 +101,12 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   let buffBonus = 0;
   if (character.buffs) {
     character.buffs.forEach((b) => {
-      if (b.active && b.type === 'skill' && b.skillId === skillId) {
-        buffBonus += Number(b.value) || 0;
-      }
+      if (!b.active) return;
+      (b.effects || []).forEach((eff) => {
+        if (eff.type === 'skill' && eff.skillId === skillId) {
+          buffBonus += Number(eff.value) || 0;
+        }
+      });
     });
   }
   return halfLevel + attributeMod + trainingBonus + miscBonus + armorPenalty + buffBonus;
@@ -115,7 +121,10 @@ export function calcTotalDefense(character: Character): number {
   }
   if (character.buffs) {
     character.buffs.forEach((b) => {
-      if (b.active && b.type === 'defense') total += Number(b.value) || 0;
+      if (!b.active) return;
+      (b.effects || []).forEach((eff) => {
+        if (eff.type === 'defense') total += Number(eff.value) || 0;
+      });
     });
   }
   return total;
@@ -155,8 +164,10 @@ export function getDefenseBreakdown(character: Character): DefenseBreakdown {
     .filter((it) => (it.value || 0) !== 0)
     .map((it) => ({ name: it.name || 'Proteção', value: it.value || 0 }));
   const buffs: DefenseBreakdownRow[] = (character.buffs || [])
-    .filter((b) => b.active && b.type === 'defense')
-    .map((b) => ({ name: b.name || 'Buff', value: Number(b.value) || 0 }));
+    .filter((b) => b.active)
+    .flatMap((b) => (b.effects || [])
+      .filter((eff) => eff.type === 'defense')
+      .map((eff) => ({ name: b.name || 'Buff', value: Number(eff.value) || 0 })));
   return { base, items, buffs, total: calcTotalDefense(character) };
 }
 
@@ -178,16 +189,15 @@ export function toggleBuffState(character: Character, idx: number): Character {
   let hpTemp = character.temporaryHp;
   let mpTemp = character.temporaryMp;
   const mpCost = Number(b.mp) || 0;
-  const val = Number(b.value) || 0;
+  const sign = wasActive ? -1 : 1;
 
-  if (!wasActive) {
-    if (mpCost > 0) mpCurrent = Math.max(0, mpCurrent - mpCost);
-    if (b.type === 'hp') hpTemp += val;
-    if (b.type === 'mp') mpTemp += val;
-  } else {
-    if (b.type === 'hp') hpTemp = Math.max(0, hpTemp - val);
-    if (b.type === 'mp') mpTemp = Math.max(0, mpTemp - val);
-  }
+  if (!wasActive && mpCost > 0) mpCurrent = Math.max(0, mpCurrent - mpCost);
+
+  (b.effects || []).forEach((eff) => {
+    const val = Number(eff.value) || 0;
+    if (eff.type === 'hp') hpTemp = Math.max(0, hpTemp + sign * val);
+    if (eff.type === 'mp') mpTemp = Math.max(0, mpTemp + sign * val);
+  });
 
   buffs[idx] = b;
   return {
@@ -226,7 +236,10 @@ export function calcAttackRoll(character: Character, atk: Character['attacks'][n
   let total = calcTotalSkill(character, skillId);
   if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.value) || 0; });
   if (character.buffs) character.buffs.forEach((b) => {
-    if (b.active && b.type === 'attack_roll') total += Number(b.value) || 0;
+    if (!b.active) return;
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'attack_roll') total += Number(eff.value) || 0;
+    });
   });
   return total;
 }
@@ -236,7 +249,10 @@ export function calcDamageBonus(character: Character, atk: Character['attacks'][
   let total = getEffectiveAttribute(character, attrKey);
   if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.value) || 0; });
   if (character.buffs) character.buffs.forEach((b) => {
-    if (b.active && b.type === 'fixed_damage') total += Number(b.value) || 0;
+    if (!b.active) return;
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'fixed_damage') total += Number(eff.value) || 0;
+    });
   });
   return total;
 }
@@ -254,10 +270,13 @@ export function buildDamageSummary(character: Character, atk: Character['attacks
     if (v && isNaN(Number(v))) extraDice.push(v);
   });
   if (character.buffs) character.buffs.forEach((b) => {
-    if (b.active && b.type === 'extra_damage') {
-      const v = String(b.value || '');
-      if (v) extraDice.push(v);
-    }
+    if (!b.active) return;
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'extra_damage') {
+        const v = String(eff.value || '');
+        if (v) extraDice.push(v);
+      }
+    });
   });
   extraDice.forEach((d) => parts.push(d));
 
@@ -283,4 +302,51 @@ export function formatMod(val: number | string): string {
 export function hpPercent(current: number, max: number): number {
   if (!max || max <= 0) return 0;
   return Math.max(0, Math.min(100, (current / max) * 100));
+}
+
+/**
+ * Converte buffs no formato antigo (type/attributeId/skillId/value soltos no buff,
+ * sem `effects`) para o formato novo. Personagens salvos antes desta mudança não têm
+ * `effects` — sem isso, os cálculos acima (que só leem `effects`) os ignorariam
+ * silenciosamente.
+ */
+export function normalizeBuffs(buffs: unknown[]): Buff[] {
+  return (buffs || []).map((raw) => {
+    const b = raw as Record<string, unknown>;
+    if (Array.isArray(b.effects)) return b as unknown as Buff;
+    const legacy = b as { type?: BuffType; attributeId?: AttributeId; skillId?: string; value?: string };
+    const effects: BuffEffect[] = legacy.type
+      ? [{ type: legacy.type, attributeId: legacy.attributeId, skillId: legacy.skillId, value: String(legacy.value ?? '') }]
+      : [];
+    return {
+      name: String(b.name ?? ''),
+      effects,
+      mp: Number(b.mp) || 0,
+      active: Boolean(b.active),
+      source: typeof b.source === 'string' ? b.source : undefined,
+    };
+  });
+}
+
+/**
+ * Aplica um buff já ativo num personagem: adiciona à lista de buffs e soma os
+ * deltas de PV/PM temporário dos efeitos do tipo hp/mp (mesma soma que
+ * toggleBuffState faria ao ativar, mas sem custo de PM — o custo já foi pago na
+ * conjuração). Usado tanto para o próprio conjurador (auto-aplicação local) quanto
+ * ao receber a notificação em tempo real de um buff aplicado por outro jogador.
+ */
+export function applyBuffToCharacter(character: Character, buff: Buff): Character {
+  let hpTemp = character.temporaryHp;
+  let mpTemp = character.temporaryMp;
+  buff.effects.forEach((eff) => {
+    const val = Number(eff.value) || 0;
+    if (eff.type === 'hp') hpTemp += val;
+    if (eff.type === 'mp') mpTemp += val;
+  });
+  return {
+    ...character,
+    buffs: [...character.buffs, buff],
+    temporaryHp: hpTemp,
+    temporaryMp: mpTemp,
+  };
 }
