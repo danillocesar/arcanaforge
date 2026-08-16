@@ -50,20 +50,29 @@ export interface Attack {
   extraDamage: ExtraDamage[];
 }
 
-export interface Buff {
-  name: string;
+export interface BuffEffect {
   type: BuffType;
   attributeId?: AttributeId;
   skillId?: string;
   value: string;
+}
+
+export interface Buff {
+  name: string;
+  effects: BuffEffect[];
   mp: number;
   active: boolean;
+  /** Texto de exibição, ex. "de Fulano" — presente só em buffs aplicados por magia/poder. */
+  source?: string;
 }
 
 export interface Enhancement {
   description: string;
   mpCost: number;
+  buffs?: BuffEffect[];
 }
+
+export type BuffTargetScope = 'self' | 'party';
 
 export interface Spell {
   name: string;
@@ -77,6 +86,8 @@ export interface Spell {
   spellLevel: number;
   enhancements: Enhancement[];
   description: string;
+  buffTargetScope?: BuffTargetScope;
+  buffs?: BuffEffect[];
 }
 
 export type AbilityKind = 'Poder' | 'Habilidade';
@@ -89,9 +100,13 @@ export interface Ability {
   kind?: AbilityKind;
   mpCost: number;
   description: string;
+  /** Se marcado, aparece na lista de Ações (aba Atributos) com botão de usar. */
+  castable?: boolean;
+  buffTargetScope?: BuffTargetScope;
+  buffs?: BuffEffect[];
 }
 
-export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio';
+export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio' | 'arma';
 
 export interface InventoryItem {
   name: string;
