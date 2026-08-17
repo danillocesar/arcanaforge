@@ -8,6 +8,15 @@ export function formatEffectValue(raw: string): string | null {
   return /^[+-]/.test(trimmed) ? trimmed : `+${trimmed}`;
 }
 
+/**
+ * `hp`/`mp` são mutações pontuais (aplicadas via toggleBuffState/applyBuffToCharacter
+ * contra uma entrada de buff real) — não fazem sentido como bônus passivo sempre
+ * ativo, então nunca contam como Bônus Fixo.
+ */
+export function filterFixedBonusEffects(effects: BuffEffect[]): BuffEffect[] {
+  return effects.filter((eff) => eff.type !== 'hp' && eff.type !== 'mp');
+}
+
 /** Etiqueta curta do que o efeito afeta — "For", "Vontade", "Atq", "Dano", "PV", "PM", "Def". */
 export function effectTag(eff: BuffEffect): string {
   switch (eff.type) {

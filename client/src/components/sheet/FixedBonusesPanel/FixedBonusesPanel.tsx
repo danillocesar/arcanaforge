@@ -1,6 +1,6 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
-import { summarizeEffects } from '../../../utils/buffEffects';
+import { summarizeEffects, filterFixedBonusEffects } from '../../../utils/buffEffects';
 import styles from './FixedBonusesPanel.module.css';
 
 interface FixedRow {
@@ -20,20 +20,22 @@ function FixedBonusesPanel() {
   if (!character) return null;
 
   const fromAbilities: FixedRow[] = (character.abilities ?? [])
-    .filter((a) => a.alwaysActive && (a.buffs?.length ?? 0) > 0)
+    .filter((a) => a.alwaysActive)
     .map((a, i) => ({
       key: `ability-${i}`,
       name: a.name || 'Sem nome',
-      summary: summarizeEffects(a.buffs ?? []),
-    }));
+      summary: summarizeEffects(filterFixedBonusEffects(a.buffs ?? [])),
+    }))
+    .filter((row) => row.summary !== '');
 
   const fromItems: FixedRow[] = (character.inventory ?? [])
-    .filter((it) => it.alwaysActive && (it.buffs?.length ?? 0) > 0)
+    .filter((it) => it.alwaysActive)
     .map((it, i) => ({
       key: `item-${i}`,
       name: it.name || 'Sem nome',
-      summary: summarizeEffects(it.buffs ?? []),
-    }));
+      summary: summarizeEffects(filterFixedBonusEffects(it.buffs ?? [])),
+    }))
+    .filter((row) => row.summary !== '');
 
   const rows = [...fromAbilities, ...fromItems];
 

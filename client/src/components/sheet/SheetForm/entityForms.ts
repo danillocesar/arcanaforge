@@ -223,6 +223,7 @@ export function powerToFormValues(power: OfficialPower): FormValues {
     prerequisite: power.prerequisite,
     description: power.description,
     castable: 'false',
+    alwaysActive: 'false',
     buffTargetScope: 'self',
     buffs: [],
   };

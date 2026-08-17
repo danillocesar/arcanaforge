@@ -1,5 +1,6 @@
 import type { Character, AttributeId, Buff, BuffEffect, BuffType, Attack, InventoryItem } from '../types/character';
 import { SKILLS_CONFIG } from '../data/pericias';
+import { filterFixedBonusEffects } from './buffEffects';
 
 export function createEmptyCharacter(name?: string): Character {
   const skills: Character['skills'] = {};
@@ -65,11 +66,13 @@ export function getTotalLevel(character: Character): number {
  */
 function synthesizeAlwaysActiveBuffs(character: Character): Buff[] {
   const fromAbilities = (character.abilities ?? [])
-    .filter((a) => a.alwaysActive && (a.buffs?.length ?? 0) > 0)
-    .map((a) => ({ name: a.name, effects: a.buffs ?? [], mp: 0, active: true, source: 'Poder' }));
+    .filter((a) => a.alwaysActive)
+    .map((a) => ({ name: a.name, effects: filterFixedBonusEffects(a.buffs ?? []), mp: 0, active: true, source: 'Poder' }))
+    .filter((b) => b.effects.length > 0);
   const fromItems = (character.inventory ?? [])
-    .filter((it) => it.alwaysActive && (it.buffs?.length ?? 0) > 0)
-    .map((it) => ({ name: it.name, effects: it.buffs ?? [], mp: 0, active: true, source: 'Item' }));
+    .filter((it) => it.alwaysActive)
+    .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Item' }))
+    .filter((b) => b.effects.length > 0);
   return [...fromAbilities, ...fromItems];
 }
 
