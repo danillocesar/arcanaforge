@@ -30,8 +30,14 @@ function renderSection(id: SectionId) {
     case 'atributos':
       return (
         <>
-          <AttributesPanel />
-          <BuffsPanel />
+          <div className={styles.atributosRow}>
+            <div className={styles.atributosMain}>
+              <AttributesPanel />
+            </div>
+            <div className={styles.atributosBuffs}>
+              <BuffsPanel />
+            </div>
+          </div>
           <AcoesPanel />
         </>
       );

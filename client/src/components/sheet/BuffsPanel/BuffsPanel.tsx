@@ -45,7 +45,7 @@ function BuffsPanel() {
   return (
     <div className={styles.panel}>
       <SectionHeader title="Buffs & Condições" action={headerAction} />
-      <div className={styles.chips}>
+      <div className={styles.list}>
         {character.buffs.map((buff, idx) => (
           <ConditionChip key={idx} buff={buff} index={idx} />
         ))}

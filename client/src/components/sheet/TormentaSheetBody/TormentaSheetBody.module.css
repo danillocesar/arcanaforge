@@ -17,6 +17,23 @@
   padding: 10px 16px 0;
 }
 
+.atributosRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.atributosMain {
+  flex: 1 1 340px;
+  min-width: 0;
+}
+
+.atributosBuffs {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
 .mobileBody {
   flex: 1;
   overflow-y: auto;
