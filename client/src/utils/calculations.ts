@@ -59,18 +59,38 @@ export function getTotalLevel(character: Character): number {
   return Number(character.level) || 1;
 }
 
+/**
+ * Buffs sintéticos, sempre ativos, vindos de Poderes/Habilidades e Itens marcados
+ * como `alwaysActive` — não ficam em `character.buffs[]`, são derivados na hora.
+ */
+function synthesizeAlwaysActiveBuffs(character: Character): Buff[] {
+  const fromAbilities = (character.abilities ?? [])
+    .filter((a) => a.alwaysActive && (a.buffs?.length ?? 0) > 0)
+    .map((a) => ({ name: a.name, effects: a.buffs ?? [], mp: 0, active: true, source: 'Poder' }));
+  const fromItems = (character.inventory ?? [])
+    .filter((it) => it.alwaysActive && (it.buffs?.length ?? 0) > 0)
+    .map((it) => ({ name: it.name, effects: it.buffs ?? [], mp: 0, active: true, source: 'Item' }));
+  return [...fromAbilities, ...fromItems];
+}
+
+/**
+ * Todos os buffs em vigor agora: os manuais ligados em `character.buffs[]` mais os
+ * sintéticos de Poderes/Itens fixos. Ponto único usado por todo cálculo que soma
+ * efeitos de buff — evita duplicar o filtro `active`/iteração em cada função.
+ */
+export function getActiveBuffs(character: Character): Buff[] {
+  return [...(character.buffs ?? []).filter((b) => b.active), ...synthesizeAlwaysActiveBuffs(character)];
+}
+
 export function getEffectiveAttribute(character: Character, attr: AttributeId): number {
   let val = character.attributes[attr] || 0;
-  if (character.buffs) {
-    character.buffs.forEach((b) => {
-      if (!b.active) return;
-      (b.effects || []).forEach((eff) => {
-        if (eff.type === 'attribute' && eff.attributeId === attr) {
-          val += Number(eff.value) || 0;
-        }
-      });
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'attribute' && eff.attributeId === attr) {
+        val += Number(eff.value) || 0;
+      }
     });
-  }
+  });
   return val;
 }
 
@@ -100,16 +120,13 @@ export function calcTotalSkill(character: Character, skillId: string): number {
     armorPenalty = calcArmorPenalty(character);
   }
   let buffBonus = 0;
-  if (character.buffs) {
-    character.buffs.forEach((b) => {
-      if (!b.active) return;
-      (b.effects || []).forEach((eff) => {
-        if (eff.type === 'skill' && eff.skillId === skillId) {
-          buffBonus += Number(eff.value) || 0;
-        }
-      });
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'skill' && eff.skillId === skillId) {
+        buffBonus += Number(eff.value) || 0;
+      }
     });
-  }
+  });
   return halfLevel + attributeMod + trainingBonus + miscBonus + armorPenalty + buffBonus;
 }
 
@@ -120,14 +137,11 @@ export function calcTotalDefense(character: Character): number {
       total += item.value || 0;
     });
   }
-  if (character.buffs) {
-    character.buffs.forEach((b) => {
-      if (!b.active) return;
-      (b.effects || []).forEach((eff) => {
-        if (eff.type === 'defense') total += Number(eff.value) || 0;
-      });
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'defense') total += Number(eff.value) || 0;
     });
-  }
+  });
   return total;
 }
 
@@ -166,8 +180,7 @@ export function getDefenseBreakdown(character: Character): DefenseBreakdown {
   const items: DefenseBreakdownRow[] = (character.defense.items || [])
     .filter((it) => (it.value || 0) !== 0)
     .map((it) => ({ name: it.name || 'Proteção', value: it.value || 0 }));
-  const buffs: DefenseBreakdownRow[] = (character.buffs || [])
-    .filter((b) => b.active)
+  const buffs: DefenseBreakdownRow[] = getActiveBuffs(character)
     .flatMap((b) => (b.effects || [])
       .filter((eff) => eff.type === 'defense')
       .map((eff) => ({ name: b.name || 'Buff', value: Number(eff.value) || 0 })));
@@ -258,8 +271,7 @@ export function calcAttackRoll(character: Character, atk: Character['attacks'][n
   const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
   let total = calcTotalSkill(character, skillId);
   if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.value) || 0; });
-  if (character.buffs) character.buffs.forEach((b) => {
-    if (!b.active) return;
+  getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'attack_roll') total += Number(eff.value) || 0;
     });
@@ -271,8 +283,7 @@ export function calcDamageBonus(character: Character, atk: Character['attacks'][
   const attrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
   let total = getEffectiveAttribute(character, attrKey);
   if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.value) || 0; });
-  if (character.buffs) character.buffs.forEach((b) => {
-    if (!b.active) return;
+  getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'fixed_damage') total += Number(eff.value) || 0;
     });
@@ -292,8 +303,7 @@ export function buildDamageSummary(character: Character, atk: Character['attacks
     const v = String(b.value || '');
     if (v && isNaN(Number(v))) extraDice.push(v);
   });
-  if (character.buffs) character.buffs.forEach((b) => {
-    if (!b.active) return;
+  getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'extra_damage') {
         const v = String(eff.value || '');
