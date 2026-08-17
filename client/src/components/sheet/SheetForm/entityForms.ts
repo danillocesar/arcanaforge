@@ -139,6 +139,11 @@ const castableOptions = [
   { value: 'true', label: 'Sim' },
 ];
 
+const alwaysActiveOptions = [
+  { value: 'false', label: 'Não' },
+  { value: 'true', label: 'Sim' },
+];
+
 const abilityFields: FieldDescriptor[] = [
   { key: 'kind', label: 'Tipo', type: 'select', options: kindOptions, half: true },
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
@@ -147,6 +152,7 @@ const abilityFields: FieldDescriptor[] = [
   { key: 'prerequisite', label: 'Pré-requisito', type: 'text', placeholder: 'Ex.: Força 13' },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
   { key: 'castable', label: 'Conjurável', type: 'select', options: castableOptions, half: true },
+  { key: 'alwaysActive', label: 'Sempre ativo', type: 'select', options: alwaysActiveOptions, half: true },
   {
     key: 'buffTargetScope', label: 'Alvo do buff', type: 'select', options: buffTargetScopeOptions, half: true,
     showIf: (v) => v.castable === 'true',
@@ -154,7 +160,7 @@ const abilityFields: FieldDescriptor[] = [
   {
     key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
     itemFields: BUFF_EFFECT_ITEM_FIELDS,
-    showIf: (v) => v.castable === 'true',
+    showIf: (v) => v.castable === 'true' || v.alwaysActive === 'true',
   },
   ATTACK_MODIFIERS_FIELD,
 ];
@@ -164,7 +170,7 @@ const abilidadeConfig: EntityConfig = {
   fields: abilityFields,
   empty: () => ({
     kind: 'Poder', name: '', source: '', mpCost: 0, prerequisite: '', description: '',
-    castable: 'false', buffTargetScope: 'self', buffs: [], attackModifiers: [],
+    castable: 'false', alwaysActive: 'false', buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
@@ -172,6 +178,7 @@ const abilidadeConfig: EntityConfig = {
       kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost,
       prerequisite: a.prerequisite ?? '', description: a.description,
       castable: a.castable ? 'true' : 'false',
+      alwaysActive: a.alwaysActive ? 'true' : 'false',
       buffTargetScope: a.buffTargetScope ?? 'self',
       buffs: effectsToForm(a.buffs),
       attackModifiers: attackModifiersToForm(a.attackModifiers),
@@ -188,6 +195,7 @@ const abilidadeConfig: EntityConfig = {
       prerequisite: s(v.prerequisite) || undefined,
       description: s(v.description),
       castable: s(v.castable) === 'true',
+      alwaysActive: s(v.alwaysActive) === 'true',
       buffTargetScope: s(v.buffTargetScope) || 'self',
       buffs: effectsFromValues(v.buffs),
       attackModifiers: attackModifiersFromValues(v.attackModifiers),
@@ -478,13 +486,28 @@ function inventoryConfig(
 ): EntityConfig {
   return {
     title,
-    fields: [...fields, WEIGHT_FIELD, ATTACK_MODIFIERS_FIELD],
-    empty: () => ({ name: '', quantity: 1, slot: '', effect: '', weight: 0, attackModifiers: [] }),
+    fields: [
+      ...fields,
+      WEIGHT_FIELD,
+      { key: 'alwaysActive', label: 'Sempre ativo', type: 'select', options: alwaysActiveOptions, half: true },
+      {
+        key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
+        itemFields: BUFF_EFFECT_ITEM_FIELDS,
+        showIf: (v) => v.alwaysActive === 'true',
+      },
+      ATTACK_MODIFIERS_FIELD,
+    ],
+    empty: () => ({
+      name: '', quantity: 1, slot: '', effect: '', weight: 0,
+      alwaysActive: 'false', buffs: [], attackModifiers: [],
+    }),
     fromEntry: (c, i) => {
       const it = c.inventory[i];
       return {
         name: it.name, quantity: it.quantity ?? 1, slot: it.slot ?? '', effect: it.effect ?? '',
         weight: it.weight ?? 0,
+        alwaysActive: it.alwaysActive ? 'true' : 'false',
+        buffs: effectsToForm(it.buffs),
         attackModifiers: attackModifiersToForm(it.attackModifiers),
       };
     },
@@ -498,6 +521,8 @@ function inventoryConfig(
         slot: s(v.slot) || undefined,
         effect: s(v.effect) || undefined,
         weight: n(v.weight),
+        alwaysActive: s(v.alwaysActive) === 'true',
+        buffs: effectsFromValues(v.buffs),
         attackModifiers: attackModifiersFromValues(v.attackModifiers),
       } as Character['inventory'][number];
       return { ...c, inventory: upsert(c.inventory, entry, i) };
@@ -541,12 +566,18 @@ const armaConfig: EntityConfig = {
     { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
     { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
     { key: 'type', label: 'Tipo de dano', type: 'select', options: damageTypeOptions, half: true },
+    { key: 'alwaysActive', label: 'Sempre ativo', type: 'select', options: alwaysActiveOptions, half: true },
+    {
+      key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
+      itemFields: BUFF_EFFECT_ITEM_FIELDS,
+      showIf: (v) => v.alwaysActive === 'true',
+    },
     ATTACK_MODIFIERS_FIELD,
   ],
   empty: () => ({
     name: '', quantity: 1, slot: '', effect: '', weight: 0,
     rangeType: 'melee', mpCost: 0, damage: '', attributeDamageBonus: 'str', critical: '', type: '',
-    attackModifiers: [],
+    alwaysActive: 'false', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const it = c.inventory[i];
@@ -555,6 +586,8 @@ const armaConfig: EntityConfig = {
       weight: it.weight ?? 0,
       rangeType: it.rangeType ?? 'melee', mpCost: it.mpCost ?? 0, damage: it.damage ?? '',
       attributeDamageBonus: it.attributeDamageBonus ?? 'str', critical: it.critical ?? '', type: it.type ?? '',
+      alwaysActive: it.alwaysActive ? 'true' : 'false',
+      buffs: effectsToForm(it.buffs),
       attackModifiers: attackModifiersToForm(it.attackModifiers),
     };
   },
@@ -574,6 +607,8 @@ const armaConfig: EntityConfig = {
       attributeDamageBonus: s(v.attributeDamageBonus) || undefined,
       critical: s(v.critical) || undefined,
       type: s(v.type) || undefined,
+      alwaysActive: s(v.alwaysActive) === 'true',
+      buffs: effectsFromValues(v.buffs),
       attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['inventory'][number];
     return { ...c, inventory: upsert(c.inventory, entry, i) };
