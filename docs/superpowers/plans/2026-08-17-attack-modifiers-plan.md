@@ -1136,21 +1136,21 @@ nas sessões anteriores.
 
 **Files:** nenhum (infra).
 
-- [ ] **Passo 1: Parar o dev server**
+- [x] **Passo 1: Parar o dev server**
 
 ```bash
 netstat -ano | grep ":5173" | grep LISTENING
 taskkill //F //PID <pid encontrado>
 ```
 
-- [ ] **Passo 2: Rebuild e redeploy**
+- [x] **Passo 2: Rebuild e redeploy**
 
 ```bash
 docker compose build app
 docker compose up -d app
 ```
 
-- [ ] **Passo 3: Smoke test**
+- [x] **Passo 3: Smoke test**
 
 ```bash
 curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:3000/
