@@ -7,6 +7,7 @@ import TabNav from '../TabNav/TabNav';
 import MobileAppMenu from '../MobileAppMenu/MobileAppMenu';
 import AttributesPanel from '../AttributesPanel/AttributesPanel';
 import BuffsPanel from '../BuffsPanel/BuffsPanel';
+import FixedBonusesPanel from '../FixedBonusesPanel/FixedBonusesPanel';
 import AcoesPanel from '../AcoesPanel/AcoesPanel';
 import SkillsPanel from '../SkillsPanel/SkillsPanel';
 import PoderesPanel from '../PoderesPanel/PoderesPanel';
@@ -38,6 +39,7 @@ function renderSection(id: SectionId) {
               <BuffsPanel />
             </div>
           </div>
+          <FixedBonusesPanel />
           <AcoesPanel />
         </>
       );
