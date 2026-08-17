@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import {
   formatMod,
@@ -5,10 +6,12 @@ import {
   buildDamageSummary,
   calcTotalMp,
 } from '../../../utils/calculations';
+import { buildAttackChecklist } from '../../../utils/attackCompose';
 import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
 import type { Attack } from '../../../types/character';
 import Card from '../../ui/Card/Card';
+import ComposeAttackSheet from '../ComposeAttackSheet/ComposeAttackSheet';
 import styles from './ActionCard.module.css';
 
 interface ActionCardProps {
@@ -29,8 +32,12 @@ interface ActionCardProps {
  */
 function ActionCard({ attack, index, onEdit }: ActionCardProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
+  const [composing, setComposing] = useState(false);
 
   if (!character) return null;
+
+  const checklist = buildAttackChecklist(character, attack);
+  const hasChecklist = checklist.length > 0;
 
   const attackRollTotal = calcAttackRoll(character, attack);
   const damageSummary = buildDamageSummary(character, attack);
@@ -107,12 +114,17 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
         )}
       </div>
 
-      {!readOnly && pmTotal > 0 && (
-        <button type="button" className={styles.btnRoll} onClick={rollAttack}>
+      {!readOnly && (pmTotal > 0 || hasChecklist) && (
+        <button
+          type="button"
+          className={styles.btnRoll}
+          onClick={hasChecklist ? () => setComposing(true) : rollAttack}
+        >
           ⚔ Atacar
         </button>
       )}
 
+      <ComposeAttackSheet attack={composing ? attack : null} onClose={() => setComposing(false)} />
     </Card>
   );
 }
