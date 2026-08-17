@@ -438,8 +438,8 @@ const ataqueConfig: EntityConfig = {
       rangeType: s(v.rangeType),
       mpCost: n(v.mpCost),
       attributeDamageBonus: s(v.attributeDamageBonus),
-      extraBonuses: bonuses.map((b) => ({ name: s(b.name), value: n(b.value), mp: n(b.mp) })),
-      extraDamage: dmg.map((d) => ({ name: s(d.name), value: s(d.value), mp: n(d.mp) })),
+      extraBonuses: bonuses.map((b) => ({ name: s(b.name).trim(), value: n(b.value), mp: n(b.mp) })),
+      extraDamage: dmg.map((d) => ({ name: s(d.name).trim(), value: s(d.value), mp: n(d.mp) })),
     };
     return { ...c, attacks: upsert(c.attacks, entry, i) };
   },

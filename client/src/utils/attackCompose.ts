@@ -22,7 +22,7 @@ function pushModifiers(
   (mods ?? []).forEach((m, i) => {
     items.push({
       key: `${keyPrefix}-${i}`,
-      label: m.label || 'Modificador',
+      label: m.label.trim() || 'Modificador',
       source,
       attackRoll: m.attackRoll ?? 0,
       damageBonus: m.damageBonus ?? 0,
@@ -45,7 +45,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   (atk.extraBonuses ?? []).forEach((b, i) => {
     items.push({
       key: `own-bonus-${i}`,
-      label: b.name || 'Modificador',
+      label: b.name.trim() || 'Modificador',
       source: '',
       attackRoll: Number(b.value) || 0,
       damageBonus: 0,
@@ -60,7 +60,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     const isDice = raw !== '' && Number.isNaN(Number(raw));
     items.push({
       key: `own-damage-${i}`,
-      label: d.name || 'Modificador',
+      label: d.name.trim() || 'Modificador',
       source: '',
       attackRoll: 0,
       damageBonus: isDice ? 0 : (Number(raw) || 0),
