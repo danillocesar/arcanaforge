@@ -5,6 +5,7 @@ import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import Card from '../../ui/Card/Card';
 import TextField from '../../ui/TextField/TextField';
 import SkillRow from '../SkillRow/SkillRow';
+import { normalizeSearch } from '../../../utils/formatters';
 import styles from './SkillsPanel.module.css';
 
 function SkillsPanel() {
@@ -18,11 +19,11 @@ function SkillsPanel() {
     0,
   );
 
-  const query = search.trim().toLowerCase();
+  const query = normalizeSearch(search);
   const visible = query
     ? SKILLS_CONFIG.filter((cfg) => {
         const label = cfg.customLabel ? character.skills[cfg.id]?.label || cfg.name : cfg.name;
-        return label.toLowerCase().includes(query);
+        return normalizeSearch(label).includes(query);
       })
     : SKILLS_CONFIG;
 

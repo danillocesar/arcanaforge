@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { toggleBuffState } from '../../../utils/calculations';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import Sheet from '../../ui/Sheet/Sheet';
+import ConditionPicker from '../ConditionPicker/ConditionPicker';
+import type { FormValues } from '../SheetForm/SheetForm';
 import type { Buff } from '../../../types/character';
 import styles from './BuffsDrawer.module.css';
 
@@ -37,7 +40,8 @@ function buildSummary(buff: Buff): string | null {
 
 function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
-  const { openEdit, openCreate } = useSheetForm();
+  const { openEdit, openCreate, openCreateWithValues } = useSheetForm();
+  const [showPicker, setShowPicker] = useState(false);
 
   if (!character) return null;
 
@@ -51,57 +55,69 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
     setTimeout(fn, 320);
   };
 
+  const handlePick = (values: FormValues | null) => {
+    setShowPicker(false);
+    setTimeout(() => {
+      if (values) openCreateWithValues('buff', values);
+      else openCreate('buff');
+    }, 320);
+  };
+
   const footer = !readOnly ? (
-    <button type="button" className={styles.btnAdd} onClick={() => openAfterClose(() => openCreate('buff'))}>
+    <button type="button" className={styles.btnAdd} onClick={() => openAfterClose(() => setShowPicker(true))}>
       + Buff
     </button>
   ) : undefined;
 
   return (
-    <Sheet open={open} onClose={onClose} title="Buffs & Condições" footer={footer}>
-      {buffs.length === 0 ? (
-        <p className={styles.empty}>Nenhum buff ou condição ativo.</p>
-      ) : (
-        <div className={styles.list}>
-          {buffs.map((buff, idx) => {
-            const variant = inferVariant(buff);
-            const signed = buildSummary(buff);
+    <>
+      <Sheet open={open} onClose={onClose} title="Buffs & Condições" footer={footer}>
+        {buffs.length === 0 ? (
+          <p className={styles.empty}>Nenhum buff ou condição ativo.</p>
+        ) : (
+          <div className={styles.list}>
+            {buffs.map((buff, idx) => {
+              const variant = inferVariant(buff);
+              const signed = buildSummary(buff);
 
-            return (
-              <div key={idx} className={`${styles.card} ${styles[variant]}`}>
-                <button
-                  type="button"
-                  className={`${styles.dot} ${buff.active ? styles.dotOn : ''}`}
-                  aria-label={buff.active ? 'Desativar' : 'Ativar'}
-                  onClick={readOnly ? undefined : () => handleToggle(idx)}
-                  disabled={readOnly}
-                />
-                <div className={styles.info}>
-                  <span className={styles.name}>{buff.name || 'Sem nome'}</span>
-                  {buff.source && <span className={styles.sourceText}>{buff.source}</span>}
-                  {buff.mp > 0 && <span className={styles.source}>{buff.mp} PM</span>}
-                </div>
-                {signed && (
-                  <span className={`${styles.badge} ${styles[`badge_${variant}`]}`}>
-                    {signed}
-                  </span>
-                )}
-                {!readOnly && (
+              return (
+                <div key={idx} className={`${styles.card} ${styles[variant]}`}>
                   <button
                     type="button"
-                    className={styles.btnEdit}
-                    aria-label="Editar"
-                    onClick={() => openAfterClose(() => openEdit('buff', idx))}
-                  >
-                    ✎
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </Sheet>
+                    className={`${styles.dot} ${buff.active ? styles.dotOn : ''}`}
+                    aria-label={buff.active ? 'Desativar' : 'Ativar'}
+                    onClick={readOnly ? undefined : () => handleToggle(idx)}
+                    disabled={readOnly}
+                  />
+                  <div className={styles.info}>
+                    <span className={styles.name}>{buff.name || 'Sem nome'}</span>
+                    {buff.source && <span className={styles.sourceText}>{buff.source}</span>}
+                    {buff.description && <span className={styles.descText}>{buff.description}</span>}
+                    {buff.mp > 0 && <span className={styles.source}>{buff.mp} PM</span>}
+                  </div>
+                  {signed && (
+                    <span className={`${styles.badge} ${styles[`badge_${variant}`]}`}>
+                      {signed}
+                    </span>
+                  )}
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      className={styles.btnEdit}
+                      aria-label="Editar"
+                      onClick={() => openAfterClose(() => openEdit('buff', idx))}
+                    >
+                      ✎
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Sheet>
+      <ConditionPicker open={showPicker} onClose={() => setShowPicker(false)} onPick={handlePick} />
+    </>
   );
 }
 

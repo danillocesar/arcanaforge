@@ -6,9 +6,12 @@ import type {
   AbilityKind,
   InventoryCategory,
 } from '../../../types/character';
-import { BUFF_TYPES } from '../../../data/constants';
+import { BUFF_TYPES, SPELL_SCHOOLS, DAMAGE_TYPES } from '../../../data/constants';
 import { ATTRIBUTE_FULL_NAMES } from '../../../data/atributos';
 import { SKILLS_CONFIG } from '../../../data/pericias';
+import type { OfficialCondition } from '../../../data/conditions';
+import type { OfficialSpell } from '../../../data/spells';
+import type { OfficialPower } from '../../../data/powers';
 import type { FieldDescriptor, FormValues } from './SheetForm';
 
 export type EntityKind =
@@ -83,6 +86,9 @@ const rangeOptions = [
   { value: 'ranged', label: 'À distância' },
 ];
 
+const schoolOptions = SPELL_SCHOOLS.map((v) => ({ value: v, label: v }));
+const damageTypeOptions = DAMAGE_TYPES.map((v) => ({ value: v, label: v }));
+
 /* ─────────────────────────── Poder / Habilidade ─────────────────────────── */
 
 const kindOptions: Array<{ value: string; label: string }> = [
@@ -100,6 +106,7 @@ const abilityFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
   { key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+  { key: 'prerequisite', label: 'Pré-requisito', type: 'text', placeholder: 'Ex.: Força 13' },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
   { key: 'castable', label: 'Conjurável', type: 'select', options: castableOptions, half: true },
   {
@@ -117,13 +124,14 @@ const abilidadeConfig: EntityConfig = {
   title: 'Poder / Habilidade',
   fields: abilityFields,
   empty: () => ({
-    kind: 'Poder', name: '', source: '', mpCost: 0, description: '',
+    kind: 'Poder', name: '', source: '', mpCost: 0, prerequisite: '', description: '',
     castable: 'false', buffTargetScope: 'self', buffs: [],
   }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
     return {
-      kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost, description: a.description,
+      kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost,
+      prerequisite: a.prerequisite ?? '', description: a.description,
       castable: a.castable ? 'true' : 'false',
       buffTargetScope: a.buffTargetScope ?? 'self',
       buffs: effectsToForm(a.buffs),
@@ -137,6 +145,7 @@ const abilidadeConfig: EntityConfig = {
       source: s(v.source),
       kind: (s(v.kind) || 'Poder') as AbilityKind,
       mpCost: n(v.mpCost),
+      prerequisite: s(v.prerequisite) || undefined,
       description: s(v.description),
       castable: s(v.castable) === 'true',
       buffTargetScope: s(v.buffTargetScope) || 'self',
@@ -147,11 +156,34 @@ const abilidadeConfig: EntityConfig = {
   remove: (c, i) => ({ ...c, abilities: c.abilities.filter((_, idx) => idx !== i) }),
 };
 
+function powerSourceLabel(power: OfficialPower): string {
+  if (power.category === 'Concedido') {
+    return power.domain ? `Poder Concedido (${power.domain})` : 'Poder Concedido';
+  }
+  if (power.category === 'Tormenta') return 'Poder da Tormenta';
+  return `Poder Geral (${power.category})`;
+}
+
+/** Converte um poder oficial do catálogo em rascunho de formulário para o abilidadeConfig acima. */
+export function powerToFormValues(power: OfficialPower): FormValues {
+  return {
+    kind: 'Poder',
+    name: power.name,
+    source: powerSourceLabel(power),
+    mpCost: 0,
+    prerequisite: power.prerequisite,
+    description: power.description,
+    castable: 'false',
+    buffTargetScope: 'self',
+    buffs: [],
+  };
+}
+
 /* ─────────────────────────────── Magia ─────────────────────────────────── */
 
 const spellFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome da magia' },
-  { key: 'school', label: 'Escola', type: 'text', half: true },
+  { key: 'school', label: 'Escola', type: 'select', options: schoolOptions, half: true },
   { key: 'spellLevel', label: 'Círculo', type: 'number', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'castingTime', label: 'Execução', type: 'text', half: true },
@@ -182,7 +214,7 @@ const magiaConfig: EntityConfig = {
   title: 'Magia',
   fields: spellFields,
   empty: () => ({
-    name: '', school: '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
+    name: '', school: schoolOptions[0]?.value ?? '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
     area: '', duration: '', resistance: '', description: '', enhancements: [],
     buffTargetScope: 'self', buffs: [],
   }),
@@ -222,11 +254,31 @@ const magiaConfig: EntityConfig = {
   remove: (c, i) => ({ ...c, spells: c.spells.filter((_, idx) => idx !== i) }),
 };
 
+/** Converte uma magia oficial do catálogo em rascunho de formulário para o magiaConfig acima. */
+export function spellToFormValues(spell: OfficialSpell): FormValues {
+  return {
+    name: spell.name,
+    school: spell.school,
+    spellLevel: spell.spellLevel,
+    mpCost: 1,
+    castingTime: spell.castingTime,
+    range: spell.range,
+    area: spell.area,
+    duration: spell.duration,
+    resistance: spell.resistance,
+    description: spell.description,
+    buffTargetScope: 'self',
+    buffs: [],
+    enhancements: spell.enhancements.map((e) => ({ mpCost: e.mpCost, description: e.description, buffs: [] })),
+  };
+}
+
 /* ─────────────────────────────── Buff ──────────────────────────────────── */
 
 const buffFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do buff/condição' },
   { key: 'mp', label: 'Custo (PM)', type: 'number', half: true },
+  { key: 'description', label: 'Descrição (regra)', type: 'textarea', placeholder: 'Efeito da condição, para referência' },
   {
     key: 'effects', label: 'Efeitos', type: 'list', addLabel: 'Efeito',
     itemFields: BUFF_EFFECT_ITEM_FIELDS,
@@ -243,7 +295,7 @@ function effectsFromValues(raw: unknown): BuffEffect[] {
   }));
 }
 
-function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
+export function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
   return (effects ?? []).map((eff) => ({
     type: eff.type, attributeId: eff.attributeId ?? 'str', skillId: eff.skillId ?? '', value: eff.value,
   }));
@@ -252,12 +304,13 @@ function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
 const buffConfig: EntityConfig = {
   title: 'Buff / Condição',
   fields: buffFields,
-  empty: () => ({ name: '', mp: 0, effects: [emptyBuffEffect()] }),
+  empty: () => ({ name: '', mp: 0, description: '', effects: [emptyBuffEffect()] }),
   fromEntry: (c, i) => {
     const b = c.buffs[i];
     return {
       name: b.name,
       mp: b.mp,
+      description: b.description ?? '',
       effects: effectsToForm(b.effects),
     };
   },
@@ -267,6 +320,7 @@ const buffConfig: EntityConfig = {
       ...base,
       name: s(v.name),
       mp: n(v.mp),
+      description: s(v.description) || undefined,
       effects: effectsFromValues(v.effects),
       active: (base as { active?: boolean }).active ?? false,
     } as Character['buffs'][number];
@@ -274,6 +328,16 @@ const buffConfig: EntityConfig = {
   },
   remove: (c, i) => ({ ...c, buffs: c.buffs.filter((_, idx) => idx !== i) }),
 };
+
+/** Converte uma condição oficial do catálogo em rascunho de formulário para o buffConfig acima. */
+export function conditionToFormValues(condition: OfficialCondition): FormValues {
+  return {
+    name: condition.name,
+    mp: 0,
+    description: condition.description,
+    effects: effectsToForm(condition.effects),
+  };
+}
 
 /* ───────────────── Ataque (combinação: base + modificadores) ────────────── */
 
@@ -284,7 +348,7 @@ const ataqueFields: FieldDescriptor[] = [
   { key: 'damage', label: 'Dano (dados)', type: 'text', placeholder: 'Ex.: 2d8', half: true },
   { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
   { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
-  { key: 'type', label: 'Tipo de dano', type: 'text', placeholder: 'Corte, fogo…', half: true },
+  { key: 'type', label: 'Tipo de dano', type: 'select', options: damageTypeOptions, half: true },
   {
     key: 'extraBonuses', label: 'Modificadores de ataque', type: 'list', addLabel: 'Modificador',
     itemFields: [
@@ -308,7 +372,7 @@ const ataqueConfig: EntityConfig = {
   fields: ataqueFields,
   empty: () => ({
     name: '', rangeType: 'melee', mpCost: 0, damage: '', attributeDamageBonus: 'str',
-    critical: '', type: '', extraBonuses: [], extraDamage: [],
+    critical: '', type: damageTypeOptions[0]?.value ?? '', extraBonuses: [], extraDamage: [],
   }),
   fromEntry: (c, i) => {
     const a = c.attacks[i];
@@ -361,6 +425,8 @@ const armaduraConfig: EntityConfig = {
 
 /* ──────────────── Inventory items (arma / acessório / comum / consumível) ── */
 
+const WEIGHT_FIELD: FieldDescriptor = { key: 'weight', label: 'Peso (kg)', type: 'number', half: true };
+
 function inventoryConfig(
   category: InventoryCategory,
   title: string,
@@ -368,14 +434,17 @@ function inventoryConfig(
 ): EntityConfig {
   return {
     title,
-    fields,
-    empty: () => ({ name: '', quantity: 1, slot: '', effect: '' }),
+    fields: [...fields, WEIGHT_FIELD],
+    empty: () => ({ name: '', quantity: 1, slot: '', effect: '', weight: 0 }),
     fromEntry: (c, i) => {
       const it = c.inventory[i];
-      return { name: it.name, quantity: it.quantity ?? 1, slot: it.slot ?? '', effect: it.effect ?? '' };
+      return {
+        name: it.name, quantity: it.quantity ?? 1, slot: it.slot ?? '', effect: it.effect ?? '',
+        weight: it.weight ?? 0,
+      };
     },
     apply: (c, v, i) => {
-      const base = i != null ? c.inventory[i] : { weight: 0 };
+      const base = i != null ? c.inventory[i] : {};
       const entry = {
         ...base,
         name: s(v.name),
@@ -383,7 +452,7 @@ function inventoryConfig(
         category,
         slot: s(v.slot) || undefined,
         effect: s(v.effect) || undefined,
-        weight: (base as { weight?: number }).weight ?? 0,
+        weight: n(v.weight),
       } as Character['inventory'][number];
       return { ...c, inventory: upsert(c.inventory, entry, i) };
     },
@@ -408,11 +477,59 @@ const consumivelConfig = inventoryConfig('consumivel', 'Consumível', [
   { key: 'effect', label: 'Efeito', type: 'text', half: true },
 ]);
 
-const armaConfig = inventoryConfig('arma', 'Arma', [
-  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Espada longa, Arco' },
-  { key: 'slot', label: 'Empunhadura', type: 'text', placeholder: 'Ex.: 1 mão, 2 mãos', half: true },
-  { key: 'effect', label: 'Descrição', type: 'text', placeholder: 'Material, encantamento…', half: true },
-]);
+/**
+ * Arma: item de inventário com campos de combate opcionais. Preencher "Dano" faz
+ * a arma aparecer automaticamente como card de Ataque na aba Ações — sem precisar
+ * cadastrar a mesma arma duas vezes.
+ */
+const armaConfig: EntityConfig = {
+  title: 'Arma',
+  fields: [
+    { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Espada longa, Arco' },
+    { key: 'slot', label: 'Empunhadura', type: 'text', placeholder: 'Ex.: 1 mão, 2 mãos', half: true },
+    { key: 'effect', label: 'Descrição', type: 'text', placeholder: 'Material, encantamento…', half: true },
+    WEIGHT_FIELD,
+    { key: 'rangeType', label: 'Alcance', type: 'select', options: rangeOptions, half: true },
+    { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+    { key: 'damage', label: 'Dano (dados)', type: 'text', placeholder: 'Ex.: 2d8 — vazio = não é um ataque', half: true },
+    { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
+    { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
+    { key: 'type', label: 'Tipo de dano', type: 'select', options: damageTypeOptions, half: true },
+  ],
+  empty: () => ({
+    name: '', quantity: 1, slot: '', effect: '', weight: 0,
+    rangeType: 'melee', mpCost: 0, damage: '', attributeDamageBonus: 'str', critical: '', type: '',
+  }),
+  fromEntry: (c, i) => {
+    const it = c.inventory[i];
+    return {
+      name: it.name, quantity: it.quantity ?? 1, slot: it.slot ?? '', effect: it.effect ?? '',
+      weight: it.weight ?? 0,
+      rangeType: it.rangeType ?? 'melee', mpCost: it.mpCost ?? 0, damage: it.damage ?? '',
+      attributeDamageBonus: it.attributeDamageBonus ?? 'str', critical: it.critical ?? '', type: it.type ?? '',
+    };
+  },
+  apply: (c, v, i) => {
+    const base = i != null ? c.inventory[i] : {};
+    const entry = {
+      ...base,
+      name: s(v.name),
+      quantity: n(v.quantity) || 1,
+      category: 'arma' as const,
+      slot: s(v.slot) || undefined,
+      effect: s(v.effect) || undefined,
+      weight: n(v.weight),
+      rangeType: s(v.rangeType) || undefined,
+      mpCost: n(v.mpCost),
+      damage: s(v.damage) || undefined,
+      attributeDamageBonus: s(v.attributeDamageBonus) || undefined,
+      critical: s(v.critical) || undefined,
+      type: s(v.type) || undefined,
+    } as Character['inventory'][number];
+    return { ...c, inventory: upsert(c.inventory, entry, i) };
+  },
+  remove: (c, i) => ({ ...c, inventory: c.inventory.filter((_, idx) => idx !== i) }),
+};
 
 export const ENTITY_FORMS: Record<EntityKind, EntityConfig> = {
   poder: abilidadeConfig,

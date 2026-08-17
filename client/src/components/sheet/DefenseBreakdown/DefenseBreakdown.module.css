@@ -39,3 +39,52 @@
   color: var(--accent-ink);
   font-size: 16px;
 }
+
+.tappable {
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 0 -6px;
+  padding: 5px 6px;
+  transition: background 0.15s;
+}
+
+.tappable:hover {
+  background: var(--surface-2);
+}
+
+.stepper {
+  transform: scale(0.82);
+  transform-origin: right center;
+}
+
+.rdInput {
+  width: 56px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: right;
+  padding: 4px 8px;
+}
+
+.btnAdd {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px dashed rgba(16, 185, 129, 0.4);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnAdd:hover {
+  background: rgba(16, 185, 129, 0.18);
+}

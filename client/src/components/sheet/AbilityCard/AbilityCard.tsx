@@ -32,9 +32,10 @@ function AbilityCard({ ability, index, onEdit, onUse }: AbilityCardProps) {
           <h3 className={styles.name}>{ability.name || 'Sem nome'}</h3>
           <Chip label={kind} variant={chipVariant} active className={styles.tag} />
         </div>
-        {(ability.source || mpCost > 0) && (
+        {(ability.source || ability.prerequisite || mpCost > 0) && (
           <div className={styles.metaRow}>
             {ability.source && <span className={styles.source}>{ability.source}</span>}
+            {ability.prerequisite && <span className={styles.source}>Pré-req.: {ability.prerequisite}</span>}
             {mpCost > 0 && <span className={styles.pm}>{mpCost} PM</span>}
           </div>
         )}

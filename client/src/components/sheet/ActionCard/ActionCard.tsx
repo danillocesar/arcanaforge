@@ -72,13 +72,6 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
     });
   };
 
-  const removeAttack = () => {
-    updateCharacter((f) => ({
-      ...f,
-      attacks: f.attacks.filter((_, i) => i !== index),
-    }));
-  };
-
   return (
     <Card padding={false} className={styles.weapon}>
       <div
@@ -91,9 +84,6 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
           <h3>{attack.name || 'Arma sem nome'}</h3>
           <span>{rangeLabel}</span>
         </div>
-        {!readOnly && (
-          <button type="button" className={styles.rmX} onClick={(e) => { e.stopPropagation(); removeAttack(); }} aria-label="Remover">×</button>
-        )}
       </div>
 
       <div className={styles.stats}>
@@ -117,9 +107,9 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
         )}
       </div>
 
-      {!readOnly && (
+      {!readOnly && pmTotal > 0 && (
         <button type="button" className={styles.btnRoll} onClick={rollAttack}>
-          🎲 Rolar ataque
+          ⚔ Atacar
         </button>
       )}
 

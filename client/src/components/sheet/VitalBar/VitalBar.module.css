@@ -40,6 +40,36 @@
   object-fit: cover;
 }
 
+.avatarBtn {
+  cursor: pointer;
+  transition: transform 0.15s var(--ease);
+}
+
+.avatarBtn:active {
+  transform: scale(0.93);
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: inherit;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatarBtn:hover .avatarOverlay {
+  opacity: 1;
+}
+
+.fileInput {
+  display: none;
+}
+
 .idMeta {
   min-width: 0;
   flex: 1;
@@ -54,6 +84,20 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.idNameInput {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  width: 100%;
+  padding: 0;
+}
+
+.idNameInput:focus {
+  outline: none;
 }
 
 .idLine {
@@ -189,8 +233,20 @@
   flex: 0 0 auto;
   text-align: center;
   background: var(--surface-2);
+  border: 1px solid var(--line-2);
   border-radius: 14px;
   padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s var(--ease);
+}
+
+.lvlPill:hover {
+  background: var(--line-2);
+}
+
+.lvlPill:active {
+  transform: scale(0.94);
 }
 
 .lvlPill b {
@@ -296,7 +352,7 @@
 }
 
 .pv .val {
-  color: var(--accent-ink);
+  color: #f87171;
 }
 
 .pm .val {
@@ -366,6 +422,12 @@
   width: 118px;
 }
 
+/* ---------- vital popovers (HP / MP) ---------- */
+.vitalPop {
+  min-width: 280px;
+  padding: 18px;
+}
+
 /* ---------- popover headings (reused inside ui Popover) ---------- */
 .popH {
   font-size: 10px;
@@ -374,4 +436,29 @@
   text-transform: uppercase;
   color: var(--ink-3);
   margin-bottom: 10px;
+}
+
+.popRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0 0;
+  font-size: 13px;
+}
+
+.popRow span {
+  color: var(--ink-2);
+}
+
+.maxInput {
+  width: 56px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: right;
+  padding: 4px 8px;
 }

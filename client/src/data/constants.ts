@@ -5,6 +5,34 @@ export const SYSTEM_ROUTES: Record<RPGSystem, string> = {
   naruto: '/naruto/char',
 };
 
+/** As 8 escolas de magia oficiais do T20. */
+export const SPELL_SCHOOLS = [
+  'Abjuração',
+  'Adivinhação',
+  'Convocação',
+  'Encantamento',
+  'Evocação',
+  'Ilusão',
+  'Necromancia',
+  'Transmutação',
+];
+
+/** Os tipos de dano oficiais do T20 (para ataques e efeitos). */
+export const DAMAGE_TYPES = [
+  'Ácido',
+  'Corte',
+  'Eletricidade',
+  'Essência',
+  'Fogo',
+  'Frio',
+  'Impacto',
+  'Luz',
+  'Mental',
+  'Perfuração',
+  'Trevas',
+  'Veneno',
+];
+
 export const BUFF_TYPES: Record<string, string> = {
   attack_roll: 'Teste de Ataque',
   extra_damage: 'Dano Extra',

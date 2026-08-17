@@ -1,3 +1,8 @@
+/** Normaliza texto pra busca: minúsculas, sem acento/diacrítico, sem espaço nas pontas. */
+export function normalizeSearch(s: string): string {
+  return s.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 export function formatClassesStr(classes: { name: string; level: number }[]): string {
   return (
     classes

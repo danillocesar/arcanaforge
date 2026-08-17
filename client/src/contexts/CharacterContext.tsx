@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
-import { createEmptyCharacter, normalizeBuffs, applyBuffToCharacter } from '../utils/calculations';
+import { createEmptyCharacter, normalizeBuffs, normalizeDamageReduction, applyBuffToCharacter } from '../utils/calculations';
 import {
   apiFetchCharacters,
   apiLoadCharacter,
@@ -50,6 +50,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   characterRef.current = character;
 
   const lastBroadcastRef = useRef<BroadcastSnapshot | null>(null);
+  const skipNextSaveRef = useRef<() => void>(() => {});
 
   const { send } = useWebSocket((msg) => {
     if (!characterRef.current) return;
@@ -57,6 +58,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     if (msg.type === 'character_hp_sync' && msg.characterId === characterRef.current._id) {
       const hp = msg.hp as { current?: number; max?: number } | undefined;
       const mp = msg.mp as { current?: number; max?: number } | undefined;
+      skipNextSaveRef.current();
       setCharacter((prev) => {
         if (!prev) return prev;
         const next = { ...prev };
@@ -86,6 +88,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
 
     if (msg.type === 'master_hp_sync' && msg.characterId === characterRef.current._id) {
       const currentHp = msg.currentHp as number;
+      skipNextSaveRef.current();
       setCharacter((prev) => {
         if (!prev) return prev;
         const next = { ...prev, hp: { ...prev.hp, current: currentHp } };
@@ -109,6 +112,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     if (msg.type === 'buff_applied' && msg.characterId === characterRef.current._id) {
       const buff = msg.buff as Character['buffs'][number] | undefined;
       if (buff && Array.isArray(buff.effects)) {
+        skipNextSaveRef.current();
         setCharacter((prev) => (prev ? applyBuffToCharacter(prev, buff) : prev));
         showToast?.(`Você recebeu o buff "${buff.name}"${buff.source ? ` ${buff.source}` : ''}!`, 'info');
       }
@@ -149,7 +153,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   const sendHpUpdateRef = useRef(sendHpUpdate);
   sendHpUpdateRef.current = sendHpUpdate;
 
-  const { status: saveStatus } = useAutoSave(readOnly ? null : character, characterOriginalId, () => {
+  const { status: saveStatus, skipNextSave } = useAutoSave(readOnly ? null : character, characterOriginalId, () => {
     if (characterRef.current) {
       setCharacterOriginalId(characterRef.current._id);
     }
@@ -169,6 +173,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       sendHpUpdateRef.current();
     }
   });
+  skipNextSaveRef.current = skipNextSave;
 
   const refreshList = useCallback(async () => {
     const list = await apiFetchCharacters();
@@ -179,7 +184,11 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   const loadCharacter = useCallback(async (id: string) => {
     const data = await apiLoadCharacter(id);
     if (data) {
-      const normalized = { ...data, buffs: normalizeBuffs(data.buffs) };
+      const normalized = {
+        ...data,
+        buffs: normalizeBuffs(data.buffs),
+        damageReduction: normalizeDamageReduction(data.damageReduction),
+      };
       setCharacter(normalized);
       setCharacterOriginalId(data._id);
       lastBroadcastRef.current = {
@@ -231,7 +240,11 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   }, [readOnly]);
 
   const setCharacterDirect = useCallback((char: Character) => {
-    setCharacter({ ...char, buffs: normalizeBuffs(char.buffs) });
+    setCharacter({
+      ...char,
+      buffs: normalizeBuffs(char.buffs),
+      damageReduction: normalizeDamageReduction(char.damageReduction),
+    });
     setCharacterOriginalId(char._id);
   }, []);
 

@@ -1,4 +1,4 @@
-import type { Character, AttributeId, Buff, BuffEffect, BuffType } from '../types/character';
+import type { Character, AttributeId, Buff, BuffEffect, BuffType, Attack, InventoryItem } from '../types/character';
 import { SKILLS_CONFIG } from '../data/pericias';
 
 export function createEmptyCharacter(name?: string): Character {
@@ -17,6 +17,7 @@ export function createEmptyCharacter(name?: string): Character {
     origin: '',
     deity: '',
     alignment: '',
+    languages: '',
     age: '',
     size: 'Médio',
     speed: '9m / 6q',
@@ -25,7 +26,7 @@ export function createEmptyCharacter(name?: string): Character {
     hp: { max: 0, current: 0 },
     mp: { max: 0, current: 0 },
     defense: { base: 10, items: [] },
-    damageReduction: '',
+    damageReduction: 0,
     attacks: [],
     skills,
     abilities: [],
@@ -113,7 +114,7 @@ export function calcTotalSkill(character: Character, skillId: string): number {
 }
 
 export function calcTotalDefense(character: Character): number {
-  let total = character.defense.base || 10;
+  let total = (character.defense.base || 10) + getEffectiveAttribute(character, 'dex');
   if (character.defense.items) {
     character.defense.items.forEach((item) => {
       total += item.value || 0;
@@ -152,14 +153,16 @@ export interface DefenseBreakdownRow {
 
 export interface DefenseBreakdown {
   base: number;
+  dexterity: number;
   items: DefenseBreakdownRow[];
   buffs: DefenseBreakdownRow[];
   total: number;
 }
 
-/** Structured breakdown for the Defense popover (base + protections + active defense buffs). */
+/** Structured breakdown for the Defense popover (base + Destreza + protections + active defense buffs). */
 export function getDefenseBreakdown(character: Character): DefenseBreakdown {
   const base = character.defense.base || 10;
+  const dexterity = getEffectiveAttribute(character, 'dex');
   const items: DefenseBreakdownRow[] = (character.defense.items || [])
     .filter((it) => (it.value || 0) !== 0)
     .map((it) => ({ name: it.name || 'Proteção', value: it.value || 0 }));
@@ -168,7 +171,7 @@ export function getDefenseBreakdown(character: Character): DefenseBreakdown {
     .flatMap((b) => (b.effects || [])
       .filter((eff) => eff.type === 'defense')
       .map((eff) => ({ name: b.name || 'Buff', value: Number(eff.value) || 0 })));
-  return { base, items, buffs, total: calcTotalDefense(character) };
+  return { base, dexterity, items, buffs, total: calcTotalDefense(character) };
 }
 
 /**
@@ -229,6 +232,26 @@ export function calcSpellResistance(character: Character): number {
   const attrKey = character.spellcastingAttribute || 'int';
   const mod = getEffectiveAttribute(character, attrKey);
   return 10 + Math.floor(getTotalLevel(character) / 2) + mod;
+}
+
+/** Uma arma do inventário só vira card de Ataque quando tem dano cadastrado. */
+export function isWeaponAttack(item: InventoryItem): boolean {
+  return item.category === 'arma' && Boolean((item.damage ?? '').trim());
+}
+
+/** Adapta uma arma do inventário (com dados de combate) para o formato de Ataque. */
+export function weaponToAttack(item: InventoryItem): Attack {
+  return {
+    name: item.name,
+    damage: item.damage ?? '',
+    critical: item.critical ?? '',
+    type: item.type ?? '',
+    rangeType: item.rangeType ?? 'melee',
+    mpCost: item.mpCost ?? 0,
+    attributeDamageBonus: item.attributeDamageBonus ?? 'str',
+    extraBonuses: [],
+    extraDamage: [],
+  };
 }
 
 export function calcAttackRoll(character: Character, atk: Character['attacks'][number]): number {
@@ -329,23 +352,60 @@ export function normalizeBuffs(buffs: unknown[]): Buff[] {
 }
 
 /**
- * Aplica um buff já ativo num personagem: adiciona à lista de buffs e soma os
- * deltas de PV/PM temporário dos efeitos do tipo hp/mp (mesma soma que
- * toggleBuffState faria ao ativar, mas sem custo de PM — o custo já foi pago na
- * conjuração). Usado tanto para o próprio conjurador (auto-aplicação local) quanto
- * ao receber a notificação em tempo real de um buff aplicado por outro jogador.
+ * Converte Redução de Dano do formato antigo (texto livre, ex. "5 (fogo)") para o
+ * novo formato numérico. Personagens salvos antes desta mudança guardam RD como
+ * string — extrai o primeiro número encontrado, ou 0 se não houver nenhum.
+ */
+export function normalizeDamageReduction(value: unknown): number {
+  if (typeof value === 'number') return value;
+  const match = String(value ?? '').match(/-?\d+/);
+  return match ? Number(match[0]) : 0;
+}
+
+/**
+ * Aplica um buff já ativo num personagem: soma os deltas de PV/PM temporário dos
+ * efeitos do tipo hp/mp (mesma soma que toggleBuffState faria ao ativar, mas sem
+ * custo de PM — o custo já foi pago na conjuração) e insere o buff na lista.
+ *
+ * Se já existir um buff com o mesmo nome e origem (ex.: recastar a mesma magia no
+ * mesmo alvo), substitui a instância existente em vez de duplicar — primeiro
+ * desfaz a contribuição de PV/PM temporário da instância antiga (se estava ativa),
+ * depois soma a da nova, evitando contar o bônus em dobro.
+ *
+ * Usado tanto para o próprio conjurador (auto-aplicação local) quanto ao receber a
+ * notificação em tempo real de um buff aplicado por outro jogador.
  */
 export function applyBuffToCharacter(character: Character, buff: Buff): Character {
+  const existingIdx = character.buffs.findIndex(
+    (b) => b.name === buff.name && b.source === buff.source,
+  );
+  const existing = existingIdx === -1 ? null : character.buffs[existingIdx];
+
   let hpTemp = character.temporaryHp;
   let mpTemp = character.temporaryMp;
+
+  if (existing?.active) {
+    (existing.effects || []).forEach((eff) => {
+      const val = Number(eff.value) || 0;
+      if (eff.type === 'hp') hpTemp = Math.max(0, hpTemp - val);
+      if (eff.type === 'mp') mpTemp = Math.max(0, mpTemp - val);
+    });
+  }
+
   buff.effects.forEach((eff) => {
     const val = Number(eff.value) || 0;
     if (eff.type === 'hp') hpTemp += val;
     if (eff.type === 'mp') mpTemp += val;
   });
+
+  const buffs =
+    existingIdx === -1
+      ? [...character.buffs, buff]
+      : character.buffs.map((b, i) => (i === existingIdx ? buff : b));
+
   return {
     ...character,
-    buffs: [...character.buffs, buff],
+    buffs,
     temporaryHp: hpTemp,
     temporaryMp: mpTemp,
   };

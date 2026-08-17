@@ -1,12 +1,19 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { formatMod } from '../../../utils/calculations';
-import type { InventoryItem } from '../../../types/character';
+import { formatMod, calcCarryCapacity, calcUsedLoad, isWeaponAttack } from '../../../utils/calculations';
+import type { Coins, InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import Stepper from '../../ui/Stepper/Stepper';
 import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import type { EntityKind } from '../SheetForm/entityForms';
 import styles from './EquipamentosPanel.module.css';
+
+const COIN_ROWS: Array<{ key: keyof Coins; label: string }> = [
+  { key: 'copper', label: 'TC' },
+  { key: 'silver', label: 'T$' },
+  { key: 'gold', label: 'TO' },
+];
 
 /** Legacy inventory items have no category → treated as 'comum'. */
 function isComum(item: InventoryItem): boolean {
@@ -21,6 +28,11 @@ function EquipamentosPanel() {
 
   const armaduras = character.defense?.items ?? [];
   const inventory = character.inventory ?? [];
+  const coins = character.coins ?? { copper: 0, silver: 0, gold: 0 };
+
+  const setCoin = (key: keyof Coins, value: number) => {
+    updateCharacter((f) => ({ ...f, coins: { ...f.coins, [key]: value } }));
+  };
 
   const armas = inventory
     .map((item, index) => ({ item, index }))
@@ -35,21 +47,11 @@ function EquipamentosPanel() {
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.category === 'consumivel');
 
-  const removeArmadura = (idx: number) => {
-    updateCharacter((f) => ({
-      ...f,
-      defense: { ...f.defense, items: f.defense.items.filter((_, i) => i !== idx) },
-    }));
-  };
-
-  const removeInventoryItem = (idx: number) => {
-    updateCharacter((f) => ({
-      ...f,
-      inventory: f.inventory.filter((_, i) => i !== idx),
-    }));
-  };
-
   const proficiencies = character.proficiencies?.trim();
+  const usedLoad = calcUsedLoad(character);
+  const carryCapacity = calcCarryCapacity(character);
+  const loadPct = carryCapacity > 0 ? Math.min(100, (usedLoad / carryCapacity) * 100) : 0;
+  const overloaded = usedLoad > carryCapacity;
 
   const rowProps = (kind: EntityKind, idx: number) =>
     !readOnly
@@ -61,23 +63,50 @@ function EquipamentosPanel() {
         }
       : { className: styles.row };
 
-  const rmBtn = (onRemove: () => void) =>
-    !readOnly ? (
-      <button
-        type="button"
-        className={styles.rmX}
-        aria-label="Remover"
-        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-      >
-        ×
-      </button>
-    ) : null;
-
   return (
     <div className={styles.panel}>
+      {/* ─── 0. DINHEIRO ─── */}
+      <SectionHeader title="Dinheiro" />
+      <Card className={styles.coins}>
+        {COIN_ROWS.map(({ key, label }) => (
+          <div key={key} className={styles.coinItem}>
+            <span className={styles.coinLabel}>{label}</span>
+            {!readOnly ? (
+              <Stepper
+                value={coins[key]}
+                onChange={(n) => setCoin(key, n)}
+                min={0}
+                className={styles.coinStepper}
+              />
+            ) : (
+              <b>{coins[key]}</b>
+            )}
+          </div>
+        ))}
+      </Card>
+
+      {/* ─── CARGA ─── */}
+      <SectionHeader title="Carga" className={styles.gap} />
+      <Card className={styles.loadCard}>
+        <div className={styles.loadRow}>
+          <span>Peso carregado</span>
+          <b className={overloaded ? styles.loadOver : undefined}>
+            {usedLoad} / {carryCapacity} kg
+          </b>
+        </div>
+        <div className={styles.loadTrack}>
+          <i
+            className={overloaded ? styles.loadOver : undefined}
+            style={{ width: `${loadPct}%` }}
+          />
+        </div>
+        {overloaded && <p className={styles.loadWarn}>Acima da capacidade de carga.</p>}
+      </Card>
+
       {/* ─── 1. EQUIPAMENTOS ─── */}
       <SectionHeader
         title="Equipamentos"
+        className={styles.gap}
         action={!readOnly && <AddButton label="Item" onClick={() => openCreate('item')} />}
       />
 
@@ -91,9 +120,11 @@ function EquipamentosPanel() {
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
               </div>
               <div className={styles.rowMeta}>
+                {isWeaponAttack(item) && (
+                  <span className={styles.linkedBadge} title="Aparece em Ações → Ataques">⚔</span>
+                )}
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -113,7 +144,6 @@ function EquipamentosPanel() {
                   <span className={styles.penalty}>Pen {formatMod(arm.penalty)}</span>
                 )}
               </div>
-              {rmBtn(() => removeArmadura(idx))}
             </div>
           ))}
         </Card>
@@ -133,7 +163,6 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
               </div>
-              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -151,7 +180,6 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -172,7 +200,6 @@ function EquipamentosPanel() {
               <div className={styles.rowMeta}>
                 <span className={styles.qty}>×{item.quantity ?? 1}</span>
               </div>
-              {rmBtn(() => removeInventoryItem(index))}
             </div>
           ))}
         </Card>
@@ -180,10 +207,18 @@ function EquipamentosPanel() {
         <p className={styles.empty}>Nenhum consumível.</p>
       )}
 
-      {proficiencies && (
-        <p className={styles.proficiencies}>
-          <span className={styles.proficienciesLabel}>Proficiências:</span> {proficiencies}
-        </p>
+      <SectionHeader title="Proficiências" className={styles.gap} />
+      {!readOnly ? (
+        <textarea
+          className={styles.proficienciesInput}
+          value={character.proficiencies ?? ''}
+          onChange={(e) => updateCharacter((f) => ({ ...f, proficiencies: e.target.value }))}
+          placeholder="Ex.: armas simples, armas marciais leves, armaduras leves, escudos…"
+        />
+      ) : proficiencies ? (
+        <p className={styles.proficiencies}>{proficiencies}</p>
+      ) : (
+        <p className={styles.empty}>Nenhuma proficiência cadastrada.</p>
       )}
     </div>
   );

@@ -2,62 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
-import Topbar from '../../components/layout/Topbar/Topbar';
-import VitalBar from '../../components/sheet/VitalBar/VitalBar';
-import TabNav from '../../components/sheet/TabNav/TabNav';
-import MobileAppMenu from '../../components/sheet/MobileAppMenu/MobileAppMenu';
-import AttributesPanel from '../../components/sheet/AttributesPanel/AttributesPanel';
-import BuffsPanel from '../../components/sheet/BuffsPanel/BuffsPanel';
-import AcoesPanel from '../../components/sheet/AcoesPanel/AcoesPanel';
-import SkillsPanel from '../../components/sheet/SkillsPanel/SkillsPanel';
-import PoderesPanel from '../../components/sheet/PoderesPanel/PoderesPanel';
-import MagiasPanel from '../../components/sheet/MagiasPanel/MagiasPanel';
-import EquipamentosPanel from '../../components/sheet/EquipamentosPanel/EquipamentosPanel';
-import { SheetFormProvider } from '../../components/sheet/SheetForm/SheetFormProvider';
+import TormentaSheetBody from '../../components/sheet/TormentaSheetBody/TormentaSheetBody';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
 import styles from './CharacterSheetPage.module.css';
-
-type SectionId = 'atributos' | 'pericias' | 'poderes' | 'magias' | 'equipamentos';
-
-const SECTIONS: Array<{ id: SectionId; label: string; icon: string }> = [
-  { id: 'atributos', label: 'Atributos', icon: '◈' },
-  { id: 'pericias', label: 'Perícias', icon: '✓' },
-  { id: 'poderes', label: 'Poderes', icon: '✦' },
-  { id: 'magias', label: 'Magias', icon: '🜂' },
-  { id: 'equipamentos', label: 'Equipamentos', icon: '🜸' },
-];
-
-function renderSection(id: SectionId) {
-  switch (id) {
-    case 'atributos':
-      return (
-        <>
-          <AttributesPanel />
-          <BuffsPanel />
-          <AcoesPanel />
-        </>
-      );
-    case 'pericias':
-      return <SkillsPanel />;
-    case 'poderes':
-      return <PoderesPanel />;
-    case 'magias':
-      return <MagiasPanel />;
-    case 'equipamentos':
-      return <EquipamentosPanel />;
-    default:
-      return null;
-  }
-}
 
 function CharacterSheetInner() {
   const { character, loadCharacter, refreshList } = useCharacterContext();
   const navigate = useNavigate();
   const [loadDone, setLoadDone] = useState(false);
-  const [active, setActive] = useState<SectionId>('atributos');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const isDesktop = useMediaQuery('(min-width: 900px)');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -86,43 +38,7 @@ function CharacterSheetInner() {
     return <div className={styles.loading}>Carregando personagem...</div>;
   }
 
-  const panel = renderSection(active);
-
-  if (isDesktop) {
-    return (
-      <SheetFormProvider>
-        <div className={styles.shell}>
-          <Topbar title={character.name} systemBrand="tormenta" />
-          <div className={styles.desktopBody}>
-            <VitalBar desktop />
-            <div className={styles.desktopGrid}>
-              <aside className={styles.sidebar}>
-                <TabNav sections={SECTIONS} active={active} onChange={(id) => setActive(id as SectionId)} variant="sidebar" />
-              </aside>
-              <main className={styles.detail}>{panel}</main>
-            </div>
-          </div>
-        </div>
-      </SheetFormProvider>
-    );
-  }
-
-  return (
-    <SheetFormProvider>
-      <div className={styles.shell}>
-        <VitalBar />
-        <main className={styles.mobileBody}>{panel}</main>
-        <TabNav
-          sections={SECTIONS}
-          active={active}
-          onChange={(id) => setActive(id as SectionId)}
-          variant="tabs"
-          trailing={{ label: 'Menu', icon: '☰', onClick: () => setMenuOpen(true), active: menuOpen }}
-        />
-        <MobileAppMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-      </div>
-    </SheetFormProvider>
-  );
+  return <TormentaSheetBody />;
 }
 
 function CharacterSheetProviderWrapper({ children }: { children: React.ReactNode }) {

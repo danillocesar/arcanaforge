@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import styles from './Textarea.module.css';
 
 interface TextareaProps
@@ -7,17 +7,30 @@ interface TextareaProps
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  compact?: boolean;
+}
+
+function autoGrow(el: HTMLTextAreaElement) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, value, onChange, placeholder, className, ...rest }, ref) => {
-    const cls = [styles.field, className].filter(Boolean).join(' ');
+  ({ label, value, onChange, placeholder, compact, className, ...rest }, ref) => {
+    const innerRef = useRef<HTMLTextAreaElement>(null);
+    const resolvedRef = (ref as React.RefObject<HTMLTextAreaElement>) ?? innerRef;
+
+    useEffect(() => {
+      if (resolvedRef.current) autoGrow(resolvedRef.current);
+    }, [value, resolvedRef]);
+
+    const cls = [styles.field, compact ? styles.compact : '', className].filter(Boolean).join(' ');
 
     return (
       <div className={cls}>
         {label && <label className={styles.label}>{label}</label>}
         <textarea
-          ref={ref}
+          ref={resolvedRef}
           className={styles.control}
           value={value}
           placeholder={placeholder}

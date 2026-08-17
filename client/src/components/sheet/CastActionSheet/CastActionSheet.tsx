@@ -100,7 +100,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
     if (combinedBuffs.length === 0 || activeAction.buffTargetScope !== 'party') {
       // Sem alvo a escolher: se há buff, aplica só no próprio conjurador.
       if (combinedBuffs.length > 0) {
-        const buff = { name: activeAction.name, effects: combinedBuffs, mp: 0, active: true, source: `de ${character.name}` };
+        const buff = { name: activeAction.name, effects: combinedBuffs, mp: totalCost, active: true, source: `de ${character.name}` };
         updateCharacter((f) => applyBuffToCharacter(f, buff));
       }
       finish();
@@ -113,7 +113,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
       const parties = await apiFetchParties();
       const mine = parties.filter((p) => p.members.some((m) => m.characterIds.includes(character._id)));
       if (mine.length === 0) {
-        const buff = { name: activeAction.name, effects: combinedBuffs, mp: 0, active: true, source: `de ${character.name}` };
+        const buff = { name: activeAction.name, effects: combinedBuffs, mp: totalCost, active: true, source: `de ${character.name}` };
         updateCharacter((f) => applyBuffToCharacter(f, buff));
         finish();
         onClose();
@@ -185,7 +185,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
       }
 
       if (includesSelf) {
-        const buff = { ...buffPayload, mp: 0, active: true };
+        const buff = { ...buffPayload, mp: totalCost, active: true };
         updateCharacter((f) => applyBuffToCharacter(f, buff));
       }
 

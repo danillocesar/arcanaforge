@@ -1,7 +1,5 @@
-import { useRef, useState } from 'react';
 import Card from '../../ui/Card/Card';
 import Button from '../../ui/Button/Button';
-import Popover from '../../ui/Popover/Popover';
 import type { Spell } from '../../../types/character';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import styles from './SpellCard.module.css';
@@ -11,13 +9,10 @@ interface SpellCardProps {
   index: number;
   onCast: (index: number) => void;
   onEdit?: (index: number) => void;
-  onRemove?: (index: number) => void;
 }
 
-function SpellCard({ spell, index, onCast, onEdit, onRemove }: SpellCardProps) {
+function SpellCard({ spell, index, onCast, onEdit }: SpellCardProps) {
   const { readOnly } = useCharacterContext();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLButtonElement>(null);
 
   const mpCost = Number(spell.mpCost) || 0;
   const circulo = Number(spell.spellLevel) || 0;
@@ -28,7 +23,12 @@ function SpellCard({ spell, index, onCast, onEdit, onRemove }: SpellCardProps) {
 
   return (
     <Card className={styles.spell}>
-      <div className={styles.top}>
+      <div
+        className={`${styles.top} ${!readOnly ? styles.tappable : ''}`.trim()}
+        onClick={!readOnly ? () => onEdit?.(index) : undefined}
+        role={!readOnly ? 'button' : undefined}
+        tabIndex={!readOnly ? 0 : undefined}
+      >
         <div className={styles.cost}>
           <b>{mpCost}</b>
           <span>PM</span>
@@ -53,39 +53,6 @@ function SpellCard({ spell, index, onCast, onEdit, onRemove }: SpellCardProps) {
             </ul>
           )}
         </div>
-        {!readOnly && (
-          <>
-            <button
-              type="button"
-              ref={menuRef}
-              className={styles.btnDots}
-              onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
-              aria-label="Opções"
-            >
-              ⋯
-            </button>
-            <Popover open={menuOpen} anchorRef={menuRef} onClose={() => setMenuOpen(false)} align="end" glow={false}>
-              <div className={styles.menu} role="menu">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={styles.menuItem}
-                  onClick={() => { onEdit?.(index); setMenuOpen(false); }}
-                >
-                  ✎ Editar
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={`${styles.menuItem} ${styles.menuDanger}`}
-                  onClick={() => { onRemove?.(index); setMenuOpen(false); }}
-                >
-                  × Excluir
-                </button>
-              </div>
-            </Popover>
-          </>
-        )}
       </div>
 
       {!readOnly && (

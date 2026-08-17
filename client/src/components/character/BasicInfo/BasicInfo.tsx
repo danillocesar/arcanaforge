@@ -142,7 +142,7 @@ export default function BasicInfo() {
           <input value={character.deity} onChange={(e) => setField('deity', e.target.value)} />
         </div>
         <div className={styles.infoField}>
-          <label>Alinhamento</label>
+          <label>Conceito</label>
           <input value={character.alignment} onChange={(e) => setField('alignment', e.target.value)} />
         </div>
         <div className={styles.infoField}>

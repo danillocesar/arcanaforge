@@ -46,6 +46,7 @@ function ConditionChip({ buff, index }: ConditionChipProps) {
   return (
     <Chip
       label={buildLabel(buff)}
+      title={buff.description}
       active={buff.active}
       variant={inferVariant(buff)}
       onToggle={readOnly ? undefined : handleToggle}

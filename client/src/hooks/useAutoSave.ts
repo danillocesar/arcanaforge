@@ -9,6 +9,7 @@ export function useAutoSave(
 ): {
   status: 'saved' | 'saving' | 'error';
   triggerSave: () => void;
+  skipNextSave: () => void;
 } {
   const [status, setStatus] = useState<'saved' | 'saving' | 'error'>('saved');
   const timerRef = useRef<number | undefined>(undefined);
@@ -16,6 +17,7 @@ export function useAutoSave(
   const originalIdRef = useRef(originalId);
   const onSavedRef = useRef(onSaved);
   const isInitialRef = useRef(true);
+  const skipNextRef = useRef(false);
 
   characterRef.current = character;
   originalIdRef.current = originalId;
@@ -43,6 +45,11 @@ export function useAutoSave(
       return;
     }
 
+    if (skipNextRef.current) {
+      skipNextRef.current = false;
+      return;
+    }
+
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(doSave, 800);
 
@@ -54,5 +61,18 @@ export function useAutoSave(
     doSave();
   }, [doSave]);
 
-  return { status, triggerSave };
+  /**
+   * Marca a próxima mudança de `character` como "já sincronizada com o banco,
+   * não precisa re-salvar" — usado quando o estado local muda por causa de uma
+   * atualização remota (WebSocket) cujo dado já foi persistido por quem originou
+   * a mudança. Sem isso, receber um sync remoto nesta aba dispararia um autosave
+   * do documento completo, sobrescrevendo no banco qualquer outra edição real
+   * que já tenha sido salva por outra aba do mesmo personagem enquanto esta aba
+   * ficava com uma cópia desatualizada.
+   */
+  const skipNextSave = useCallback(() => {
+    skipNextRef.current = true;
+  }, []);
+
+  return { status, triggerSave, skipNextSave };
 }

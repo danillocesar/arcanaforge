@@ -9,3 +9,32 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnViewAll {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: #60a5fa;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.btnViewAll:hover {
+  color: #93c5fd;
+}
+
+.btnViewAll:active {
+  opacity: 0.7;
+}

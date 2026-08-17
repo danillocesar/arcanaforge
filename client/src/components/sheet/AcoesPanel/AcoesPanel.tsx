@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { isWeaponAttack, weaponToAttack } from '../../../utils/calculations';
+import type { EntityKind } from '../SheetForm/entityForms';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import ActionCard from '../ActionCard/ActionCard';
 import SpellCard from '../SpellCard/SpellCard';
@@ -21,7 +23,14 @@ function AcoesPanel() {
 
   if (!character) return null;
 
-  const attacks = character.attacks ?? [];
+  const weaponAttacks = (character.inventory ?? [])
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => isWeaponAttack(item));
+
+  const combinedAttacks: Array<{ attack: ReturnType<typeof weaponToAttack>; kind: EntityKind; index: number }> = [
+    ...(character.attacks ?? []).map((attack, index) => ({ attack, kind: 'ataque' as const, index })),
+    ...weaponAttacks.map(({ item, index }) => ({ attack: weaponToAttack(item), kind: 'arma' as const, index })),
+  ];
   const spells = character.spells ?? [];
   const castableAbilities = (character.abilities ?? [])
     .map((ability, index) => ({ ability, index }))
@@ -48,10 +57,15 @@ function AcoesPanel() {
         title="Ataques"
         action={!readOnly && <AddButton label="Ataque" onClick={() => openCreate('ataque')} />}
       />
-      {attacks.length > 0 ? (
+      {combinedAttacks.length > 0 ? (
         <div className={styles.grid}>
-          {attacks.map((attack, idx) => (
-            <ActionCard key={idx} attack={attack} index={idx} onEdit={(i) => openEdit('ataque', i)} />
+          {combinedAttacks.map(({ attack, kind, index }) => (
+            <ActionCard
+              key={`${kind}-${index}`}
+              attack={attack}
+              index={index}
+              onEdit={() => openEdit(kind, index)}
+            />
           ))}
         </div>
       ) : (

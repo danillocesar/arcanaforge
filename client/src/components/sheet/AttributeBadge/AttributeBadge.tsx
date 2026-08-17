@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { getEffectiveAttribute, formatMod } from '../../../utils/calculations';
 import { ATTRIBUTE_LABELS, ATTRIBUTE_FULL_NAMES } from '../../../data/atributos';
@@ -11,6 +12,8 @@ interface AttributeBadgeProps {
 
 function AttributeBadge({ attr }: AttributeBadgeProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
+  const [editing, setEditing] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   if (!character) return null;
 
@@ -25,12 +28,30 @@ function AttributeBadge({ attr }: AttributeBadgeProps) {
     }));
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (!wrapRef.current?.contains(e.relatedTarget as Node)) {
+      setEditing(false);
+    }
+  };
+
+  const clsCard = [
+    styles.attr,
+    !readOnly && !editing ? styles.tappable : '',
+    editing ? styles.editing : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={styles.attr}>
+    <div
+      ref={wrapRef}
+      className={clsCard}
+      tabIndex={editing ? -1 : undefined}
+      onClick={!readOnly && !editing ? () => setEditing(true) : undefined}
+      onBlur={editing ? handleBlur : undefined}
+    >
       <div className={styles.lab}>{ATTRIBUTE_LABELS[attr]}</div>
 
-      {!readOnly ? (
-        <div className={styles.edit}>
+      {editing ? (
+        <div className={styles.stepperWrap}>
           <Stepper value={raw} onChange={setRaw} step={1} />
         </div>
       ) : (
@@ -41,6 +62,17 @@ function AttributeBadge({ attr }: AttributeBadgeProps) {
       )}
 
       <div className={styles.sub}>{ATTRIBUTE_FULL_NAMES[attr]}</div>
+
+      {editing && (
+        <button
+          type="button"
+          className={styles.doneBtn}
+          onClick={(e) => { e.stopPropagation(); setEditing(false); }}
+          aria-label="Fechar edição"
+        >
+          ✓
+        </button>
+      )}
     </div>
   );
 }

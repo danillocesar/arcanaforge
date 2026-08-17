@@ -4,6 +4,7 @@ type ChipVariant = 'buff' | 'warn' | 'danger';
 
 interface ChipProps {
   label: string;
+  title?: string;
   active?: boolean;
   variant?: ChipVariant;
   onToggle?: () => void;
@@ -20,6 +21,7 @@ const variantMap: Record<ChipVariant, string> = {
 
 function Chip({
   label,
+  title,
   active = false,
   variant = 'buff',
   onToggle,
@@ -31,7 +33,7 @@ function Chip({
     .filter(Boolean)
     .join(' ');
   return (
-    <button type="button" className={cls} aria-pressed={active} onClick={onToggle}>
+    <button type="button" className={cls} title={title} aria-pressed={active} onClick={onToggle}>
       {label}
       {onEdit && (
         <span

@@ -132,10 +132,11 @@ export default function HpMp() {
       <div className={styles.footer}>
         <div>
           <span className={styles.rdLabel}>RD:</span>
-          <input
+          <NumericInput
             className={styles.rdInput}
             value={character.damageReduction}
-            onChange={(e) => updateCharacter((f) => ({ ...f, damageReduction: e.target.value }))}
+            onChange={(n) => updateCharacter((f) => ({ ...f, damageReduction: n }))}
+            min={0}
             placeholder="0"
           />
         </div>

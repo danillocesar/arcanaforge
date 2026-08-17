@@ -27,8 +27,14 @@
   transition: border-color 0.25s var(--ease);
   border-radius: 0;
   resize: none;
+  overflow: hidden;
   min-height: 74px;
   line-height: 1.5;
+}
+
+.compact .control {
+  min-height: 36px;
+  font-size: 14px;
 }
 
 .control::placeholder {

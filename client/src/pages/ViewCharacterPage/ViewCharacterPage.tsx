@@ -1,25 +1,14 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Eye } from 'lucide-react';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
 import { apiLoadPartyCharacter } from '../../api';
 import { isSectionHidden } from '../../data/constants';
-import { SECTION_LABELS } from '../../data/constants';
 import { NARUTO_SECTION_LABELS } from '../../features/naruto/data/narutoConstants';
 import type { Character } from '../../types/character';
 import Topbar, { systemParamToBrand } from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
-
-import BasicInfo from '../../components/character/BasicInfo/BasicInfo';
-import AttributesDefense from '../../components/character/AttributesDefense/AttributesDefense';
-import BuffsList from '../../components/character/BuffsList/BuffsList';
-import HpMp from '../../components/character/HpMp/HpMp';
-import TemporaryEffects from '../../components/character/TemporaryEffects/TemporaryEffects';
-import AttacksList from '../../components/character/AttacksList/AttacksList';
-import SpellsList from '../../components/character/SpellsList/SpellsList';
-import AbilitiesList from '../../components/character/AbilitiesList/AbilitiesList';
-import Inventory from '../../components/character/Inventory/Inventory';
-import Proficiencies from '../../components/character/Proficiencies/Proficiencies';
+import TormentaSheetBody from '../../components/sheet/TormentaSheetBody/TormentaSheetBody';
 
 import NarutoBasicInfo from '../../features/naruto/components/NarutoBasicInfo/NarutoBasicInfo';
 import NarutoAttributes from '../../features/naruto/components/NarutoAttributes/NarutoAttributes';
@@ -39,24 +28,29 @@ import styles from './ViewCharacterPage.module.css';
 function ViewCharacterInner({ system }: { system: string }) {
   const { character } = useCharacterContext();
 
-  const isTormenta = system === 'tormenta';
-  const labels = isTormenta ? SECTION_LABELS : NARUTO_SECTION_LABELS;
-
-  const sections = useMemo(
-    () =>
-      Object.entries(labels).map(([id, label]) => ({
-        id,
-        label,
-        hidden: isSectionHidden(character?.hiddenSections, id),
-      })),
-    [character?.hiddenSections, labels],
-  );
-
-  const isHidden = (id: string) => isSectionHidden(character?.hiddenSections, id);
-
   if (!character) {
     return <div className={styles.loading}>Carregando ficha...</div>;
   }
+
+  if (system === 'tormenta') {
+    return (
+      <TormentaSheetBody
+        topBanner={
+          <div className={styles.readOnlyBanner}>
+            <Eye size={16} />
+            MODO SOMENTE LEITURA
+          </div>
+        }
+      />
+    );
+  }
+
+  const sections = Object.entries(NARUTO_SECTION_LABELS).map(([id, label]) => ({
+    id,
+    label,
+    hidden: isSectionHidden(character.hiddenSections, id),
+  }));
+  const isHidden = (id: string) => isSectionHidden(character.hiddenSections, id);
 
   return (
     <>
@@ -74,38 +68,9 @@ function ViewCharacterInner({ system }: { system: string }) {
         </div>
 
         <div className="readOnlySheet">
-          {isTormenta ? (
-            <TormentaSections isHidden={isHidden} />
-          ) : (
-            <NarutoSections isHidden={isHidden} />
-          )}
+          <NarutoSections isHidden={isHidden} />
         </div>
       </main>
-    </>
-  );
-}
-
-function TormentaSections({ isHidden }: { isHidden: (id: string) => boolean }) {
-  return (
-    <>
-      {!isHidden('secHeader') && <BasicInfo />}
-      <div className={styles.layoutTop}>
-        <div className={styles.colLeft}>
-          {!isHidden('secAttributes') && <AttributesDefense />}
-          {!isHidden('secBuffs') && <BuffsList />}
-        </div>
-        <div className={styles.colRight}>
-          {!isHidden('secHpMp') && <HpMp />}
-          {!isHidden('secEffects') && <TemporaryEffects />}
-        </div>
-      </div>
-      {!isHidden('secAttacks') && <AttacksList />}
-      <div className={styles.layoutMiddle}>
-        {!isHidden('secSpells') && <SpellsList />}
-        {!isHidden('secAbilities') && <AbilitiesList />}
-      </div>
-      {!isHidden('secInventory') && <Inventory />}
-      {!isHidden('secProficiencies') && <Proficiencies />}
     </>
   );
 }
