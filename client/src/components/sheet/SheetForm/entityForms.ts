@@ -5,6 +5,7 @@ import type {
   BuffEffect,
   AbilityKind,
   InventoryCategory,
+  AttackModifier,
 } from '../../../types/character';
 import { BUFF_TYPES, SPELL_SCHOOLS, DAMAGE_TYPES } from '../../../data/constants';
 import { ATTRIBUTE_FULL_NAMES } from '../../../data/atributos';
@@ -71,6 +72,43 @@ const BUFF_EFFECT_ITEM_FIELDS: FieldDescriptor[] = [
 
 const emptyBuffEffect = (): FormValues => ({ type: 'attack_roll', attributeId: 'str', skillId: '', value: '' });
 
+/** Sub-campos de um modificador de ataque — reutilizado em Poder, Magia e Itens. */
+const ATTACK_MODIFIER_ITEM_FIELDS: FieldDescriptor[] = [
+  { key: 'label', label: 'Nome', type: 'text', placeholder: 'Ex.: Ataque Poderoso' },
+  { key: 'attackRoll', label: 'Bônus de Ataque', type: 'number', half: true },
+  { key: 'damageBonus', label: 'Bônus de Dano', type: 'number', half: true },
+  { key: 'damageDice', label: 'Dado extra', type: 'text', placeholder: 'Ex.: +2d6', half: true },
+  { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+];
+
+const ATTACK_MODIFIERS_FIELD: FieldDescriptor = {
+  key: 'attackModifiers', label: 'Modificador de Ataque', type: 'list', addLabel: 'Modificador',
+  itemFields: ATTACK_MODIFIER_ITEM_FIELDS,
+};
+
+function attackModifiersFromValues(raw: unknown): AttackModifier[] {
+  const list = Array.isArray(raw) ? raw : [];
+  return list
+    .map((row) => ({
+      label: s(row.label),
+      attackRoll: n(row.attackRoll) || undefined,
+      damageBonus: n(row.damageBonus) || undefined,
+      damageDice: s(row.damageDice) || undefined,
+      mpCost: n(row.mpCost) || undefined,
+    }))
+    .filter((m) => m.label);
+}
+
+function attackModifiersToForm(mods: AttackModifier[] | undefined): FormValues[] {
+  return (mods ?? []).map((m) => ({
+    label: m.label,
+    attackRoll: m.attackRoll ?? 0,
+    damageBonus: m.damageBonus ?? 0,
+    damageDice: m.damageDice ?? '',
+    mpCost: m.mpCost ?? 0,
+  }));
+}
+
 /**
  * Usado tanto pela Magia (Task 8) quanto pelo Poder/Habilidade (Task 9). Definido aqui
  * (antes de `abilityFields` mais abaixo no arquivo) para não ser referenciado antes de
@@ -118,6 +156,7 @@ const abilityFields: FieldDescriptor[] = [
     itemFields: BUFF_EFFECT_ITEM_FIELDS,
     showIf: (v) => v.castable === 'true',
   },
+  ATTACK_MODIFIERS_FIELD,
 ];
 
 const abilidadeConfig: EntityConfig = {
@@ -125,7 +164,7 @@ const abilidadeConfig: EntityConfig = {
   fields: abilityFields,
   empty: () => ({
     kind: 'Poder', name: '', source: '', mpCost: 0, prerequisite: '', description: '',
-    castable: 'false', buffTargetScope: 'self', buffs: [],
+    castable: 'false', buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
@@ -135,6 +174,7 @@ const abilidadeConfig: EntityConfig = {
       castable: a.castable ? 'true' : 'false',
       buffTargetScope: a.buffTargetScope ?? 'self',
       buffs: effectsToForm(a.buffs),
+      attackModifiers: attackModifiersToForm(a.attackModifiers),
     };
   },
   apply: (c, v, i) => {
@@ -150,6 +190,7 @@ const abilidadeConfig: EntityConfig = {
       castable: s(v.castable) === 'true',
       buffTargetScope: s(v.buffTargetScope) || 'self',
       buffs: effectsFromValues(v.buffs),
+      attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['abilities'][number];
     return { ...c, abilities: upsert(c.abilities, entry, i) };
   },
@@ -208,6 +249,7 @@ const spellFields: FieldDescriptor[] = [
       },
     ],
   },
+  ATTACK_MODIFIERS_FIELD,
 ];
 
 const magiaConfig: EntityConfig = {
@@ -216,7 +258,7 @@ const magiaConfig: EntityConfig = {
   empty: () => ({
     name: '', school: schoolOptions[0]?.value ?? '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
     area: '', duration: '', resistance: '', description: '', enhancements: [],
-    buffTargetScope: 'self', buffs: [],
+    buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const sp = c.spells[i];
@@ -231,6 +273,7 @@ const magiaConfig: EntityConfig = {
         description: e.description,
         buffs: effectsToForm(e.buffs),
       })),
+      attackModifiers: attackModifiersToForm(sp.attackModifiers),
     };
   },
   apply: (c, v, i) => {
@@ -248,6 +291,7 @@ const magiaConfig: EntityConfig = {
         description: s(e.description),
         buffs: effectsFromValues(e.buffs),
       })),
+      attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['spells'][number];
     return { ...c, spells: upsert(c.spells, entry, i) };
   },
@@ -434,13 +478,14 @@ function inventoryConfig(
 ): EntityConfig {
   return {
     title,
-    fields: [...fields, WEIGHT_FIELD],
-    empty: () => ({ name: '', quantity: 1, slot: '', effect: '', weight: 0 }),
+    fields: [...fields, WEIGHT_FIELD, ATTACK_MODIFIERS_FIELD],
+    empty: () => ({ name: '', quantity: 1, slot: '', effect: '', weight: 0, attackModifiers: [] }),
     fromEntry: (c, i) => {
       const it = c.inventory[i];
       return {
         name: it.name, quantity: it.quantity ?? 1, slot: it.slot ?? '', effect: it.effect ?? '',
         weight: it.weight ?? 0,
+        attackModifiers: attackModifiersToForm(it.attackModifiers),
       };
     },
     apply: (c, v, i) => {
@@ -453,6 +498,7 @@ function inventoryConfig(
         slot: s(v.slot) || undefined,
         effect: s(v.effect) || undefined,
         weight: n(v.weight),
+        attackModifiers: attackModifiersFromValues(v.attackModifiers),
       } as Character['inventory'][number];
       return { ...c, inventory: upsert(c.inventory, entry, i) };
     },
@@ -495,10 +541,12 @@ const armaConfig: EntityConfig = {
     { key: 'attributeDamageBonus', label: 'Atributo de dano', type: 'select', options: attrOptions, half: true },
     { key: 'critical', label: 'Crítico', type: 'text', placeholder: 'Ex.: 19/x2', half: true },
     { key: 'type', label: 'Tipo de dano', type: 'select', options: damageTypeOptions, half: true },
+    ATTACK_MODIFIERS_FIELD,
   ],
   empty: () => ({
     name: '', quantity: 1, slot: '', effect: '', weight: 0,
     rangeType: 'melee', mpCost: 0, damage: '', attributeDamageBonus: 'str', critical: '', type: '',
+    attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const it = c.inventory[i];
@@ -507,6 +555,7 @@ const armaConfig: EntityConfig = {
       weight: it.weight ?? 0,
       rangeType: it.rangeType ?? 'melee', mpCost: it.mpCost ?? 0, damage: it.damage ?? '',
       attributeDamageBonus: it.attributeDamageBonus ?? 'str', critical: it.critical ?? '', type: it.type ?? '',
+      attackModifiers: attackModifiersToForm(it.attackModifiers),
     };
   },
   apply: (c, v, i) => {
@@ -525,6 +574,7 @@ const armaConfig: EntityConfig = {
       attributeDamageBonus: s(v.attributeDamageBonus) || undefined,
       critical: s(v.critical) || undefined,
       type: s(v.type) || undefined,
+      attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['inventory'][number];
     return { ...c, inventory: upsert(c.inventory, entry, i) };
   },
