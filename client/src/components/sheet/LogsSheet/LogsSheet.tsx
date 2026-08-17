@@ -25,9 +25,13 @@ function formatDetails(details: unknown): string | null {
     const rangeType = d.rangeType ?? d.custoTipo;
     const attackRoll = d.attackRoll ?? d.teste;
     const damage = d.damage ?? d.dano;
+    const modifiers = d.modifiers;
     if (rangeType) parts.push(String(rangeType));
     if (attackRoll != null) parts.push(`Teste: ${attackRoll}`);
     if (damage) parts.push(`Dano: ${damage}`);
+    if (Array.isArray(modifiers) && modifiers.length > 0) {
+      parts.push(`Modificadores: ${modifiers.join(', ')}`);
+    }
     return parts.join(' · ') || null;
   }
   return String(details);
