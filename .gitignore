@@ -53,3 +53,5 @@ mongo-data/
 *.swp
 *.swo
 *.tsbuildinfo
+# Superpowers subagent-driven-development scratch workspace
+.superpowers/
