@@ -38,6 +38,14 @@ export interface ExtraDamage {
   mp: number;
 }
 
+export interface AttackModifier {
+  label: string;
+  attackRoll?: number;
+  damageBonus?: number;
+  damageDice?: string;
+  mpCost?: number;
+}
+
 export interface Attack {
   name: string;
   damage: string;
@@ -64,6 +72,8 @@ export interface Buff {
   active: boolean;
   /** Texto de exibição, ex. "de Fulano" — presente só em buffs aplicados por magia/poder. */
   source?: string;
+  /** Texto de regra, ex. condições oficiais do catálogo — lembrete do efeito, não recalculado. */
+  description?: string;
 }
 
 export interface Enhancement {
@@ -88,6 +98,7 @@ export interface Spell {
   description: string;
   buffTargetScope?: BuffTargetScope;
   buffs?: BuffEffect[];
+  attackModifiers?: AttackModifier[];
 }
 
 export type AbilityKind = 'Poder' | 'Habilidade';
@@ -104,6 +115,9 @@ export interface Ability {
   castable?: boolean;
   buffTargetScope?: BuffTargetScope;
   buffs?: BuffEffect[];
+  /** Pré-requisito, ex. "Força 13" — presente em poderes gerais do catálogo oficial. */
+  prerequisite?: string;
+  attackModifiers?: AttackModifier[];
 }
 
 export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio' | 'arma';
@@ -118,6 +132,15 @@ export interface InventoryItem {
   effect?: string;
   /** Equip slot / location (acessórios). */
   slot?: string;
+  /** Dados de combate — só usados quando category === 'arma'. Preenchidos ⇒ a arma
+   * aparece automaticamente como Ataque na aba Ações, sem precisar cadastrar de novo. */
+  damage?: string;
+  critical?: string;
+  type?: string;
+  rangeType?: RangeType;
+  mpCost?: number;
+  attributeDamageBonus?: string;
+  attackModifiers?: AttackModifier[];
 }
 
 export interface EquippedItem {
@@ -191,6 +214,7 @@ export interface Character {
   origin: string;
   deity: string;
   alignment: string;
+  languages: string;
   age: string;
   size: string;
   speed: string;
@@ -199,7 +223,7 @@ export interface Character {
   hp: HitPoints;
   mp: ManaPoints;
   defense: Defense;
-  damageReduction: string;
+  damageReduction: number;
   attacks: Attack[];
   skills: Record<string, SkillData>;
   abilities: Ability[];
