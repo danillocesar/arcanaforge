@@ -118,6 +118,9 @@ export interface Ability {
   /** Pré-requisito, ex. "Força 13" — presente em poderes gerais do catálogo oficial. */
   prerequisite?: string;
   attackModifiers?: AttackModifier[];
+  /** Se marcado, os `buffs` deste Poder/Habilidade aplicam sempre, sem precisar
+   * "conjurar" — aparece na seção "Bônus Fixos", não na lista de Buffs & Condições. */
+  alwaysActive?: boolean;
 }
 
 export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio' | 'arma';
@@ -141,6 +144,11 @@ export interface InventoryItem {
   mpCost?: number;
   attributeDamageBonus?: string;
   attackModifiers?: AttackModifier[];
+  /** Se marcado, os `buffs` deste Item aplicam sempre — aparece na seção
+   * "Bônus Fixos", não na lista de Buffs & Condições. Vale independente de o item
+   * estar em `character.equipped` (mesma regra que já vale pra `attackModifiers`). */
+  alwaysActive?: boolean;
+  buffs?: BuffEffect[];
 }
 
 export interface EquippedItem {
