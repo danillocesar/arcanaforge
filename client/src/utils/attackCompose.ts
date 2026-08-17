@@ -1,5 +1,5 @@
 import type { Attack, AttackModifier, AttributeId, Character } from '../types/character';
-import { calcTotalSkill, getEffectiveAttribute, formatMod } from './calculations';
+import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod } from './calculations';
 
 export interface AttackChecklistItem {
   key: string;
@@ -140,8 +140,7 @@ export function composeAttack(
     usedLabels.push(item.label);
   });
 
-  if (character.buffs) character.buffs.forEach((b) => {
-    if (!b.active) return;
+  getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'attack_roll') attackRoll += Number(eff.value) || 0;
       if (eff.type === 'fixed_damage') damageBonus += Number(eff.value) || 0;
