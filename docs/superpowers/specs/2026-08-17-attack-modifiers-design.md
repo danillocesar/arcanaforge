@@ -129,11 +129,20 @@ intermediária):
 
 ## 4. Compatibilidade
 
-Nenhuma migração necessária — `attackModifiers` é um campo novo e opcional; quem não
-cadastrar nada continua exatamente como está hoje (ataque instantâneo, sem tela extra).
-Ataques que hoje usam `extraBonuses` fixo ou Buffs como gambiarra continuam funcionando
-sem mudança nenhuma; trocar pra usar o modificador de verdade é escolha manual do
-jogador, feita quando ele quiser.
+Nenhuma migração de dados necessária — nem `attackModifiers` (campo novo, opcional) nem
+`extraBonuses`/`extraDamage` (schema igual ao de hoje) exigem tocar em personagens
+existentes. Duas mudanças de comportamento pra quem já tinha `extraBonuses`/
+`extraDamage` cadastrados:
+- O ataque que antes era instantâneo (soma silenciosa) passa a abrir
+  `ComposeAttackSheet` com tudo pré-marcado — um clique a mais pra confirmar, mas o
+  resultado numérico não muda enquanto ninguém desmarcar nada.
+- Ataques duplicados que já existem pra cobrir combinações continuam existindo e
+  funcionando (nada é apagado) — só deixam de ser necessários daqui pra frente; juntar
+  tudo num só e apagar os duplicados é faxina manual, feita quando o jogador quiser.
+
+Quem usa Buff como gambiarra pro mesmo problema também não precisa mexer em nada —
+continua funcionando; a expectativa é que o uso disso caia naturalmente depois que o
+compositor de ataque cobrir o caso de forma mais direta.
 
 ## 5. Plano de teste (navegador)
 
