@@ -45,7 +45,7 @@ neste projeto — verificação via `npx tsc -b --force` e teste manual no naveg
 **Interfaces:**
 - Produces: `AttackModifier { label: string; attackRoll?: number; damageBonus?: number; damageDice?: string; mpCost?: number }`, e o campo opcional `attackModifiers?: AttackModifier[]` em `Ability`, `Spell` e `InventoryItem`.
 
-- [ ] **Passo 1: Adicionar a interface `AttackModifier`**
+- [x] **Passo 1: Adicionar a interface `AttackModifier`**
 
 Em `client/src/types/character.ts`, logo depois da interface `ExtraDamage` (linha 39) e
 antes de `Attack` (linha 41), adicionar:
@@ -60,7 +60,7 @@ export interface AttackModifier {
 }
 ```
 
-- [ ] **Passo 2: Anexar o campo opcional em `Spell`**
+- [x] **Passo 2: Anexar o campo opcional em `Spell`**
 
 Na interface `Spell` (por volta da linha 79-93), adicionar a última linha antes do
 `}` de fechamento:
@@ -84,7 +84,7 @@ export interface Spell {
 }
 ```
 
-- [ ] **Passo 3: Anexar o campo opcional em `Ability`**
+- [x] **Passo 3: Anexar o campo opcional em `Ability`**
 
 Na interface `Ability` (por volta da linha 97-111), adicionar antes do `}` final:
 
@@ -104,7 +104,7 @@ export interface Ability {
 }
 ```
 
-- [ ] **Passo 4: Anexar o campo opcional em `InventoryItem`**
+- [x] **Passo 4: Anexar o campo opcional em `InventoryItem`**
 
 Na interface `InventoryItem` (por volta da linha 115-133), adicionar antes do `}`
 final:
@@ -127,12 +127,12 @@ export interface InventoryItem {
 }
 ```
 
-- [ ] **Passo 5: Typecheck**
+- [x] **Passo 5: Typecheck**
 
 Rodar: `cd client && npx tsc -b --force`
 Esperado: nenhum erro (campo novo e opcional não quebra nenhum código existente).
 
-- [ ] **Passo 6: Commit**
+- [x] **Passo 6: Commit**
 
 ```bash
 git add client/src/types/character.ts
@@ -154,7 +154,7 @@ git commit -m "feat(attacks): add AttackModifier type on Ability/Spell/Inventory
   pelas Tasks seguintes indiretamente só via os formulários (nenhuma outra task
   importa essas funções diretamente).
 
-- [ ] **Passo 1: Importar o tipo novo**
+- [x] **Passo 1: Importar o tipo novo**
 
 No topo de `client/src/components/sheet/SheetForm/entityForms.ts`, no bloco de
 import de `../../../types/character` (linhas 1-8), adicionar `AttackModifier`:
@@ -171,7 +171,7 @@ import type {
 } from '../../../types/character';
 ```
 
-- [ ] **Passo 2: Criar o field descriptor e os conversores compartilhados**
+- [x] **Passo 2: Criar o field descriptor e os conversores compartilhados**
 
 Logo depois do bloco `BUFF_EFFECT_ITEM_FIELDS`/`emptyBuffEffect` (por volta da linha
 72), adicionar:
@@ -215,7 +215,7 @@ function attackModifiersToForm(mods: AttackModifier[] | undefined): FormValues[]
 }
 ```
 
-- [ ] **Passo 3: Adicionar ao formulário de Poder/Habilidade**
+- [x] **Passo 3: Adicionar ao formulário de Poder/Habilidade**
 
 Em `abilityFields` (linhas 104-121), adicionar `ATTACK_MODIFIERS_FIELD` como último
 item do array:
@@ -285,7 +285,7 @@ const abilidadeConfig: EntityConfig = {
 };
 ```
 
-- [ ] **Passo 4: Adicionar ao formulário de Magia**
+- [x] **Passo 4: Adicionar ao formulário de Magia**
 
 Substituir `spellFields` (linhas 184-211) por:
 
@@ -371,7 +371,7 @@ const magiaConfig: EntityConfig = {
 };
 ```
 
-- [ ] **Passo 5: Adicionar ao formulário de Arma**
+- [x] **Passo 5: Adicionar ao formulário de Arma**
 
 Substituir `armaConfig` (linhas 485-532) por:
 
@@ -430,7 +430,7 @@ const armaConfig: EntityConfig = {
 };
 ```
 
-- [ ] **Passo 6: Adicionar à fábrica `inventoryConfig` (Acessório/Comum/Consumível)**
+- [x] **Passo 6: Adicionar à fábrica `inventoryConfig` (Acessório/Comum/Consumível)**
 
 Modificar `inventoryConfig()` (linhas 430-461) pra incluir o campo em todo item que
 passa por ela:
@@ -472,12 +472,12 @@ function inventoryConfig(
 }
 ```
 
-- [ ] **Passo 7: Typecheck**
+- [x] **Passo 7: Typecheck**
 
 Rodar: `cd client && npx tsc -b --force`
 Esperado: nenhum erro.
 
-- [ ] **Passo 8: Teste manual no navegador**
+- [x] **Passo 8: Teste manual no navegador**
 
 Suba o dev server (`npm run dev`), abra o personagem de teste "teste", vá em
 Poderes → "+ Poder/Hab." → "+ Personalizado". Confirme que aparece a seção
@@ -486,7 +486,7 @@ Poderes → "+ Poder/Hab." → "+ Personalizado". Confirme que aparece a seção
 pra editar e confirme que os valores persistiram. Repita rapidamente pra um Item
 (Equipamentos → "+ Item" → Acessório) confirmando que a mesma seção aparece lá.
 
-- [ ] **Passo 9: Commit**
+- [x] **Passo 9: Commit**
 
 ```bash
 git add client/src/components/sheet/SheetForm/entityForms.ts
@@ -510,7 +510,7 @@ git commit -m "feat(attacks): add 'Modificador de Ataque' form section to Poder/
   `composeAttack(character: Character, atk: Attack, checklist: AttackChecklistItem[], enabledKeys: Set<string>): ComposedAttack`.
   Usados pela Task 4 (`ComposeAttackSheet`) e Task 5 (`ActionCard`).
 
-- [ ] **Passo 1: Criar o arquivo com `buildAttackChecklist`**
+- [x] **Passo 1: Criar o arquivo com `buildAttackChecklist`**
 
 ```ts
 import type { Attack, AttackModifier, AttributeId, Character } from '../types/character';
@@ -593,7 +593,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
 }
 ```
 
-- [ ] **Passo 2: Adicionar `composeAttack` no mesmo arquivo**
+- [x] **Passo 2: Adicionar `composeAttack` no mesmo arquivo**
 
 ```ts
 export interface ComposedAttack {
@@ -659,13 +659,13 @@ export function composeAttack(
 }
 ```
 
-- [ ] **Passo 3: Typecheck**
+- [x] **Passo 3: Typecheck**
 
 Rodar: `cd client && npx tsc -b --force`
 Esperado: nenhum erro. Sem teste funcional nesta task — nada ainda importa este
 arquivo; o comportamento é verificado na Task 6, uma vez ligado à interface.
 
-- [ ] **Passo 4: Commit**
+- [x] **Passo 4: Commit**
 
 ```bash
 git add client/src/utils/attackCompose.ts
@@ -684,7 +684,7 @@ git commit -m "feat(attacks): add buildAttackChecklist/composeAttack pure functi
 - Consumes: `buildAttackChecklist`, `composeAttack` (Task 3); `Sheet` (`client/src/components/ui/Sheet/Sheet.tsx`, já existe, aceita `open`/`onClose`/`title`/`footer`/children — mesmo uso de `CastActionSheet.tsx`); `useCharacterContext` (`updateCharacter`); `formatMod` de `calculations.ts`; `playSwordSound`/`playArrowSound` de `utils/sounds.ts`; `triggerAttackAnim` de `utils/animations.ts`.
 - Produces: `ComposeAttackSheet` componente default export, props `{ attack: Attack | null; onClose: () => void }` — usado pela Task 5 (`ActionCard`).
 
-- [ ] **Passo 1: Criar `ComposeAttackSheet.tsx`**
+- [x] **Passo 1: Criar `ComposeAttackSheet.tsx`**
 
 ```tsx
 import { useEffect, useState } from 'react';
@@ -836,7 +836,7 @@ ComposeAttackSheet.displayName = 'ComposeAttackSheet';
 export default ComposeAttackSheet;
 ```
 
-- [ ] **Passo 2: Criar `ComposeAttackSheet.module.css`**
+- [x] **Passo 2: Criar `ComposeAttackSheet.module.css`**
 
 ```css
 .baseRow {
@@ -972,13 +972,13 @@ export default ComposeAttackSheet;
 }
 ```
 
-- [ ] **Passo 3: Typecheck**
+- [x] **Passo 3: Typecheck**
 
 Rodar: `cd client && npx tsc -b --force`
 Esperado: nenhum erro. Componente ainda não é importado por ninguém — comportamento
 visual verificado na Task 6, junto com a Task 5.
 
-- [ ] **Passo 4: Commit**
+- [x] **Passo 4: Commit**
 
 ```bash
 git add client/src/components/sheet/ComposeAttackSheet/
@@ -995,7 +995,7 @@ git commit -m "feat(attacks): add ComposeAttackSheet component"
 **Interfaces:**
 - Consumes: `ComposeAttackSheet` (Task 4), `buildAttackChecklist` (Task 3).
 
-- [ ] **Passo 1: Importar o necessário e calcular o checklist**
+- [x] **Passo 1: Importar o necessário e calcular o checklist**
 
 Substituir o topo do arquivo (imports, linhas 1-12) por:
 
@@ -1017,7 +1017,7 @@ import ComposeAttackSheet from '../ComposeAttackSheet/ComposeAttackSheet';
 import styles from './ActionCard.module.css';
 ```
 
-- [ ] **Passo 2: Adicionar estado de composição e o checklist**
+- [x] **Passo 2: Adicionar estado de composição e o checklist**
 
 Logo depois de `const { character, updateCharacter, readOnly } = useCharacterContext();`
 (linha 31), adicionar:
@@ -1033,7 +1033,7 @@ const checklist = buildAttackChecklist(character, attack);
 const hasChecklist = checklist.length > 0;
 ```
 
-- [ ] **Passo 3: Trocar a condição do botão e o clique**
+- [x] **Passo 3: Trocar a condição do botão e o clique**
 
 O botão hoje só aparece com `pmTotal > 0` e chama `rollAttack` direto. Passa a
 aparecer também quando há checklist, e a decidir entre rolar direto (comportamento
@@ -1056,12 +1056,12 @@ de hoje, sem mudança pra ataque simples) ou abrir a tela de composição:
 Isso substitui o bloco atual (linhas 110-114) — a linha em branco/comentário que
 vinha depois (linha 115) pode ser removida.
 
-- [ ] **Passo 4: Typecheck**
+- [x] **Passo 4: Typecheck**
 
 Rodar: `cd client && npx tsc -b --force`
 Esperado: nenhum erro.
 
-- [ ] **Passo 5: Commit**
+- [x] **Passo 5: Commit**
 
 ```bash
 git add client/src/components/sheet/ActionCard/ActionCard.tsx
@@ -1074,7 +1074,7 @@ git commit -m "feat(attacks): open ComposeAttackSheet from Atacar when there's s
 
 **Files:** nenhum (só verificação manual).
 
-- [ ] **Passo 1: Preparar o personagem de teste**
+- [x] **Passo 1: Preparar o personagem de teste**
 
 Suba o dev server (`npm run dev`), abra o personagem "teste". Em Poderes → "+
 Personalizado", crie dois poderes:
@@ -1088,25 +1088,25 @@ Ataque: Nome "Manopla de Força", Bônus de Ataque 1.
 Em Ataques, crie (ou edite) um ataque corpo a corpo qualquer (ex.: "Espada",
 dano 1d8).
 
-- [ ] **Passo 2: Abrir o compositor e conferir os 3 modificadores**
+- [x] **Passo 2: Abrir o compositor e conferir os 3 modificadores**
 
 Clicar "⚔ Atacar" no card da Espada. Esperado: abre `ComposeAttackSheet` mostrando
 Ataque/Dano base e um checklist com "Ataque Poderoso — Poder", "Smite — Poder" e
 "Manopla de Força — Item", todos desmarcados.
 
-- [ ] **Passo 3: Conferir recálculo ao vivo**
+- [x] **Passo 3: Conferir recálculo ao vivo**
 
 Marcar só "Ataque Poderoso" → Ataque cai 2, Dano sobe 5. Marcar "Smite" também →
 Dano ganha "+2d6" concatenado, Custo Total sobe pra 2 PM. Desmarcar "Ataque
 Poderoso" → Ataque volta ao valor base, Dano mantém só o +2d6 do Smite.
 
-- [ ] **Passo 4: Confirmar e checar PM/histórico**
+- [x] **Passo 4: Confirmar e checar PM/histórico**
 
 Marcar os 3, clicar "⚔ Atacar" no rodapé. Esperado: PM do personagem cai em 2
 (custo do Smite), a tela fecha, toca o som de ataque. Abrir "..." → Histórico e
 confirmar que a entrada registra o ataque com os 3 nomes em `modifiers`.
 
-- [ ] **Passo 5: Backward-compat — ataque com `extraBonuses` já cadastrado**
+- [x] **Passo 5: Backward-compat — ataque com `extraBonuses` já cadastrado**
 
 Editar o ataque "Espada" e adicionar um "Modificador de ataque" antigo (campo que já
 existia): Nome "Foco", Bônus 1. Salvar. Clicar "⚔ Atacar" de novo — esperado: abre
@@ -1114,7 +1114,7 @@ o compositor com "Foco" já marcado (pré-selecionado). Confirmar sem desmarcar 
 e checar que o Ataque final é igual ao que seria antes desta mudança (base + 1).
 Desmarcar "Foco" e confirmar que o total cai de volta ao valor sem o bônus.
 
-- [ ] **Passo 6: Ataque simples continua instantâneo**
+- [x] **Passo 6: Ataque simples continua instantâneo**
 
 Criar um ataque novo sem nenhum `extraBonuses`/`extraDamage` cadastrado, e com o
 personagem sem nenhum `AttackModifier` disponível (ou testar num personagem
@@ -1124,7 +1124,7 @@ já tem os modificadores do Passo 1 cadastrados, criar um segundo personagem de 
 descartável só pra esta verificação, ou remover temporariamente os 3
 poderes/item antes deste passo e devolvê-los depois.
 
-- [ ] **Passo 7: Limpar os dados de teste**
+- [x] **Passo 7: Limpar os dados de teste**
 
 Remover os poderes "Ataque Poderoso"/"Smite", o item "Manopla de Força" e os
 ataques de teste criados no personagem "teste" — mesma rotina de limpeza já usada
