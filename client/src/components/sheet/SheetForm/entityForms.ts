@@ -90,7 +90,7 @@ function attackModifiersFromValues(raw: unknown): AttackModifier[] {
   const list = Array.isArray(raw) ? raw : [];
   return list
     .map((row) => ({
-      label: s(row.label),
+      label: s(row.label).trim(),
       attackRoll: n(row.attackRoll) || undefined,
       damageBonus: n(row.damageBonus) || undefined,
       damageDice: s(row.damageDice) || undefined,

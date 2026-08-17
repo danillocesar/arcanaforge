@@ -22,7 +22,7 @@ function pushModifiers(
   (mods ?? []).forEach((m, i) => {
     items.push({
       key: `${keyPrefix}-${i}`,
-      label: m.label,
+      label: m.label || 'Modificador',
       source,
       attackRoll: m.attackRoll ?? 0,
       damageBonus: m.damageBonus ?? 0,
@@ -45,7 +45,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   (atk.extraBonuses ?? []).forEach((b, i) => {
     items.push({
       key: `own-bonus-${i}`,
-      label: b.name,
+      label: b.name || 'Modificador',
       source: '',
       attackRoll: Number(b.value) || 0,
       damageBonus: 0,
@@ -60,7 +60,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     const isDice = raw !== '' && Number.isNaN(Number(raw));
     items.push({
       key: `own-damage-${i}`,
-      label: d.name,
+      label: d.name || 'Modificador',
       source: '',
       attackRoll: 0,
       damageBonus: isDice ? 0 : (Number(raw) || 0),
@@ -70,9 +70,9 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     });
   });
 
-  character.abilities.forEach((a, ai) => pushModifiers(items, a.attackModifiers, `ability-${ai}`, 'Poder'));
-  character.spells.forEach((sp, si) => pushModifiers(items, sp.attackModifiers, `spell-${si}`, 'Magia'));
-  character.inventory.forEach((it, ii) => pushModifiers(items, it.attackModifiers, `item-${ii}`, 'Item'));
+  (character.abilities ?? []).forEach((a, ai) => pushModifiers(items, a.attackModifiers, `ability-${ai}`, 'Poder'));
+  (character.spells ?? []).forEach((sp, si) => pushModifiers(items, sp.attackModifiers, `spell-${si}`, 'Magia'));
+  (character.inventory ?? []).forEach((it, ii) => pushModifiers(items, it.attackModifiers, `item-${ii}`, 'Item'));
 
   return items;
 }
@@ -110,15 +110,6 @@ export function composeAttack(
   let mpTotal = Number(atk.mpCost) || 0;
   const usedLabels: string[] = [];
 
-  if (character.buffs) character.buffs.forEach((b) => {
-    if (!b.active) return;
-    (b.effects || []).forEach((eff) => {
-      if (eff.type === 'attack_roll') attackRoll += Number(eff.value) || 0;
-      if (eff.type === 'fixed_damage') damageBonus += Number(eff.value) || 0;
-      if (eff.type === 'extra_damage' && eff.value) extraDice.push(String(eff.value));
-    });
-  });
-
   checklist.forEach((item) => {
     if (!enabledKeys.has(item.key)) return;
     attackRoll += item.attackRoll;
@@ -126,6 +117,15 @@ export function composeAttack(
     if (item.damageDice) extraDice.push(item.damageDice);
     mpTotal += item.mpCost;
     usedLabels.push(item.label);
+  });
+
+  if (character.buffs) character.buffs.forEach((b) => {
+    if (!b.active) return;
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'attack_roll') attackRoll += Number(eff.value) || 0;
+      if (eff.type === 'fixed_damage') damageBonus += Number(eff.value) || 0;
+      if (eff.type === 'extra_damage' && eff.value) extraDice.push(String(eff.value));
+    });
   });
 
   const parts: string[] = [];

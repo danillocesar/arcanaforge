@@ -22,13 +22,14 @@ interface ActionCardProps {
 
 /**
  * Read-presentation weapon card for the "C dark" sheet. Shows attack/dano/crítico
- * (and PM when > 0) and a "🎲 Rolar ataque" play action.
+ * (and PM when > 0) and a "⚔ Atacar" action, always visible.
  *
- * The roll flow is the SAME mechanism used by the legacy AttackCard.useAttack:
- * spend the attack's total MP, append an 'attack' log entry, play the sword/arrow
- * SFX and fire the toast animation via triggerAttackAnim('toast'). We reuse the
- * combat selectors (calcAttackRoll / buildDamageSummary / calcTotalMp) — no new
- * dice engine is invented.
+ * When the attack has nothing to compose (no extraBonuses/extraDamage of its own,
+ * no AttackModifier available anywhere on the character), the click rolls instantly
+ * via the same mechanism used by the legacy AttackCard.useAttack: spend the attack's
+ * total MP, append an 'attack' log entry, play the sword/arrow SFX and fire the toast
+ * animation via triggerAttackAnim('toast'). Otherwise it opens ComposeAttackSheet so
+ * the player can toggle which modifiers apply to this specific roll.
  */
 function ActionCard({ attack, index, onEdit }: ActionCardProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
@@ -114,7 +115,7 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
         )}
       </div>
 
-      {!readOnly && (pmTotal > 0 || hasChecklist) && (
+      {!readOnly && (
         <button
           type="button"
           className={styles.btnRoll}

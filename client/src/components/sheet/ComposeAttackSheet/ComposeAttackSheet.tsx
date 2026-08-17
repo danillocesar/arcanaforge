@@ -34,8 +34,13 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
         .map((item) => item.key);
       setEnabledKeys(new Set(checked));
     }
+    // Re-seed only on the open transition (null -> Attack), not on every re-render
+    // that happens to hand us a new `attack` object with the same identity's worth
+    // of data — weapon-derived attacks are rebuilt fresh on every AcoesPanel render
+    // (e.g. each autosave tick), so keying this on object identity would silently
+    // wipe the player's in-progress selections mid-composition.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attack]);
+  }, [Boolean(attack)]);
 
   if (!character || !activeAttack) return null;
 
@@ -109,6 +114,10 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
           <span className={styles.baseLabel}>Dano</span>
           <span className={styles.baseVal}>{result.damage}</span>
         </div>
+        <div className={styles.baseStat}>
+          <span className={styles.baseLabel}>Crítico</span>
+          <span className={styles.baseVal}>{activeAttack.critical || '—'}</span>
+        </div>
       </div>
 
       {checklist.length > 0 && <div className={styles.listHeader}>Modificadores</div>}
@@ -129,6 +138,7 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
               {item.attackRoll ? `${formatMod(item.attackRoll)} atq` : ''}
               {item.damageBonus ? ` ${formatMod(item.damageBonus)} dano` : ''}
               {item.damageDice ? ` ${item.damageDice}` : ''}
+              {item.mpCost ? ` ${item.mpCost} PM` : ''}
             </span>
           </label>
         ))}
