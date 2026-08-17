@@ -6,17 +6,12 @@
 
 .list {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .btnViewAll {
+  align-self: flex-start;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;

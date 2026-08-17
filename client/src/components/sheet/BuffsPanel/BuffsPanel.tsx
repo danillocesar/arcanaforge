@@ -27,20 +27,7 @@ function BuffsPanel() {
     }, 320);
   };
 
-  const headerAction = (
-    <div className={styles.headerActions}>
-      {hasBuffs && (
-        <button
-          type="button"
-          className={styles.btnViewAll}
-          onClick={() => setShowDrawer(true)}
-        >
-          Visualizar todos
-        </button>
-      )}
-      {!readOnly && <AddButton label="Buff" onClick={() => setShowPicker(true)} />}
-    </div>
-  );
+  const headerAction = !readOnly ? <AddButton label="Buff" onClick={() => setShowPicker(true)} /> : undefined;
 
   return (
     <div className={styles.panel}>
@@ -50,6 +37,15 @@ function BuffsPanel() {
           <ConditionChip key={idx} buff={buff} index={idx} />
         ))}
       </div>
+      {hasBuffs && (
+        <button
+          type="button"
+          className={styles.btnViewAll}
+          onClick={() => setShowDrawer(true)}
+        >
+          Visualizar todos
+        </button>
+      )}
       <BuffsDrawer open={showDrawer} onClose={() => setShowDrawer(false)} />
       <ConditionPicker open={showPicker} onClose={() => setShowPicker(false)} onPick={handlePick} />
     </div>
