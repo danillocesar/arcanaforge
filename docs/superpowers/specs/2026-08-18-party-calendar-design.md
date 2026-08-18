@@ -439,9 +439,18 @@ e os outros dois com `onClick`/`navigate`.
 
 ## Compatibilidade
 
-- Parties existentes no Mongo não têm `sessionProposals` — o `default: []`
-  do schema cobre isso; nenhuma migração é necessária (mesmo padrão já usado
-  para outros campos com `default` no schema `Party`).
+- Parties existentes no Mongo não têm `sessionProposals`. O `default: []` do
+  schema cobre isso para documentos Mongoose hidratados normalmente (ex.:
+  `findMemberParty`, usado por `proposeSession`/`respondToSession`/
+  `cancelSession`), mas **não** cobre leituras via `.lean()` — Mongoose não
+  aplica defaults de schema em `.lean()`, então `listParties`/
+  `findVisibleToUser` (usado por `GET /api/parties`) devolvia
+  `sessionProposals: undefined` para parties antigas, quebrando o client
+  (`[...party.sessionProposals]` crashava). Corrigido em `toPartyDTO`
+  (`server/src/dto/party.dto.js`) com `sessionProposals: rest.sessionProposals || []`,
+  no mesmo padrão já usado ali para `characterIds`. Nenhuma migração de dado
+  é necessária — a normalização acontece na borda de saída (DTO), não no
+  banco.
 - Nenhuma mudança em endpoints existentes; é só adição.
 - Se `RESEND_API_KEY` nunca for configurada, a feature continua 100%
   funcional via UI — só o lembrete por e-mail não sai (ver seção 6).

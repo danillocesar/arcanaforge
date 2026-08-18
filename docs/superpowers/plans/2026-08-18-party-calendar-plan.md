@@ -1629,6 +1629,24 @@ git commit -m "feat(party-calendar): add PartyCalendarPage with route and nav wi
 
 ---
 
+## Post-implementation fix (found during manual verification)
+
+Manual browser testing of Task 8 against a real pre-existing party (created
+before this feature) crashed with `TypeError: party.sessionProposals is not
+iterable`. Root cause: `GET /api/parties` goes through
+`partyRepository.findVisibleToUser` → `.lean()`, and Mongoose does **not**
+apply schema `default` values to `.lean()` query results — only to fully
+hydrated documents. So `sessionProposals` came back `undefined` for any
+party that existed before Task 1's schema change, even though `default: []`
+is set. `findMemberParty` (used by the three new service functions) is NOT
+`.lean()`, so that path was already fine — this only affected the read path.
+
+Fix: `server/src/dto/party.dto.js`'s `toPartyDTO` now returns
+`sessionProposals: rest.sessionProposals || []` instead of relying on
+`...rest` alone, the same normalization already applied to `characterIds` a
+few lines above for the identical reason. No data migration needed — this
+is an output-shaping fix, not a data fix.
+
 ## Final verification (after all 8 tasks)
 
 ```bash
