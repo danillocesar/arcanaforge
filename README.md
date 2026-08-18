@@ -2,13 +2,13 @@
 
 Sistema web multi-RPG para gerenciar fichas de personagem e combate em tempo real, com sincronização entre múltiplos dispositivos via WebSocket.
 
-Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente.
+Suporta **Tormenta 20**. Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente.
 
 ---
 
 ## Funcionalidades
 
-### Character Sheet (`/tormenta/char`, `/naruto/char`)
+### Character Sheet (`/tormenta/char`)
 
 - **Basic Info** — nome, avatar (upload), múltiplas classes com nível total, raça, origem, divindade, alinhamento, idade, tamanho, deslocamento, XP
 - **Attributes** — STR, DEX, CON, INT, WIS, CHA com cálculo de modificadores e edição inline
@@ -29,7 +29,7 @@ Suporta **Tormenta 20** e **Naruto d20**. Jogadores editam suas fichas enquanto 
 - **Auto-save** — salvamento automático com debounce (800ms) após cada alteração
 - **URL Persistence** — parâmetro `?char=` mantém o personagem selecionado
 
-### Combat Tracker (`/tormenta/party/:partyId`, `/naruto/party/:partyId`)
+### Combat Tracker (`/tormenta/party/:partyId`)
 
 - **Players** carregados automaticamente das fichas salvas (HP, MP, avatar, classes)
 - **Enemies** adicionáveis dinamicamente com nome editável e HP customizável
@@ -200,9 +200,7 @@ Personagens guardam o campo `avatar` como URL HTTPS absoluta. Fichas antigas com
 | Party Selection           | `/parties`                 |
 | Party Members             | `/parties/new/:partyId`    |
 | Tormenta 20 Sheet         | `/tormenta/char?char=<id>` |
-| Naruto d20 Sheet          | `/naruto/char?char=<id>`   |
 | Combat Tracker (Tormenta) | `/tormenta/party/:partyId` |
-| Combat Tracker (Naruto)   | `/naruto/party/:partyId`   |
 
 
 ---
@@ -385,7 +383,6 @@ arcanaforge/
 │           ├── PartySelectPage/
 │           ├── PartyMembersPage/
 │           ├── TormentaSheetPage/
-│           ├── NarutoSheetPage/
 │           └── GameMasterPage/
 │
 ├── data/                     # Persistência JSON (avatares em Cloudflare R2)
