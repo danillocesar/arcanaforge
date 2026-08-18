@@ -51,8 +51,6 @@ export function createEmptyCharacter(name?: string): Character {
   };
 }
 
-export { createEmptyNarutoCharacter } from '../features/naruto/utils/narutoCalculations';
-
 export function getTotalLevel(character: Character): number {
   if (character.classes && character.classes.length > 0) {
     return character.classes.reduce((sum, c) => sum + (Number(c.level) || 0), 0);

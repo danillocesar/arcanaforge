@@ -2,7 +2,6 @@ import type { RPGSystem } from '../types/character';
 
 export const SYSTEM_ROUTES: Record<RPGSystem, string> = {
   tormenta: '/tormenta/char',
-  naruto: '/naruto/char',
 };
 
 /** As 8 escolas de magia oficiais do T20. */

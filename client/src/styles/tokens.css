@@ -45,7 +45,7 @@
   /* ============================================================
      LEGACY ALIASES — old token names kept so existing components
      keep working. COLORS are remapped to the new palette (this
-     re-themes the whole app, incl. Naruto — validate later).
+     re-themes the whole app — validate later).
      Radii / shadows keep their old values to avoid distorting
      still-live legacy screens before the v2 cutover.
      ============================================================ */

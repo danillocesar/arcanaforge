@@ -25,8 +25,6 @@ export interface CombatPlayer {
   name: string;
   avatar: string;
   classes: { name: string; level: number }[];
-  system?: 'tormenta' | 'naruto';
-  clan?: string;
   ownerUid?: string;
   maxHp: number;
   currentHp: number;
@@ -46,8 +44,6 @@ export interface CombatRow {
   currentMp?: number;
   avatar?: string;
   classes?: { name: string; level: number }[];
-  system?: 'tormenta' | 'naruto';
-  clan?: string;
   ownerUid?: string;
   combatVisual?: CombatCharacterVisual;
   woundThreshold?: number;

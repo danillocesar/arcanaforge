@@ -4,25 +4,9 @@ import { useCombatContext } from '../../../contexts/CombatContext';
 import { getInitials } from '../../../utils/formatters';
 import { hpPercent } from '../../../utils/calculations';
 import { getClassIconUrl } from '../../../features/tormenta/data/tormentaClasses';
-import { apiFetchNarutoClans } from '../../../api';
-import type { NarutoClanOption } from '../../../api';
 import DamagePopover from '../DamagePopover/DamagePopover';
 import type { CombatRow } from '../../../types/combat';
 import styles from './CombatCard.module.css';
-
-let cachedClans: NarutoClanOption[] | null = null;
-let clanFetchPromise: Promise<NarutoClanOption[]> | null = null;
-
-function fetchClansOnce(): Promise<NarutoClanOption[]> {
-  if (cachedClans) return Promise.resolve(cachedClans);
-  if (!clanFetchPromise) {
-    clanFetchPromise = apiFetchNarutoClans().then((clans) => {
-      cachedClans = clans;
-      return clans;
-    });
-  }
-  return clanFetchPromise;
-}
 
 const VILLAIN_ICON = (
   <svg className={styles.villainIcon} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -71,27 +55,11 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
     ? parseInt(row.id.split('_').pop() || '0', 10)
     : undefined;
 
-  const isNaruto = row.system === 'naruto';
   const firstClassName = row.classes?.[0]?.name;
   const classIconSrc = firstClassName ? getClassIconUrl(firstClassName) : '';
 
-  const [clanIconSrc, setClanIconSrc] = useState('');
-  useEffect(() => {
-    if (!isNaruto || !row.clan?.trim()) {
-      setClanIconSrc('');
-      return;
-    }
-    const want = row.clan.trim().toLowerCase();
-    fetchClansOnce()
-      .then((clans) => {
-        const match = clans.find((c) => c.name.toLowerCase() === want);
-        setClanIconSrc(match?.icon ?? '');
-      })
-      .catch(() => setClanIconSrc(''));
-  }, [isNaruto, row.clan]);
-
-  const stripIconSrc = isNaruto ? clanIconSrc : classIconSrc;
-  const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && (isNaruto ? !!clanIconSrc : !!firstClassName);
+  const stripIconSrc = classIconSrc;
+  const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && !!firstClassName;
 
   useEffect(() => {
     if (!editingMaxHp) setDraftMaxHp(String(row.maxHp ?? 1));

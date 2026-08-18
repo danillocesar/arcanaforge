@@ -7,7 +7,7 @@ import { apiFetchParties } from '../../api';
 import type { Party } from '../../types/party';
 import type { CombatRow } from '../../types/combat';
 import { buildCombatRows } from '../../utils/combatRows';
-import Topbar, { systemParamToBrand } from '../../components/layout/Topbar/Topbar';
+import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import CombatToolbar from '../../components/combat/CombatToolbar/CombatToolbar';
 import CombatCard from '../../components/combat/CombatCard/CombatCard';
@@ -72,8 +72,6 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
           currentMp: p.currentMp,
           avatar: p.avatar,
           classes: p.classes,
-          system: p.system,
-          clan: p.clan,
           ownerUid: p.ownerUid,
           combatVisual: combatData.gmCharacterVisual?.[p._id] ?? 'ally',
         })),
@@ -131,10 +129,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   return (
     <>
       {showGm && <div className={styles.gmStrip} aria-hidden />}
-      <Topbar
-        title={party.name ? `Grupo - ${party.name}` : 'Grupo'}
-        systemBrand={systemParamToBrand(system)}
-      />
+      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
       {!spectatorMode && (
         <SectionNav
           items={navItems}

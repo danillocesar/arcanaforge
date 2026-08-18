@@ -6,19 +6,16 @@ import {
   apiDeleteCharacter,
   apiRestoreCharacter,
 } from '../../api';
-import { createEmptyCharacter, createEmptyNarutoCharacter } from '../../utils/calculations';
-import type { RPGSystem, CharacterSummary } from '../../types/character';
+import { createEmptyCharacter } from '../../utils/calculations';
+import type { CharacterSummary } from '../../types/character';
 import { SYSTEM_ROUTES } from '../../data/constants';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import SystemFilter from '../../components/ui/SystemFilter/SystemFilter';
 import SelectGrid from '../../components/select/SelectGrid/SelectGrid';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
 import styles from './SelectPage.module.css';
-
-type TabFilter = 'todos' | 'tormenta' | 'naruto';
 
 function hoursUntilDelete(pendingDeleteAt: string): number {
   const ms = new Date(pendingDeleteAt).getTime() - Date.now();
@@ -27,10 +24,8 @@ function hoursUntilDelete(pendingDeleteAt: string): number {
 
 export default function SelectPage() {
   const [resumos, setResumos] = useState<CharacterSummary[]>([]);
-  const [tab, setTab] = useState<TabFilter>('todos');
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newSystem, setNewSystem] = useState<RPGSystem>('tormenta');
   const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
   const navigate = useNavigate();
 
@@ -42,11 +37,9 @@ export default function SelectPage() {
 
   const activeChars = resumos.filter((r) => !r.deletedAt);
   const pendingDeleteChars = resumos.filter((r) => r.deletedAt);
-  const filtered = tab === 'todos' ? activeChars : activeChars.filter((r) => r.system === tab);
 
   const openNewModal = () => {
     setNewName('');
-    setNewSystem('tormenta');
     setModalOpen(true);
   };
 
@@ -55,11 +48,10 @@ export default function SelectPage() {
     const name = newName.trim();
     if (!name) return;
 
-    const character =
-      newSystem === 'naruto' ? createEmptyNarutoCharacter(name) : createEmptyCharacter(name);
+    const character = createEmptyCharacter(name);
     await apiSaveCharacter(character._id, character);
     setModalOpen(false);
-    navigate(`${SYSTEM_ROUTES[newSystem]}?id=${encodeURIComponent(character._id)}`);
+    navigate(`${SYSTEM_ROUTES.tormenta}?id=${encodeURIComponent(character._id)}`);
   };
 
   const handleDeleteConfirm = async () => {
@@ -88,10 +80,8 @@ export default function SelectPage() {
       <Topbar title="Seleção de Personagens" />
 
       <div className={styles.content}>
-        <SystemFilter value={tab} onChange={setTab} />
-
         <SelectGrid
-          resumos={filtered}
+          resumos={activeChars}
           onNewCharacter={openNewModal}
           onDelete={setDeleteTarget}
         />
@@ -126,26 +116,6 @@ export default function SelectPage() {
         <form className={styles.newModal} onSubmit={handleCreate}>
           <h3 className={styles.newModalTitle}>Novo Personagem</h3>
 
-          <span className={styles.newModalLabel}>Sistema de RPG</span>
-          <div className={styles.systemSelector}>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'tormenta' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('tormenta')}
-            >
-              <span className={styles.systemIcon}>⚔️</span>
-              <span className={styles.systemName}>Tormenta 20</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'naruto' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('naruto')}
-            >
-              <span className={styles.systemIcon}>🍥</span>
-              <span className={styles.systemName}>Naruto: SnS</span>
-            </button>
-          </div>
-
           <label className={styles.newModalLabel} htmlFor="new-char-name">
             Nome do personagem
           </label>
@@ -154,7 +124,7 @@ export default function SelectPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             autoFocus
-            placeholder="Ex: Aragorn, Naruto Uzumaki..."
+            placeholder="Ex: Aragorn, Kael..."
           />
 
           <div className={styles.newModalActions}>

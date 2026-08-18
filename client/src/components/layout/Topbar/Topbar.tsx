@@ -3,29 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../features/auth';
 import styles from './Topbar.module.css';
 
-/** Marca do sistema RPG ao lado da logo Arcana Forge (ficha ou grupo). */
-export type SystemBrand = 'naruto' | 'tormenta';
-
 interface TopbarProps {
   title?: string;
   right?: ReactNode;
-  /** Quando definido, exibe a logo do sistema (SNS ou Tormenta) ao lado da logo do app. */
-  systemBrand?: SystemBrand;
 }
 
-const SYSTEM_LOGO: Record<SystemBrand, { src: string; alt: string }> = {
-  naruto: { src: '/assets/sns_logo.png', alt: 'Shinobi no Sentou' },
-  tormenta: { src: '/assets/tormenta_logo.png', alt: 'Tormenta RPG' },
-};
-
-/** Parâmetro de rota `/:system/...` → marca exibida na topbar. */
-export function systemParamToBrand(system: string | undefined): SystemBrand | undefined {
-  if (system === 'naruto') return 'naruto';
-  if (system === 'tormenta') return 'tormenta';
-  return undefined;
-}
-
-export default function Topbar({ title, right, systemBrand }: TopbarProps) {
+export default function Topbar({ title, right }: TopbarProps) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
   const [openMenu, setOpenMenu] = useState(false);
@@ -90,14 +73,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
             className={styles.logoImage}
             loading="eager"
           />
-          {systemBrand && (
-            <img
-              src={SYSTEM_LOGO[systemBrand].src}
-              alt={SYSTEM_LOGO[systemBrand].alt}
-              className={styles.systemLogoImage}
-              loading="eager"
-            />
-          )}
           {title && (
             <>
               <span className={styles.separator}>/</span>

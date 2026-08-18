@@ -188,8 +188,6 @@ export function CombatProvider({
         name: r.name,
         avatar: r.avatar || '',
         classes: r.classes,
-        system: r.system,
-        clan: r.clan,
         ownerUid: r.ownerUid,
         maxHp: r.hp?.max ?? 0,
         currentHp: r.hp?.current ?? 0,
