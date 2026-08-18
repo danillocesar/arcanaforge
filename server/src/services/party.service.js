@@ -9,6 +9,7 @@ const characterContentRepository = require('../repositories/characterContent.rep
 const characterLogsRepository = require('../repositories/characterLogs.repository');
 const combatRepository = require('../repositories/combat.repository');
 const { mergeCharacterDocs } = require('./character.service');
+const { sendSessionProposalEmail } = require('./email.service');
 
 const VALID_SYSTEMS = ['tormenta'];
 
@@ -257,6 +258,77 @@ function createPartyService(refs) {
     return { ok: true, appliedTo, failed };
   }
 
+  async function proposeSession(partyId, body, req) {
+    const { date, time } = body || {};
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new AppError(400, 'Data inválida (esperado YYYY-MM-DD)');
+    }
+    if (time && (typeof time !== 'string' || !/^\d{2}:\d{2}$/.test(time))) {
+      throw new AppError(400, 'Horário inválido (esperado HH:mm)');
+    }
+
+    const party = await partyRepository.findMemberParty(partyId, req.user.uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = {
+      id: generatePartyId(),
+      proposedBy: req.user.uid,
+      date,
+      time: time || '',
+      createdAt: new Date(),
+      responses: [],
+    };
+    party.sessionProposals.push(proposal);
+    await party.save();
+    refs.broadcastPartyRoster(partyId);
+
+    sendSessionProposalEmail(party, proposal).catch((err) => {
+      console.error('Falha ao enviar e-mail de proposta de sessão:', err.message);
+    });
+
+    return toPartyDTO(party.toObject());
+  }
+
+  async function respondToSession(partyId, proposalId, body, uid) {
+    const { vote } = body || {};
+    if (vote !== 'sim' && vote !== 'nao') {
+      throw new AppError(400, 'vote deve ser "sim" ou "nao"');
+    }
+
+    const party = await partyRepository.findMemberParty(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = party.sessionProposals.find((p) => p.id === proposalId);
+    if (!proposal) throw new AppError(404, 'Proposta não encontrada');
+
+    const existing = proposal.responses.find((r) => r.uid === uid);
+    if (existing) {
+      existing.vote = vote;
+      existing.respondedAt = new Date();
+    } else {
+      proposal.responses.push({ uid, vote, respondedAt: new Date() });
+    }
+    await party.save();
+    refs.broadcastPartyRoster(partyId);
+    return toPartyDTO(party.toObject());
+  }
+
+  async function cancelSession(partyId, proposalId, uid) {
+    const party = await partyRepository.findMemberParty(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = party.sessionProposals.find((p) => p.id === proposalId);
+    if (!proposal) throw new AppError(404, 'Proposta não encontrada');
+    if (proposal.proposedBy !== uid && party.ownerUid !== uid) {
+      throw new AppError(403, 'Só quem propôs ou o dono do grupo pode cancelar');
+    }
+
+    party.sessionProposals = party.sessionProposals.filter((p) => p.id !== proposalId);
+    await party.save();
+    refs.broadcastPartyRoster(partyId);
+    return toPartyDTO(party.toObject());
+  }
+
   return {
     listParties,
     createParty,
@@ -271,6 +343,9 @@ function createPartyService(refs) {
     listPartyCharacters,
     getPartyCharacter,
     applyBuff,
+    proposeSession,
+    respondToSession,
+    cancelSession,
   };
 }
 
