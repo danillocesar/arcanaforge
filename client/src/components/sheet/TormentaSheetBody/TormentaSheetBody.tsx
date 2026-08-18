@@ -61,6 +61,21 @@ interface TormentaSheetBodyProps {
   topBanner?: ReactNode;
 }
 
+/** Barra fina de "desfazer última alteração" — só aparece quando há algo pra desfazer. */
+function UndoBar() {
+  const { canUndo, undoLastChange } = useCharacterContext();
+  if (!canUndo) return null;
+
+  return (
+    <div className={styles.undoBar}>
+      <span>Última alteração salva</span>
+      <button type="button" className={styles.undoButton} onClick={undoLastChange}>
+        ↺ Desfazer
+      </button>
+    </div>
+  );
+}
+
 /**
  * Shared Tormenta sheet shell (vitals + tab navigation + panels), used both by the
  * owner's editable sheet and the read-only party-member view.
@@ -82,6 +97,7 @@ function TormentaSheetBody({ topBanner }: TormentaSheetBodyProps) {
           <Topbar title={character.name} showTormentaLogo />
           <div className={styles.desktopBody}>
             {topBanner}
+            <UndoBar />
             <VitalBar desktop />
             <div className={styles.desktopGrid}>
               <aside className={styles.sidebar}>
@@ -100,6 +116,7 @@ function TormentaSheetBody({ topBanner }: TormentaSheetBodyProps) {
       <div className={styles.shell}>
         <VitalBar />
         {topBanner && <div className={styles.bannerSlot}>{topBanner}</div>}
+        <UndoBar />
         <main className={styles.mobileBody}>{panel}</main>
         <TabNav
           sections={SECTIONS}

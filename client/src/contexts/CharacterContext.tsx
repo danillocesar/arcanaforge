@@ -26,6 +26,16 @@ interface CharacterContextValue {
   refreshList: () => Promise<string[]>;
   sendHpUpdate: () => void;
   sendSpellCast: (spellName: string, mpCost: number) => void;
+
+  /** Havia uma leva de edições salva antes desta, que ainda não foi desfeita? */
+  canUndo: boolean;
+  /**
+   * Desfaz a última leva de edições (nível único, só nesta sessão): volta o
+   * personagem pro estado de antes dela começar e deixa o autosave existente
+   * persistir a reversão. Não conta como uma nova leva "desfazível" — pra
+   * desfazer de novo, precisa editar algo primeiro.
+   */
+  undoLastChange: () => void;
 }
 
 const CharacterContext = createContext<CharacterContextValue | null>(null);
@@ -51,6 +61,21 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
 
   const lastBroadcastRef = useRef<BroadcastSnapshot | null>(null);
   const skipNextSaveRef = useRef<() => void>(() => {});
+
+  // Undo de nível único: `undoSnapshotRef` guarda o personagem como estava
+  // antes da leva de edições atual começar. `hasPendingEditsRef` marca se já
+  // estamos "dentro" de uma leva (snapshot já capturado) — vira false de novo
+  // quando o autosave dessa leva termina, então a PRÓXIMA edição captura um
+  // snapshot novo (avança o ponto de desfazer, não empilha histórico).
+  const undoSnapshotRef = useRef<Character | null>(null);
+  const hasPendingEditsRef = useRef(false);
+  const [canUndo, setCanUndo] = useState(false);
+
+  const resetUndoState = useCallback(() => {
+    undoSnapshotRef.current = null;
+    hasPendingEditsRef.current = false;
+    setCanUndo(false);
+  }, []);
 
   const { send } = useWebSocket((msg) => {
     if (!characterRef.current) return;
@@ -154,6 +179,11 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   sendHpUpdateRef.current = sendHpUpdate;
 
   const { status: saveStatus, skipNextSave } = useAutoSave(readOnly ? null : character, characterOriginalId, () => {
+    // Essa leva de edições terminou de salvar — a próxima edição já captura um
+    // snapshot novo (avança o ponto de desfazer). `canUndo` continua true: o
+    // usuário ainda pode desfazer a leva que acabou de ser salva.
+    hasPendingEditsRef.current = false;
+
     if (characterRef.current) {
       setCharacterOriginalId(characterRef.current._id);
     }
@@ -191,6 +221,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       };
       setCharacter(normalized);
       setCharacterOriginalId(data._id);
+      resetUndoState();
       lastBroadcastRef.current = {
         hp: { ...data.hp },
         mp: { ...data.mp },
@@ -198,12 +229,13 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       };
       history.replaceState(null, '', `?id=${encodeURIComponent(data._id)}`);
     }
-  }, []);
+  }, [resetUndoState]);
 
   const createCharacter = useCallback(async (newCharacter: Character) => {
     await apiSaveCharacter(newCharacter._id, newCharacter);
     setCharacter(newCharacter);
     setCharacterOriginalId(newCharacter._id);
+    resetUndoState();
     lastBroadcastRef.current = {
       hp: { ...newCharacter.hp },
       mp: { ...newCharacter.mp },
@@ -211,7 +243,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     };
     history.replaceState(null, '', `?id=${encodeURIComponent(newCharacter._id)}`);
     await refreshList();
-  }, [refreshList]);
+  }, [refreshList, resetUndoState]);
 
   const deleteCharacter = useCallback(async () => {
     if (!characterRef.current) return;
@@ -226,18 +258,32 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       await apiSaveCharacter(newChar._id, newChar);
       setCharacter(newChar);
       setCharacterOriginalId(newChar._id);
+      resetUndoState();
       const updatedList = await apiFetchCharacters();
       setCharacterList(updatedList);
     }
-  }, [loadCharacter]);
+  }, [loadCharacter, resetUndoState]);
 
   const updateCharacter = useCallback((updater: (prev: Character) => Character) => {
     if (readOnly) return;
     setCharacter((prev) => {
       if (!prev) return prev;
+      if (!hasPendingEditsRef.current) {
+        undoSnapshotRef.current = prev;
+        hasPendingEditsRef.current = true;
+        setCanUndo(true);
+      }
       return updater(prev);
     });
   }, [readOnly]);
+
+  const undoLastChange = useCallback(() => {
+    if (readOnly) return;
+    const snapshot = undoSnapshotRef.current;
+    if (!snapshot) return;
+    resetUndoState();
+    setCharacter(snapshot);
+  }, [readOnly, resetUndoState]);
 
   const setCharacterDirect = useCallback((char: Character) => {
     setCharacter({
@@ -246,7 +292,8 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       damageReduction: normalizeDamageReduction(char.damageReduction),
     });
     setCharacterOriginalId(char._id);
-  }, []);
+    resetUndoState();
+  }, [resetUndoState]);
 
   const value = useMemo<CharacterContextValue>(() => ({
     character,
@@ -262,7 +309,9 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     refreshList,
     sendHpUpdate,
     sendSpellCast,
-  }), [character, characterOriginalId, characterList, saveStatus, readOnly, updateCharacter, setCharacterDirect, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate, sendSpellCast]);
+    canUndo,
+    undoLastChange,
+  }), [character, characterOriginalId, characterList, saveStatus, readOnly, updateCharacter, setCharacterDirect, loadCharacter, createCharacter, deleteCharacter, refreshList, sendHpUpdate, sendSpellCast, canUndo, undoLastChange]);
 
   return <CharacterContext.Provider value={value}>{children}</CharacterContext.Provider>;
 }
