@@ -41,6 +41,11 @@ COPY server/ ./server/
 COPY assets/ ./assets/
 COPY --from=build /app/dist ./dist
 
+# node:22-alpine already ships an unprivileged `node` user (uid 1000) — run as
+# it instead of root.
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 
 CMD ["node", "server.js"]

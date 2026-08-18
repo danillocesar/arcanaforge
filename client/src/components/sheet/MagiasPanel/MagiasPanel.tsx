@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import SpellCard from '../SpellCard/SpellCard';
 import AddButton from '../AddButton/AddButton';
-import SpellPicker from '../SpellPicker/SpellPicker';
 import CastActionSheet from '../CastActionSheet/CastActionSheet';
+
+// O catálogo oficial de magias (data/spells.ts) é pesado (~250KB) e só é usado
+// dentro do picker — carrega sob demanda, na primeira vez que o usuário abre
+// "+ Magia", em vez de entrar no bundle inicial da ficha.
+const SpellPicker = lazy(() => import('../SpellPicker/SpellPicker'));
 import type { CastActionSpec } from '../CastActionSheet/CastActionSheet';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
@@ -15,6 +19,12 @@ function MagiasPanel() {
   const { openEdit, openCreate, openCreateWithValues } = useSheetForm();
   const [castAction, setCastAction] = useState<CastActionSpec | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerLoaded, setPickerLoaded] = useState(false);
+
+  // Padrão "adjust state while rendering" do React: computa o derivado direto
+  // no render (sem useEffect) — evita o round-trip extra de um efeito só pra
+  // ligar um estado que nunca mais desliga.
+  if (showPicker && !pickerLoaded) setPickerLoaded(true);
 
   if (!character) return null;
 
@@ -61,7 +71,11 @@ function MagiasPanel() {
       )}
 
       <CastActionSheet action={castAction} onClose={() => setCastAction(null)} />
-      <SpellPicker open={showPicker} onClose={() => setShowPicker(false)} onPick={handlePick} />
+      {pickerLoaded && (
+        <Suspense fallback={null}>
+          <SpellPicker open={showPicker} onClose={() => setShowPicker(false)} onPick={handlePick} />
+        </Suspense>
+      )}
     </section>
   );
 }

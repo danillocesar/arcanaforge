@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import Sheet from '../../ui/Sheet/Sheet';
 import TextField from '../../ui/TextField/TextField';
 import Select from '../../ui/Select/Select';
 import NumberField from '../../ui/NumberField/NumberField';
-import RacePicker from '../RacePicker/RacePicker';
-import OriginPicker from '../OriginPicker/OriginPicker';
-import DeityPicker from '../DeityPicker/DeityPicker';
 import styles from './InfoSheet.module.css';
+
+// Os catálogos oficiais de raças/origens/divindades só são usados dentro de
+// cada picker — carregam sob demanda, na primeira vez que o respectivo
+// "📖 Escolher da lista oficial" é aberto.
+const RacePicker = lazy(() => import('../RacePicker/RacePicker'));
+const OriginPicker = lazy(() => import('../OriginPicker/OriginPicker'));
+const DeityPicker = lazy(() => import('../DeityPicker/DeityPicker'));
 
 interface InfoSheetProps {
   open: boolean;
@@ -23,6 +27,16 @@ function InfoSheet({ open, onClose }: InfoSheetProps) {
   const [showRacePicker, setShowRacePicker] = useState(false);
   const [showOriginPicker, setShowOriginPicker] = useState(false);
   const [showDeityPicker, setShowDeityPicker] = useState(false);
+  const [racePickerLoaded, setRacePickerLoaded] = useState(false);
+  const [originPickerLoaded, setOriginPickerLoaded] = useState(false);
+  const [deityPickerLoaded, setDeityPickerLoaded] = useState(false);
+
+  // Padrão "adjust state while rendering" do React: computa o derivado direto
+  // no render (sem useEffect) — evita o round-trip extra de um efeito só pra
+  // ligar um estado que nunca mais desliga.
+  if (showRacePicker && !racePickerLoaded) setRacePickerLoaded(true);
+  if (showOriginPicker && !originPickerLoaded) setOriginPickerLoaded(true);
+  if (showDeityPicker && !deityPickerLoaded) setDeityPickerLoaded(true);
 
   if (!character) return null;
 
@@ -82,9 +96,21 @@ function InfoSheet({ open, onClose }: InfoSheetProps) {
           readOnly={readOnly}
         />
       </div>
-      <RacePicker open={showRacePicker} onClose={() => setShowRacePicker(false)} />
-      <OriginPicker open={showOriginPicker} onClose={() => setShowOriginPicker(false)} />
-      <DeityPicker open={showDeityPicker} onClose={() => setShowDeityPicker(false)} />
+      {racePickerLoaded && (
+        <Suspense fallback={null}>
+          <RacePicker open={showRacePicker} onClose={() => setShowRacePicker(false)} />
+        </Suspense>
+      )}
+      {originPickerLoaded && (
+        <Suspense fallback={null}>
+          <OriginPicker open={showOriginPicker} onClose={() => setShowOriginPicker(false)} />
+        </Suspense>
+      )}
+      {deityPickerLoaded && (
+        <Suspense fallback={null}>
+          <DeityPicker open={showDeityPicker} onClose={() => setShowDeityPicker(false)} />
+        </Suspense>
+      )}
     </Sheet>
   );
 }

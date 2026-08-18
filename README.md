@@ -78,7 +78,7 @@ Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincr
 | **Roteamento**                | React Router v7                                          |
 | **Estado**                    | React Context + useState                                 |
 | **Estilização**               | CSS Modules com variáveis CSS                            |
-| **Persistência**              | Sistema de arquivos (JSON) + MongoDB (em migração)       |
+| **Persistência**              | MongoDB (migração de arquivos JSON concluída)            |
 | **Infra**                     | Docker Compose, Cloudflare Tunnel                        |
 | **Estilo visual**             | Dark mode, glassmorphism, acento dourado                 |
 
