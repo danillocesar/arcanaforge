@@ -19,6 +19,7 @@ function toPartyDTO(doc) {
     id: String(_id),
     ...rest,
     members,
+    sessionProposals: rest.sessionProposals || [],
   };
 }
 
