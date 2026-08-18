@@ -123,7 +123,10 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
                   aria-label={`Rodada ${rodadaNoSeparador}`}
                 >
                   <span className={styles.cycleGapLine} />
-                  <div className={styles.cyclePill}>
+                  <div
+                    className={styles.cyclePill}
+                    title={`Prévia da Rodada ${rodadaNoSeparador} — assume a mesma ordem de iniciativa da rodada atual`}
+                  >
                     <span className={styles.cyclePillIcon} aria-hidden>↻</span>
                     <span className={styles.cyclePillText}>R{rodadaNoSeparador}</span>
                   </div>

@@ -309,6 +309,7 @@
 
 .bar {
   position: relative;
+  width: 100%;
   height: 22px;
   border-radius: 11px;
   background: rgba(0, 0, 0, 0.45);
@@ -317,6 +318,14 @@
     inset 0 2px 4px rgba(0, 0, 0, 0.5),
     0 1px 2px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  /* Reset for the interactive (<button>) variant — no-op for the plain <div>
+     read-only variant. */
+  display: block;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
 }
 
 .barHp {

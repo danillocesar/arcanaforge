@@ -5,6 +5,15 @@
   background: var(--bg-input);
   border-radius: 6px;
   overflow: hidden;
+  /* Reset for when this renders as a <button> (interactive variant) — a plain
+     <div> (read-only variant) is unaffected by these. */
+  display: block;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
 }
 
 .clickable {

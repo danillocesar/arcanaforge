@@ -7,6 +7,7 @@ import {
   apiRestoreCharacter,
 } from '../../api';
 import { createEmptyCharacter } from '../../utils/calculations';
+import { normalizeSearch } from '../../utils/formatters';
 import type { CharacterSummary } from '../../types/character';
 import { SYSTEM_ROUTES } from '../../data/constants';
 import Topbar from '../../components/layout/Topbar/Topbar';
@@ -24,6 +25,7 @@ function hoursUntilDelete(pendingDeleteAt: string): number {
 
 export default function SelectPage() {
   const [resumos, setResumos] = useState<CharacterSummary[]>([]);
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
@@ -37,6 +39,10 @@ export default function SelectPage() {
 
   const activeChars = resumos.filter((r) => !r.deletedAt);
   const pendingDeleteChars = resumos.filter((r) => r.deletedAt);
+  const query = normalizeSearch(search);
+  const visibleChars = query
+    ? activeChars.filter((r) => normalizeSearch(r.name).includes(query))
+    : activeChars;
 
   const openNewModal = () => {
     setNewName('');
@@ -80,8 +86,22 @@ export default function SelectPage() {
       <Topbar title="Seleção de Personagens" />
 
       <div className={styles.content}>
+        {activeChars.length > 0 && (
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar personagem por nome..."
+            className={styles.searchInput}
+            aria-label="Buscar personagem por nome"
+          />
+        )}
+
+        {query && visibleChars.length === 0 && (
+          <p className={styles.emptySearch}>Nenhum personagem encontrado para "{search}".</p>
+        )}
+
         <SelectGrid
-          resumos={activeChars}
+          resumos={visibleChars}
           onNewCharacter={openNewModal}
           onDelete={setDeleteTarget}
         />

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import styles from './DamagePopover.module.css';
 
 interface DamagePopoverProps {
-  barRef: RefObject<HTMLDivElement | null>;
+  barRef: RefObject<HTMLElement | null>;
   onApply: (delta: number) => void;
   onClose: () => void;
 }

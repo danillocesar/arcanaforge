@@ -4,6 +4,7 @@ import { apiFetchParties, apiCreateParty, apiDeleteParty, apiJoinParty, apiLeave
 import type { Party } from '../../types/party';
 import type { RPGSystem } from '../../types/character';
 import { useAuth } from '../../features/auth';
+import { getInitials, getAvatarColor } from '../../utils/formatters';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import type { WsMessage } from '../../hooks/useWebSocket';
 import Topbar from '../../components/layout/Topbar/Topbar';
@@ -113,7 +114,7 @@ export default function PartySelectPage() {
     setParties((prev) => prev.filter((p) => p.id !== leaveTarget.id));
   };
 
-  const copyInviteCode = (code: string, e: React.MouseEvent) => {
+  const copyInviteCode = (code: string, e: React.SyntheticEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(code).catch(() => {});
   };
@@ -157,20 +158,23 @@ export default function PartySelectPage() {
         </button>
       )}
 
-      <span className={styles.cardIcon}>🎲</span>
+      <span className={styles.cardAvatar} style={{ background: getAvatarColor(p.name) }} aria-hidden>
+        {getInitials(p.name)}
+      </span>
       <span className={styles.cardName}>{p.name}</span>
       <span className={styles.cardMeta}>
         {SISTEMA_LABEL[p.system]} &middot; {p.members.length} membro{p.members.length !== 1 ? 's' : ''}
       </span>
 
       {isOwner && p.inviteCode && (
-        <span
+        <button
+          type="button"
           className={styles.inviteCode}
           title="Clique para copiar código de convite"
           onClick={(e) => copyInviteCode(p.inviteCode, e)}
         >
           {p.inviteCode}
-        </span>
+        </button>
       )}
     </div>
   );

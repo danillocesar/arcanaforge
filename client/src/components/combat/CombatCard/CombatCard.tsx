@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
 import { ChevronRight, UserMinus, RefreshCw, UserCheck } from 'lucide-react';
 import { useCombatContext } from '../../../contexts/CombatContext';
 import { getInitials } from '../../../utils/formatters';
@@ -37,7 +37,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [editingMaxHp, setEditingMaxHp] = useState(false);
   const [draftMaxHp, setDraftMaxHp] = useState('');
-  const hpBarRef = useRef<HTMLDivElement>(null);
+  const hpBarRef = useRef<HTMLElement>(null);
 
   const isPartyCharacter = row.type === 'player';
   const visual = row.combatVisual ?? 'ally';
@@ -192,17 +192,32 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
         <div
           className={`${styles.bars} ${!cardLooksPlayer ? styles.barsEnemy : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
         >
-          <div
-            className={`${styles.bar} ${styles.barHp} ${isMaster && !spectatorMode ? styles.barClickable : ''}`}
-            ref={hpBarRef}
-            onClick={() => isMaster && !spectatorMode && showEnemyBars && setPopoverOpen(true)}
-            role="presentation"
-          >
-            <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
-            <span className={styles.barLabel}>
-              {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
-            </span>
-          </div>
+          {isMaster && !spectatorMode ? (
+            <button
+              type="button"
+              className={`${styles.bar} ${styles.barHp} ${styles.barClickable}`}
+              ref={hpBarRef as RefObject<HTMLButtonElement>}
+              onClick={() => showEnemyBars && setPopoverOpen(true)}
+              aria-label={showEnemyBars ? `Vida: ${currentHp} de ${maxHp}. Ajustar vida.` : 'Ajustar vida'}
+            >
+              <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
+              <span className={styles.barLabel}>
+                {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
+              </span>
+            </button>
+          ) : (
+            <div
+              className={`${styles.bar} ${styles.barHp}`}
+              ref={hpBarRef as RefObject<HTMLDivElement>}
+              role="img"
+              aria-label={showEnemyBars ? `Vida: ${currentHp} de ${maxHp}` : 'Vida oculta'}
+            >
+              <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
+              <span className={styles.barLabel}>
+                {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
+              </span>
+            </div>
+          )}
 
           {!isPartyCharacter && isMaster && !spectatorMode && showEnemyBars && (
             <div className={styles.pvMaxEditRow}>
