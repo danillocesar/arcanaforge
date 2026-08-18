@@ -117,6 +117,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
     () => [
       { id: 'members', label: 'Membros', onClick: () => navigate(`/${system}/party/${party.id}/members`) },
       { id: 'combat', label: 'Combate', active: true },
+      { id: 'calendar', label: 'Calendário', onClick: () => navigate(`/${system}/party/${party.id}/calendar`) },
     ],
     [navigate, party.id, system],
   );

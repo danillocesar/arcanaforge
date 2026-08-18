@@ -116,6 +116,9 @@ export default function PartyMembersPage() {
       { id: 'combat', label: 'Combate', onClick: () => {
         if (system && partyId) navigate(`/${system}/party/${partyId}`);
       }},
+      { id: 'calendar', label: 'Calendário', onClick: () => {
+        if (system && partyId) navigate(`/${system}/party/${partyId}/calendar`);
+      }},
     ],
     [navigate, system, partyId],
   );
