@@ -32,10 +32,6 @@ async function start() {
 
   const { run: runMigrateToMongo } = require('./db/migrateToMongo');
   await runMigrateToMongo();
-  const { run: runMigrateNarutoClans } = require('./db/migrateNarutoClans');
-  await runMigrateNarutoClans();
-  const { run: runMigrateNarutoTechTemplates } = require('./db/migrateNarutoTechTemplates');
-  await runMigrateNarutoTechTemplates();
 
   const app = express();
   app.set('trust proxy', 1);

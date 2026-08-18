@@ -10,7 +10,7 @@ const characterLogsRepository = require('../repositories/characterLogs.repositor
 const combatRepository = require('../repositories/combat.repository');
 const { mergeCharacterDocs } = require('./character.service');
 
-const VALID_SYSTEMS = ['tormenta', 'naruto'];
+const VALID_SYSTEMS = ['tormenta'];
 
 async function uniqueInviteCode() {
   for (let attempt = 0; attempt < 10; attempt++) {
