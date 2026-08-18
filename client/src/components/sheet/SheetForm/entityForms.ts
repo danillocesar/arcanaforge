@@ -72,6 +72,8 @@ const BUFF_EFFECT_ITEM_FIELDS: FieldDescriptor[] = [
 
 const emptyBuffEffect = (): FormValues => ({ type: 'attack_roll', attributeId: 'str', skillId: '', value: '' });
 
+const attackModifierAttrOptions = [{ value: '', label: '— Nenhum —' }, ...attrOptions];
+
 /** Sub-campos de um modificador de ataque — reutilizado em Poder, Magia e Itens. */
 const ATTACK_MODIFIER_ITEM_FIELDS: FieldDescriptor[] = [
   { key: 'label', label: 'Nome', type: 'text', placeholder: 'Ex.: Ataque Poderoso' },
@@ -79,6 +81,10 @@ const ATTACK_MODIFIER_ITEM_FIELDS: FieldDescriptor[] = [
   { key: 'damageBonus', label: 'Bônus de Dano', type: 'number', half: true },
   { key: 'damageDice', label: 'Dado extra', type: 'text', placeholder: 'Ex.: +2d6', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+  {
+    key: 'attributeId', label: 'Atributo (temporário)', type: 'select', options: attackModifierAttrOptions, half: true,
+  },
+  { key: 'attributeValue', label: 'Bônus no Atributo', type: 'number', half: true },
 ];
 
 const ATTACK_MODIFIERS_FIELD: FieldDescriptor = {
@@ -95,6 +101,8 @@ function attackModifiersFromValues(raw: unknown): AttackModifier[] {
       damageBonus: n(row.damageBonus) || undefined,
       damageDice: s(row.damageDice) || undefined,
       mpCost: n(row.mpCost) || undefined,
+      attributeId: (s(row.attributeId) || undefined) as AttributeId | undefined,
+      attributeValue: n(row.attributeValue) || undefined,
     }))
     .filter((m) => m.label);
 }
@@ -106,6 +114,8 @@ function attackModifiersToForm(mods: AttackModifier[] | undefined): FormValues[]
     damageBonus: m.damageBonus ?? 0,
     damageDice: m.damageDice ?? '',
     mpCost: m.mpCost ?? 0,
+    attributeId: m.attributeId ?? '',
+    attributeValue: m.attributeValue ?? 0,
   }));
 }
 

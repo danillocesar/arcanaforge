@@ -1,5 +1,6 @@
 import type { Attack, AttackModifier, AttributeId, Character } from '../types/character';
 import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod } from './calculations';
+import { SKILLS_CONFIG } from '../data/pericias';
 
 export interface AttackChecklistItem {
   key: string;
@@ -19,6 +20,13 @@ export interface AttackChecklistItem {
  * como label — evita que o jogador precise lembrar de colocar tudo numa linha só
  * pra um efeito que sempre se aplica junto (ex.: "Ataque Poderoso" cadastrado como
  * duas linhas, "-2 no acerto" e "+5 no dano", vira uma linha só "Ataque Poderoso").
+ *
+ * Uma linha também pode carregar um bônus temporário de atributo (ex.: "+6 Força"
+ * da Manopla de Força) em vez de números fixos — resolvido aqui pro acerto/dano
+ * deste ataque específico: soma no acerto só se `skillAttr` (perícia usada por
+ * este ataque) bater com o atributo da linha, e no dano só se `damageAttr`
+ * (atributo de dano do próprio ataque) bater. Um "+6 Força" não vira "+6 acerto"
+ * numa perícia à distância baseada em Destreza, por exemplo.
  */
 function pushMergedModifiers(
   items: AttackChecklistItem[],
@@ -26,6 +34,8 @@ function pushMergedModifiers(
   key: string,
   label: string,
   source: string,
+  skillAttr: AttributeId | undefined,
+  damageAttr: AttributeId,
 ) {
   const list = mods ?? [];
   if (list.length === 0) return;
@@ -39,6 +49,10 @@ function pushMergedModifiers(
     damageBonus += m.damageBonus ?? 0;
     mpCost += m.mpCost ?? 0;
     if (m.damageDice) dice.push(m.damageDice);
+    if (m.attributeId && m.attributeValue) {
+      if (m.attributeId === skillAttr) attackRoll += m.attributeValue;
+      if (m.attributeId === damageAttr) damageBonus += m.attributeValue;
+    }
   });
 
   items.push({
@@ -62,6 +76,11 @@ function pushMergedModifiers(
  */
 export function buildAttackChecklist(character: Character, atk: Attack): AttackChecklistItem[] {
   const items: AttackChecklistItem[] = [];
+
+  const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
+  const skillCfg = SKILLS_CONFIG.find((p) => p.id === skillId);
+  const skillAttr = (character.skills[skillId]?.attribute || skillCfg?.attribute) as AttributeId | undefined;
+  const damageAttr = (atk.attributeDamageBonus || 'str') as AttributeId;
 
   (atk.extraBonuses ?? []).forEach((b, i) => {
     items.push({
@@ -91,9 +110,9 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     });
   });
 
-  (character.abilities ?? []).forEach((a, ai) => pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder'));
-  (character.spells ?? []).forEach((sp, si) => pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia'));
-  (character.inventory ?? []).forEach((it, ii) => pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item'));
+  (character.abilities ?? []).forEach((a, ai) => pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr));
+  (character.spells ?? []).forEach((sp, si) => pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr));
+  (character.inventory ?? []).forEach((it, ii) => pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr));
 
   return items;
 }

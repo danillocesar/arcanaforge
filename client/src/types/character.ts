@@ -44,6 +44,11 @@ export interface AttackModifier {
   damageBonus?: number;
   damageDice?: string;
   mpCost?: number;
+  /** Bônus temporário de atributo (ex.: "+6 Força") — resolvido por ataque: soma
+   * no acerto só se a perícia usada pelo ataque for regida por esse atributo, e
+   * no dano só se o próprio ataque usar esse atributo como base de dano. */
+  attributeId?: AttributeId;
+  attributeValue?: number;
 }
 
 export interface Attack {
