@@ -145,7 +145,7 @@ export default function PartyMembersPage() {
 
   return (
     <div className={styles.page}>
-      <Topbar title={`Grupo - ${party.name}`} />
+      <Topbar title={`Grupo - ${party.name}`} showTormentaLogo />
       <SectionNav
         items={navItems}
         rightSlot={

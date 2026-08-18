@@ -79,7 +79,7 @@ function TormentaSheetBody({ topBanner }: TormentaSheetBodyProps) {
     return (
       <SheetFormProvider>
         <div className={styles.shell}>
-          <Topbar title={character.name} />
+          <Topbar title={character.name} showTormentaLogo />
           <div className={styles.desktopBody}>
             {topBanner}
             <VitalBar desktop />

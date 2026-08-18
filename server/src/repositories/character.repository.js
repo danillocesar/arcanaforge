@@ -38,27 +38,6 @@ async function updateAvatar(id, avatarUrl) {
   return Character.findByIdAndUpdate(id, { avatar: avatarUrl });
 }
 
-async function findOwnedJutsuImageData(id, uid, jutsuId) {
-  const doc = await Character.findOne({ _id: id, ownerUid: uid })
-    .select('name ownerEmail jutsus')
-    .lean();
-  if (!doc) return null;
-  const jutsu = (doc.jutsus || []).find((j) => j && j.id === jutsuId) || null;
-  return {
-    name: doc.name,
-    ownerEmail: doc.ownerEmail,
-    jutsu,
-  };
-}
-
-async function updateJutsuImage(id, jutsuId, imageUrl) {
-  return Character.findByIdAndUpdate(
-    id,
-    { $set: { 'jutsus.$[j].image': imageUrl } },
-    { arrayFilters: [{ 'j.id': jutsuId }] },
-  );
-}
-
 async function softDeleteOwnedById(id, uid, pendingDeleteAt) {
   return Character.findOneAndUpdate(
     { _id: id, ownerUid: uid, deletedAt: null },
@@ -123,8 +102,6 @@ module.exports = {
   countByOwner,
   upsertById,
   updateAvatar,
-  findOwnedJutsuImageData,
-  updateJutsuImage,
   softDeleteOwnedById,
   restoreOwnedById,
   hardDeleteById,

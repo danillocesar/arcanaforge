@@ -103,7 +103,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     }
 
     if (msg.type === 'character_spell_cast_sync' && msg.characterId === characterRef.current._id) {
-      const spellName = (msg.spellName as string) || 'Jutsu';
+      const spellName = (msg.spellName as string) || 'Magia';
       const mpCost = Number(msg.mpCost) || 0;
       const casterName = (msg.name as string) || characterRef.current.name;
       showToast?.(`${casterName} usou ${spellName}!`, 'attack', mpCost);

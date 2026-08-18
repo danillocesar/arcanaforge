@@ -36,7 +36,6 @@ function toPartyCharacterDTO(doc) {
     ownerUid: doc.ownerUid ?? '',
     hp: doc.hp ?? null,
     mp: doc.mp ?? null,
-    clan: doc.clan ?? null,
   };
 }
 

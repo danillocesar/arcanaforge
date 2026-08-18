@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { asyncHandler } = require('../middlewares/asyncHandler');
-const { avatarUploadMiddleware, jutsuImageUploadMiddleware } = require('../validators/avatarUpload');
+const { avatarUploadMiddleware } = require('../validators/avatarUpload');
 const characterController = require('../controllers/character.controller');
 
 function createCharacterRoutes() {
@@ -12,11 +12,6 @@ function createCharacterRoutes() {
     '/api/characters/:id/avatar',
     avatarUploadMiddleware,
     asyncHandler(characterController.uploadAvatar),
-  );
-  router.post(
-    '/api/characters/:id/jutsu-image',
-    jutsuImageUploadMiddleware,
-    asyncHandler(characterController.uploadJutsuImage),
   );
   router.post('/api/characters/:id', asyncHandler(characterController.saveCharacter));
   router.delete('/api/characters/:id', asyncHandler(characterController.deleteCharacter));

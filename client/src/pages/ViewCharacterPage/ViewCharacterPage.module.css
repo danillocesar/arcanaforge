@@ -1,33 +1,3 @@
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px 24px 60px;
-}
-
-.layoutTop {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-@media (max-width: 900px) {
-  .layoutTop {
-    grid-template-columns: 1fr;
-  }
-}
-
-.colLeft,
-.colRight {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.layoutMiddle {
-  display: block;
-}
-
 .readOnlyBanner {
   display: flex;
   align-items: center;

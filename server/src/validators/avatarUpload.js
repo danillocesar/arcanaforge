@@ -24,15 +24,4 @@ function avatarUploadMiddleware(req, res, next) {
   });
 }
 
-function jutsuImageUploadMiddleware(req, res, next) {
-  avatarUpload.single('image')(req, res, (err) => {
-    if (!err) return next();
-    const msg =
-      err.code === 'LIMIT_FILE_SIZE'
-        ? 'Ficheiro demasiado grande (máx. 5 MB)'
-        : err.message || 'Upload inválido';
-    return res.status(400).json({ error: msg });
-  });
-}
-
-module.exports = { avatarUploadMiddleware, jutsuImageUploadMiddleware };
+module.exports = { avatarUploadMiddleware };

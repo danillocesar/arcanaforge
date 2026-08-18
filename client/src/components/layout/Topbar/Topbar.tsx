@@ -6,9 +6,10 @@ import styles from './Topbar.module.css';
 interface TopbarProps {
   title?: string;
   right?: ReactNode;
+  showTormentaLogo?: boolean;
 }
 
-export default function Topbar({ title, right }: TopbarProps) {
+export default function Topbar({ title, right, showTormentaLogo = false }: TopbarProps) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
   const [openMenu, setOpenMenu] = useState(false);
@@ -73,12 +74,14 @@ export default function Topbar({ title, right }: TopbarProps) {
             className={styles.logoImage}
             loading="eager"
           />
-          <img
-            src="/assets/tormenta_logo.png"
-            alt="Tormenta RPG"
-            className={styles.systemLogoImage}
-            loading="eager"
-          />
+          {showTormentaLogo && (
+            <img
+              src="/assets/tormenta_logo.png"
+              alt="Tormenta RPG"
+              className={styles.systemLogoImage}
+              loading="eager"
+            />
+          )}
           {title && (
             <>
               <span className={styles.separator}>/</span>

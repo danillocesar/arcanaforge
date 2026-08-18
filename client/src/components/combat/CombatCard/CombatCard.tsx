@@ -58,7 +58,6 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
   const firstClassName = row.classes?.[0]?.name;
   const classIconSrc = firstClassName ? getClassIconUrl(firstClassName) : '';
 
-  const stripIconSrc = classIconSrc;
   const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && !!firstClassName;
 
   useEffect(() => {
@@ -143,7 +142,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
         <div className={styles.classStrip}>
           <img
             className={styles.classIcon}
-            src={stripIconSrc}
+            src={classIconSrc}
             alt=""
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';

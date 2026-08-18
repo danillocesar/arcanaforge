@@ -164,7 +164,7 @@ export function CombatProvider({
           const isParticipant = playersRef.current.some((p) => p._id === charId);
           if (!isParticipant) return;
           const casterName = (msg.name as string) || 'Personagem';
-          const spellName = (msg.spellName as string) || 'Jutsu';
+          const spellName = (msg.spellName as string) || 'Magia';
           const mpCost = Number(msg.mpCost) || 0;
           showToast(`${casterName} usou ${spellName}!`, 'attack', mpCost);
         }

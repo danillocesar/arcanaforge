@@ -129,7 +129,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   return (
     <>
       {showGm && <div className={styles.gmStrip} aria-hidden />}
-      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
+      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} showTormentaLogo />
       {!spectatorMode && (
         <SectionNav
           items={navItems}

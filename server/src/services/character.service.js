@@ -5,7 +5,6 @@ const characterRepository = require('../repositories/character.repository');
 const characterContentRepository = require('../repositories/characterContent.repository');
 const characterLogsRepository = require('../repositories/characterLogs.repository');
 const avatarService = require('./avatar.service');
-const jutsuImageService = require('./jutsuImage.service');
 const { SOFT_DELETE_DELAY_DAYS } = require('../config/plans');
 
 const CONTENT_FIELDS = ['spells', 'abilities', 'powers', 'aptitudes', 'weapons', 'narpiItems'];
@@ -104,10 +103,6 @@ async function uploadCharacterAvatar(req) {
   return avatarService.uploadAvatar(req);
 }
 
-async function uploadJutsuImage(req) {
-  return jutsuImageService.uploadJutsuImage(req);
-}
-
 module.exports = {
   listCharacterIds,
   listCharacterSummary,
@@ -116,6 +111,5 @@ module.exports = {
   deleteCharacter,
   restoreCharacter,
   uploadCharacterAvatar,
-  uploadJutsuImage,
   mergeCharacterDocs,
 };

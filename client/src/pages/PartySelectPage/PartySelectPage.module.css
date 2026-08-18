@@ -166,48 +166,6 @@
   margin-top: 16px;
 }
 
-.systemSelector {
-  display: flex;
-  gap: 10px;
-}
-
-.systemOption {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 10px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-input);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font);
-}
-
-.systemOption:hover {
-  border-color: var(--text-muted);
-  background: var(--bg-card-hover);
-}
-
-.systemActive {
-  border-color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.08);
-  color: var(--accent-gold);
-  box-shadow: 0 0 12px rgba(201, 168, 76, 0.15);
-}
-
-.systemIcon {
-  font-size: 1.6rem;
-}
-
-.systemName {
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
 /* Section headers */
 .sectionHeader {
   display: flex;

@@ -49,21 +49,6 @@ a:hover { color: var(--accent-gold); }
   }
 }
 
-/* ========== READ-ONLY SHEET ========== */
-.readOnlySheet {
-  pointer-events: none;
-  user-select: text;
-}
-
-.readOnlySheet input,
-.readOnlySheet select,
-.readOnlySheet textarea,
-.readOnlySheet button {
-  pointer-events: none;
-  opacity: 0.7;
-  cursor: default;
-}
-
 /* ========== ATTACK ANIMATION OVERLAY ========== */
 .atk-anim-overlay {
   position: fixed;

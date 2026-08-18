@@ -652,7 +652,6 @@ components:
           type: string
         system:
           type: string
-          enum: [tormenta]
         inviteCode:
           type: string
         members:

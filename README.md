@@ -1,8 +1,8 @@
 # ArcanaForge — Digital Character Sheet & Combat Tracker
 
-Sistema web multi-RPG para gerenciar fichas de personagem e combate em tempo real, com sincronização entre múltiplos dispositivos via WebSocket.
+Sistema web para fichas de personagem e gerenciamento de combate de **Tormenta 20**, com sincronização em tempo real entre múltiplos dispositivos via WebSocket.
 
-Suporta **Tormenta 20**. Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente.
+Jogadores editam suas fichas enquanto o mestre gerencia o combate — tudo sincronizado automaticamente.
 
 ---
 
