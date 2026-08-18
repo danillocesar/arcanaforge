@@ -497,6 +497,7 @@ async function main() {
     members: [
       { uid: 'owner1', email: 'owner@test.com' },
       { uid: 'player2', email: 'player2@test.com' },
+      { uid: 'player3', email: 'player3@test.com' },
     ],
   });
 
@@ -510,19 +511,24 @@ async function main() {
     console.log(party.sessionProposals[0].responses.length === 1 ? 'OK: proposer vote recorded' : 'FAIL: vote missing');
 
     party = await service.respondToSession(partyId, proposal.id, { vote: 'sim' }, 'owner1');
+    party = await service.respondToSession(partyId, proposal.id, { vote: 'sim' }, 'player3');
     const allSim = party.sessionProposals[0].responses.every((r) => r.vote === 'sim');
-    console.log(allSim && party.sessionProposals[0].responses.length === 2 ? 'OK: both members confirmed' : 'FAIL: confirmation state wrong');
+    console.log(allSim && party.sessionProposals[0].responses.length === 3 ? 'OK: all three members confirmed' : 'FAIL: confirmation state wrong');
 
     party = await service.respondToSession(partyId, proposal.id, { vote: 'nao' }, 'owner1');
     console.log(party.sessionProposals[0].responses.find((r) => r.uid === 'owner1').vote === 'nao' ? 'OK: vote change overwrote previous vote' : 'FAIL: vote change did not overwrite');
 
-    let forbidden = false;
+    // 'player3' IS a member but is neither the proposer nor the owner -> 403.
+    // A true non-member (not in party.members at all) would get 404 instead,
+    // because findMemberParty() gates on membership before authorization is
+    // even checked -- that's correct existing behavior, not tested here.
+    let status = null;
     try {
-      await service.cancelSession(partyId, proposal.id, 'someoneElse');
+      await service.cancelSession(partyId, proposal.id, 'player3');
     } catch (err) {
-      forbidden = err.status === 403;
+      status = err.statusCode;
     }
-    console.log(forbidden ? 'OK: non-proposer non-owner cannot cancel (403)' : 'FAIL: cancel authorization not enforced');
+    console.log(status === 403 ? 'OK: fellow member who is not proposer/owner gets 403 on cancel' : 'FAIL: expected 403, got status=' + status);
 
     party = await service.cancelSession(partyId, proposal.id, 'owner1');
     console.log(party.sessionProposals.length === 0 ? 'OK: owner cancelled proposal they did not create' : 'FAIL: cancel did not remove proposal');
@@ -536,15 +542,17 @@ main().catch((err) => { console.error('SCRIPT ERROR:', err); process.exit(1); })
 "
 ```
 
-Expected output (6 `OK:` lines, no `FAIL`):
+Expected output (5 `OK:` lines, no `FAIL`):
 ```
 OK: proposal created
 OK: proposer vote recorded
-OK: both members confirmed
+OK: all three members confirmed
 OK: vote change overwrote previous vote
-OK: non-proposer non-owner cannot cancel (403)
+OK: fellow member who is not proposer/owner gets 403 on cancel
 OK: owner cancelled proposal they did not create
 ```
+
+(`AppError` exposes the HTTP status as `.statusCode`, not `.status` — verify against the actual property when writing ad-hoc checks like this one.)
 
 - [ ] **Step 5: Commit**
 
