@@ -20,6 +20,9 @@ function createPartyRoutes(refs) {
   router.get('/api/parties/:id/characters', asyncHandler(partyController.listPartyCharacters));
   router.get('/api/parties/:id/characters/:characterId', asyncHandler(partyController.getPartyCharacter));
   router.post('/api/parties/:id/apply-buff', asyncHandler(partyController.applyBuff));
+  router.post('/api/parties/:id/sessions', asyncHandler(partyController.proposeSession));
+  router.post('/api/parties/:id/sessions/:proposalId/respond', asyncHandler(partyController.respondToSession));
+  router.delete('/api/parties/:id/sessions/:proposalId', asyncHandler(partyController.cancelSession));
   return router;
 }
 
