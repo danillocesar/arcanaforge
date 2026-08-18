@@ -7,6 +7,21 @@ export interface PartyMember {
   joinedAt: string;
 }
 
+export interface SessionResponse {
+  uid: string;
+  vote: 'sim' | 'nao';
+  respondedAt: string;
+}
+
+export interface SessionProposal {
+  id: string;
+  proposedBy: string;
+  date: string; // 'YYYY-MM-DD'
+  time: string; // 'HH:mm' ou ''
+  createdAt: string;
+  responses: SessionResponse[];
+}
+
 export interface Party {
   id: string;
   name: string;
@@ -15,4 +30,5 @@ export interface Party {
   ownerUid: string;
   ownerEmail: string;
   members: PartyMember[];
+  sessionProposals: SessionProposal[];
 }
