@@ -147,3 +147,42 @@ export async function apiApplyBuffToParty(partyId: string, payload: ApplyBuffPay
   });
   await assertOk(res);
 }
+
+export async function apiProposeSession(
+  partyId: string,
+  data: { date: string; time?: string },
+): Promise<Party> {
+  const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  await assertOk(res);
+  return res.json();
+}
+
+export async function apiRespondToSession(
+  partyId: string,
+  proposalId: string,
+  vote: 'sim' | 'nao',
+): Promise<Party> {
+  const res = await apiFetch(
+    `/api/parties/${encodeURIComponent(partyId)}/sessions/${encodeURIComponent(proposalId)}/respond`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote }),
+    },
+  );
+  await assertOk(res);
+  return res.json();
+}
+
+export async function apiCancelSession(partyId: string, proposalId: string): Promise<Party> {
+  const res = await apiFetch(
+    `/api/parties/${encodeURIComponent(partyId)}/sessions/${encodeURIComponent(proposalId)}`,
+    { method: 'DELETE' },
+  );
+  await assertOk(res);
+  return res.json();
+}

@@ -24,5 +24,8 @@ export {
   apiLoadCombat,
   apiSaveCombat,
   apiApplyBuffToParty,
+  apiProposeSession,
+  apiRespondToSession,
+  apiCancelSession,
 } from './parties';
 export type { PartyCharacter, ApplyBuffPayload } from './parties';
