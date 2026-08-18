@@ -73,6 +73,12 @@ export default function Topbar({ title, right }: TopbarProps) {
             className={styles.logoImage}
             loading="eager"
           />
+          <img
+            src="/assets/tormenta_logo.png"
+            alt="Tormenta RPG"
+            className={styles.systemLogoImage}
+            loading="eager"
+          />
           {title && (
             <>
               <span className={styles.separator}>/</span>
