@@ -8,10 +8,12 @@ import styles from './CharacterSheetPage.module.css';
 
 function CharacterSheetInner() {
   const { character, loadCharacter, refreshList } = useCharacterContext();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [loadDone, setLoadDone] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     const params = new URLSearchParams(window.location.search);
     const idParam = params.get('id');
 
@@ -20,17 +22,38 @@ function CharacterSheetInner() {
       return;
     }
 
+    setLoadDone(false);
+    setLoadError(false);
+
     (async () => {
       try {
         await refreshList();
         await loadCharacter(idParam);
       } catch (err) {
+        // apiLoadCharacter só retorna null (sem lançar) quando o personagem não
+        // existe ou não é do usuário — chegar aqui é sempre falha de rede/servidor,
+        // nunca "acesso negado". Ver [[ficha-v2-migration]] / memória do projeto.
         console.error('Erro ao carregar personagem:', err);
+        setLoadError(true);
+        showToast('Não foi possível carregar a ficha. Verifique sua conexão.', 'default');
       } finally {
         setLoadDone(true);
       }
     })();
-  }, []);
+  };
+
+  useEffect(load, []);
+
+  if (loadError) {
+    return (
+      <div className={styles.loading}>
+        Não foi possível carregar a ficha.
+        <button type="button" onClick={load} className={styles.retryButton}>
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   if (loadDone && !character) return <AccessDeniedPage />;
 
