@@ -97,6 +97,13 @@
   padding: 24px 0;
 }
 
+/* Gatilho do infinite scroll. Tem altura pra entrar em tela um pouco antes do
+   fim real da lista, então a próxima página chega sem o usuário ver o vazio. */
+.sentinel {
+  height: 120px;
+  flex: 0 0 auto;
+}
+
 .emptyAction {
   display: flex;
   flex-direction: column;

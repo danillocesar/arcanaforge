@@ -5,6 +5,7 @@ import { OFFICIAL_POWERS } from '../../../data/powers';
 import type { PowerCategory } from '../../../data/powers';
 import { powerToFormValues } from '../SheetForm/entityForms';
 import { normalizeSearch } from '../../../utils/formatters';
+import { useInfiniteList } from '../../../hooks/useInfiniteList';
 import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './PowerPicker.module.css';
 
@@ -32,11 +33,14 @@ function PowerPicker({ open, onClose, onPick, initialCategory }: PowerPickerProp
   }, [open, initialCategory]);
 
   const query = normalizeSearch(search);
-  const visible = OFFICIAL_POWERS.filter((power) => {
+  const matches = OFFICIAL_POWERS.filter((power) => {
     if (category != null && power.category !== category) return false;
     if (!query) return true;
     return normalizeSearch(`${power.name} ${power.category}`).includes(query);
   });
+
+  // Mesmo motivo do SpellPicker: 165 poderes renderizados de uma vez travam a lista.
+  const { visible, hasMore, sentinelRef } = useInfiniteList(matches, `${query}|${category}`);
 
   const pick = (values: FormValues | null) => {
     setSearch('');
@@ -87,6 +91,7 @@ function PowerPicker({ open, onClose, onPick, initialCategory }: PowerPickerProp
           </button>
         ))}
         {visible.length === 0 && <p className={styles.empty}>Nenhum poder encontrado.</p>}
+        {hasMore && <div ref={sentinelRef} className={styles.sentinel} aria-hidden="true" />}
       </div>
     </Sheet>
   );

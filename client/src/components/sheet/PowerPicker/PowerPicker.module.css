@@ -98,3 +98,9 @@
   text-align: center;
   padding: 24px 0;
 }
+
+/* Gatilho do infinite scroll — ver SpellPicker.module.css. */
+.sentinel {
+  height: 120px;
+  flex: 0 0 auto;
+}

@@ -4,6 +4,7 @@ import TextField from '../../ui/TextField/TextField';
 import { OFFICIAL_SPELLS } from '../../../data/spells';
 import { spellToFormValues } from '../SheetForm/entityForms';
 import { normalizeSearch } from '../../../utils/formatters';
+import { useInfiniteList } from '../../../hooks/useInfiniteList';
 import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './SpellPicker.module.css';
 
@@ -22,11 +23,15 @@ function SpellPicker({ open, onClose, onPick }: SpellPickerProps) {
   const [level, setLevel] = useState<number | null>(null);
 
   const query = normalizeSearch(search);
-  const visible = OFFICIAL_SPELLS.filter((spell) => {
+  const matches = OFFICIAL_SPELLS.filter((spell) => {
     if (level != null && spell.spellLevel !== level) return false;
     if (!query) return true;
     return normalizeSearch(`${spell.name} ${spell.school}`).includes(query);
   });
+
+  // O catálogo tem 200+ magias: renderizar tudo de uma vez travava a abertura e
+  // cada tecla digitada. Mostra uma página e cresce ao rolar.
+  const { visible, hasMore, sentinelRef } = useInfiniteList(matches, `${query}|${level}`);
 
   const pick = (values: FormValues | null) => {
     setSearch('');
@@ -92,6 +97,7 @@ function SpellPicker({ open, onClose, onPick }: SpellPickerProps) {
             <p className={styles.empty}>Nenhuma magia encontrada.</p>
           )
         )}
+        {hasMore && <div ref={sentinelRef} className={styles.sentinel} aria-hidden="true" />}
       </div>
     </Sheet>
   );
