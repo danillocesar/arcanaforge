@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { getEffectiveMaxHp, getEffectiveMaxMp } from '../../../utils/calculations';
 import Section from '../../ui/Section/Section';
 import HealthBar from '../../ui/HealthBar/HealthBar';
 import AttacksMini from '../AttacksMini/AttacksMini';
@@ -7,7 +8,8 @@ import CastSpellModal from '../CastSpellModal/CastSpellModal';
 import NumericInput from '../../ui/NumericInput/NumericInput';
 import styles from './HpMp.module.css';
 
-function MaxEditor({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+/** `value` é o base editável; `effective` inclui bônus fixos (`max_hp`/`max_mp`) de poderes/itens ativos. */
+function MaxEditor({ value, effective, onChange }: { value: number; effective: number; onChange: (v: number) => void }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
 
@@ -38,9 +40,11 @@ function MaxEditor({ value, onChange }: { value: number; onChange: (v: number) =
     );
   }
 
+  const bonus = effective - value;
+
   return (
     <span className={styles.max}>
-      Máx: {value}
+      Máx: {effective}{bonus > 0 && ` (base ${value} +${bonus})`}
       <button type="button" className={styles.maxEditBtn} onClick={startEdit}>✎</button>
     </span>
   );
@@ -51,6 +55,9 @@ export default function HpMp() {
   const [castSpellIdx, setCastSpellIdx] = useState<number | null>(null);
 
   if (!character) return null;
+
+  const effectiveMaxHp = getEffectiveMaxHp(character);
+  const effectiveMaxMp = getEffectiveMaxMp(character);
 
   const changePv = (delta: number) => {
     updateCharacter((f) => ({
@@ -71,8 +78,8 @@ export default function HpMp() {
   const resetAll = () => {
     updateCharacter((f) => ({
       ...f,
-      hp: { ...f.hp, current: f.hp.max },
-      mp: { ...f.mp, current: f.mp.max },
+      hp: { ...f.hp, current: getEffectiveMaxHp(f) },
+      mp: { ...f.mp, current: getEffectiveMaxMp(f) },
     }));
     setTimeout(sendHpUpdate, 50);
   };
@@ -85,10 +92,11 @@ export default function HpMp() {
             <span className={styles.title}>PV</span>
             <MaxEditor
               value={character.hp.max}
+              effective={effectiveMaxHp}
               onChange={(v) => updateCharacter((f) => ({ ...f, hp: { ...f.hp, max: v } }))}
             />
           </div>
-          <HealthBar current={character.hp.current} max={character.hp.max} variant="hp" />
+          <HealthBar current={character.hp.current} max={effectiveMaxHp} variant="hp" />
           <div className={styles.controls}>
             <button type="button" className={styles.vmBtn} onClick={() => changePv(-1)}>−</button>
             <span className={styles.current}>{character.hp.current}</span>
@@ -109,10 +117,11 @@ export default function HpMp() {
             <span className={styles.title}>PM</span>
             <MaxEditor
               value={character.mp.max}
+              effective={effectiveMaxMp}
               onChange={(v) => updateCharacter((f) => ({ ...f, mp: { ...f.mp, max: v } }))}
             />
           </div>
-          <HealthBar current={character.mp.current} max={character.mp.max} variant="pm" />
+          <HealthBar current={character.mp.current} max={effectiveMaxMp} variant="pm" />
           <div className={styles.controls}>
             <button type="button" className={styles.vmBtn} onClick={() => changePm(-1)}>−</button>
             <span className={styles.current}>{character.mp.current}</span>

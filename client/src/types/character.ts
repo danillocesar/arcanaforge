@@ -19,8 +19,10 @@ export type BuffType =
   | 'extra_damage'
   | 'fixed_damage'
   | 'attribute'
-  | 'hp'
-  | 'mp'
+  | 'temp_hp'
+  | 'temp_mp'
+  | 'max_hp'
+  | 'max_mp'
   | 'skill'
   | 'defense';
 

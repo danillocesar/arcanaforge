@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import {
   calcTotalDefense,
+  getEffectiveMaxHp,
+  getEffectiveMaxMp,
   getTotalLevel,
   hpPercent,
 } from '../../../utils/calculations';
@@ -61,8 +63,13 @@ function VitalBar({ desktop = false }: VitalBarProps) {
   const tempHp = character.temporaryHp || 0;
   const tempMp = character.temporaryMp || 0;
 
-  const hpMax = hp.max + tempHp;
-  const mpMax = mp.max + tempMp;
+  const effectiveMaxHp = getEffectiveMaxHp(character);
+  const effectiveMaxMp = getEffectiveMaxMp(character);
+  const fixedHpBonus = effectiveMaxHp - hp.max;
+  const fixedMpBonus = effectiveMaxMp - mp.max;
+
+  const hpMax = effectiveMaxHp + tempHp;
+  const mpMax = effectiveMaxMp + tempMp;
 
   const setHpCurrent = (next: number) => {
     const clamped = Math.max(0, Math.min(hpMax, next));
@@ -191,7 +198,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         <div className={styles.val}>
           <span>{hp.current}</span>
           {tempHp > 0 && <span className={styles.temp}> (+{tempHp})</span>}
-          <small>/{hp.max}</small>
+          <small>/{effectiveMaxHp}</small>
         </div>
         <div className={styles.track}>
           <i
@@ -213,7 +220,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         <div className={styles.val}>
           <span>{mp.current}</span>
           {tempMp > 0 && <span className={styles.temp}> (+{tempMp})</span>}
-          <small>/{mp.max}</small>
+          <small>/{effectiveMaxMp}</small>
         </div>
         <div className={styles.track}>
           <i
@@ -289,6 +296,12 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{hp.max}</b>
           )}
         </div>
+        {fixedHpBonus > 0 && (
+          <div className={styles.popRow}>
+            <span>Bônus fixo (poderes)</span>
+            <b>+{fixedHpBonus}</b>
+          </div>
+        )}
         <div className={styles.popRow}>
           <span>Temporário</span>
           {!readOnly ? (
@@ -333,6 +346,12 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{mp.max}</b>
           )}
         </div>
+        {fixedMpBonus > 0 && (
+          <div className={styles.popRow}>
+            <span>Bônus fixo (poderes)</span>
+            <b>+{fixedMpBonus}</b>
+          </div>
+        )}
         <div className={styles.popRow}>
           <span>Temporário</span>
           {!readOnly ? (

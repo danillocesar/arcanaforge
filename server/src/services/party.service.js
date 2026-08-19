@@ -197,9 +197,15 @@ function createPartyService(refs) {
     return toCharacterDetailDTO(mergeCharacterDocs(character, content, logsDoc));
   }
 
-  function sumEffectsByType(effects, type) {
+  // Fichas salvas antes da divisão de `hp`/`mp` em fixo/temporário gravaram o tipo
+  // legado `hp`/`mp` — que sempre significou "temporário". Aceita os dois nomes pra
+  // não quebrar buffs de grupo criados antes dessa mudança.
+  const isTempHpType = (type) => type === 'temp_hp' || type === 'hp';
+  const isTempMpType = (type) => type === 'temp_mp' || type === 'mp';
+
+  function sumEffectsByType(effects, matchesType) {
     return (effects || [])
-      .filter((eff) => eff && eff.type === type)
+      .filter((eff) => eff && matchesType(eff.type))
       .reduce((sum, eff) => sum + (Number(eff.value) || 0), 0);
   }
 
@@ -212,7 +218,7 @@ function createPartyService(refs) {
       throw new AppError(400, 'buff inválido');
     }
     const hasNegativeHpMp = buff.effects.some(
-      (eff) => eff && (eff.type === 'hp' || eff.type === 'mp') && Number(eff.value) < 0,
+      (eff) => eff && (isTempHpType(eff.type) || isTempMpType(eff.type)) && Number(eff.value) < 0,
     );
     if (hasNegativeHpMp) {
       throw new AppError(400, 'Efeitos de PV/PM em um buff não podem ser negativos');
@@ -239,8 +245,8 @@ function createPartyService(refs) {
     };
 
     const tempDelta = {
-      hp: sumEffectsByType(entry.effects, 'hp'),
-      mp: sumEffectsByType(entry.effects, 'mp'),
+      hp: sumEffectsByType(entry.effects, isTempHpType),
+      mp: sumEffectsByType(entry.effects, isTempMpType),
     };
 
     const results = await Promise.allSettled(

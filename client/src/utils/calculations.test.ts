@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import type { Character, Buff, Ability, InventoryItem } from '../types/character';
+import type { Character, Buff, BuffEffect, Ability, InventoryItem } from '../types/character';
 import {
   createEmptyCharacter,
   getTotalLevel,
   getEffectiveAttribute,
+  getEffectiveMaxHp,
+  getEffectiveMaxMp,
   getActiveBuffs,
   calcTotalDefense,
   calcTotalSkill,
@@ -111,10 +113,10 @@ describe('getActiveBuffs', () => {
     expect(active[0].source).toBe('Item');
   });
 
-  it('never synthesizes a buff from hp/mp-only effects, even when alwaysActive', () => {
-    // Regression: hp/mp are one-shot mutations (toggleBuffState/applyBuffToCharacter),
-    // not passive bonuses — an alwaysActive ability with only an hp/mp effect must
-    // not appear as a synthetic Bônus Fixo.
+  it('never synthesizes a buff from temp_hp/temp_mp-only effects, even when alwaysActive', () => {
+    // Regression: temp_hp/temp_mp are one-shot mutations (toggleBuffState/
+    // applyBuffToCharacter), not passive bonuses — an alwaysActive ability with only
+    // a temp_hp/temp_mp effect must not appear as a synthetic Bônus Fixo.
     const ability: Ability = {
       name: 'Regeneração',
       source: 'Poder',
@@ -122,10 +124,82 @@ describe('getActiveBuffs', () => {
       mpCost: 0,
       description: '',
       alwaysActive: true,
-      buffs: [{ type: 'hp', value: '10' }],
+      buffs: [{ type: 'temp_hp', value: '10' }],
     };
     const character = baseCharacter({ abilities: [ability] });
     expect(getActiveBuffs(character)).toHaveLength(0);
+  });
+
+  it('still excludes legacy `hp`/`mp` effect types from synthesis (pre-rename saved data)', () => {
+    const ability: Ability = {
+      name: 'Regeneração',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      alwaysActive: true,
+      buffs: [{ type: 'hp', value: '10' } as unknown as BuffEffect],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    expect(getActiveBuffs(character)).toHaveLength(0);
+  });
+
+  it('synthesizes an always-active buff from an ability with a max_hp/max_mp effect', () => {
+    const ability: Ability = {
+      name: 'Vitalidade Draconica',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      alwaysActive: true,
+      buffs: [{ type: 'max_hp', value: '5' }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    expect(getActiveBuffs(character)).toHaveLength(1);
+  });
+});
+
+describe('getEffectiveMaxHp / getEffectiveMaxMp', () => {
+  it('returns the base max with no active buffs', () => {
+    const character = baseCharacter({ hp: { max: 20, current: 20 }, mp: { max: 10, current: 10 } });
+    expect(getEffectiveMaxHp(character)).toBe(20);
+    expect(getEffectiveMaxMp(character)).toBe(10);
+  });
+
+  it('adds a max_hp/max_mp effect from an always-active ability', () => {
+    const ability: Ability = {
+      name: 'Vitalidade Draconica',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      alwaysActive: true,
+      buffs: [{ type: 'max_hp', value: '5' }, { type: 'max_mp', value: '3' }],
+    };
+    const character = baseCharacter({
+      hp: { max: 20, current: 20 },
+      mp: { max: 10, current: 10 },
+      abilities: [ability],
+    });
+    expect(getEffectiveMaxHp(character)).toBe(25);
+    expect(getEffectiveMaxMp(character)).toBe(13);
+  });
+
+  it('adds a max_hp effect from a manually toggled active buff, and drops it once deactivated', () => {
+    const buff = activeBuff({ effects: [{ type: 'max_hp', value: '5' }] });
+    const character = baseCharacter({ hp: { max: 20, current: 20 }, buffs: [buff] });
+    expect(getEffectiveMaxHp(character)).toBe(25);
+
+    const deactivated = baseCharacter({ hp: { max: 20, current: 20 }, buffs: [{ ...buff, active: false }] });
+    expect(getEffectiveMaxHp(deactivated)).toBe(20);
+  });
+
+  it('ignores temp_hp/temp_mp effects when computing the effective max', () => {
+    const character = baseCharacter({
+      hp: { max: 20, current: 20 },
+      buffs: [activeBuff({ effects: [{ type: 'temp_hp', value: '10' }] })],
+    });
+    expect(getEffectiveMaxHp(character)).toBe(20);
   });
 });
 
@@ -162,10 +236,10 @@ describe('calcTotalSkill', () => {
 });
 
 describe('toggleBuffState', () => {
-  it('deducts MP and adds temporary HP when activating a buff with hp/mp cost', () => {
+  it('deducts MP and adds temporary HP when activating a buff with temp_hp cost', () => {
     const buff: Buff = {
       name: 'Cura pelas mãos',
-      effects: [{ type: 'hp', value: '10' }],
+      effects: [{ type: 'temp_hp', value: '10' }],
       mp: 2,
       active: false,
     };
@@ -176,10 +250,10 @@ describe('toggleBuffState', () => {
     expect(next.buffs[0].active).toBe(true);
   });
 
-  it('reverts temporary HP when deactivating (MP is not refunded for hp/mp buffs already spent)', () => {
+  it('reverts temporary HP when deactivating (MP is not refunded for temp_hp buffs already spent)', () => {
     const buff: Buff = {
       name: 'Cura pelas mãos',
-      effects: [{ type: 'hp', value: '10' }],
+      effects: [{ type: 'temp_hp', value: '10' }],
       mp: 2,
       active: true,
     };
@@ -187,6 +261,31 @@ describe('toggleBuffState', () => {
     const next = toggleBuffState(character, 0);
     expect(next.temporaryHp).toBe(0);
     expect(next.buffs[0].active).toBe(false);
+  });
+
+  it('treats the legacy `hp` effect type as temp_hp (pre-rename saved data)', () => {
+    const buff: Buff = {
+      name: 'Cura pelas mãos',
+      effects: [{ type: 'hp', value: '10' } as unknown as BuffEffect],
+      mp: 0,
+      active: false,
+    };
+    const character = baseCharacter({ buffs: [buff], temporaryHp: 0 });
+    const next = toggleBuffState(character, 0);
+    expect(next.temporaryHp).toBe(10);
+  });
+
+  it('does not touch temporaryHp for a max_hp effect (fixed bonus is reactive, not toggled into a pool)', () => {
+    const buff: Buff = {
+      name: 'Vitalidade Draconica',
+      effects: [{ type: 'max_hp', value: '5' }],
+      mp: 0,
+      active: false,
+    };
+    const character = baseCharacter({ buffs: [buff], temporaryHp: 0 });
+    const next = toggleBuffState(character, 0);
+    expect(next.temporaryHp).toBe(0);
+    expect(next.buffs[0].active).toBe(true);
   });
 });
 

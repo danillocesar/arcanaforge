@@ -1,6 +1,6 @@
 import type { Character, AttributeId, Buff, BuffEffect, BuffType, Attack, InventoryItem } from '../types/character';
 import { SKILLS_CONFIG } from '../data/pericias';
-import { filterFixedBonusEffects } from './buffEffects';
+import { filterFixedBonusEffects, normalizeEffectType } from './buffEffects';
 
 export function createEmptyCharacter(name?: string): Character {
   const skills: Character['skills'] = {};
@@ -90,6 +90,32 @@ export function getEffectiveAttribute(character: Character, attr: AttributeId): 
       if (eff.type === 'attribute' && eff.attributeId === attr) {
         val += Number(eff.value) || 0;
       }
+    });
+  });
+  return val;
+}
+
+/**
+ * PV máximo efetivo: o valor base editável em `character.hp.max` mais os efeitos
+ * `max_hp` de poderes/itens/buffs ativos — mesmo padrão reativo de
+ * `getEffectiveAttribute`, nunca grava o bônus no personagem.
+ */
+export function getEffectiveMaxHp(character: Character): number {
+  let val = character.hp.max || 0;
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (normalizeEffectType(eff.type) === 'max_hp') val += Number(eff.value) || 0;
+    });
+  });
+  return val;
+}
+
+/** PM máximo efetivo — mesma lógica de {@link getEffectiveMaxHp} para `max_mp`. */
+export function getEffectiveMaxMp(character: Character): number {
+  let val = character.mp.max || 0;
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (normalizeEffectType(eff.type) === 'max_mp') val += Number(eff.value) || 0;
     });
   });
   return val;
@@ -212,8 +238,9 @@ export function toggleBuffState(character: Character, idx: number): Character {
 
   (b.effects || []).forEach((eff) => {
     const val = Number(eff.value) || 0;
-    if (eff.type === 'hp') hpTemp = Math.max(0, hpTemp + sign * val);
-    if (eff.type === 'mp') mpTemp = Math.max(0, mpTemp + sign * val);
+    const type = normalizeEffectType(eff.type);
+    if (type === 'temp_hp') hpTemp = Math.max(0, hpTemp + sign * val);
+    if (type === 'temp_mp') mpTemp = Math.max(0, mpTemp + sign * val);
   });
 
   buffs[idx] = b;
@@ -398,15 +425,17 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
   if (existing?.active) {
     (existing.effects || []).forEach((eff) => {
       const val = Number(eff.value) || 0;
-      if (eff.type === 'hp') hpTemp = Math.max(0, hpTemp - val);
-      if (eff.type === 'mp') mpTemp = Math.max(0, mpTemp - val);
+      const type = normalizeEffectType(eff.type);
+      if (type === 'temp_hp') hpTemp = Math.max(0, hpTemp - val);
+      if (type === 'temp_mp') mpTemp = Math.max(0, mpTemp - val);
     });
   }
 
   buff.effects.forEach((eff) => {
     const val = Number(eff.value) || 0;
-    if (eff.type === 'hp') hpTemp += val;
-    if (eff.type === 'mp') mpTemp += val;
+    const type = normalizeEffectType(eff.type);
+    if (type === 'temp_hp') hpTemp += val;
+    if (type === 'temp_mp') mpTemp += val;
   });
 
   const buffs =

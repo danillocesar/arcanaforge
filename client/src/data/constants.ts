@@ -37,8 +37,10 @@ export const BUFF_TYPES: Record<string, string> = {
   extra_damage: 'Dano Extra',
   fixed_damage: 'Dano Fixo',
   attribute: 'Atributo',
-  hp: 'Vida',
-  mp: 'Mana',
+  max_hp: 'Vida (Fixa)',
+  max_mp: 'Mana (Fixa)',
+  temp_hp: 'Vida (Temporária)',
+  temp_mp: 'Mana (Temporária)',
   skill: 'Perícia',
   defense: 'Defesa',
 };
