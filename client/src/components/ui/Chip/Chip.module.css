@@ -27,13 +27,13 @@
 /* ATIVO (verde, padrão) */
 .chip.on {
   background: var(--accent-soft);
-  border-color: rgba(16, 185, 129, 0.55);
+  border-color: rgba(155, 184, 209, 0.55);
   color: var(--accent-ink);
 }
 
 .chip.on::before {
   background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 0 3px rgba(155, 184, 209, 0.25);
 }
 
 /* CATEGORIAS: surge (warn) */

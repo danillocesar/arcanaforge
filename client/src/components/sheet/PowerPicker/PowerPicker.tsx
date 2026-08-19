@@ -4,6 +4,7 @@ import TextField from '../../ui/TextField/TextField';
 import { OFFICIAL_POWERS } from '../../../data/powers';
 import type { PowerCategory } from '../../../data/powers';
 import { powerToFormValues } from '../SheetForm/entityForms';
+import { normalizeSearch } from '../../../utils/formatters';
 import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './PowerPicker.module.css';
 
@@ -30,11 +31,11 @@ function PowerPicker({ open, onClose, onPick, initialCategory }: PowerPickerProp
     }
   }, [open, initialCategory]);
 
-  const query = search.trim().toLowerCase();
+  const query = normalizeSearch(search);
   const visible = OFFICIAL_POWERS.filter((power) => {
     if (category != null && power.category !== category) return false;
-    if (query && !power.name.toLowerCase().includes(query)) return false;
-    return true;
+    if (!query) return true;
+    return normalizeSearch(`${power.name} ${power.category}`).includes(query);
   });
 
   const pick = (values: FormValues | null) => {

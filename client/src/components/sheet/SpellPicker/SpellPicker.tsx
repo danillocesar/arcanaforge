@@ -3,6 +3,7 @@ import Sheet from '../../ui/Sheet/Sheet';
 import TextField from '../../ui/TextField/TextField';
 import { OFFICIAL_SPELLS } from '../../../data/spells';
 import { spellToFormValues } from '../SheetForm/entityForms';
+import { normalizeSearch } from '../../../utils/formatters';
 import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './SpellPicker.module.css';
 
@@ -20,11 +21,11 @@ function SpellPicker({ open, onClose, onPick }: SpellPickerProps) {
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState<number | null>(null);
 
-  const query = search.trim().toLowerCase();
+  const query = normalizeSearch(search);
   const visible = OFFICIAL_SPELLS.filter((spell) => {
     if (level != null && spell.spellLevel !== level) return false;
-    if (query && !spell.name.toLowerCase().includes(query)) return false;
-    return true;
+    if (!query) return true;
+    return normalizeSearch(`${spell.name} ${spell.school}`).includes(query);
   });
 
   const pick = (values: FormValues | null) => {
@@ -73,7 +74,24 @@ function SpellPicker({ open, onClose, onPick }: SpellPickerProps) {
             </span>
           </button>
         ))}
-        {visible.length === 0 && <p className={styles.empty}>Nenhuma magia encontrada.</p>}
+        {visible.length === 0 && (
+          // Beco sem saída vira atalho: o catálogo é incompleto, então quem buscou
+          // uma magia que não está nele cadastra na hora, já com o nome digitado.
+          search.trim() ? (
+            <button
+              type="button"
+              className={styles.emptyAction}
+              onClick={() => pick({ name: search.trim() })}
+            >
+              <span className={styles.emptyActionLead}>Nenhuma magia encontrada.</span>
+              <span className={styles.emptyActionCta}>
+                + Criar “{search.trim()}” como magia personalizada
+              </span>
+            </button>
+          ) : (
+            <p className={styles.empty}>Nenhuma magia encontrada.</p>
+          )
+        )}
       </div>
     </Sheet>
   );

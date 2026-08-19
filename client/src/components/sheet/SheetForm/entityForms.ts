@@ -7,9 +7,11 @@ import type {
   InventoryCategory,
   AttackModifier,
 } from '../../../types/character';
-import { BUFF_TYPES, SPELL_SCHOOLS, DAMAGE_TYPES } from '../../../data/constants';
+import { BUFF_TYPES, SPELL_SCHOOLS, DAMAGE_TYPES, baseMpCostForLevel } from '../../../data/constants';
 import { ATTRIBUTE_FULL_NAMES } from '../../../data/atributos';
 import { SKILLS_CONFIG } from '../../../data/pericias';
+import { ABILITY_CATEGORIES } from '../../../utils/abilityGroups';
+import type { ItemEnhancementTarget } from '../../../data/itemEnhancements';
 import type { OfficialCondition } from '../../../data/conditions';
 import type { OfficialSpell } from '../../../data/spells';
 import type { OfficialPower } from '../../../data/powers';
@@ -25,7 +27,9 @@ export type EntityKind =
   | 'armadura'
   | 'acessorio'
   | 'comum'
-  | 'consumivel';
+  | 'consumivel'
+  | 'esoterico'
+  | 'rd';
 
 export interface EntityConfig {
   title: string;
@@ -144,6 +148,11 @@ const kindOptions: Array<{ value: string; label: string }> = [
   { value: 'Habilidade', label: 'Habilidade' },
 ];
 
+const abilityCategoryOptions: Array<{ value: string; label: string }> = [
+  { value: '', label: 'Sem categoria' },
+  ...ABILITY_CATEGORIES.map((category) => ({ value: category, label: category })),
+];
+
 const castableOptions = [
   { value: 'false', label: 'Não' },
   { value: 'true', label: 'Sim' },
@@ -157,9 +166,13 @@ const alwaysActiveOptions = [
 const abilityFields: FieldDescriptor[] = [
   { key: 'kind', label: 'Tipo', type: 'select', options: kindOptions, half: true },
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
+  // Agrupa a lista da aba Poderes. Vem preenchido do catálogo oficial; entrada
+  // antiga ou manual fica em branco e cai no grupo "Sem categoria" até ser editada.
+  { key: 'type', label: 'Categoria', type: 'select', options: abilityCategoryOptions, half: true },
   { key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'prerequisite', label: 'Pré-requisito', type: 'text', placeholder: 'Ex.: Força 13' },
+  { key: 'summary', label: 'Resumo', type: 'text', placeholder: '1 linha: o que o poder faz na prática' },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
   { key: 'castable', label: 'Conjurável', type: 'select', options: castableOptions, half: true },
   { key: 'alwaysActive', label: 'Sempre ativo', type: 'select', options: alwaysActiveOptions, half: true },
@@ -179,14 +192,14 @@ const abilidadeConfig: EntityConfig = {
   title: 'Poder / Habilidade',
   fields: abilityFields,
   empty: () => ({
-    kind: 'Poder', name: '', source: '', mpCost: 0, prerequisite: '', description: '',
+    kind: 'Poder', name: '', type: '', source: '', mpCost: 0, prerequisite: '', summary: '', description: '',
     castable: 'false', alwaysActive: 'false', buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
     return {
-      kind: a.kind ?? 'Poder', name: a.name, source: a.source, mpCost: a.mpCost,
-      prerequisite: a.prerequisite ?? '', description: a.description,
+      kind: a.kind ?? 'Poder', name: a.name, type: a.type ?? '', source: a.source, mpCost: a.mpCost,
+      prerequisite: a.prerequisite ?? '', summary: a.summary ?? '', description: a.description,
       castable: a.castable ? 'true' : 'false',
       alwaysActive: a.alwaysActive ? 'true' : 'false',
       buffTargetScope: a.buffTargetScope ?? 'self',
@@ -195,14 +208,16 @@ const abilidadeConfig: EntityConfig = {
     };
   },
   apply: (c, v, i) => {
-    const base = i != null ? c.abilities[i] : { type: '' };
+    const base = i != null ? c.abilities[i] : {};
     const entry = {
       ...base,
       name: s(v.name),
+      type: s(v.type),
       source: s(v.source),
       kind: (s(v.kind) || 'Poder') as AbilityKind,
       mpCost: n(v.mpCost),
       prerequisite: s(v.prerequisite) || undefined,
+      summary: s(v.summary) || undefined,
       description: s(v.description),
       castable: s(v.castable) === 'true',
       alwaysActive: s(v.alwaysActive) === 'true',
@@ -228,6 +243,7 @@ export function powerToFormValues(power: OfficialPower): FormValues {
   return {
     kind: 'Poder',
     name: power.name,
+    type: power.category,
     source: powerSourceLabel(power),
     mpCost: 0,
     prerequisite: power.prerequisite,
@@ -244,13 +260,27 @@ export function powerToFormValues(power: OfficialPower): FormValues {
 const spellFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome da magia' },
   { key: 'school', label: 'Escola', type: 'select', options: schoolOptions, half: true },
-  { key: 'spellLevel', label: 'Círculo', type: 'number', half: true },
+  {
+    key: 'spellLevel', label: 'Círculo', type: 'number', half: true,
+    // Recalcula o Custo (PM) automaticamente ao trocar de círculo, mas só quando o
+    // jogador nunca tocou no campo — se o valor atual já diverge do custo-base do
+    // círculo anterior, é customização (poder/habilidade de classe) e fica intocado.
+    onValueChange: (value, _next, prev) => {
+      const prevBaseCost = baseMpCostForLevel(Number(prev.spellLevel) || 1);
+      if ((Number(prev.mpCost) || 0) !== prevBaseCost) return;
+      return { mpCost: baseMpCostForLevel(Number(value) || 1) };
+    },
+  },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'castingTime', label: 'Execução', type: 'text', half: true },
   { key: 'range', label: 'Alcance', type: 'text', half: true },
   { key: 'area', label: 'Área/Alvo', type: 'text', half: true },
   { key: 'duration', label: 'Duração', type: 'text', half: true },
   { key: 'resistance', label: 'Resistência', type: 'text', half: true },
+  {
+    key: 'summary', label: 'Resumo', type: 'text',
+    placeholder: '1 linha: o que a magia faz na prática',
+  },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito da magia' },
   { key: 'buffTargetScope', label: 'Alvo do buff', type: 'select', options: buffTargetScopeOptions, half: true },
   {
@@ -275,8 +305,8 @@ const magiaConfig: EntityConfig = {
   title: 'Magia',
   fields: spellFields,
   empty: () => ({
-    name: '', school: schoolOptions[0]?.value ?? '', spellLevel: 1, mpCost: 1, castingTime: '', range: '',
-    area: '', duration: '', resistance: '', description: '', enhancements: [],
+    name: '', school: schoolOptions[0]?.value ?? '', spellLevel: 1, mpCost: baseMpCostForLevel(1), castingTime: '', range: '',
+    area: '', duration: '', resistance: '', summary: '', description: '', enhancements: [],
     buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
@@ -284,7 +314,7 @@ const magiaConfig: EntityConfig = {
     return {
       name: sp.name, school: sp.school, spellLevel: sp.spellLevel, mpCost: sp.mpCost,
       castingTime: sp.castingTime, range: sp.range, area: sp.area, duration: sp.duration,
-      resistance: sp.resistance, description: sp.description,
+      resistance: sp.resistance, summary: sp.summary ?? '', description: sp.description,
       buffTargetScope: sp.buffTargetScope ?? 'self',
       buffs: effectsToForm(sp.buffs),
       enhancements: (sp.enhancements ?? []).map((e) => ({
@@ -302,7 +332,7 @@ const magiaConfig: EntityConfig = {
       ...base,
       name: s(v.name), school: s(v.school), spellLevel: n(v.spellLevel), mpCost: n(v.mpCost),
       castingTime: s(v.castingTime), range: s(v.range), area: s(v.area), duration: s(v.duration),
-      resistance: s(v.resistance), description: s(v.description),
+      resistance: s(v.resistance), summary: s(v.summary) || undefined, description: s(v.description),
       buffTargetScope: s(v.buffTargetScope) || 'self',
       buffs: effectsFromValues(v.buffs),
       enhancements: rawEnhancements.map((e) => ({
@@ -323,7 +353,7 @@ export function spellToFormValues(spell: OfficialSpell): FormValues {
     name: spell.name,
     school: spell.school,
     spellLevel: spell.spellLevel,
-    mpCost: 1,
+    mpCost: baseMpCostForLevel(spell.spellLevel),
     castingTime: spell.castingTime,
     range: spell.range,
     area: spell.area,
@@ -467,12 +497,25 @@ const ataqueConfig: EntityConfig = {
 
 /* ───────────────────────────── Armadura ────────────────────────────────── */
 
+/**
+ * Abre o catálogo de melhorias/encantos do T20. A chave não é lida por nenhum
+ * `apply` — o picker escreve nos campos que já existem (efeito, buffs,
+ * attackModifiers), então nada de novo precisa ser persistido.
+ */
+const ENHANCEMENT_PICKER_FIELD = (target: ItemEnhancementTarget): FieldDescriptor => ({
+  key: '__enhancements',
+  label: 'Melhoria / Encanto',
+  type: 'enhancementPicker',
+  enhancementTarget: target,
+});
+
 const armaduraConfig: EntityConfig = {
   title: 'Armadura',
   fields: [
     { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome da proteção' },
     { key: 'value', label: 'Bônus de Defesa', type: 'number', half: true },
     { key: 'penalty', label: 'Penalidade', type: 'number', half: true },
+    ENHANCEMENT_PICKER_FIELD('protecao'),
   ],
   empty: () => ({ name: '', value: 0, penalty: 0 }),
   fromEntry: (c, i) => {
@@ -486,9 +529,36 @@ const armaduraConfig: EntityConfig = {
   remove: (c, i) => ({ ...c, defense: { ...c.defense, items: c.defense.items.filter((_, idx) => idx !== i) } }),
 };
 
+/* ─────────────────────── Redução de Dano (por tipo) ────────────────────── */
+
+const rdConfig: EntityConfig = {
+  title: 'Redução de Dano',
+  fields: [
+    {
+      key: 'name', label: 'Tipo de dano', type: 'text',
+      placeholder: 'Ex.: fogo, corte — ou "Geral" contra tudo',
+    },
+    { key: 'value', label: 'Redução', type: 'number', half: true },
+  ],
+  empty: () => ({ name: '', value: 0 }),
+  fromEntry: (c, i) => {
+    const rd = c.damageReductions[i];
+    return { name: rd.name, value: rd.value };
+  },
+  apply: (c, v, i) => {
+    const entry = { name: s(v.name) || 'Geral', value: n(v.value) };
+    return { ...c, damageReductions: upsert(c.damageReductions ?? [], entry, i) };
+  },
+  remove: (c, i) => ({
+    ...c,
+    damageReductions: (c.damageReductions ?? []).filter((_, idx) => idx !== i),
+  }),
+};
+
 /* ──────────────── Inventory items (arma / acessório / comum / consumível) ── */
 
 const WEIGHT_FIELD: FieldDescriptor = { key: 'weight', label: 'Peso (kg)', type: 'number', half: true };
+
 
 function inventoryConfig(
   category: InventoryCategory,
@@ -548,6 +618,19 @@ const acessorioConfig = inventoryConfig('acessorio', 'Acessório', [
   { key: 'effect', label: 'Efeito', type: 'text', half: true },
 ]);
 
+/**
+ * Item esotérico: cetro/varinha/foco de conjurador. O `inventoryConfig` genérico já
+ * traz `alwaysActive` + `buffs` + `attackModifiers` — que é exatamente o "efeito
+ * permanente" desses itens — sem o bloco de dano que os tirava da aba Ações.
+ */
+const esotericoConfig = inventoryConfig('esoterico', 'Item esotérico', [
+  { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Cetro elemental, Varinha' },
+  { key: 'effect', label: 'Efeito', type: 'text', placeholder: 'Efeito permanente do item' },
+  // O caso concreto que motivou o catálogo: o Cetro Elemental precisa puxar
+  // melhoria/encanto prontos em vez de o jogador digitar cada bônus.
+  ENHANCEMENT_PICKER_FIELD('arma'),
+]);
+
 const comumConfig = inventoryConfig('comum', 'Item comum', [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do item' },
   { key: 'quantity', label: 'Quantidade', type: 'number', half: true },
@@ -584,6 +667,7 @@ const armaConfig: EntityConfig = {
       showIf: (v) => v.alwaysActive === 'true',
     },
     ATTACK_MODIFIERS_FIELD,
+    ENHANCEMENT_PICKER_FIELD('arma'),
   ],
   empty: () => ({
     name: '', quantity: 1, slot: '', effect: '', weight: 0,
@@ -638,6 +722,8 @@ export const ENTITY_FORMS: Record<EntityKind, EntityConfig> = {
   acessorio: acessorioConfig,
   comum: comumConfig,
   consumivel: consumivelConfig,
+  esoterico: esotericoConfig,
+  rd: rdConfig,
 };
 
 /** Item sub-types selectable in the FAB "Item" form. */
@@ -645,6 +731,7 @@ export const ITEM_KINDS: Array<{ kind: EntityKind; label: string }> = [
   { kind: 'arma', label: 'Arma' },
   { kind: 'armadura', label: 'Armadura' },
   { kind: 'acessorio', label: 'Acessório' },
+  { kind: 'esoterico', label: 'Esotérico' },
   { kind: 'comum', label: 'Comum' },
   { kind: 'consumivel', label: 'Consumível' },
 ];

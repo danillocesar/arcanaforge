@@ -109,7 +109,7 @@
 }
 
 .dNavitem.on .dni {
-  background: linear-gradient(160deg, #0e9d6f, #0a6f51);
+  background: linear-gradient(160deg, var(--accent), var(--accent-deep));
   color: #fff;
 }
 

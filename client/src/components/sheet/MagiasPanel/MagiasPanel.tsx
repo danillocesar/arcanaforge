@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import EmptyState from '../../ui/EmptyState/EmptyState';
 import SpellCard from '../SpellCard/SpellCard';
 import AddButton from '../AddButton/AddButton';
 import CastActionSheet from '../CastActionSheet/CastActionSheet';
@@ -46,7 +47,11 @@ function MagiasPanel() {
       />
 
       {spells.length === 0 ? (
-        <p className={styles.empty}>Nenhuma magia conhecida.</p>
+        <EmptyState
+          icon="🜂"
+          title="Nenhuma magia conhecida."
+          hint='Toque em "+ Magia" para escolher do catálogo oficial.'
+        />
       ) : (
         <div className={styles.list}>
           {spells.map((spell, index) => (
@@ -62,6 +67,7 @@ function MagiasPanel() {
                   buffs: sp.buffs,
                   buffTargetScope: sp.buffTargetScope,
                   enhancements: sp.enhancements,
+                  resistance: sp.resistance,
                 });
               }}
               onEdit={(i) => openEdit('magia', i)}

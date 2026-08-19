@@ -3,6 +3,7 @@ import Sheet from '../../ui/Sheet/Sheet';
 import TextField from '../../ui/TextField/TextField';
 import { OFFICIAL_CONDITIONS } from '../../../data/conditions';
 import { conditionToFormValues } from '../SheetForm/entityForms';
+import { normalizeSearch } from '../../../utils/formatters';
 import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './ConditionPicker.module.css';
 
@@ -17,9 +18,9 @@ interface ConditionPickerProps {
 function ConditionPicker({ open, onClose, onPick }: ConditionPickerProps) {
   const [search, setSearch] = useState('');
 
-  const query = search.trim().toLowerCase();
+  const query = normalizeSearch(search);
   const visible = query
-    ? OFFICIAL_CONDITIONS.filter((c) => c.name.toLowerCase().includes(query))
+    ? OFFICIAL_CONDITIONS.filter((c) => normalizeSearch(c.name).includes(query))
     : OFFICIAL_CONDITIONS;
 
   const pick = (values: FormValues | null) => {

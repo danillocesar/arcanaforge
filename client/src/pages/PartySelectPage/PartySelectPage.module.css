@@ -204,8 +204,8 @@
   font-family: monospace;
   letter-spacing: 0.12em;
   color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: rgba(155, 184, 209, 0.1);
+  border: 1px solid rgba(155, 184, 209, 0.25);
   border-radius: 6px;
   padding: 2px 8px;
   margin-top: 2px;
@@ -214,7 +214,7 @@
 }
 
 .inviteCode:hover {
-  background: rgba(201, 168, 76, 0.2);
+  background: rgba(155, 184, 209, 0.2);
 }
 
 /* Empty hint */

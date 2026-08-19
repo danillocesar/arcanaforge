@@ -81,6 +81,11 @@ export interface Buff {
   source?: string;
   /** Texto de regra, ex. condições oficiais do catálogo — lembrete do efeito, não recalculado. */
   description?: string;
+  /** Teste de resistência da magia de origem, ex. "Vontade anula". Exibição apenas —
+   * o app não rola dados, mostra o tipo e a CD pra quem recebeu o buff. */
+  resistance?: string;
+  /** CD do teste de resistência, congelada na conjuração (sai do conjurador, não do alvo). */
+  dc?: number;
 }
 
 export interface Enhancement {
@@ -102,6 +107,8 @@ export interface Spell {
   mpCost: number;
   spellLevel: number;
   enhancements: Enhancement[];
+  /** Resumo de uma linha pro card da ficha. Vazio ⇒ cai na primeira frase da descrição. */
+  summary?: string;
   description: string;
   buffTargetScope?: BuffTargetScope;
   buffs?: BuffEffect[];
@@ -117,6 +124,8 @@ export interface Ability {
   /** Redesign etiqueta: distinguishes a Poder from a Habilidade in the unified list. */
   kind?: AbilityKind;
   mpCost: number;
+  /** Resumo de uma linha pro card da ficha. Vazio ⇒ cai na primeira frase da descrição. */
+  summary?: string;
   description: string;
   /** Se marcado, aparece na lista de Ações (aba Atributos) com botão de usar. */
   castable?: boolean;
@@ -128,9 +137,21 @@ export interface Ability {
   /** Se marcado, os `buffs` deste Poder/Habilidade aplicam sempre, sem precisar
    * "conjurar" — aparece na seção "Bônus Fixos", não na lista de Buffs & Condições. */
   alwaysActive?: boolean;
+  /** Bônus fixo suspenso no momento (ex.: agarrado perde a defesa) — o flag mora no
+   * próprio poder, não num índice em Character, pra sobreviver a reordenação/remoção.
+   * Suspende tanto os `buffs` fixos quanto os `attackModifiers`. */
+  suppressed?: boolean;
+  /** Marcado como favorito: aparece também na seção "Favoritos" fixa no topo da aba
+   * Poderes, sem sair do seu grupo de categoria. */
+  favorite?: boolean;
 }
 
-export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio' | 'arma';
+/**
+ * `esoterico`: item de conjurador (cetro, varinha, foco) — como uma arma sem dano,
+ * com efeito permanente. Não cabia em nenhuma das outras: em `arma` sumia da aba
+ * Ações (isWeaponAttack exige dano) e em `acessorio` perdia os campos de combate.
+ */
+export type InventoryCategory = 'comum' | 'consumivel' | 'acessorio' | 'arma' | 'esoterico';
 
 export interface InventoryItem {
   name: string;
@@ -155,6 +176,8 @@ export interface InventoryItem {
    * "Bônus Fixos", não na lista de Buffs & Condições. Vale independente de o item
    * estar em `character.equipped` (mesma regra que já vale pra `attackModifiers`). */
   alwaysActive?: boolean;
+  /** Bônus fixo suspenso no momento — mesma semântica de `Ability.suppressed`. */
+  suppressed?: boolean;
   buffs?: BuffEffect[];
 }
 
@@ -166,6 +189,12 @@ export interface DefenseItem {
   name: string;
   value: number;
   penalty: number;
+}
+
+/** Redução de Dano por tipo, ex. `{ name: 'fogo', value: 5 }`. "Geral" = contra tudo. */
+export interface DamageReduction {
+  name: string;
+  value: number;
 }
 
 export interface LogEntry {
@@ -238,7 +267,10 @@ export interface Character {
   hp: HitPoints;
   mp: ManaPoints;
   defense: Defense;
-  damageReduction: number;
+  damageReductions: DamageReduction[];
+  /** @deprecated Formato antigo (número solto, antes texto livre). Migrado na leitura
+   * por `normalizeDamageReductions`; fica no tipo só pra ler ficha salva. */
+  damageReduction?: number;
   attacks: Attack[];
   skills: Record<string, SkillData>;
   abilities: Ability[];

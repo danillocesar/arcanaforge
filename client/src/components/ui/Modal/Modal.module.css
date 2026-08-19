@@ -8,4 +8,23 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease, ease);
+}
+
+.overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.box {
+  transform: scale(0.94) translateY(6px);
+  opacity: 0;
+  transition: transform 0.3s var(--ease, ease), opacity 0.25s var(--ease, ease);
+}
+
+.box.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }

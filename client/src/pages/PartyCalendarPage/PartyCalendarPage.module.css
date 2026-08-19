@@ -10,12 +10,32 @@
 .content {
   flex: 1;
   padding: 30px 24px;
-  max-width: 720px;
+  max-width: 1000px;
   margin: 0 auto;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 28px;
+  align-items: start;
+}
+
+.mainCol {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loadingRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .proposeForm {

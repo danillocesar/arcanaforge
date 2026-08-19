@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 import Topbar from '../../layout/Topbar/Topbar';
 import VitalBar from '../VitalBar/VitalBar';
+import SheetBackground from '../SheetBackground/SheetBackground';
 import TabNav from '../TabNav/TabNav';
 import MobileAppMenu from '../MobileAppMenu/MobileAppMenu';
 import AttributesPanel from '../AttributesPanel/AttributesPanel';
@@ -61,16 +62,39 @@ interface TormentaSheetBodyProps {
   topBanner?: ReactNode;
 }
 
-/** Barra fina de "desfazer última alteração" — só aparece quando há algo pra desfazer. */
+/**
+ * Toast flutuante de "desfazer última alteração" — fica no canto da tela em vez
+ * de empurrar o conteúdo da ficha. Some quando não há mais nada pra desfazer, ou
+ * quando o próprio usuário fecha (reaparece na próxima edição, já que `canUndo`
+ * fica true por toda a leva de edições, não só na primeira).
+ */
 function UndoBar() {
   const { canUndo, undoLastChange } = useCharacterContext();
-  if (!canUndo) return null;
+  const [dismissed, setDismissed] = useState(false);
+  const prevCanUndo = useRef(canUndo);
+
+  useEffect(() => {
+    if (canUndo && !prevCanUndo.current) {
+      setDismissed(false);
+    }
+    prevCanUndo.current = canUndo;
+  }, [canUndo]);
+
+  if (!canUndo || dismissed) return null;
 
   return (
-    <div className={styles.undoBar}>
+    <div className={styles.undoToast} role="status">
       <span>Última alteração salva</span>
       <button type="button" className={styles.undoButton} onClick={undoLastChange}>
         ↺ Desfazer
+      </button>
+      <button
+        type="button"
+        className={styles.undoDismiss}
+        onClick={() => setDismissed(true)}
+        aria-label="Fechar"
+      >
+        ✕
       </button>
     </div>
   );
@@ -94,7 +118,8 @@ function TormentaSheetBody({ topBanner }: TormentaSheetBodyProps) {
     return (
       <SheetFormProvider>
         <div className={styles.shell}>
-          <Topbar title={character.name} showTormentaLogo />
+          <SheetBackground url={character.avatar} />
+          <Topbar title={character.name} />
           <div className={styles.desktopBody}>
             {topBanner}
             <UndoBar />
@@ -114,6 +139,7 @@ function TormentaSheetBody({ topBanner }: TormentaSheetBodyProps) {
   return (
     <SheetFormProvider>
       <div className={styles.shell}>
+        <SheetBackground url={character.avatar} />
         <VitalBar />
         {topBanner && <div className={styles.bannerSlot}>{topBanner}</div>}
         <UndoBar />

@@ -19,6 +19,10 @@ import { getInitials, getAvatarColor, formatClassesStr } from '../../utils/forma
 import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
+import Skeleton from '../../components/ui/Skeleton/Skeleton';
+import EmptyState from '../../components/ui/EmptyState/EmptyState';
+import Button from '../../components/ui/Button/Button';
+import GroupInfoCard from '../../components/party/GroupInfoCard/GroupInfoCard';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './PartyMembersPage.module.css';
 
@@ -28,7 +32,6 @@ export default function PartyMembersPage() {
   const { user } = useAuth();
   const [party, setParty] = useState<Party | null>(null);
   const [myCharacters, setMyCharacters] = useState<CharacterSummary[]>([]);
-  const [codeCopied, setCodeCopied] = useState(false);
   const [partyCharacters, setPartyCharacters] = useState<PartyCharacter[]>([]);
   const [removeMember, setRemoveMember] = useState<PartyMember | null>(null);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -103,13 +106,6 @@ export default function PartyMembersPage() {
     }
   };
 
-  const copyCode = () => {
-    if (!party?.inviteCode) return;
-    navigator.clipboard.writeText(party.inviteCode).catch(() => {});
-    setCodeCopied(true);
-    setTimeout(() => setCodeCopied(false), 2000);
-  };
-
   const navItems = useMemo(
     () => [
       { id: 'members', label: 'Membros', active: true },
@@ -135,9 +131,18 @@ export default function PartyMembersPage() {
     return (
       <div className={styles.page}>
         <div className={styles.content}>
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>
-            Carregando...
-          </p>
+          <div className={styles.loadingWrap} role="status" aria-label="Carregando grupo">
+            <div className={styles.loadingGrid}>
+              <Skeleton height={104} radius={14} />
+              <Skeleton height={104} radius={14} />
+              <Skeleton height={104} radius={14} />
+            </div>
+            <div className={styles.loadingRows}>
+              <Skeleton height={56} radius={12} />
+              <Skeleton height={56} radius={12} />
+              <Skeleton height={56} radius={12} />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -148,23 +153,11 @@ export default function PartyMembersPage() {
 
   return (
     <div className={styles.page}>
-      <Topbar title={`Grupo - ${party.name}`} showTormentaLogo />
-      <SectionNav
-        items={navItems}
-        rightSlot={
-          isOwner && party.inviteCode ? (
-            <span
-              className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
-              onClick={copyCode}
-              title="Clique para copiar"
-            >
-              {codeCopied ? 'Copiado!' : party.inviteCode}
-            </span>
-          ) : undefined
-        }
-      />
+      <Topbar title={`Grupo - ${party.name}`} />
+      <SectionNav items={navItems} />
 
       <div className={styles.content}>
+      <div className={styles.mainCol}>
         {/* My characters selector (multi-select) */}
         <div className={styles.myCharSection}>
           <h3 className={styles.sectionTitle}>
@@ -172,9 +165,16 @@ export default function PartyMembersPage() {
           </h3>
 
           {myCharacters.length === 0 ? (
-            <div className={styles.empty}>
-              Nenhum personagem encontrado para este sistema. Crie personagens primeiro na tela de seleção.
-            </div>
+            <EmptyState
+              icon="🧙"
+              title="Nenhum personagem encontrado para este sistema."
+              hint="Crie um personagem primeiro na tela de seleção."
+              action={
+                <Button type="button" variant="ghost" onClick={() => navigate('/characters')}>
+                  Ir para Personagens
+                </Button>
+              }
+            />
           ) : (
             <div className={styles.charGrid}>
               {myCharacters.map((r) => {
@@ -290,7 +290,9 @@ export default function PartyMembersPage() {
             })}
           </div>
         </div>
+      </div>
 
+      <GroupInfoCard party={party} isOwner={isOwner} />
       </div>
 
       <ConfirmModal

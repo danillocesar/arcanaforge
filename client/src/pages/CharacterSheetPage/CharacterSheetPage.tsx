@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
 import TormentaSheetBody from '../../components/sheet/TormentaSheetBody/TormentaSheetBody';
+import SheetSkeleton from '../../components/sheet/SheetSkeleton/SheetSkeleton';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './CharacterSheetPage.module.css';
 
@@ -58,7 +59,7 @@ function CharacterSheetInner() {
   if (loadDone && !character) return <AccessDeniedPage />;
 
   if (!character) {
-    return <div className={styles.loading}>Carregando personagem...</div>;
+    return <SheetSkeleton />;
   }
 
   return <TormentaSheetBody />;

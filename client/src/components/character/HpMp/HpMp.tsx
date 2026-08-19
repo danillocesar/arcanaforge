@@ -141,13 +141,12 @@ export default function HpMp() {
       <div className={styles.footer}>
         <div>
           <span className={styles.rdLabel}>RD:</span>
-          <NumericInput
-            className={styles.rdInput}
-            value={character.damageReduction}
-            onChange={(n) => updateCharacter((f) => ({ ...f, damageReduction: n }))}
-            min={0}
-            placeholder="0"
-          />
+          {/* A RD agora é lista por tipo (`damageReductions`), editada no
+              DefenseBreakdown da ficha nova. Aqui fica só o resumo, pra este
+              painel legado não escrever num campo que a migração descarta. */}
+          <span className={styles.rdInput}>
+            {(character.damageReductions ?? []).map((rd) => `${rd.name} ${rd.value}`).join(' · ') || '—'}
+          </span>
         </div>
         <button type="button" className={styles.resetBtn} onClick={resetAll}>
           Restaurar PV/PM

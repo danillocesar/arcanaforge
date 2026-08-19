@@ -9,9 +9,10 @@ import {
   getActiveBuffs,
   calcTotalDefense,
   calcTotalSkill,
+  trainingBonusForLevel,
   toggleBuffState,
   normalizeBuffs,
-  normalizeDamageReduction,
+  normalizeDamageReductions,
   isWeaponAttack,
   weaponToAttack,
 } from './calculations';
@@ -144,6 +145,36 @@ describe('getActiveBuffs', () => {
     expect(getActiveBuffs(character)).toHaveLength(0);
   });
 
+  it('skips an always-active ability that is currently suppressed', () => {
+    // "Ficou agarrado, perde a defesa da armadura": the bonus is suspended without
+    // editing the power itself, so it must drop out of every calculation.
+    const ability: Ability = {
+      name: 'Aura Sagrada',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      alwaysActive: true,
+      suppressed: true,
+      buffs: [{ type: 'defense', value: '2' }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    expect(getActiveBuffs(character)).toHaveLength(0);
+  });
+
+  it('skips an always-active item that is currently suppressed', () => {
+    const item: InventoryItem = {
+      name: 'Manopla de Força',
+      quantity: 1,
+      weight: 0,
+      alwaysActive: true,
+      suppressed: true,
+      buffs: [{ type: 'attribute', attributeId: 'str', value: '4' }],
+    };
+    const character = baseCharacter({ inventory: [item] });
+    expect(getActiveBuffs(character)).toHaveLength(0);
+  });
+
   it('synthesizes an always-active buff from an ability with a max_hp/max_mp effect', () => {
     const ability: Ability = {
       name: 'Vitalidade Draconica',
@@ -214,10 +245,28 @@ describe('calcTotalDefense', () => {
   });
 });
 
+describe('trainingBonusForLevel', () => {
+  it('is +2 from level 1 to 6', () => {
+    expect(trainingBonusForLevel(1)).toBe(2);
+    expect(trainingBonusForLevel(6)).toBe(2);
+  });
+
+  it('is +4 from level 7 to 14', () => {
+    expect(trainingBonusForLevel(7)).toBe(4);
+    expect(trainingBonusForLevel(14)).toBe(4);
+  });
+
+  it('is +6 from level 15 up', () => {
+    expect(trainingBonusForLevel(15)).toBe(6);
+    expect(trainingBonusForLevel(20)).toBe(6);
+  });
+});
+
 describe('calcTotalSkill', () => {
   it('combines half-level, attribute, training, misc, armor penalty and skill buffs', () => {
     // Acrobacia is Destreza-based and has armorPenalty:true in the official skill
     // config — needed to exercise the armor-penalty branch of the formula.
+    // Level 11 falls in the 7-14 training-bonus band (+4), not the old flat +2.
     const character = baseCharacter({
       classes: [{ name: 'Guerreiro', level: 11 }],
       attributes: { str: 0, dex: 6, con: 0, int: 0, wis: 0, cha: 0 },
@@ -226,12 +275,46 @@ describe('calcTotalSkill', () => {
       buffs: [activeBuff({ effects: [{ type: 'skill', skillId: 'acrobacia', value: '3' }] })],
     });
     const halfLevel = Math.floor(11 / 2);
-    expect(calcTotalSkill(character, 'acrobacia')).toBe(halfLevel + 6 + 2 + 1 - 2 + 3);
+    expect(calcTotalSkill(character, 'acrobacia')).toBe(halfLevel + 6 + 4 + 1 - 2 + 3);
+  });
+
+  it('scales the training bonus by level (+2 / +4 / +6)', () => {
+    const atLevel = (level: number) =>
+      baseCharacter({
+        classes: [{ name: 'Guerreiro', level }],
+        skills: { ...baseCharacter().skills, atletismo: { trained: true, misc: 0 } },
+      });
+    const halfLevel = (level: number) => Math.floor(level / 2);
+
+    expect(calcTotalSkill(atLevel(6), 'atletismo')).toBe(halfLevel(6) + 2);
+    expect(calcTotalSkill(atLevel(7), 'atletismo')).toBe(halfLevel(7) + 4);
+    expect(calcTotalSkill(atLevel(15), 'atletismo')).toBe(halfLevel(15) + 6);
   });
 
   it('returns 0 for an unknown skill id', () => {
     const character = baseCharacter();
     expect(calcTotalSkill(character, 'nao-existe')).toBe(0);
+  });
+
+  it('returns 0 for a trained-only skill that has not been trained', () => {
+    // Misticismo has `trained: true` in SKILLS_CONFIG (só-treinada) — untrained,
+    // the character must not be able to use it at all, not just miss the +2/+4/+6.
+    const character = baseCharacter({
+      classes: [{ name: 'Arcanista', level: 8 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 4, wis: 0, cha: 0 },
+      skills: { ...baseCharacter().skills, misticismo: { trained: false, misc: 0 } },
+    });
+    expect(calcTotalSkill(character, 'misticismo')).toBe(0);
+  });
+
+  it('still computes normally for a trained-only skill once trained', () => {
+    const character = baseCharacter({
+      classes: [{ name: 'Arcanista', level: 8 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 4, wis: 0, cha: 0 },
+      skills: { ...baseCharacter().skills, misticismo: { trained: true, misc: 0 } },
+    });
+    const halfLevel = Math.floor(8 / 2);
+    expect(calcTotalSkill(character, 'misticismo')).toBe(halfLevel + 4 + 4);
   });
 });
 
@@ -303,17 +386,60 @@ describe('normalizeBuffs', () => {
   });
 });
 
-describe('normalizeDamageReduction', () => {
-  it('returns a numeric value unchanged', () => {
-    expect(normalizeDamageReduction(5)).toBe(5);
+describe('normalizeDamageReductions', () => {
+  it('returns an empty list when there is nothing to migrate', () => {
+    expect(normalizeDamageReductions(undefined, undefined)).toEqual([]);
+    expect(normalizeDamageReductions(undefined, 0)).toEqual([]);
   });
 
-  it('extracts the first number from a legacy free-text value', () => {
-    expect(normalizeDamageReduction('5 (fogo)')).toBe(5);
+  it('converts a legacy numeric RD into a single "Geral" entry', () => {
+    expect(normalizeDamageReductions(undefined, 5)).toEqual([{ name: 'Geral', value: 5 }]);
   });
 
-  it('returns 0 when no number is present', () => {
-    expect(normalizeDamageReduction('nenhuma')).toBe(0);
+  it('recovers the damage type from a legacy free-text RD instead of discarding it', () => {
+    // The old free-text format supported a type; the previous migration ran
+    // String(value).match(/-?\d+/) and threw the "(fogo)" away.
+    expect(normalizeDamageReductions(undefined, '5 (fogo)')).toEqual([{ name: 'fogo', value: 5 }]);
+  });
+
+  it('falls back to "Geral" when legacy free text has a number but no type', () => {
+    expect(normalizeDamageReductions(undefined, '5')).toEqual([{ name: 'Geral', value: 5 }]);
+  });
+
+  it('ignores legacy free text with no number at all', () => {
+    expect(normalizeDamageReductions(undefined, 'nenhuma')).toEqual([]);
+  });
+
+  it('passes an already-migrated list through unchanged', () => {
+    const list = [{ name: 'fogo', value: 5 }, { name: 'Geral', value: 2 }];
+    expect(normalizeDamageReductions(list, undefined)).toEqual(list);
+  });
+
+  it('is idempotent — it runs on every character load', () => {
+    const once = normalizeDamageReductions(undefined, '5 (fogo)');
+    const twice = normalizeDamageReductions(once, '5 (fogo)');
+    expect(twice).toEqual(once);
+  });
+
+  it('prefers the new list over a stale legacy value', () => {
+    const list = [{ name: 'frio', value: 10 }];
+    expect(normalizeDamageReductions(list, 5)).toEqual(list);
+  });
+
+  it('keeps an emptied list empty instead of resurrecting the stale legacy value', () => {
+    // Deleting every RD leaves `damageReductions: []` while the old numeric field
+    // still sits on the saved document — falling back to it would undo the delete
+    // on the next load. The field being present at all means migration already ran.
+    expect(normalizeDamageReductions([], 5)).toEqual([]);
+    expect(normalizeDamageReductions([], '5 (fogo)')).toEqual([]);
+  });
+
+  it('sanitises junk rows in a stored list', () => {
+    const raw = [{ name: 'fogo', value: '5' }, { value: 3 }, { name: 'vazio' }, 'lixo', null];
+    expect(normalizeDamageReductions(raw, undefined)).toEqual([
+      { name: 'fogo', value: 5 },
+      { name: 'Geral', value: 3 },
+    ]);
   });
 });
 

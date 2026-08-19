@@ -35,6 +35,24 @@
   padding-top: 9px;
 }
 
+/* Subtítulo dentro do popover, separando a RD do bloco de Defesa. */
+.popSubHead {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-top: 1px solid var(--line-2);
+  margin-top: 10px;
+  padding-top: 10px;
+  margin-bottom: 4px;
+}
+
+.addRow {
+  display: flex;
+  gap: 8px;
+}
+
 .tot b {
   color: var(--accent-ink);
   font-size: 16px;
@@ -75,7 +93,7 @@
   width: 100%;
   padding: 8px;
   border-radius: 8px;
-  border: 1.5px dashed rgba(16, 185, 129, 0.4);
+  border: 1.5px dashed rgba(155, 184, 209, 0.4);
   background: var(--accent-soft);
   color: var(--accent-ink);
   font-family: var(--font-body);
@@ -86,5 +104,5 @@
 }
 
 .btnAdd:hover {
-  background: rgba(16, 185, 129, 0.18);
+  background: rgba(155, 184, 209, 0.18);
 }

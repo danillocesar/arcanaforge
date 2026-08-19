@@ -11,6 +11,9 @@ import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
+import Skeleton from '../../components/ui/Skeleton/Skeleton';
+import EmptyState from '../../components/ui/EmptyState/EmptyState';
+import GroupInfoCard from '../../components/party/GroupInfoCard/GroupInfoCard';
 import styles from './PartyCalendarPage.module.css';
 
 function formatWhen(proposal: SessionProposal): string {
@@ -120,7 +123,11 @@ export default function PartyCalendarPage() {
     return (
       <div className={styles.page}>
         <div className={styles.content}>
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>Carregando...</p>
+          <div className={styles.loadingRows} role="status" aria-label="Carregando calendário">
+            <Skeleton height={64} radius={12} />
+            <Skeleton height={96} radius={14} />
+            <Skeleton height={96} radius={14} />
+          </div>
         </div>
       </div>
     );
@@ -137,10 +144,11 @@ export default function PartyCalendarPage() {
 
   return (
     <div className={styles.page}>
-      <Topbar title={`Grupo - ${party.name}`} showTormentaLogo />
+      <Topbar title={`Grupo - ${party.name}`} />
       <SectionNav items={navItems} />
 
       <div className={styles.content}>
+      <div className={styles.mainCol}>
         <form className={styles.proposeForm} onSubmit={handlePropose}>
           <div className={styles.proposeField}>
             <label className={styles.proposeLabel} htmlFor="proposal-date">Data</label>
@@ -170,7 +178,11 @@ export default function PartyCalendarPage() {
           <h3 className={styles.sectionTitle}>Propostas ({proposals.length})</h3>
 
           {proposals.length === 0 ? (
-            <p className={styles.empty}>Nenhuma data proposta ainda. Proponha uma acima.</p>
+            <EmptyState
+              icon="🗓️"
+              title="Nenhuma data proposta ainda."
+              hint="Proponha uma data acima para organizar a próxima sessão."
+            />
           ) : (
             <div className={styles.proposalsList}>
               {proposals.map((proposal) => {
@@ -250,6 +262,9 @@ export default function PartyCalendarPage() {
             </div>
           )}
         </div>
+      </div>
+
+      <GroupInfoCard party={party} isOwner={isOwner} />
       </div>
     </div>
   );

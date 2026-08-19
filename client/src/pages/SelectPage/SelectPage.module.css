@@ -64,8 +64,8 @@
 
 /* Banners de plano */
 .bannerTrial {
-  background: rgba(201, 168, 76, 0.12);
-  border: 1px solid rgba(201, 168, 76, 0.4);
+  background: rgba(155, 184, 209, 0.12);
+  border: 1px solid rgba(155, 184, 209, 0.4);
   border-radius: 10px;
   padding: 10px 16px;
   margin-bottom: 16px;
@@ -170,7 +170,7 @@
 }
 
 .restoreBtn:hover {
-  background: rgba(201, 168, 76, 0.1);
+  background: rgba(155, 184, 209, 0.1);
 }
 
 @media (max-width: 550px) {

@@ -35,6 +35,20 @@ describe('buildAttackChecklist', () => {
     expect(items.every((i) => i.source === '')).toBe(true);
   });
 
+  it('omits the attackModifiers of a suppressed ability', () => {
+    const ability: Ability = {
+      name: 'Ataque Poderoso',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      suppressed: true,
+      attackModifiers: [{ label: 'Acerto', attackRoll: -2 }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    expect(buildAttackChecklist(character, baseAttack())).toHaveLength(0);
+  });
+
   it('merges every attackModifiers line of the same ability into a single unchecked item', () => {
     const ability: Ability = {
       name: 'Ataque Poderoso',

@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { isWeaponAttack, weaponToAttack } from '../../../utils/calculations';
 import type { EntityKind } from '../SheetForm/entityForms';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import EmptyState from '../../ui/EmptyState/EmptyState';
 import ActionCard from '../ActionCard/ActionCard';
 import SpellCard from '../SpellCard/SpellCard';
 import AbilityCard from '../AbilityCard/AbilityCard';
@@ -20,6 +22,8 @@ function AcoesPanel() {
   const { character, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
   const [castAction, setCastAction] = useState<CastActionSpec | null>(null);
+  const [magiasOpen, setMagiasOpen] = useState(false);
+  const [poderesOpen, setPoderesOpen] = useState(false);
 
   if (!character) return null;
 
@@ -42,6 +46,7 @@ function AcoesPanel() {
     setCastAction({
       name: sp.name, mpCost: Number(sp.mpCost) || 0, buffs: sp.buffs,
       buffTargetScope: sp.buffTargetScope, enhancements: sp.enhancements,
+      resistance: sp.resistance,
     });
   };
 
@@ -53,6 +58,8 @@ function AcoesPanel() {
 
   return (
     <div className={styles.panel}>
+      <div className={styles.banner}>⚔ Ações de Combate</div>
+
       <SectionHeader
         title="Ataques"
         action={!readOnly && <AddButton label="Ataque" onClick={() => openCreate('ataque')} />}
@@ -69,41 +76,73 @@ function AcoesPanel() {
           ))}
         </div>
       ) : (
-        <p className={styles.empty}>Nenhum ataque cadastrado.</p>
+        <EmptyState compact icon="⚔" title="Nenhum ataque cadastrado." />
       )}
 
-      <SectionHeader title="Magias" className={styles.gap} />
-      {spells.length > 0 ? (
-        <div className={styles.grid}>
-          {spells.map((spell, index) => (
-            <SpellCard
-              key={index}
-              spell={spell}
-              index={index}
-              onCast={castSpell}
-              onEdit={(i) => openEdit('magia', i)}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className={styles.empty}>Nenhuma magia conhecida.</p>
+      <SectionHeader
+        title="Magias"
+        className={styles.gap}
+        action={
+          <button
+            type="button"
+            className={styles.collapseToggle}
+            onClick={() => setMagiasOpen((o) => !o)}
+            aria-expanded={magiasOpen}
+          >
+            {spells.length}
+            <ChevronDown size={14} className={magiasOpen ? styles.chevOpen : undefined} />
+          </button>
+        }
+      />
+      {magiasOpen && (
+        spells.length > 0 ? (
+          <div className={styles.grid}>
+            {spells.map((spell, index) => (
+              <SpellCard
+                key={index}
+                spell={spell}
+                index={index}
+                onCast={castSpell}
+                onEdit={(i) => openEdit('magia', i)}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState compact icon="🜂" title="Nenhuma magia conhecida." />
+        )
       )}
 
-      <SectionHeader title="Poderes" className={styles.gap} />
-      {castableAbilities.length > 0 ? (
-        <div className={styles.grid}>
-          {castableAbilities.map(({ ability, index }) => (
-            <AbilityCard
-              key={index}
-              ability={ability}
-              index={index}
-              onEdit={() => openEdit(ability.kind === 'Habilidade' ? 'habilidade' : 'poder', index)}
-              onUse={castAbility}
-            />
-          ))}
-        </div>
-      ) : (
-        <p className={styles.empty}>Nenhum poder conjurável.</p>
+      <SectionHeader
+        title="Poderes"
+        className={styles.gap}
+        action={
+          <button
+            type="button"
+            className={styles.collapseToggle}
+            onClick={() => setPoderesOpen((o) => !o)}
+            aria-expanded={poderesOpen}
+          >
+            {castableAbilities.length}
+            <ChevronDown size={14} className={poderesOpen ? styles.chevOpen : undefined} />
+          </button>
+        }
+      />
+      {poderesOpen && (
+        castableAbilities.length > 0 ? (
+          <div className={styles.grid}>
+            {castableAbilities.map(({ ability, index }) => (
+              <AbilityCard
+                key={index}
+                ability={ability}
+                index={index}
+                onEdit={() => openEdit(ability.kind === 'Habilidade' ? 'habilidade' : 'poder', index)}
+                onUse={castAbility}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState compact icon="✦" title="Nenhum poder conjurável." />
+        )
       )}
 
       <CastActionSheet action={castAction} onClose={() => setCastAction(null)} />

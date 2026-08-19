@@ -4,6 +4,7 @@ import type { Coins, InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import Stepper from '../../ui/Stepper/Stepper';
+import EmptyState from '../../ui/EmptyState/EmptyState';
 import AddButton from '../AddButton/AddButton';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import type { EntityKind } from '../SheetForm/entityForms';
@@ -40,6 +41,9 @@ function EquipamentosPanel() {
   const acessorios = inventory
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.category === 'acessorio');
+  const esotericos = inventory
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => item.category === 'esoterico');
   const comuns = inventory
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => isComum(item));
@@ -103,6 +107,21 @@ function EquipamentosPanel() {
         {overloaded && <p className={styles.loadWarn}>Acima da capacidade de carga.</p>}
       </Card>
 
+      {/* ─── PROFICIÊNCIAS (info de personagem, não item de inventário) ─── */}
+      <SectionHeader title="Proficiências" className={styles.gap} />
+      {!readOnly ? (
+        <textarea
+          className={styles.proficienciesInput}
+          value={character.proficiencies ?? ''}
+          onChange={(e) => updateCharacter((f) => ({ ...f, proficiencies: e.target.value }))}
+          placeholder="Ex.: armas simples, armas marciais leves, armaduras leves, escudos…"
+        />
+      ) : proficiencies ? (
+        <p className={styles.proficiencies}>{proficiencies}</p>
+      ) : (
+        <p className={styles.empty}>Nenhuma proficiência cadastrada.</p>
+      )}
+
       {/* ─── 1. EQUIPAMENTOS ─── */}
       <SectionHeader
         title="Equipamentos"
@@ -129,7 +148,7 @@ function EquipamentosPanel() {
           ))}
         </Card>
       ) : (
-        <p className={styles.empty}>Nenhuma arma cadastrada.</p>
+        <EmptyState compact icon="⚔" title="Nenhuma arma cadastrada." />
       )}
 
       <div className={styles.subHead}>Armaduras</div>
@@ -148,7 +167,7 @@ function EquipamentosPanel() {
           ))}
         </Card>
       ) : (
-        <p className={styles.empty}>Nenhuma armadura cadastrada.</p>
+        <EmptyState compact icon="🛡" title="Nenhuma armadura cadastrada." />
       )}
 
       <div className={styles.subHead}>Acessórios</div>
@@ -167,7 +186,28 @@ function EquipamentosPanel() {
           ))}
         </Card>
       ) : (
-        <p className={styles.empty}>Nenhum acessório cadastrado.</p>
+        <EmptyState compact icon="💍" title="Nenhum acessório cadastrado." />
+      )}
+
+      <div className={styles.subHead}>Esotéricos</div>
+      {esotericos.length > 0 ? (
+        <Card padding={false} className={styles.list}>
+          {esotericos.map(({ item, index }) => (
+            <div key={index} {...rowProps('esoterico', index)}>
+              <div className={styles.rowName}>
+                {item.name || 'Item esotérico'}
+                {item.effect && <small className={styles.effect}>{item.effect}</small>}
+              </div>
+              <div className={styles.rowMeta}>
+                {item.alwaysActive && (
+                  <span className={styles.linkedBadge} title="Efeito sempre ativo">✦</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </Card>
+      ) : (
+        <EmptyState compact icon="🜛" title="Nenhum item esotérico." />
       )}
 
       {/* ─── 2. COMUNS ─── */}
@@ -184,7 +224,7 @@ function EquipamentosPanel() {
           ))}
         </Card>
       ) : (
-        <p className={styles.empty}>Nenhum item comum.</p>
+        <EmptyState compact icon="🎒" title="Nenhum item comum." />
       )}
 
       {/* ─── 3. CONSUMÍVEIS ─── */}
@@ -204,21 +244,7 @@ function EquipamentosPanel() {
           ))}
         </Card>
       ) : (
-        <p className={styles.empty}>Nenhum consumível.</p>
-      )}
-
-      <SectionHeader title="Proficiências" className={styles.gap} />
-      {!readOnly ? (
-        <textarea
-          className={styles.proficienciesInput}
-          value={character.proficiencies ?? ''}
-          onChange={(e) => updateCharacter((f) => ({ ...f, proficiencies: e.target.value }))}
-          placeholder="Ex.: armas simples, armas marciais leves, armaduras leves, escudos…"
-        />
-      ) : proficiencies ? (
-        <p className={styles.proficiencies}>{proficiencies}</p>
-      ) : (
-        <p className={styles.empty}>Nenhuma proficiência cadastrada.</p>
+        <EmptyState compact icon="🧪" title="Nenhum consumível." />
       )}
     </div>
   );

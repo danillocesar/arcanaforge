@@ -21,6 +21,42 @@
   padding: 6px 9px;
 }
 
+/* Suspenso: o bônus não conta em nenhum cálculo, e a linha mostra isso. */
+.rowOff {
+  border-left-color: var(--line-2);
+  opacity: 0.55;
+}
+
+.rowOff .name,
+.rowOff .tag {
+  text-decoration: line-through;
+}
+
+.rowOff .tag {
+  color: var(--ink-3);
+}
+
+.dot {
+  flex: 0 0 11px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  background: var(--surface);
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dot:disabled {
+  cursor: default;
+}
+
+.dotOn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .name {
   flex: 0 1 auto;
   min-width: 0;

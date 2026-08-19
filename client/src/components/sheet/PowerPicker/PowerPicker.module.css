@@ -3,7 +3,7 @@
   padding: 12px;
   margin-bottom: 14px;
   border-radius: 12px;
-  border: 1.5px dashed rgba(16, 185, 129, 0.4);
+  border: 1.5px dashed rgba(155, 184, 209, 0.4);
   background: var(--accent-soft);
   color: var(--accent-ink);
   font-family: var(--font-body);
@@ -14,8 +14,8 @@
 }
 
 .customBtn:hover {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(155, 184, 209, 0.18);
+  border-color: rgba(155, 184, 209, 0.6);
 }
 
 .search {

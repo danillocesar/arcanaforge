@@ -17,7 +17,25 @@ export interface OfficialSpell {
   enhancements: SpellEnhancement[];
 }
 
-/** Catálogo das 201 magias oficiais do livro básico de Tormenta 20 (tsrd.fandom.com/pt-br), por círculo. */
+/**
+ * Catálogo de magias de Tormenta 20, por círculo.
+ *
+ * 202 entradas: 58 de 1º, 48 de 2º, 40 de 3º, 30 de 4º e 26 de 5º círculo.
+ *
+ * Reconciliado em 19/08/2026 contra a enciclopédia do Fichas de Nimb
+ * (fichasdenimb.com.br/database/magias), que lista **198 magias no filtro
+ * "Tormenta 20"** — e o básico bate item a item com o que está aqui. As 4 entradas
+ * a mais são de 1º círculo e vêm de fora do básico: Açoite Flamejante (Ameaças de
+ * Arton), Detonação Congelante, Disparo Gélido e Gêiser Cáustico.
+ *
+ * O que a reconciliação corrigiu: faltavam **Heroísmo** (3º) e **Globo da Verdade
+ * de Gwen** (2º); **Cólera do Sol** e **Lágrimas da Deusa da Magia** estavam com
+ * nome de edição anterior (hoje *Cólera de Azgher* e *Lágrimas de Wynna*); e
+ * **Silêncio** estava duplicado, uma vez como 1º círculo (errado) e outra como 2º.
+ *
+ * Ao mexer, confira as contagens com `grep -c "^  {"` e `grep -o "spellLevel: [0-9]"`,
+ * e a ausência de duplicata com `grep -o "^    name: '[^']*'" | sort | uniq -d`.
+ */
 export const OFFICIAL_SPELLS: OfficialSpell[] = [
   {
     name: 'Abençoar Alimentos',
@@ -953,22 +971,6 @@ Truque: muda o alcance para toque e a resistência para Fortitude anula. Em vez 
     ],
   },
   {
-    name: 'Silêncio',
-    school: 'Ilusão',
-    spellType: 'Divina',
-    spellLevel: 1,
-    castingTime: 'padrão',
-    range: 'médio',
-    area: 'esfera com 6m de raio',
-    duration: 'sustentada',
-    resistance: '',
-    description: `Um silêncio sepulcral recai sobre a área e nenhum som é produzido ali. Enquanto estiverem na área, todas as criaturas ficam surdas. Além disso, como lançar magias exige palavras mágicas, normalmente nenhuma magia pode ser lançada dentro da área.`,
-    enhancements: [
-      { mpCost: 1, description: `muda a área para alvo de 1 objeto. Em vez do normal, o alvo emana uma área de silêncio com 3m de raio. Se lançar a magia num objeto de uma criatura involuntária, ela tem direito a um teste de Vontade para anulá-la.` },
-      { mpCost: 2, description: `muda a duração para cena. Em vez do normal, nenhum som pode deixar a área, mas criaturas dentro da área podem falar, ouvir e lançar magias com palavras mágicas normalmente.` },
-    ],
-  },
-  {
     name: 'Sono',
     school: 'Encantamento',
     spellType: 'Arcana',
@@ -1488,6 +1490,24 @@ Retorcer: torna o alvo imprestável. Uma porta retorcida emperra (exigindo um te
       { mpCost: 1, description: `além do normal, se o alvo coberto pelo muco ácido estiver usando armadura ou escudo, o item é corroído. Isso reduz o bônus na Defesa do item em 1 ponto permanentemente. O item pode ser consertado, restaurando seu bônus (veja a perícia Ofício, na página Perícias).` },
       { mpCost: 2, description: `aumenta a redução na Defesa em +1.` },
       { mpCost: 2, description: `aumenta o dano inicial e o dano por rodada em +1d6.` },
+    ],
+  },
+  {
+    name: 'Globo da Verdade de Gwen',
+    school: 'Adivinhação',
+    spellType: 'Divina',
+    spellLevel: 2,
+    castingTime: 'padrão',
+    range: 'curto',
+    area: '',
+    duration: 'cena',
+    resistance: '',
+    description: `Cria um globo flutuante e intangível, com 50cm de diâmetro. O globo mostra uma cena vista até uma semana atrás por você ou por uma criatura que você toque ao lançar a magia (mediante uma pergunta; a criatura pode fazer um teste de Vontade para anular o efeito), permitindo que outras pessoas a vejam.`,
+    enhancements: [
+      { mpCost: 1, description: `o globo mostra uma cena vista até um mês atrás.` },
+      { mpCost: 2, description: `como acima, até um ano atrás.` },
+      { mpCost: 2, description: `ao lançar a magia, você pode tocar um cadáver. O globo mostra a última cena vista por essa criatura.` },
+      { mpCost: 4, description: `muda o alcance para longo e o efeito para 10 globos. Todos mostram a mesma cena.` },
     ],
   },
   {
@@ -2276,6 +2296,21 @@ O globo é imóvel e não tem efeito sobre criaturas ou objetos. Após lançá-l
     ],
   },
   {
+    name: 'Heroísmo',
+    school: 'Encantamento',
+    spellType: 'Divina',
+    spellLevel: 3,
+    castingTime: 'padrão',
+    range: 'toque',
+    area: '1 criatura',
+    duration: 'cena',
+    resistance: '',
+    description: `Esta magia imbui uma criatura com coragem e valentia. O alvo fica imune a medo e recebe 40 PV temporários e +4 em testes de ataque e rolagens de dano contra o inimigo de maior ND na cena.`,
+    enhancements: [
+      { mpCost: 4, description: `muda o bônus para +6.` },
+    ],
+  },
+  {
     name: 'Ilusão Lacerante',
     school: 'Ilusão',
     spellType: 'Arcana',
@@ -2788,7 +2823,7 @@ Dissipar Magia não dissipa um Campo Antimagia, e dois Campos na mesma área nã
     ],
   },
   {
-    name: 'Cólera do Sol',
+    name: 'Cólera de Azgher',
     school: 'Evocação',
     spellType: 'Divina',
     spellLevel: 4,
@@ -3464,7 +3499,7 @@ Proteção física: você fica imune às condições atordoado, cego, debilitado
     ],
   },
   {
-    name: 'Lágrimas da Deusa da Magia',
+    name: 'Lágrimas de Wynna',
     school: 'Abjuração',
     spellType: 'Divina',
     spellLevel: 5,

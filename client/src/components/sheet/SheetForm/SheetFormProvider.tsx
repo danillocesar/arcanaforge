@@ -89,7 +89,10 @@ export function SheetFormProvider({ children }: { children: ReactNode }) {
         return config.empty();
       }
     }
-    return valuesOverride ?? config.empty();
+    // O override é mesclado sobre o rascunho vazio, não o substitui: assim um
+    // pré-preenchimento parcial (ex.: só o nome digitado na busca) ainda vem com
+    // todos os campos do formulário definidos.
+    return valuesOverride ? { ...config.empty(), ...valuesOverride } : config.empty();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, character, editing, state?.index, itemKind, open, valuesOverride]);
 

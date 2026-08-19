@@ -16,6 +16,10 @@ export const SPELL_SCHOOLS = [
   'Transmutação',
 ];
 
+/** Custo-base de PM por círculo (T20, tabela de conjuração). */
+export const SPELL_LEVEL_MP_COST: Record<number, number> = { 1: 1, 2: 3, 3: 6, 4: 10, 5: 15 };
+export const baseMpCostForLevel = (level: number) => SPELL_LEVEL_MP_COST[level] ?? 1;
+
 /** Os tipos de dano oficiais do T20 (para ataques e efeitos). */
 export const DAMAGE_TYPES = [
   'Ácido',

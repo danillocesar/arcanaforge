@@ -2,6 +2,7 @@ import Card from '../../ui/Card/Card';
 import Button from '../../ui/Button/Button';
 import type { Spell } from '../../../types/character';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { firstSentence } from '../../../utils/formatters';
 import styles from './SpellCard.module.css';
 
 interface SpellCardProps {
@@ -21,6 +22,11 @@ function SpellCard({ spell, index, onCast, onEdit }: SpellCardProps) {
   const summaryBits = [spell.school, spell.area].filter((b) => b && b.trim());
   const summary = summaryBits.join(' · ');
 
+  // O card mostra o resumo, não a descrição integral do livro — sem `summary`
+  // preenchido, a primeira frase já diz o essencial sem virar paredão de texto.
+  // O texto completo continua no formulário de edição.
+  const blurb = spell.summary?.trim() || firstSentence(spell.description);
+
   return (
     <Card className={styles.spell}>
       <div
@@ -28,6 +34,12 @@ function SpellCard({ spell, index, onCast, onEdit }: SpellCardProps) {
         onClick={!readOnly ? () => onEdit?.(index) : undefined}
         role={!readOnly ? 'button' : undefined}
         tabIndex={!readOnly ? 0 : undefined}
+        onKeyDown={!readOnly ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onEdit?.(index);
+          }
+        } : undefined}
       >
         <div className={styles.cost}>
           <b>{mpCost}</b>
@@ -39,7 +51,7 @@ function SpellCard({ spell, index, onCast, onEdit }: SpellCardProps) {
             {circulo > 0 ? `${circulo}º Círculo` : 'Magia'}
             {summary ? ` · ${summary}` : ''}
           </div>
-          {spell.description && <p className={styles.descr}>{spell.description}</p>}
+          {blurb && <p className={styles.descr}>{blurb}</p>}
           {enhancements.length > 0 && (
             <ul className={styles.enhList}>
               {enhancements.map((enh, i) => (

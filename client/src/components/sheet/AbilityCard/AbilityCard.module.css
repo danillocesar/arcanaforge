@@ -43,6 +43,28 @@
   text-transform: uppercase;
 }
 
+.fav {
+  margin-left: auto;
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s var(--ease);
+}
+
+.fav:hover {
+  color: var(--accent-ink);
+  transform: scale(1.15);
+}
+
+.favOn {
+  color: var(--accent);
+}
+
 .metaRow {
   display: flex;
   align-items: center;
@@ -77,14 +99,27 @@
 
 .btnUse {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: none;
-  border-top: 1px solid var(--line);
-  border-radius: 0 0 var(--r-md, 14px) var(--r-md, 14px);
+  border-radius: 13px;
   background: var(--accent);
-  color: #04130d;
+  color: #0a0b0e;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s var(--ease), background 0.2s;
+}
+
+.btnUse:hover {
+  background: var(--accent-deep);
+}
+
+.btnUse:active {
+  transform: scale(0.97);
 }

@@ -16,6 +16,7 @@ import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
+import EmptyState from '../../components/ui/EmptyState/EmptyState';
 import styles from './SelectPage.module.css';
 
 function hoursUntilDelete(pendingDeleteAt: string): number {
@@ -97,7 +98,7 @@ export default function SelectPage() {
         )}
 
         {query && visibleChars.length === 0 && (
-          <p className={styles.emptySearch}>Nenhum personagem encontrado para "{search}".</p>
+          <EmptyState compact icon="🔍" title={`Nenhum personagem encontrado para "${search}".`} />
         )}
 
         <SelectGrid

@@ -1,5 +1,13 @@
-.search {
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 11px;
+}
+
+.search {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .list {

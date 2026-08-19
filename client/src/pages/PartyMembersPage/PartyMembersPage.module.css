@@ -10,39 +10,44 @@
 .content {
   flex: 1;
   padding: 30px 24px;
-  max-width: 900px;
+  max-width: 1120px;
   margin: 0 auto;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 28px;
+  align-items: start;
+}
+
+.mainCol {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  min-width: 0;
 }
 
-/* Invite code (in SectionNav rightSlot) */
-.inviteCode {
-  font-size: 0.75rem;
-  font-weight: 700;
-  font-family: monospace;
-  letter-spacing: 0.15em;
-  color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.08);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 4px;
-  padding: 3px 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  user-select: none;
+@media (max-width: 860px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
 }
 
-.inviteCode:hover {
-  background: rgba(201, 168, 76, 0.15);
-  border-color: rgba(201, 168, 76, 0.4);
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.inviteCodeCopied {
-  color: var(--text-primary);
-  background: rgba(100, 200, 100, 0.12);
-  border-color: rgba(100, 200, 100, 0.3);
+.loadingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.loadingRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* Section titles */
@@ -91,7 +96,7 @@
 
 .cardSelected {
   border-color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.06);
+  background: rgba(155, 184, 209, 0.06);
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent-gold) 25%, transparent);
 }
 
@@ -232,8 +237,8 @@
   font-size: 0.65rem;
   font-weight: 700;
   color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.12);
-  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: rgba(155, 184, 209, 0.12);
+  border: 1px solid rgba(155, 184, 209, 0.25);
   border-radius: 4px;
   padding: 1px 6px;
   text-transform: uppercase;
@@ -297,7 +302,7 @@
   gap: 10px;
   width: 100%;
   padding: 10px 16px 10px 52px;
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
   border: none;
   cursor: pointer;
   transition: background 0.15s;
@@ -307,7 +312,7 @@
 }
 
 .viewCharBtn:hover {
-  background: rgba(201, 168, 76, 0.06);
+  background: rgba(155, 184, 209, 0.06);
 }
 
 .viewCharAvatar {

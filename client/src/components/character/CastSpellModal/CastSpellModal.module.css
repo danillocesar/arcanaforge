@@ -113,8 +113,8 @@
 }
 
 .enhItem:has(input:checked) {
-  border-color: rgba(201, 168, 76, 0.4);
-  background: rgba(201, 168, 76, 0.06);
+  border-color: rgba(155, 184, 209, 0.4);
+  background: rgba(155, 184, 209, 0.06);
 }
 
 .enhItem input[type="checkbox"] {
@@ -153,8 +153,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: rgba(201, 168, 76, 0.08);
-  border: 1px solid rgba(201, 168, 76, 0.2);
+  background: rgba(155, 184, 209, 0.08);
+  border: 1px solid rgba(155, 184, 209, 0.2);
   border-radius: 8px;
   margin-bottom: 8px;
 }
@@ -222,8 +222,8 @@
 .confirmBtn {
   flex: 1;
   padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.25), rgba(201, 168, 76, 0.15));
-  border: 1px solid rgba(201, 168, 76, 0.4);
+  background: linear-gradient(135deg, rgba(155, 184, 209, 0.25), rgba(155, 184, 209, 0.15));
+  border: 1px solid rgba(155, 184, 209, 0.4);
   border-radius: 7px;
   color: var(--accent-gold);
   font-size: 0.88rem;
@@ -238,7 +238,7 @@
 }
 
 .confirmBtn:hover {
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.35), rgba(201, 168, 76, 0.25));
+  background: linear-gradient(135deg, rgba(155, 184, 209, 0.35), rgba(155, 184, 209, 0.25));
   border-color: var(--accent-gold);
 }
 

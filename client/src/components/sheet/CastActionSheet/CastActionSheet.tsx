@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { getTotalLevel, applyBuffToCharacter } from '../../../utils/calculations';
+import { getTotalLevel, applyBuffToCharacter, calcSpellResistance } from '../../../utils/calculations';
+import { composeCast, formatResistanceLine, type CastEnhancement } from '../../../utils/castAction';
 import { playMagicSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
 import { apiFetchParties, apiFetchPartyCharacters, apiApplyBuffToParty, type PartyCharacter } from '../../../api';
@@ -8,13 +9,10 @@ import type { BuffEffect } from '../../../types/character';
 import { getInitials } from '../../../utils/formatters';
 import { showToast } from '../../../services/toastService';
 import Sheet from '../../ui/Sheet/Sheet';
+import Stepper from '../../ui/Stepper/Stepper';
 import styles from './CastActionSheet.module.css';
 
-export interface CastActionEnhancement {
-  description: string;
-  mpCost: number;
-  buffs?: BuffEffect[];
-}
+export type CastActionEnhancement = CastEnhancement;
 
 export interface CastActionSpec {
   name: string;
@@ -22,6 +20,8 @@ export interface CastActionSpec {
   buffs?: BuffEffect[];
   buffTargetScope?: 'self' | 'party';
   enhancements?: CastActionEnhancement[];
+  /** Teste de resistência da magia de origem, ex. "Vontade anula" — vai junto no buff. */
+  resistance?: string;
 }
 
 interface CastActionSheetProps {
@@ -33,7 +33,7 @@ type Step = 'config' | 'targets';
 
 function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   const { character, updateCharacter, sendSpellCast } = useCharacterContext();
-  const [selectedEnh, setSelectedEnh] = useState<boolean[]>([]);
+  const [enhCounts, setEnhCounts] = useState<number[]>([]);
   const [step, setStep] = useState<Step>('config');
   const [candidates, setCandidates] = useState<PartyCharacter[]>([]);
   const [candidatePartyId, setCandidatePartyId] = useState<Record<string, string>>({});
@@ -47,7 +47,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   useEffect(() => {
     if (action) {
       setLastAction(action);
-      setSelectedEnh(new Array((action.enhancements ?? []).length).fill(false));
+      setEnhCounts(new Array((action.enhancements ?? []).length).fill(0));
       setStep('config');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,22 +56,25 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   if (!character || !activeAction) return null;
 
   const baseCost = Number(activeAction.mpCost) || 0;
-  const enhCost = enhancements.reduce(
-    (sum, enh, i) => (selectedEnh[i] ? sum + (Number(enh.mpCost) || 0) : sum),
-    0,
-  );
-  const totalCost = baseCost + enhCost;
+  const { totalCost, effects: combinedBuffs } = composeCast(activeAction, enhCounts);
   const level = getTotalLevel(character);
 
-  const combinedBuffs: BuffEffect[] = [
-    ...(activeAction.buffs ?? []),
-    ...enhancements.flatMap((enh, i) => (selectedEnh[i] ? (enh.buffs ?? []) : [])),
-  ];
+  // A CD sai do conjurador, mas quem precisa dela na ficha é quem recebeu o buff —
+  // por isso viaja junto com o buff, inclusive no aplicado no grupo.
+  const dc = calcSpellResistance(character);
+  const resistanceLine = formatResistanceLine(activeAction.resistance, dc);
 
-  const toggleEnhancement = (i: number) => {
-    setSelectedEnh((prev) => {
+  const buffPayload = {
+    name: activeAction.name,
+    effects: combinedBuffs,
+    source: `de ${character.name}`,
+    ...(resistanceLine ? { resistance: activeAction.resistance, dc } : {}),
+  };
+
+  const setEnhCount = (i: number, value: number) => {
+    setEnhCounts((prev) => {
       const next = [...prev];
-      next[i] = !next[i];
+      next[i] = Math.max(0, value);
       return next;
     });
   };
@@ -100,7 +103,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
     if (combinedBuffs.length === 0 || activeAction.buffTargetScope !== 'party') {
       // Sem alvo a escolher: se há buff, aplica só no próprio conjurador.
       if (combinedBuffs.length > 0) {
-        const buff = { name: activeAction.name, effects: combinedBuffs, mp: totalCost, active: true, source: `de ${character.name}` };
+        const buff = { ...buffPayload, mp: totalCost, active: true };
         updateCharacter((f) => applyBuffToCharacter(f, buff));
       }
       finish();
@@ -113,7 +116,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
       const parties = await apiFetchParties();
       const mine = parties.filter((p) => p.members.some((m) => m.characterIds.includes(character._id)));
       if (mine.length === 0) {
-        const buff = { name: activeAction.name, effects: combinedBuffs, mp: totalCost, active: true, source: `de ${character.name}` };
+        const buff = { ...buffPayload, mp: totalCost, active: true };
         updateCharacter((f) => applyBuffToCharacter(f, buff));
         finish();
         onClose();
@@ -164,7 +167,6 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
       return;
     }
 
-    const buffPayload = { name: activeAction.name, effects: combinedBuffs, source: `de ${character.name}` };
     const others = [...selectedTargets].filter((id) => id !== character._id);
     const includesSelf = selectedTargets.has(character._id);
 
@@ -256,20 +258,29 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
 
       {enhancements.length > 0 ? (
         <div className={styles.enhList}>
-          {enhancements.map((enh, i) => (
-            <label key={i} className={styles.enhItem}>
-              <input
-                type="checkbox"
-                checked={selectedEnh[i] || false}
-                onChange={() => toggleEnhancement(i)}
-              />
-              <span className={styles.enhDesc}>{enh.description || `Aprimoramento ${i + 1}`}</span>
-              <span className={styles.enhPm}>+{Number(enh.mpCost) || 0} PM</span>
-            </label>
-          ))}
+          {enhancements.map((enh, i) => {
+            const times = enhCounts[i] || 0;
+            const unitCost = Number(enh.mpCost) || 0;
+            return (
+              <div key={i} className={`${styles.enhItem} ${times > 0 ? styles.enhItemOn : ''}`.trim()}>
+                <span className={styles.enhDesc}>{enh.description || `Aprimoramento ${i + 1}`}</span>
+                <Stepper value={times} onChange={(v) => setEnhCount(i, v)} min={0} className={styles.enhStepper} />
+                <span className={styles.enhPm}>
+                  +{times > 0 ? unitCost * times : unitCost} PM
+                </span>
+              </div>
+            );
+          })}
         </div>
       ) : (
         activeAction?.enhancements !== undefined && <p className={styles.empty}>Nenhum aprimoramento cadastrado.</p>
+      )}
+
+      {resistanceLine && (
+        <div className={styles.resistRow}>
+          <span className={styles.resistLabel}>Resistência</span>
+          <span className={styles.resistVal}>{resistanceLine}</span>
+        </div>
       )}
 
       <div className={styles.totalRow}>

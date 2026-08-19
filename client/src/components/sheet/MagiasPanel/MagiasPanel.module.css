@@ -3,7 +3,7 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  background: linear-gradient(150deg, #0e9d6f, #0a6f51);
+  background: linear-gradient(150deg, var(--accent), var(--accent-deep));
   color: #fff;
   box-shadow: var(--shadow-pop);
   border-color: transparent;

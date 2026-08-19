@@ -37,7 +37,7 @@ export const SKILLS_CONFIG: SkillConfig[] = [
   { id: 'pilotagem', name: 'Pilotagem', attribute: 'dex', armorPenalty: false, trained: true },
   { id: 'pontaria', name: 'Pontaria', attribute: 'dex', armorPenalty: false },
   { id: 'reflexos', name: 'Reflexos', attribute: 'dex', armorPenalty: false },
-  { id: 'religiao', name: 'Religião', attribute: 'wis', armorPenalty: false },
+  { id: 'religiao', name: 'Religião', attribute: 'wis', armorPenalty: false, trained: true },
   { id: 'sobrevivencia', name: 'Sobrevivência', attribute: 'wis', armorPenalty: false },
   { id: 'vontade', name: 'Vontade', attribute: 'wis', armorPenalty: false },
 ];

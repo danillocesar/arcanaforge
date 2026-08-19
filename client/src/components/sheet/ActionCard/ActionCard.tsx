@@ -87,6 +87,12 @@ function ActionCard({ attack, index, onEdit }: ActionCardProps) {
         onClick={!readOnly ? () => onEdit?.(index) : undefined}
         role={!readOnly ? 'button' : undefined}
         tabIndex={!readOnly ? 0 : undefined}
+        onKeyDown={!readOnly ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onEdit?.(index);
+          }
+        } : undefined}
       >
         <div className={styles.wname}>
           <h3>{attack.name || 'Arma sem nome'}</h3>

@@ -66,6 +66,16 @@
   color: var(--accent-ink);
 }
 
+.skill:not(.trained) {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.skill:not(.trained):hover,
+.skill:not(.trained):focus-within {
+  opacity: 1;
+}
+
 .controls {
   display: flex;
   align-items: center;

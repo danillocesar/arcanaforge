@@ -73,6 +73,38 @@ function TrackUnit({
   );
 }
 
+function Legend() {
+  return (
+    <div className={styles.legend}>
+      <div className={styles.legendRow}>
+        <svg className={styles.legendChevron} viewBox="0 0 10 14" aria-hidden>
+          <path
+            d="M1.5 1.5l6 5.25-6 5.25"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>Turno atual</span>
+      </div>
+      <div className={styles.legendRow}>
+        <span className={styles.legendDot} aria-hidden />
+        <span>Próximo</span>
+      </div>
+      <div className={styles.legendRow}>
+        <span className={styles.legendSwatch} data-side="ally" aria-hidden />
+        <span>Aliado</span>
+      </div>
+      <div className={styles.legendRow}>
+        <span className={styles.legendSwatch} data-side="enemy" aria-hidden />
+        <span>Inimigo</span>
+      </div>
+    </div>
+  );
+}
+
 export default function MiniOrder({ rows }: MiniOrderProps) {
   const { turnIndex, combatData } = useCombatContext();
   const rodadaBase = combatData.round ?? 1;
@@ -90,6 +122,7 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
             <TrackUnit key={row.id} row={row} isCurrentTurn={false} />
           ))}
         </div>
+        <Legend />
       </div>
     );
   }
@@ -138,6 +171,7 @@ export default function MiniOrder({ rows }: MiniOrderProps) {
           );
         })}
       </div>
+      <Legend />
     </div>
   );
 }

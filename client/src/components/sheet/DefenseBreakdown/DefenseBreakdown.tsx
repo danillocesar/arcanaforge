@@ -11,6 +11,7 @@ function DefenseBreakdown() {
   if (!character) return null;
 
   const { base, dexterity, buffs, total } = getDefenseBreakdown(character);
+  const damageReductions = character.damageReductions ?? [];
 
   const setBase = (val: number) =>
     updateCharacter((f) => ({ ...f, defense: { ...f.defense, base: val } }));
@@ -40,6 +41,12 @@ function DefenseBreakdown() {
           onClick={!readOnly ? () => openEdit('armadura', idx) : undefined}
           role={!readOnly ? 'button' : undefined}
           tabIndex={!readOnly ? 0 : undefined}
+          onKeyDown={!readOnly ? (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openEdit('armadura', idx);
+            }
+          } : undefined}
         >
           <span>{arm.name || 'Armadura'}</span>
           <b>{formatMod(arm.value)}</b>
@@ -58,29 +65,43 @@ function DefenseBreakdown() {
         <b>{total}</b>
       </div>
 
-      <div className={styles.popRow}>
-        <span>Redução de Dano</span>
-        {!readOnly ? (
-          <Stepper
-            value={character.damageReduction}
-            onChange={(v) => updateCharacter((f) => ({ ...f, damageReduction: v }))}
-            step={1}
-            min={0}
-            className={styles.stepper}
-          />
-        ) : (
-          <b>{character.damageReduction || '—'}</b>
-        )}
-      </div>
+      <div className={styles.popSubHead}>Redução de Dano</div>
+
+      {damageReductions.length > 0 ? (
+        damageReductions.map((rd, idx) => (
+          <div
+            key={idx}
+            className={`${styles.popRow} ${!readOnly ? styles.tappable : ''}`}
+            onClick={!readOnly ? () => openEdit('rd', idx) : undefined}
+            role={!readOnly ? 'button' : undefined}
+            tabIndex={!readOnly ? 0 : undefined}
+            onKeyDown={!readOnly ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openEdit('rd', idx);
+              }
+            } : undefined}
+          >
+            <span>{rd.name || 'Geral'}</span>
+            <b>{rd.value}</b>
+          </div>
+        ))
+      ) : (
+        <div className={styles.popRow}>
+          <span>Nenhuma</span>
+          <b>—</b>
+        </div>
+      )}
 
       {!readOnly && (
-        <button
-          type="button"
-          className={styles.btnAdd}
-          onClick={() => openCreate('item')}
-        >
-          + Armadura / Item
-        </button>
+        <div className={styles.addRow}>
+          <button type="button" className={styles.btnAdd} onClick={() => openCreate('item')}>
+            + Armadura / Item
+          </button>
+          <button type="button" className={styles.btnAdd} onClick={() => openCreate('rd')}>
+            + RD
+          </button>
+        </div>
       )}
     </div>
   );

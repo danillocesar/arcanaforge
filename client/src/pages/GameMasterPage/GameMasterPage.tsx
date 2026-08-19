@@ -15,6 +15,8 @@ import MiniOrder from '../../components/combat/MiniOrder/MiniOrder';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
+import EmptyState from '../../components/ui/EmptyState/EmptyState';
+import SegmentedControl from '../../components/ui/SegmentedControl/SegmentedControl';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './GameMasterPage.module.css';
 
@@ -130,7 +132,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   return (
     <>
       {showGm && <div className={styles.gmStrip} aria-hidden />}
-      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} showTormentaLogo />
+      <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
       {!spectatorMode && (
         <SectionNav
           items={navItems}
@@ -157,44 +159,31 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
         <div className={styles.gmSection}>
           {showGm && <CombatToolbar />}
           {showGm && (
-            <div className={styles.combatTabs} role="tablist" aria-label="Participantes do combate">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={combatTab === 'active'}
-                className={`${styles.combatTab} ${combatTab === 'active' ? styles.combatTabActive : ''}`}
-                onClick={() => setCombatTab('active')}
-              >
-                Ativos
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={combatTab === 'inactive'}
-                className={`${styles.combatTab} ${combatTab === 'inactive' ? styles.combatTabActive : ''}`}
-                onClick={() => setCombatTab('inactive')}
-              >
-                Inativos
-                {inactiveRows.length > 0 ? (
-                  <span className={styles.combatTabBadge}>{inactiveRows.length}</span>
-                ) : null}
-              </button>
-            </div>
+            <SegmentedControl
+              className={styles.combatTabs}
+              options={[
+                { value: 'active', label: 'Ativos' },
+                {
+                  value: 'inactive',
+                  label: inactiveRows.length > 0 ? `Inativos (${inactiveRows.length})` : 'Inativos',
+                },
+              ]}
+              value={combatTab}
+              onChange={(v) => setCombatTab(v as 'active' | 'inactive')}
+            />
           )}
           {showEmptyActive ? (
-            <div className={styles.empty}>
-              <span className={styles.emptyIcon}>🎲</span>
-              <p>Nenhum participante ativo no combate.</p>
-              <p className={styles.emptyHint}>
-                Os personagens da party aparecem aqui. Inativos ficam na aba Inativos. Use o botão abaixo para
-                inimigos.
-              </p>
-            </div>
+            <EmptyState
+              icon="🎲"
+              title="Nenhum participante ativo no combate."
+              hint="Os personagens da party aparecem aqui. Inativos ficam na aba Inativos. Use o botão abaixo para inimigos."
+            />
           ) : showEmptyInactive ? (
-            <div className={styles.empty}>
-              <p>Nenhum personagem inativo.</p>
-              <p className={styles.emptyHint}>Use Inativar no card de um personagem na aba Ativos.</p>
-            </div>
+            <EmptyState
+              icon="💤"
+              title="Nenhum personagem inativo."
+              hint="Use Inativar no card de um personagem na aba Ativos."
+            />
           ) : (
             <div className={styles.cardsWrapper}>
               {rows.map((row, i) => (

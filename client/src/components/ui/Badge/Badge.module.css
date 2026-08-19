@@ -20,7 +20,7 @@
 }
 
 .gold {
-  background: rgba(201, 168, 76, 0.15);
+  background: rgba(155, 184, 209, 0.15);
   color: var(--accent-gold);
   border: 1px solid var(--accent-gold-dim);
 }

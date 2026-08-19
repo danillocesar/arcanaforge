@@ -62,9 +62,11 @@ function SkillRow({ skillId }: SkillRowProps) {
 
   const skill = character.skills[skillId] || { trained: false, misc: 0 };
   const total = calcTotalSkill(character, skillId);
+  const locked = !!cfg.trained && !skill.trained;
   const usedAttr = (skill.attribute || cfg.attribute) as AttributeId;
   const name = cfg.customLabel ? skill.label || cfg.name : cfg.name;
   const icon = SKILL_ICONS[skillId] || NEUTRAL_GLYPH;
+  const displayTotal = locked ? '—' : formatMod(total);
 
   const setTrained = (trained: boolean) => {
     updateCharacter((prev) => ({
@@ -107,10 +109,10 @@ function SkillRow({ skillId }: SkillRowProps) {
             step={1}
             aria-label="Bônus diverso"
           />
-          <span className={styles.vl}>{formatMod(total)}</span>
+          <span className={styles.vl}>{displayTotal}</span>
         </div>
       ) : (
-        <span className={styles.vl}>{formatMod(total)}</span>
+        <span className={styles.vl}>{displayTotal}</span>
       )}
     </div>
   );

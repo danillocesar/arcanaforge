@@ -1,4 +1,4 @@
-import type { Character, AttributeId, Buff, BuffEffect, BuffType, Attack, InventoryItem } from '../types/character';
+import type { Character, AttributeId, Buff, BuffEffect, BuffType, Attack, InventoryItem, DamageReduction } from '../types/character';
 import { SKILLS_CONFIG } from '../data/pericias';
 import { filterFixedBonusEffects, normalizeEffectType } from './buffEffects';
 
@@ -27,7 +27,7 @@ export function createEmptyCharacter(name?: string): Character {
     hp: { max: 0, current: 0 },
     mp: { max: 0, current: 0 },
     defense: { base: 10, items: [] },
-    damageReduction: 0,
+    damageReductions: [],
     attacks: [],
     skills,
     abilities: [],
@@ -58,17 +58,24 @@ export function getTotalLevel(character: Character): number {
   return Number(character.level) || 1;
 }
 
+/** Bônus de treinamento do T20: +2 até 6º, +4 do 7º ao 14º, +6 do 15º em diante. */
+export function trainingBonusForLevel(level: number): number {
+  if (level >= 15) return 6;
+  if (level >= 7) return 4;
+  return 2;
+}
+
 /**
  * Buffs sintéticos, sempre ativos, vindos de Poderes/Habilidades e Itens marcados
  * como `alwaysActive` — não ficam em `character.buffs[]`, são derivados na hora.
  */
 function synthesizeAlwaysActiveBuffs(character: Character): Buff[] {
   const fromAbilities = (character.abilities ?? [])
-    .filter((a) => a.alwaysActive)
+    .filter((a) => a.alwaysActive && !a.suppressed)
     .map((a) => ({ name: a.name, effects: filterFixedBonusEffects(a.buffs ?? []), mp: 0, active: true, source: 'Poder' }))
     .filter((b) => b.effects.length > 0);
   const fromItems = (character.inventory ?? [])
-    .filter((it) => it.alwaysActive)
+    .filter((it) => it.alwaysActive && !it.suppressed)
     .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Item' }))
     .filter((b) => b.effects.length > 0);
   return [...fromAbilities, ...fromItems];
@@ -136,11 +143,12 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   if (!cfg) return 0;
   const skill = character.skills[skillId];
   if (!skill) return 0;
+  if (cfg.trained && !skill.trained) return 0;
 
   const halfLevel = Math.floor(getTotalLevel(character) / 2);
   const usedAttribute = (skill.attribute || cfg.attribute) as AttributeId;
   const attributeMod = getEffectiveAttribute(character, usedAttribute);
-  const trainingBonus = skill.trained ? 2 : 0;
+  const trainingBonus = skill.trained ? trainingBonusForLevel(getTotalLevel(character)) : 0;
   const miscBonus = skill.misc || 0;
   let armorPenalty = 0;
   if (cfg.armorPenalty) {
@@ -389,15 +397,53 @@ export function normalizeBuffs(buffs: unknown[]): Buff[] {
   });
 }
 
+/** Nome usado quando a RD não diz contra qual tipo de dano ela vale. */
+const GENERAL_DR_NAME = 'Geral';
+
+/** Uma linha de RD já saneada, ou `null` se a linha não tinha valor aproveitável. */
+function damageReductionRow(raw: unknown): DamageReduction | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as { name?: unknown; value?: unknown };
+  const value = Number(row.value);
+  if (!Number.isFinite(value) || value === 0) return null;
+  const name = String(row.name ?? '').trim() || GENERAL_DR_NAME;
+  return { name, value };
+}
+
 /**
- * Converte Redução de Dano do formato antigo (texto livre, ex. "5 (fogo)") para o
- * novo formato numérico. Personagens salvos antes desta mudança guardam RD como
- * string — extrai o primeiro número encontrado, ou 0 se não houver nenhum.
+ * Migração de leitura da Redução de Dano, rodada a cada carregamento de ficha —
+ * por isso precisa ser idempotente. Três formatos históricos convergem aqui:
+ *
+ * - lista nova `damageReductions` → só é saneada (linha sem número sai fora);
+ * - número solto `damageReduction` (formato intermediário) → uma linha "Geral";
+ * - texto livre `"5 (fogo)"` (formato original) → **recupera o tipo** do parêntese,
+ *   em vez de descartá-lo como a migração anterior fazia.
+ *
+ * A lista nova sempre ganha do valor legado: se ela existe, o número antigo é
+ * resíduo de uma ficha já migrada.
  */
-export function normalizeDamageReduction(value: unknown): number {
-  if (typeof value === 'number') return value;
-  const match = String(value ?? '').match(/-?\d+/);
-  return match ? Number(match[0]) : 0;
+export function normalizeDamageReductions(
+  list: unknown,
+  legacy: unknown,
+): DamageReduction[] {
+  // A simples presença do campo novo significa que a migração já rodou nesta ficha —
+  // então ele é a verdade mesmo vazio, senão apagar todas as RDs seria desfeito pelo
+  // valor legado que continua no documento salvo.
+  if (Array.isArray(list)) {
+    return list.map(damageReductionRow).filter((r): r is DamageReduction => r !== null);
+  }
+
+  if (typeof legacy === 'number') {
+    return legacy !== 0 ? [{ name: GENERAL_DR_NAME, value: legacy }] : [];
+  }
+
+  const text = String(legacy ?? '');
+  const value = text.match(/-?\d+/);
+  if (!value) return [];
+  // "5 (fogo)" → tipo entre parênteses; "RD 5 contra fogo" e afins não são
+  // adivinhados, caem em "Geral" pra não inventar nome errado.
+  const name = text.match(/\(([^)]+)\)/)?.[1]?.trim();
+  return [{ name: name || GENERAL_DR_NAME, value: Number(value[0]) }];
 }
 
 /**

@@ -1,8 +1,11 @@
 import { lazy, Suspense, useState } from 'react';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
+import EmptyState from '../../ui/EmptyState/EmptyState';
+import CollapsibleGroup from '../../ui/CollapsibleGroup/CollapsibleGroup';
 import AbilityCard from '../AbilityCard/AbilityCard';
 import AddButton from '../AddButton/AddButton';
 import CastActionSheet from '../CastActionSheet/CastActionSheet';
+import { groupAbilities, FAVORITES_GROUP_KEY } from '../../../utils/abilityGroups';
 
 // O catálogo oficial de poderes (data/powers.ts, ~55KB) só é usado dentro do
 // picker — carrega sob demanda, na primeira vez que o usuário abre "+ Poder".
@@ -14,7 +17,7 @@ import type { FormValues } from '../SheetForm/SheetForm';
 import styles from './PoderesPanel.module.css';
 
 function PoderesPanel() {
-  const { character, readOnly } = useCharacterContext();
+  const { character, updateCharacter, readOnly } = useCharacterContext();
   const { openEdit, openCreate, openCreateWithValues } = useSheetForm();
   const [castAction, setCastAction] = useState<CastActionSpec | null>(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -28,6 +31,7 @@ function PoderesPanel() {
   if (!character) return null;
 
   const abilities = character.abilities ?? [];
+  const groups = groupAbilities(abilities);
 
   const handleEdit = (index: number) =>
     openEdit(abilities[index]?.kind === 'Habilidade' ? 'habilidade' : 'poder', index);
@@ -40,9 +44,16 @@ function PoderesPanel() {
     }, 320);
   };
 
+  const handleToggleFavorite = (index: number) => {
+    updateCharacter((prev) => ({
+      ...prev,
+      abilities: prev.abilities.map((a, i) => (i === index ? { ...a, favorite: !a.favorite } : a)),
+    }));
+  };
+
   const handleUse = (index: number) => {
     const ab = abilities[index];
-    if (!ab) return;
+    if (!ab || ab.alwaysActive) return;
     setCastAction({
       name: ab.name,
       mpCost: Number(ab.mpCost) || 0,
@@ -58,17 +69,36 @@ function PoderesPanel() {
         action={!readOnly && <AddButton label="Poder / Hab." onClick={() => setShowPicker(true)} />}
       />
       {abilities.length === 0 ? (
-        <p className={styles.empty}>Nenhum poder ou habilidade cadastrado.</p>
+        <EmptyState
+          icon="✦"
+          title="Nenhum poder ou habilidade cadastrado."
+          hint='Toque em "+ Poder / Hab." para escolher da lista oficial ou criar um personalizado.'
+        />
       ) : (
-        <div className={styles.list}>
-          {abilities.map((ability, index) => (
-            <AbilityCard
-              key={index}
-              ability={ability}
-              index={index}
-              onEdit={handleEdit}
-              onUse={handleUse}
-            />
+        <div className={styles.groups}>
+          {groups.map((group) => (
+            <CollapsibleGroup
+              // A chave de colapso é o grupo, não a posição — renomear/reordenar
+              // poderes não faz o acordeão trocar de estado.
+              key={group.key}
+              id={`poderes-${group.key}`}
+              title={group.label}
+              count={group.items.length}
+              accent={group.key === FAVORITES_GROUP_KEY}
+            >
+              <div className={styles.list}>
+                {group.items.map(({ ability, index }) => (
+                  <AbilityCard
+                    key={`${group.key}-${index}`}
+                    ability={ability}
+                    index={index}
+                    onEdit={handleEdit}
+                    onUse={handleUse}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                ))}
+              </div>
+            </CollapsibleGroup>
           ))}
         </div>
       )}

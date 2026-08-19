@@ -9,6 +9,9 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   min-height: 100vh;
+  /* App é dark-only — controles nativos (date/time picker, scrollbar de formulário)
+     desenham no esquema escuro em vez do claro padrão do navegador. */
+  color-scheme: dark;
 }
 
 /* scrollbar styles, input/select/textarea/button resets from the original */

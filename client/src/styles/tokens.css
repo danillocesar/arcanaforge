@@ -4,25 +4,25 @@
      Canonical source: design-mockups/ficha-tormenta.html
      ============================================================ */
 
-  /* Surfaces & ink */
-  --bg: #0c0d11;
-  --surface: #16181e;
-  --surface-2: #1e2027;
-  --ink: #e9eaed;
-  --ink-2: #9ba1ad;
-  --ink-3: #6b707c;
-  --line: #23262e;
-  --line-2: #2c2f38;
+  /* Surfaces & ink — "Codex" direction (dark + ice, ref. hidden-codex) */
+  --bg: #0a0b0e;
+  --surface: #1a1d25;
+  --surface-2: #1f2330;
+  --ink: #e8e4dc;
+  --ink-2: #8a8b94;
+  --ink-3: #4a4d57;
+  --line: rgba(155, 184, 209, 0.15);
+  --line-2: rgba(155, 184, 209, 0.4);
 
   /* Accents */
-  --accent: #10b981;
-  --accent-deep: #0c9a6c;
-  --accent-soft: rgba(16, 185, 129, 0.13);
-  --accent-ink: #4ade80;
-  --warn: #f0a830;
-  --warn-soft: rgba(240, 168, 48, 0.13);
-  --danger: #fb5570;
-  --danger-soft: rgba(251, 85, 112, 0.13);
+  --accent: #9bb8d1;
+  --accent-deep: #5b7a96;
+  --accent-soft: rgba(155, 184, 209, 0.13);
+  --accent-ink: #c8dcea;
+  --warn: #d4a04c;
+  --warn-soft: rgba(212, 160, 76, 0.13);
+  --danger: #a8302a;
+  --danger-soft: rgba(168, 48, 42, 0.13);
 
   /* Radii (new) */
   --r-lg: 22px;
@@ -32,7 +32,7 @@
   /* Shadows (new) */
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -6px rgba(0, 0, 0, 0.5);
-  --shadow-pop: 0 18px 50px -16px rgba(16, 185, 129, 0.45);
+  --shadow-pop: 0 18px 50px -16px rgba(155, 184, 209, 0.45);
 
   /* Typography */
   --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
@@ -76,21 +76,22 @@
   --accent-green: var(--accent);
   --accent-green-bar: var(--accent);
   --accent-turn: #2dd4bf;
-  --accent-gm: var(--warn);
+  --accent-gm: var(--accent);
   --accent-success: var(--accent);
   --btn-add-bg: var(--surface-2);
   --btn-add-hover: var(--line-2);
 
-  /* Radii (legacy values preserved) */
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 12px;
+  /* Radii — v2 cutover: legacy tiers now point at the same 3-step scale the
+     ficha already uses, instead of their own separate 4/8/12px values. */
+  --radius-sm: var(--r-sm);
+  --radius: var(--r-sm);
+  --radius-lg: var(--r-md);
 
-  /* Shadows (legacy values preserved) */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.4);
+  /* Shadows — same cutover as radii above. */
+  --shadow-sm: var(--shadow-soft);
+  --shadow: var(--shadow-soft);
+  --shadow-md: var(--shadow-soft);
+  --shadow-lg: var(--shadow-card);
 
   /* Fonts (legacy alias → new body font) */
   --font: var(--font-body);

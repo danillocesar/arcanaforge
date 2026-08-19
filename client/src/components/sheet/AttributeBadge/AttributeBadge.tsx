@@ -44,8 +44,16 @@ function AttributeBadge({ attr }: AttributeBadgeProps) {
     <div
       ref={wrapRef}
       className={clsCard}
-      tabIndex={editing ? -1 : undefined}
+      role={!readOnly && !editing ? 'button' : undefined}
+      tabIndex={editing ? -1 : !readOnly ? 0 : undefined}
+      aria-label={!readOnly && !editing ? `Editar ${ATTRIBUTE_FULL_NAMES[attr]}` : undefined}
       onClick={!readOnly && !editing ? () => setEditing(true) : undefined}
+      onKeyDown={!readOnly && !editing ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setEditing(true);
+        }
+      } : undefined}
       onBlur={editing ? handleBlur : undefined}
     >
       <div className={styles.lab}>{ATTRIBUTE_LABELS[attr]}</div>

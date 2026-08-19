@@ -1,13 +1,19 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import Sheet from '../../ui/Sheet/Sheet';
 import Button from '../../ui/Button/Button';
 import TextField from '../../ui/TextField/TextField';
 import Textarea from '../../ui/Textarea/Textarea';
 import Select from '../../ui/Select/Select';
 import NumberField from '../../ui/NumberField/NumberField';
+import { enhancementPatch } from '../../../utils/itemEnhancements';
+import type { ItemEnhancementTarget, OfficialItemEnhancement } from '../../../data/itemEnhancements';
 import styles from './SheetForm.module.css';
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'list';
+// O catálogo de melhorias/encantos só é usado dentro do picker — carrega sob
+// demanda, como já fazem PowerPicker e SpellPicker.
+const ItemEnhancementPicker = lazy(() => import('../ItemEnhancementPicker/ItemEnhancementPicker'));
+
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'list' | 'enhancementPicker';
 export type ScalarValue = string | number;
 export interface ListRow {
   [key: string]: ScalarValue | ListValue;
@@ -26,10 +32,18 @@ export interface FieldDescriptor {
   half?: boolean;
   /** Only render when this predicate passes for the current draft. */
   showIf?: (values: FormValues) => boolean;
+  /**
+   * When this field changes, derive a patch to apply to other fields — e.g. auto-fill
+   * "Custo (PM)" from "Círculo" without overwriting a value the player already edited.
+   * Receives the new value, the draft after this field's own update, and the draft before it.
+   */
+  onValueChange?: (value: FieldValue, nextValues: FormValues, prevValues: FormValues) => Partial<FormValues> | void;
   /** For `list`: the sub-fields of each row (text/number/select only). */
   itemFields?: FieldDescriptor[];
   /** For `list`: label of the add-row button. */
   addLabel?: string;
+  /** For `enhancementPicker`: which catalogue slice to offer. */
+  enhancementTarget?: ItemEnhancementTarget;
 }
 
 interface SheetFormProps {
@@ -201,16 +215,34 @@ function SheetForm({
 }: SheetFormProps) {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [enhancementField, setEnhancementField] = useState<FieldDescriptor | null>(null);
 
   // Reset draft and confirm state each time the form is (re)opened.
   useEffect(() => {
     setConfirmRemove(false);
+    setEnhancementField(null);
     if (open) setValues(initialValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialValues]);
 
   const setValue = (key: string, value: FieldValue) =>
     setValues((prev) => ({ ...prev, [key]: value }));
+
+  const handleFieldChange = (field: FieldDescriptor, value: FieldValue) =>
+    setValues((prev) => {
+      const next = { ...prev, [field.key]: value };
+      const patch = field.onValueChange?.(value, next, prev);
+      return patch ? ({ ...next, ...patch } as FormValues) : next;
+    });
+
+  const applyEnhancement = (entry: OfficialItemEnhancement) =>
+    setValues((prev) => ({ ...prev, ...enhancementPatch(entry, prev) } as FormValues));
+
+  /** Nomes do catálogo já registrados no texto de efeito deste item. */
+  const appliedEnhancements = String(values.effect ?? '')
+    .split(' · ')
+    .map((part) => part.split(':')[0].trim())
+    .filter(Boolean);
 
   const handleSubmit = () => {
     onSubmit(values);
@@ -264,20 +296,45 @@ function SheetForm({
       <div className={styles.grid}>
         {visibleFields.map((f) => {
           if (f.type === 'list') return renderListField(f);
+          if (f.type === 'enhancementPicker') {
+            return (
+              <div key={f.key} className={styles.full}>
+                <button
+                  type="button"
+                  className={styles.catalogBtn}
+                  onClick={() => setEnhancementField(f)}
+                >
+                  + {f.label}
+                </button>
+              </div>
+            );
+          }
           if (f.type === 'textarea') {
             return (
               <div key={f.key} className={styles.full}>
-                <ScalarField field={f} value={values[f.key] as ScalarValue} onChange={(v) => setValue(f.key, v)} />
+                <ScalarField field={f} value={values[f.key] as ScalarValue} onChange={(v) => handleFieldChange(f, v)} />
               </div>
             );
           }
           return (
             <div key={f.key} className={f.half ? styles.half : styles.full}>
-              <ScalarField field={f} value={values[f.key] as ScalarValue} onChange={(v) => setValue(f.key, v)} />
+              <ScalarField field={f} value={values[f.key] as ScalarValue} onChange={(v) => handleFieldChange(f, v)} />
             </div>
           );
         })}
       </div>
+
+      {enhancementField && (
+        <Suspense fallback={null}>
+          <ItemEnhancementPicker
+            open
+            target={enhancementField.enhancementTarget ?? 'arma'}
+            applied={appliedEnhancements}
+            onPick={applyEnhancement}
+            onClose={() => setEnhancementField(null)}
+          />
+        </Suspense>
+      )}
     </Sheet>
   );
 }

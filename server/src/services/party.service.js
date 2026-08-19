@@ -242,6 +242,10 @@ function createPartyService(refs) {
       mp: 0,
       active: true,
       source: buff.source ? String(buff.source) : undefined,
+      // Teste de resistência da magia: quem recebe o buff é quem precisa do tipo e
+      // da CD na ficha, então acompanham a entrada em vez de ficar só no conjurador.
+      resistance: buff.resistance ? String(buff.resistance) : undefined,
+      dc: Number.isFinite(Number(buff.dc)) ? Number(buff.dc) : undefined,
     };
 
     const tempDelta = {

@@ -110,9 +110,17 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     });
   });
 
-  (character.abilities ?? []).forEach((a, ai) => pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr));
+  // Poder/Item suspenso não oferece seus modificadores: `suppressed` vale pro pacote
+  // inteiro da fonte, igual ao que faz com os buffs fixos em synthesizeAlwaysActiveBuffs.
+  (character.abilities ?? []).forEach((a, ai) => {
+    if (a.suppressed) return;
+    pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr);
+  });
   (character.spells ?? []).forEach((sp, si) => pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr));
-  (character.inventory ?? []).forEach((it, ii) => pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr));
+  (character.inventory ?? []).forEach((it, ii) => {
+    if (it.suppressed) return;
+    pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr);
+  });
 
   return items;
 }

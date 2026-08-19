@@ -189,13 +189,13 @@
 }
 
 .btnCast {
-  margin-top: 11px;
+  margin-top: 12px;
   width: 100%;
-  padding: 11px;
+  padding: 12px;
   border-radius: 13px;
-  background: var(--surface-2);
-  color: var(--ink);
-  border: 1px solid var(--line-2);
+  background: var(--accent);
+  color: #0a0b0e;
+  border: none;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 13px;
@@ -203,12 +203,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.15s var(--ease), background 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s var(--ease), background 0.2s;
 }
 
 .btnCast:hover {
-  background: var(--line-2);
-  border-color: var(--ink-3);
+  background: var(--accent-deep);
 }
 
 .btnCast:active {

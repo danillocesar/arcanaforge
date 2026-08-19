@@ -136,6 +136,9 @@ export interface ApplyBuffPayload {
     name: string;
     effects: BuffEffect[];
     source: string;
+    /** Teste de resistência da magia e sua CD — quem recebe o buff é quem precisa do número. */
+    resistance?: string;
+    dc?: number;
   };
 }
 

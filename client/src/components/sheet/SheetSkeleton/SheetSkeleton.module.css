@@ -1,0 +1,35 @@
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.headerText {
+  flex: 1;
+  min-width: 0;
+}
+
+.gapTop {
+  margin-top: 8px;
+}
+
+.vitals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 9px;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

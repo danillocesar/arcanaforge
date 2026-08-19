@@ -52,6 +52,26 @@
   background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
+/* Botão que abre um catálogo oficial de dentro do formulário. */
+.catalogBtn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(155, 184, 209, 0.4);
+  background: transparent;
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.catalogBtn:hover {
+  background: var(--accent-soft);
+  border-color: rgba(155, 184, 209, 0.6);
+}
+
 .listEmpty {
   font-size: 12px;
   color: var(--ink-3);

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { toggleBuffState } from '../../../utils/calculations';
+import { formatResistanceLine } from '../../../utils/castAction';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import Sheet from '../../ui/Sheet/Sheet';
+import EmptyState from '../../ui/EmptyState/EmptyState';
 import ConditionPicker from '../ConditionPicker/ConditionPicker';
 import type { FormValues } from '../SheetForm/SheetForm';
 import type { Buff } from '../../../types/character';
@@ -73,12 +75,13 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
     <>
       <Sheet open={open} onClose={onClose} title="Buffs & Condições" footer={footer}>
         {buffs.length === 0 ? (
-          <p className={styles.empty}>Nenhum buff ou condição ativo.</p>
+          <EmptyState icon="✨" title="Nenhum buff ou condição ativo." />
         ) : (
           <div className={styles.list}>
             {buffs.map((buff, idx) => {
               const variant = inferVariant(buff);
               const signed = buildSummary(buff);
+              const resistanceLine = formatResistanceLine(buff.resistance, buff.dc);
 
               return (
                 <div key={idx} className={`${styles.card} ${styles[variant]}`}>
@@ -92,6 +95,7 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
                   <div className={styles.info}>
                     <span className={styles.name}>{buff.name || 'Sem nome'}</span>
                     {buff.source && <span className={styles.sourceText}>{buff.source}</span>}
+                    {resistanceLine && <span className={styles.resistText}>{resistanceLine}</span>}
                     {buff.description && <span className={styles.descText}>{buff.description}</span>}
                     {buff.mp > 0 && <span className={styles.source}>{buff.mp} PM</span>}
                   </div>

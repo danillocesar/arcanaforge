@@ -5,6 +5,7 @@ import { CharacterProvider, useCharacterContext } from '../../contexts/Character
 import { apiLoadPartyCharacter } from '../../api';
 import type { Character } from '../../types/character';
 import TormentaSheetBody from '../../components/sheet/TormentaSheetBody/TormentaSheetBody';
+import SheetSkeleton from '../../components/sheet/SheetSkeleton/SheetSkeleton';
 
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './ViewCharacterPage.module.css';
@@ -13,7 +14,7 @@ function ViewCharacterInner({ system }: { system: string }) {
   const { character } = useCharacterContext();
 
   if (!character) {
-    return <div className={styles.loading}>Carregando ficha...</div>;
+    return <SheetSkeleton />;
   }
 
   if (system !== 'tormenta') {

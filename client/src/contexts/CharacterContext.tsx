@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
-import { createEmptyCharacter, normalizeBuffs, normalizeDamageReduction, applyBuffToCharacter } from '../utils/calculations';
+import { createEmptyCharacter, normalizeBuffs, normalizeDamageReductions, applyBuffToCharacter } from '../utils/calculations';
 import {
   apiFetchCharacters,
   apiLoadCharacter,
@@ -217,7 +217,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       const normalized = {
         ...data,
         buffs: normalizeBuffs(data.buffs),
-        damageReduction: normalizeDamageReduction(data.damageReduction),
+        damageReductions: normalizeDamageReductions(data.damageReductions, data.damageReduction),
       };
       setCharacter(normalized);
       setCharacterOriginalId(data._id);
@@ -289,7 +289,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     setCharacter({
       ...char,
       buffs: normalizeBuffs(char.buffs),
-      damageReduction: normalizeDamageReduction(char.damageReduction),
+      damageReductions: normalizeDamageReductions(char.damageReductions, char.damageReduction),
     });
     setCharacterOriginalId(char._id);
     resetUndoState();

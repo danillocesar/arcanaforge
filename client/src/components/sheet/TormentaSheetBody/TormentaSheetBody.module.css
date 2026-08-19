@@ -1,6 +1,7 @@
 .shell {
+  isolation: isolate;
   background:
-    radial-gradient(1200px 600px at 12% -8%, rgba(16, 185, 129, 0.10) 0%, transparent 55%),
+    radial-gradient(1200px 600px at 12% -8%, rgba(155, 184, 209, 0.10) 0%, transparent 55%),
     radial-gradient(1000px 700px at 108% 6%, rgba(96, 165, 250, 0.06) 0%, transparent 50%),
     var(--bg);
   color: var(--ink);
@@ -17,18 +18,23 @@
   padding: 10px 16px 0;
 }
 
-.undoBar {
+.undoToast {
+  position: fixed;
+  right: 16px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 60;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  margin: 10px 16px 0;
-  padding: 8px 12px;
-  border-radius: 10px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 10px 10px 14px;
+  border-radius: 14px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--ink-3);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-card);
+  color: var(--ink-2);
   font-size: 12.5px;
+  animation: undoToastIn 0.3s var(--ease) both;
 }
 
 .undoButton {
@@ -47,9 +53,35 @@
   filter: brightness(1.3);
 }
 
+.undoDismiss {
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  color: var(--ink-3);
+  font-size: 11px;
+  padding: 4px 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.undoDismiss:hover {
+  color: var(--ink);
+}
+
+@keyframes undoToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (min-width: 900px) {
-  .undoBar {
-    margin: 0 0 4px;
+  .undoToast {
+    bottom: 24px;
   }
 }
 

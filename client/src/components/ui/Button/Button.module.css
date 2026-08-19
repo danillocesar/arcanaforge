@@ -66,7 +66,7 @@
 }
 
 .gold {
-  background: linear-gradient(135deg, var(--accent-gold), #e8c95a);
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-ink));
   border: none;
   color: #1a1d27;
   font-weight: 700;
