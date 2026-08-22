@@ -82,7 +82,17 @@ const attackModifierAttrOptions = [{ value: '', label: '— Nenhum —' }, ...at
 const ATTACK_MODIFIER_ITEM_FIELDS: FieldDescriptor[] = [
   { key: 'label', label: 'Nome', type: 'text', placeholder: 'Ex.: Ataque Poderoso' },
   { key: 'attackRoll', label: 'Bônus de Ataque', type: 'number', half: true },
+  // Bônus dirigido por atributo: soma o valor do atributo no teste/dano,
+  // acumulável com o valor fixo digitado ao lado.
+  {
+    key: 'attackRollAttribute', label: 'Ataque + atributo', type: 'select',
+    options: attackModifierAttrOptions, half: true,
+  },
   { key: 'damageBonus', label: 'Bônus de Dano', type: 'number', half: true },
+  {
+    key: 'damageBonusAttribute', label: 'Dano + atributo', type: 'select',
+    options: attackModifierAttrOptions, half: true,
+  },
   { key: 'damageDice', label: 'Dado extra', type: 'text', placeholder: 'Ex.: +2d6', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   {
@@ -105,6 +115,8 @@ function attackModifiersFromValues(raw: unknown): AttackModifier[] {
       damageBonus: n(row.damageBonus) || undefined,
       damageDice: s(row.damageDice) || undefined,
       mpCost: n(row.mpCost) || undefined,
+      attackRollAttribute: (s(row.attackRollAttribute) || undefined) as AttributeId | undefined,
+      damageBonusAttribute: (s(row.damageBonusAttribute) || undefined) as AttributeId | undefined,
       attributeId: (s(row.attributeId) || undefined) as AttributeId | undefined,
       attributeValue: n(row.attributeValue) || undefined,
     }))
@@ -118,6 +130,8 @@ function attackModifiersToForm(mods: AttackModifier[] | undefined): FormValues[]
     damageBonus: m.damageBonus ?? 0,
     damageDice: m.damageDice ?? '',
     mpCost: m.mpCost ?? 0,
+    attackRollAttribute: m.attackRollAttribute ?? '',
+    damageBonusAttribute: m.damageBonusAttribute ?? '',
     attributeId: m.attributeId ?? '',
     attributeValue: m.attributeValue ?? 0,
   }));

@@ -49,7 +49,9 @@ describe('buildAttackChecklist', () => {
     expect(buildAttackChecklist(character, baseAttack())).toHaveLength(0);
   });
 
-  it('merges every attackModifiers line of the same ability into a single unchecked item', () => {
+  it('lists each attackModifiers line of the same ability as its own selectable item', () => {
+    // Linhas separadas pra permitir empilhar só uma delas (ex.: multiplicar só o
+    // dado de dano sem multiplicar o bônus de acerto).
     const ability: Ability = {
       name: 'Ataque Poderoso',
       source: 'Poder',
@@ -63,14 +65,55 @@ describe('buildAttackChecklist', () => {
     };
     const character = baseCharacter({ abilities: [ability] });
     const items = buildAttackChecklist(character, baseAttack());
-    expect(items).toHaveLength(1);
+    expect(items).toHaveLength(2);
     expect(items[0]).toMatchObject({
-      label: 'Ataque Poderoso',
+      key: 'ability-0-mod-0',
+      label: 'Ataque Poderoso — Acerto',
       source: 'Poder',
       attackRoll: -2,
-      damageBonus: 5,
+      damageBonus: 0,
       defaultChecked: false,
     });
+    expect(items[1]).toMatchObject({
+      key: 'ability-0-mod-1',
+      label: 'Ataque Poderoso — Dano',
+      damageBonus: 5,
+    });
+  });
+
+  it('keeps the plain entity name as label when there is a single modifier line', () => {
+    const ability: Ability = {
+      name: 'Smite Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [{ label: 'Smite', damageDice: '1d8', mpCost: 1 }],
+    };
+    const [item] = buildAttackChecklist(baseCharacter({ abilities: [ability] }), baseAttack());
+    expect(item.label).toBe('Smite Divino');
+  });
+
+  it('resolves attribute-driven attack/damage bonuses into the item numbers', () => {
+    // Bônus que vem de um atributo (ex.: soma a Sabedoria no teste e no dano),
+    // acumulável com o valor fixo digitado na mesma linha.
+    const ability: Ability = {
+      name: 'Fúria Divina',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [{
+        label: 'Fúria', attackRoll: 1, mpCost: 2,
+        attackRollAttribute: 'wis', damageBonusAttribute: 'wis',
+      }],
+    };
+    const character = baseCharacter({
+      attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 4, cha: 0 },
+      abilities: [ability],
+    });
+    const [item] = buildAttackChecklist(character, baseAttack());
+    expect(item).toMatchObject({ attackRoll: 5, damageBonus: 4, mpCost: 2 });
   });
 
   it('only applies an attribute-based modifier line to the roll/damage it actually matches', () => {
@@ -124,7 +167,7 @@ describe('buildAttackChecklist', () => {
       label: 'Toque Chocante — Aprimoramento 2', source: 'Magia',
       attackRoll: 2, mpCost: 2, defaultChecked: false,
     });
-    expect(items.map((i) => i.key)).toEqual(['spell-0', 'spell-0-enh-1']);
+    expect(items.map((i) => i.key)).toEqual(['spell-0-mod-0', 'spell-0-enh-1']);
   });
 });
 
@@ -161,7 +204,7 @@ describe('composeAttack', () => {
     expect(composed.damage).toBe(buildDamageSummary(character, atk));
   });
 
-  it('sums an enabled external modifier and lists its label as used', () => {
+  it('sums only the enabled modifier line and lists its label as used', () => {
     const ability: Ability = {
       name: 'Ataque Poderoso',
       source: 'Poder',
@@ -177,7 +220,7 @@ describe('composeAttack', () => {
 
     expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta') - 2);
     expect(composed.mpTotal).toBe(1);
-    expect(composed.usedLabels).toEqual(['Ataque Poderoso']);
+    expect(composed.usedLabels).toEqual(['Ataque Poderoso — Acerto']);
   });
 
   it('leaves a disabled external modifier out of the total', () => {

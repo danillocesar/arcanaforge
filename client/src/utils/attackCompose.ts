@@ -14,19 +14,77 @@ export interface AttackChecklistItem {
   defaultChecked: boolean;
 }
 
+/** Valor efetivo de um atributo do personagem, pros bônus dirigidos por atributo. */
+type AttrValue = (id: AttributeId) => number;
+
 /**
- * Soma todas as linhas de `AttackModifier` de um mesmo Poder/Magia/Item num único
- * item de checklist, usando o nome da própria entidade (não o Nome de cada linha)
- * como label — evita que o jogador precise lembrar de colocar tudo numa linha só
- * pra um efeito que sempre se aplica junto (ex.: "Ataque Poderoso" cadastrado como
- * duas linhas, "-2 no acerto" e "+5 no dano", vira uma linha só "Ataque Poderoso").
+ * Acerto/dano numéricos de uma linha de modificador, com as três origens somadas:
  *
- * Uma linha também pode carregar um bônus temporário de atributo (ex.: "+6 Força"
- * da Manopla de Força) em vez de números fixos — resolvido aqui pro acerto/dano
- * deste ataque específico: soma no acerto só se `skillAttr` (perícia usada por
- * este ataque) bater com o atributo da linha, e no dano só se `damageAttr`
- * (atributo de dano do próprio ataque) bater. Um "+6 Força" não vira "+6 acerto"
- * numa perícia à distância baseada em Destreza, por exemplo.
+ * - o valor fixo digitado (`attackRoll`/`damageBonus`);
+ * - o bônus dirigido por atributo (`attackRollAttribute`/`damageBonusAttribute`),
+ *   que soma o valor efetivo do atributo escolhido, incondicionalmente;
+ * - o bônus temporário de atributo (`attributeId`/`attributeValue`, ex.: "+6 Força"
+ *   da Manopla de Força) — resolvido por ataque: soma no acerto só se `skillAttr`
+ *   (perícia usada por este ataque) bater com o atributo da linha, e no dano só se
+ *   `damageAttr` (atributo de dano do próprio ataque) bater. Um "+6 Força" não vira
+ *   "+6 acerto" numa perícia à distância baseada em Destreza, por exemplo.
+ */
+function resolveModifierNumbers(
+  m: AttackModifier,
+  skillAttr: AttributeId | undefined,
+  damageAttr: AttributeId,
+  attrValue: AttrValue,
+): { attackRoll: number; damageBonus: number } {
+  let attackRoll = m.attackRoll ?? 0;
+  let damageBonus = m.damageBonus ?? 0;
+  if (m.attackRollAttribute) attackRoll += attrValue(m.attackRollAttribute);
+  if (m.damageBonusAttribute) damageBonus += attrValue(m.damageBonusAttribute);
+  if (m.attributeId && m.attributeValue) {
+    if (m.attributeId === skillAttr) attackRoll += m.attributeValue;
+    if (m.attributeId === damageAttr) damageBonus += m.attributeValue;
+  }
+  return { attackRoll, damageBonus };
+}
+
+/**
+ * Cada linha de `AttackModifier` de um Poder/Magia/Item vira um item PRÓPRIO do
+ * checklist — assim o jogador liga e empilha (×N) uma linha específica sem arrastar
+ * as outras (ex.: multiplicar só o dado de dano, não o bônus de acerto). Entidade
+ * com uma linha só usa o nome da entidade como label; com várias, "Entidade — Linha".
+ */
+function pushModifierRows(
+  items: AttackChecklistItem[],
+  mods: AttackModifier[] | undefined,
+  baseKey: string,
+  entityLabel: string,
+  source: string,
+  skillAttr: AttributeId | undefined,
+  damageAttr: AttributeId,
+  attrValue: AttrValue,
+) {
+  const list = mods ?? [];
+  list.forEach((m, mi) => {
+    const rowLabel = m.label.trim() || `Modificador ${mi + 1}`;
+    const label = list.length > 1 ? `${entityLabel} — ${rowLabel}` : entityLabel.trim() || rowLabel;
+    const { attackRoll, damageBonus } = resolveModifierNumbers(m, skillAttr, damageAttr, attrValue);
+    items.push({
+      key: `${baseKey}-mod-${mi}`,
+      label,
+      source,
+      attackRoll,
+      damageBonus,
+      damageDice: m.damageDice ?? '',
+      mpCost: m.mpCost ?? 0,
+      defaultChecked: false,
+    });
+  });
+}
+
+/**
+ * Soma todas as linhas de `AttackModifier` de um aprimoramento de magia num único
+ * item de checklist: o aprimoramento é a unidade que o jogador compra/empilha — o
+ * "PM extra" dele entra uma vez só (`extraMpCost`), então as linhas não podem ser
+ * ligadas separadas do custo.
  */
 function pushMergedModifiers(
   items: AttackChecklistItem[],
@@ -36,6 +94,7 @@ function pushMergedModifiers(
   source: string,
   skillAttr: AttributeId | undefined,
   damageAttr: AttributeId,
+  attrValue: AttrValue,
   /** Custo intrínseco da fonte somado ao das linhas — ex.: o "PM extra" de um
    * aprimoramento de magia, que o jogador não repete nas linhas do modificador. */
   extraMpCost = 0,
@@ -48,14 +107,11 @@ function pushMergedModifiers(
   let mpCost = extraMpCost;
   const dice: string[] = [];
   list.forEach((m) => {
-    attackRoll += m.attackRoll ?? 0;
-    damageBonus += m.damageBonus ?? 0;
+    const resolved = resolveModifierNumbers(m, skillAttr, damageAttr, attrValue);
+    attackRoll += resolved.attackRoll;
+    damageBonus += resolved.damageBonus;
     mpCost += m.mpCost ?? 0;
     if (m.damageDice) dice.push(m.damageDice);
-    if (m.attributeId && m.attributeValue) {
-      if (m.attributeId === skillAttr) attackRoll += m.attributeValue;
-      if (m.attributeId === damageAttr) damageBonus += m.attributeValue;
-    }
   });
 
   items.push({
@@ -74,8 +130,9 @@ function pushMergedModifiers(
  * Monta o checklist de um ataque: os `extraBonuses`/`extraDamage` do próprio
  * `Attack` (pré-marcados — preservam o resultado de hoje) seguidos de todo
  * `AttackModifier` disponível no personagem via Poder, Magia ou Item
- * (desmarcados por padrão — são opcionais novos). Todas as linhas de
- * `attackModifiers` de um mesmo Poder/Magia/Item somam num item só.
+ * (desmarcados por padrão — são opcionais novos). Cada linha de
+ * `attackModifiers` de um Poder/Magia/Item é um item próprio, selecionável e
+ * empilhável separado; só as linhas de um aprimoramento de magia somam num item.
  */
 export function buildAttackChecklist(character: Character, atk: Attack): AttackChecklistItem[] {
   const items: AttackChecklistItem[] = [];
@@ -84,6 +141,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   const skillCfg = SKILLS_CONFIG.find((p) => p.id === skillId);
   const skillAttr = (character.skills[skillId]?.attribute || skillCfg?.attribute) as AttributeId | undefined;
   const damageAttr = (atk.attributeDamageBonus || 'str') as AttributeId;
+  const attrValue: AttrValue = (id) => getEffectiveAttribute(character, id);
 
   (atk.extraBonuses ?? []).forEach((b, i) => {
     items.push({
@@ -117,23 +175,23 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   // inteiro da fonte, igual ao que faz com os buffs fixos em synthesizeAlwaysActiveBuffs.
   (character.abilities ?? []).forEach((a, ai) => {
     if (a.suppressed) return;
-    pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr);
+    pushModifierRows(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr, attrValue);
   });
   // Magia: o efeito base e cada aprimoramento com modificadores viram itens
   // individuais — o jogador liga só o que vai pagar (ex.: Toque Chocante base
   // e, à parte, o aprimoramento de +2 no teste de ataque).
   (character.spells ?? []).forEach((sp, si) => {
-    pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr);
+    pushModifierRows(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr, attrValue);
     (sp.enhancements ?? []).forEach((enh, ei) => {
       pushMergedModifiers(
         items, enh.attackModifiers, `spell-${si}-enh-${ei}`,
-        `${sp.name} — Aprimoramento ${ei + 1}`, 'Magia', skillAttr, damageAttr, enh.mpCost,
+        `${sp.name} — Aprimoramento ${ei + 1}`, 'Magia', skillAttr, damageAttr, attrValue, enh.mpCost,
       );
     });
   });
   (character.inventory ?? []).forEach((it, ii) => {
     if (it.suppressed) return;
-    pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr);
+    pushModifierRows(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr, attrValue);
   });
 
   return items;
