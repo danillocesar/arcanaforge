@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Attack, Character, Ability, Spell } from '../types/character';
 import { createEmptyCharacter, calcTotalSkill, calcAttackRoll, buildDamageSummary } from './calculations';
-import { buildAttackChecklist, composeAttack } from './attackCompose';
+import { buildAttackChecklist, composeAttack, multiplyDamageDice } from './attackCompose';
 
 function baseCharacter(overrides: Partial<Character> = {}): Character {
   return { ...createEmptyCharacter('Teste'), ...overrides };
@@ -198,6 +198,46 @@ describe('composeAttack', () => {
     expect(composed.usedLabels).toEqual([]);
   });
 
+  it('applies a stacked modifier N times: numbers, PM and dice all scale', () => {
+    // Smite Divino: 1d8 de dano por 1 PM gasto — marcado 3 vezes vira 3d8 e 3 PM.
+    const ability: Ability = {
+      name: 'Smite Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [{ label: 'Smite', damageDice: '1d8', mpCost: 1, attackRoll: 1 }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    const atk = baseAttack();
+    const checklist = buildAttackChecklist(character, atk);
+    const composed = composeAttack(character, atk, checklist, new Map([[checklist[0].key, 3]]));
+
+    expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta') + 3);
+    expect(composed.mpTotal).toBe(3);
+    expect(composed.damage).toContain('3d8');
+    expect(composed.usedLabels).toEqual(['Smite Divino ×3']);
+  });
+
+  it('treats a Map count of 1 exactly like the checked Set entry', () => {
+    const ability: Ability = {
+      name: 'Smite Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [{ label: 'Smite', damageDice: '1d8', mpCost: 1 }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    const atk = baseAttack();
+    const checklist = buildAttackChecklist(character, atk);
+    const viaMap = composeAttack(character, atk, checklist, new Map([[checklist[0].key, 1]]));
+    const viaSet = composeAttack(character, atk, checklist, new Set([checklist[0].key]));
+
+    expect(viaMap).toEqual(viaSet);
+    expect(viaMap.usedLabels).toEqual(['Smite Divino']);
+  });
+
   it('includes active buffs of type attack_roll/fixed_damage/extra_damage in the total', () => {
     const character = baseCharacter({
       attributes: { str: 6, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
@@ -218,5 +258,25 @@ describe('composeAttack', () => {
 
     expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta') + 2);
     expect(composed.damage).toContain('1d6');
+  });
+});
+
+describe('multiplyDamageDice', () => {
+  it('multiplies the dice count of a single term', () => {
+    expect(multiplyDamageDice('1d8', 3)).toBe('3d8');
+    expect(multiplyDamageDice('2d12', 2)).toBe('4d12');
+  });
+
+  it('keeps sign prefixes and multiplies every dice term in the string', () => {
+    expect(multiplyDamageDice('+2d6', 2)).toBe('+4d6');
+    expect(multiplyDamageDice('1d8+1d6', 2)).toBe('2d8+2d6');
+  });
+
+  it('treats a bare "d8" as one die', () => {
+    expect(multiplyDamageDice('d8', 2)).toBe('2d8');
+  });
+
+  it('returns the string unchanged for times = 1', () => {
+    expect(multiplyDamageDice('1d8+2', 1)).toBe('1d8+2');
   });
 });

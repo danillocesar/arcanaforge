@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { buildAttackChecklist, composeAttack } from '../../../utils/attackCompose';
+import { buildAttackChecklist, composeAttack, multiplyDamageDice } from '../../../utils/attackCompose';
 import { formatMod } from '../../../utils/calculations';
 import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
@@ -21,7 +21,9 @@ interface ComposeAttackSheetProps {
  */
 function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
   const { character, updateCharacter } = useCharacterContext();
-  const [enabledKeys, setEnabledKeys] = useState<Set<string>>(new Set());
+  // Contagem por item: 0/ausente = desmarcado; N > 1 = modificador empilhado N
+  // vezes (ex.: Smite Divino 1d8/1 PM marcado 3× = 3d8/3 PM).
+  const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [lastAttack, setLastAttack] = useState<Attack | null>(null);
 
   const activeAttack = attack ?? lastAttack;
@@ -31,8 +33,8 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
       setLastAttack(attack);
       const checked = buildAttackChecklist(character, attack)
         .filter((item) => item.defaultChecked)
-        .map((item) => item.key);
-      setEnabledKeys(new Set(checked));
+        .map((item) => [item.key, 1] as const);
+      setCounts(new Map(checked));
     }
     // Re-seed only on the open transition (null -> Attack), not on every re-render
     // that happens to hand us a new `attack` object with the same identity's worth
@@ -45,13 +47,22 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
   if (!character || !activeAttack) return null;
 
   const checklist = buildAttackChecklist(character, activeAttack);
-  const result = composeAttack(character, activeAttack, checklist, enabledKeys);
+  const result = composeAttack(character, activeAttack, checklist, counts);
   const rangeLabel = activeAttack.rangeType === 'ranged' ? 'À distância' : 'Corpo a corpo';
 
   const toggleItem = (key: string) => {
-    setEnabledKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+    setCounts((prev) => {
+      const next = new Map(prev);
+      if (next.has(key)) next.delete(key); else next.set(key, 1);
+      return next;
+    });
+  };
+
+  const bumpItem = (key: string, delta: number) => {
+    setCounts((prev) => {
+      const next = new Map(prev);
+      const value = Math.max(0, (next.get(key) ?? 0) + delta);
+      if (value === 0) next.delete(key); else next.set(key, value);
       return next;
     });
   };
@@ -123,25 +134,51 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
       {checklist.length > 0 && <div className={styles.listHeader}>Modificadores</div>}
 
       <div className={styles.list}>
-        {checklist.map((item) => (
-          <label key={item.key} className={styles.item}>
-            <input
-              type="checkbox"
-              checked={enabledKeys.has(item.key)}
-              onChange={() => toggleItem(item.key)}
-            />
-            <span className={styles.itemInfo}>
-              <span className={styles.itemName}>{item.label}</span>
-              {item.source && <span className={styles.itemSource}>{item.source}</span>}
-            </span>
-            <span className={styles.itemDelta}>
-              {item.attackRoll ? `${formatMod(item.attackRoll)} atq` : ''}
-              {item.damageBonus ? ` ${formatMod(item.damageBonus)} dano` : ''}
-              {item.damageDice ? ` ${item.damageDice}` : ''}
-              {item.mpCost ? ` ${item.mpCost} PM` : ''}
-            </span>
-          </label>
-        ))}
+        {checklist.map((item) => {
+          const count = counts.get(item.key) ?? 0;
+          // Desmarcado mostra o efeito de 1 aplicação; marcado mostra o total ×N.
+          const shown = Math.max(count, 1);
+          return (
+            <label key={item.key} className={styles.item}>
+              <input
+                type="checkbox"
+                checked={count > 0}
+                onChange={() => toggleItem(item.key)}
+              />
+              <span className={styles.itemInfo}>
+                <span className={styles.itemName}>{item.label}</span>
+                {item.source && <span className={styles.itemSource}>{item.source}</span>}
+              </span>
+              {count > 0 && (
+                <span className={styles.stack}>
+                  <button
+                    type="button"
+                    className={styles.stackBtn}
+                    aria-label="Aplicar uma vez a menos"
+                    onClick={(e) => { e.preventDefault(); bumpItem(item.key, -1); }}
+                  >
+                    −
+                  </button>
+                  <span className={styles.stackCount}>×{count}</span>
+                  <button
+                    type="button"
+                    className={styles.stackBtn}
+                    aria-label="Aplicar uma vez a mais"
+                    onClick={(e) => { e.preventDefault(); bumpItem(item.key, 1); }}
+                  >
+                    +
+                  </button>
+                </span>
+              )}
+              <span className={styles.itemDelta}>
+                {item.attackRoll ? `${formatMod(item.attackRoll * shown)} atq` : ''}
+                {item.damageBonus ? ` ${formatMod(item.damageBonus * shown)} dano` : ''}
+                {item.damageDice ? ` ${multiplyDamageDice(item.damageDice, shown)}` : ''}
+                {item.mpCost ? ` ${item.mpCost * shown} PM` : ''}
+              </span>
+            </label>
+          );
+        })}
       </div>
 
       <div className={styles.totalRow}>

@@ -147,6 +147,19 @@ export interface ComposedAttack {
 }
 
 /**
+ * Escala cada termo de dado da string por `times`: "1d8" ×3 → "3d8", "+2d6" ×2 →
+ * "+4d6", "d8" conta como 1 dado. Termos que não são dados (ex.: o "+2" de
+ * "1d8+2") ficam intactos — bônus fixos empilháveis pertencem a `damageBonus`,
+ * que é multiplicado à parte.
+ */
+export function multiplyDamageDice(dice: string, times: number): string {
+  if (times === 1) return dice;
+  return dice.replace(/(\d*)([dD])(\d+)/g, (_m, count: string, d: string, faces: string) => {
+    return `${(count ? Number(count) : 1) * times}${d}${faces}`;
+  });
+}
+
+/**
  * Calcula o resultado de uma rolagem de ataque a partir do subconjunto marcado do
  * checklist. Duplica deliberadamente uma pequena parte da aritmética de
  * `calcAttackRoll`/`calcDamageBonus`/`buildDamageSummary`/`calcTotalMp` (em
@@ -155,13 +168,21 @@ export interface ComposedAttack {
  * o subconjunto marcado — misturar as duas semânticas numa função só, ou passar um
  * filtro por todos os call sites existentes, seria mais arriscado que manter os
  * dois cálculos separados.
+ *
+ * `enabled` aceita um Set (cada item marcado aplica 1×) ou um Map de contagens —
+ * um item empilhável (ex.: Smite Divino, 1d8 por 1 PM) marcado N vezes tem
+ * números, PM e dados multiplicados por N.
  */
 export function composeAttack(
   character: Character,
   atk: Attack,
   checklist: AttackChecklistItem[],
-  enabledKeys: Set<string>,
+  enabled: Set<string> | Map<string, number>,
 ): ComposedAttack {
+  const countOf = (key: string): number => {
+    if (enabled instanceof Map) return Math.max(0, Math.floor(enabled.get(key) ?? 0));
+    return enabled.has(key) ? 1 : 0;
+  };
   const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
   let attackRoll = calcTotalSkill(character, skillId);
 
@@ -173,12 +194,13 @@ export function composeAttack(
   const usedLabels: string[] = [];
 
   checklist.forEach((item) => {
-    if (!enabledKeys.has(item.key)) return;
-    attackRoll += item.attackRoll;
-    damageBonus += item.damageBonus;
-    if (item.damageDice) extraDice.push(item.damageDice);
-    mpTotal += item.mpCost;
-    usedLabels.push(item.label);
+    const count = countOf(item.key);
+    if (count === 0) return;
+    attackRoll += item.attackRoll * count;
+    damageBonus += item.damageBonus * count;
+    if (item.damageDice) extraDice.push(multiplyDamageDice(item.damageDice, count));
+    mpTotal += item.mpCost * count;
+    usedLabels.push(count > 1 ? `${item.label} ×${count}` : item.label);
   });
 
   getActiveBuffs(character).forEach((b) => {
