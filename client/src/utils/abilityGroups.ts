@@ -1,7 +1,7 @@
 import type { Ability } from '../types/character';
 
-/** As cinco categorias oficiais de poder do T20, mais o escape "Outro". */
-export const ABILITY_CATEGORIES = ['Combate', 'Destino', 'Magia', 'Concedido', 'Tormenta', 'Outro'] as const;
+/** As cinco categorias oficiais de poder do T20, mais "Divino" e o escape "Outro". */
+export const ABILITY_CATEGORIES = ['Combate', 'Destino', 'Magia', 'Concedido', 'Tormenta', 'Divino', 'Outro'] as const;
 
 export const FAVORITES_GROUP_KEY = '__favorites__';
 /** Habilidade de classe sem categoria do T20 — agrupa por si em vez de virar "Sem categoria". */
@@ -28,9 +28,14 @@ export interface AbilityGroup {
   items: AbilityGroupItem[];
 }
 
-/** Grupo a que um poder pertence: a categoria escolhida, senão o tipo da entrada. */
+/** Grupo a que um poder pertence: a categoria escolhida, senão o tipo da entrada.
+ * "Outro" é especial: o texto da Fonte vira o nome do grupo, permitindo grupos livres. */
 function groupKeyOf(ability: Ability): string {
   const type = (ability.type ?? '').trim();
+  if (type === 'Outro') {
+    const source = (ability.source ?? '').trim();
+    if (source) return source;
+  }
   if (type) return type;
   return ability.kind === 'Habilidade' ? ABILITY_KIND_GROUP_KEY : UNCATEGORISED_GROUP_KEY;
 }

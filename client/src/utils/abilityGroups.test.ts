@@ -70,6 +70,29 @@ describe('groupAbilities', () => {
     expect(keys).toEqual(['Combate', 'Outro']);
   });
 
+  it('orders Divino as a known category, after the official five and before Outro', () => {
+    const keys = keysOf([
+      ability({ type: 'Outro' }),
+      ability({ type: 'Divino' }),
+      ability({ type: 'Tormenta' }),
+    ]);
+    expect(keys).toEqual(['Tormenta', 'Divino', 'Outro']);
+  });
+
+  it('groups an "Outro" power under its Fonte text, after the known categories', () => {
+    const list = [
+      ability({ name: 'Bênção', type: 'Outro', source: 'Herança Divina' }),
+      ability({ type: 'Combate' }),
+    ];
+    expect(keysOf(list)).toEqual(['Combate', 'Herança Divina']);
+    expect(groupNamed(list, 'Herança Divina')?.label).toBe('Herança Divina');
+    expect(groupNamed(list, 'Herança Divina')?.items.map((i) => i.ability.name)).toEqual(['Bênção']);
+  });
+
+  it('keeps an "Outro" power with blank Fonte in the Outro group', () => {
+    expect(keysOf([ability({ type: 'Outro', source: '  ' })])).toEqual(['Outro']);
+  });
+
   it('pins a Favoritos group first, duplicating the powers marked as favourite', () => {
     const list = [
       ability({ name: 'Comum', type: 'Combate' }),

@@ -168,8 +168,16 @@ const abilityFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome', half: true },
   // Agrupa a lista da aba Poderes. Vem preenchido do catálogo oficial; entrada
   // antiga ou manual fica em branco e cai no grupo "Sem categoria" até ser editada.
+  // Com "Outro", o texto da Fonte vira o nome do grupo (grupo livre).
   { key: 'type', label: 'Categoria', type: 'select', options: abilityCategoryOptions, half: true },
-  { key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true },
+  {
+    key: 'source', label: 'Fonte', type: 'text', placeholder: 'Classe, raça, origem…', half: true,
+    showIf: (v) => v.type !== 'Outro',
+  },
+  {
+    key: 'source', label: 'Fonte (nome do grupo)', type: 'text', placeholder: 'Ex.: Poder de Legado', half: true,
+    showIf: (v) => v.type === 'Outro',
+  },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
   { key: 'prerequisite', label: 'Pré-requisito', type: 'text', placeholder: 'Ex.: Força 13' },
   { key: 'summary', label: 'Resumo', type: 'text', placeholder: '1 linha: o que o poder faz na prática' },
