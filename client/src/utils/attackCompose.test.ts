@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Attack, Character, Ability } from '../types/character';
+import type { Attack, Character, Ability, Spell } from '../types/character';
 import { createEmptyCharacter, calcTotalSkill, calcAttackRoll, buildDamageSummary } from './calculations';
 import { buildAttackChecklist, composeAttack } from './attackCompose';
 
@@ -97,6 +97,34 @@ describe('buildAttackChecklist', () => {
   it('returns an empty checklist for a plain attack with nothing to compose', () => {
     const character = baseCharacter();
     expect(buildAttackChecklist(character, baseAttack())).toEqual([]);
+  });
+
+  it('lists each spell enhancement with modifiers as its own item, adding the enhancement PM cost', () => {
+    // Toque Chocante: o efeito base (+2d8 no dano, 1 PM) e cada aprimoramento com
+    // modificadores viram itens individuais do checklist — o custo do item do
+    // aprimoramento inclui o "PM extra" do próprio aprimoramento.
+    const spell: Spell = {
+      name: 'Toque Chocante', school: 'Evocação', castingTime: '', range: '', area: '',
+      duration: '', resistance: '', mpCost: 1, spellLevel: 1, description: '',
+      attackModifiers: [{ label: 'Dano', damageDice: '2d8', mpCost: 1 }],
+      enhancements: [
+        { description: 'Muda o alcance para curto', mpCost: 1 },
+        {
+          description: '+2 no teste de ataque', mpCost: 2,
+          attackModifiers: [{ label: 'Acerto', attackRoll: 2 }],
+        },
+      ],
+    };
+    const items = buildAttackChecklist(baseCharacter({ spells: [spell] }), baseAttack());
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({
+      label: 'Toque Chocante', source: 'Magia', damageDice: '2d8', mpCost: 1,
+    });
+    expect(items[1]).toMatchObject({
+      label: 'Toque Chocante — Aprimoramento 2', source: 'Magia',
+      attackRoll: 2, mpCost: 2, defaultChecked: false,
+    });
+    expect(items.map((i) => i.key)).toEqual(['spell-0', 'spell-0-enh-1']);
   });
 });
 

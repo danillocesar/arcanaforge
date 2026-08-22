@@ -36,13 +36,16 @@ function pushMergedModifiers(
   source: string,
   skillAttr: AttributeId | undefined,
   damageAttr: AttributeId,
+  /** Custo intrínseco da fonte somado ao das linhas — ex.: o "PM extra" de um
+   * aprimoramento de magia, que o jogador não repete nas linhas do modificador. */
+  extraMpCost = 0,
 ) {
   const list = mods ?? [];
   if (list.length === 0) return;
 
   let attackRoll = 0;
   let damageBonus = 0;
-  let mpCost = 0;
+  let mpCost = extraMpCost;
   const dice: string[] = [];
   list.forEach((m) => {
     attackRoll += m.attackRoll ?? 0;
@@ -116,7 +119,18 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
     if (a.suppressed) return;
     pushMergedModifiers(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr);
   });
-  (character.spells ?? []).forEach((sp, si) => pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr));
+  // Magia: o efeito base e cada aprimoramento com modificadores viram itens
+  // individuais — o jogador liga só o que vai pagar (ex.: Toque Chocante base
+  // e, à parte, o aprimoramento de +2 no teste de ataque).
+  (character.spells ?? []).forEach((sp, si) => {
+    pushMergedModifiers(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr);
+    (sp.enhancements ?? []).forEach((enh, ei) => {
+      pushMergedModifiers(
+        items, enh.attackModifiers, `spell-${si}-enh-${ei}`,
+        `${sp.name} — Aprimoramento ${ei + 1}`, 'Magia', skillAttr, damageAttr, enh.mpCost,
+      );
+    });
+  });
   (character.inventory ?? []).forEach((it, ii) => {
     if (it.suppressed) return;
     pushMergedModifiers(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr);

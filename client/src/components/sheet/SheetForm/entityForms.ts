@@ -299,10 +299,20 @@ const spellFields: FieldDescriptor[] = [
     key: 'enhancements', label: 'Aprimoramentos', type: 'list', addLabel: 'Aprimoramento',
     itemFields: [
       { key: 'mpCost', label: 'PM extra', type: 'number' },
+      // Linha nova de lista nasce com '' em selects — por isso o "Não" é value ''.
+      {
+        key: 'isAttackModifier', label: 'Modificador de ataque?', type: 'select',
+        options: [{ value: '', label: 'Não' }, { value: 'true', label: 'Sim' }],
+      },
       { key: 'description', label: 'Efeito', type: 'textarea', placeholder: 'Ex.: +1d6 de dano' },
       {
         key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
         itemFields: BUFF_EFFECT_ITEM_FIELDS,
+      },
+      {
+        key: 'attackModifiers', label: 'Modificador de Ataque', type: 'list', addLabel: 'Modificador',
+        itemFields: ATTACK_MODIFIER_ITEM_FIELDS,
+        showIf: (v) => v.isAttackModifier === 'true',
       },
     ],
   },
@@ -329,6 +339,8 @@ const magiaConfig: EntityConfig = {
         mpCost: e.mpCost,
         description: e.description,
         buffs: effectsToForm(e.buffs),
+        isAttackModifier: e.attackModifiers?.length ? 'true' : '',
+        attackModifiers: attackModifiersToForm(e.attackModifiers),
       })),
       attackModifiers: attackModifiersToForm(sp.attackModifiers),
     };
@@ -347,6 +359,11 @@ const magiaConfig: EntityConfig = {
         mpCost: n(e.mpCost),
         description: s(e.description),
         buffs: effectsFromValues(e.buffs),
+        // Desligar o select descarta as linhas: modificador oculto não pode
+        // continuar aparecendo na modal de ataque.
+        attackModifiers: s(e.isAttackModifier) === 'true'
+          ? attackModifiersFromValues(e.attackModifiers)
+          : undefined,
       })),
       attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['spells'][number];
@@ -370,7 +387,9 @@ export function spellToFormValues(spell: OfficialSpell): FormValues {
     description: spell.description,
     buffTargetScope: 'self',
     buffs: [],
-    enhancements: spell.enhancements.map((e) => ({ mpCost: e.mpCost, description: e.description, buffs: [] })),
+    enhancements: spell.enhancements.map((e) => ({
+      mpCost: e.mpCost, description: e.description, buffs: [], isAttackModifier: '', attackModifiers: [],
+    })),
   };
 }
 

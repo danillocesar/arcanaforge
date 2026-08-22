@@ -92,6 +92,9 @@ export interface Enhancement {
   description: string;
   mpCost: number;
   buffs?: BuffEffect[];
+  /** Quando presente, o aprimoramento vira um item próprio no checklist da modal de
+   * ataque (além do efeito base da magia), com o `mpCost` do aprimoramento somado. */
+  attackModifiers?: AttackModifier[];
 }
 
 export type BuffTargetScope = 'self' | 'party';
