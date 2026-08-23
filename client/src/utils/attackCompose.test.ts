@@ -94,6 +94,36 @@ describe('buildAttackChecklist', () => {
     expect(item.label).toBe('Smite Divino');
   });
 
+  it('exposes the owning entity base MP cost and key on every checklist item', () => {
+    const ability: Ability = {
+      name: 'Golpe Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 1,
+      description: '',
+      attackModifiers: [
+        { label: 'Acerto', attackRoll: 2 },
+        { label: 'Dano', damageDice: '1d8', mpCost: 1, repeatable: true },
+      ],
+    };
+    const spell: Spell = {
+      name: 'Toque Chocante', school: 'Evocação', castingTime: '', range: '', area: '',
+      duration: '', resistance: '', mpCost: 2, spellLevel: 1, description: '',
+      attackModifiers: [{ label: 'Dano', damageDice: '2d8' }],
+      enhancements: [{
+        description: '+2 no teste', mpCost: 2,
+        attackModifiers: [{ label: 'Acerto', attackRoll: 2 }],
+      }],
+    };
+    const items = buildAttackChecklist(baseCharacter({ abilities: [ability], spells: [spell] }), baseAttack());
+    expect(items.map((i) => ({ entityKey: i.entityKey, entityMpCost: i.entityMpCost }))).toEqual([
+      { entityKey: 'ability-0', entityMpCost: 1 },
+      { entityKey: 'ability-0', entityMpCost: 1 },
+      { entityKey: 'spell-0', entityMpCost: 2 },
+      { entityKey: 'spell-0', entityMpCost: 2 },
+    ]);
+  });
+
   it('marks an item repeatable only when its modifier line opts in', () => {
     const ability: Ability = {
       name: 'Smite Divino',
@@ -249,7 +279,8 @@ describe('composeAttack', () => {
     const composed = composeAttack(character, atk, checklist, new Set([checklist[0].key]));
 
     expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta') - 2);
-    expect(composed.mpTotal).toBe(1);
+    // 1 PM da linha + 1 PM base do poder (cobrado por usar o poder no ataque)
+    expect(composed.mpTotal).toBe(2);
     expect(composed.usedLabels).toEqual(['Ataque Poderoso — Acerto']);
   });
 
@@ -269,6 +300,34 @@ describe('composeAttack', () => {
 
     expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta'));
     expect(composed.usedLabels).toEqual([]);
+  });
+
+  it('charges the base MP cost of the owning power once when any of its lines is enabled', () => {
+    // Golpe Divino: 1 PM base + linhas próprias; empilhar a linha repetível não
+    // multiplica o custo base — o poder é usado uma vez no ataque.
+    const ability: Ability = {
+      name: 'Golpe Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 1,
+      description: '',
+      attackModifiers: [
+        { label: 'Acerto', attackRoll: 2 },
+        { label: 'Dano', damageDice: '1d8', mpCost: 1, repeatable: true },
+      ],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    const atk = baseAttack();
+    const checklist = buildAttackChecklist(character, atk);
+    const composed = composeAttack(
+      character, atk, checklist,
+      new Map([[checklist[0].key, 1], [checklist[1].key, 2]]),
+    );
+    // 1 (base, uma vez) + 0 (acerto) + 1×2 (dano repetido)
+    expect(composed.mpTotal).toBe(3);
+
+    const nothing = composeAttack(character, atk, checklist, new Map());
+    expect(nothing.mpTotal).toBe(0);
   });
 
   it('caps a non-repeatable item at one application even when the count says more', () => {

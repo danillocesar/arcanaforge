@@ -147,7 +147,12 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
               />
               <span className={styles.itemInfo}>
                 <span className={styles.itemName}>{item.label}</span>
-                {item.source && <span className={styles.itemSource}>{item.source}</span>}
+                {item.source && (
+                  <span className={styles.itemSource}>
+                    {item.source}
+                    {item.entityMpCost > 0 ? ` · ${item.entityMpCost} PM base` : ''}
+                  </span>
+                )}
               </span>
               {count > 0 && item.repeatable && (
                 <span className={styles.stack}>

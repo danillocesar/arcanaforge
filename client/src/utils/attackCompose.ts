@@ -14,6 +14,11 @@ export interface AttackChecklistItem {
   defaultChecked: boolean;
   /** Aceita empilhar ×N na modal — vem do `repeatable` da linha do modificador. */
   repeatable: boolean;
+  /** Poder/Magia/Item dono do item — linhas da mesma entidade compartilham a chave. */
+  entityKey: string;
+  /** Custo (PM) base da entidade dona: cobrado UMA vez quando qualquer linha dela
+   * está marcada, sem multiplicar com o ×N (o poder/magia é usado uma vez). */
+  entityMpCost: number;
 }
 
 /** Valor efetivo de um atributo do personagem, pros bônus dirigidos por atributo. */
@@ -63,6 +68,7 @@ function pushModifierRows(
   skillAttr: AttributeId | undefined,
   damageAttr: AttributeId,
   attrValue: AttrValue,
+  entityMpCost = 0,
 ) {
   const list = mods ?? [];
   list.forEach((m, mi) => {
@@ -79,6 +85,8 @@ function pushModifierRows(
       mpCost: m.mpCost ?? 0,
       defaultChecked: false,
       repeatable: Boolean(m.repeatable),
+      entityKey: baseKey,
+      entityMpCost,
     });
   });
 }
@@ -101,6 +109,8 @@ function pushMergedModifiers(
   /** Custo intrínseco da fonte somado ao das linhas — ex.: o "PM extra" de um
    * aprimoramento de magia, que o jogador não repete nas linhas do modificador. */
   extraMpCost = 0,
+  entityKey = key,
+  entityMpCost = 0,
 ) {
   const list = mods ?? [];
   if (list.length === 0) return;
@@ -128,6 +138,8 @@ function pushMergedModifiers(
     defaultChecked: false,
     // O aprimoramento empilha como unidade — basta uma linha optar pela repetição.
     repeatable: list.some((m) => Boolean(m.repeatable)),
+    entityKey,
+    entityMpCost,
   });
 }
 
@@ -159,6 +171,8 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
       mpCost: Number(b.mp) || 0,
       defaultChecked: true,
       repeatable: false,
+      entityKey: 'own',
+      entityMpCost: 0,
     });
   });
 
@@ -175,6 +189,8 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
       mpCost: Number(d.mp) || 0,
       defaultChecked: true,
       repeatable: false,
+      entityKey: 'own',
+      entityMpCost: 0,
     });
   });
 
@@ -182,23 +198,26 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   // inteiro da fonte, igual ao que faz com os buffs fixos em synthesizeAlwaysActiveBuffs.
   (character.abilities ?? []).forEach((a, ai) => {
     if (a.suppressed) return;
-    pushModifierRows(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr, attrValue);
+    pushModifierRows(items, a.attackModifiers, `ability-${ai}`, a.name, 'Poder', skillAttr, damageAttr, attrValue, Number(a.mpCost) || 0);
   });
   // Magia: o efeito base e cada aprimoramento com modificadores viram itens
   // individuais — o jogador liga só o que vai pagar (ex.: Toque Chocante base
-  // e, à parte, o aprimoramento de +2 no teste de ataque).
+  // e, à parte, o aprimoramento de +2 no teste de ataque). Todos compartilham o
+  // custo base da magia via entityKey/entityMpCost (cobrado uma vez).
   (character.spells ?? []).forEach((sp, si) => {
-    pushModifierRows(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr, attrValue);
+    const spellMp = Number(sp.mpCost) || 0;
+    pushModifierRows(items, sp.attackModifiers, `spell-${si}`, sp.name, 'Magia', skillAttr, damageAttr, attrValue, spellMp);
     (sp.enhancements ?? []).forEach((enh, ei) => {
       pushMergedModifiers(
         items, enh.attackModifiers, `spell-${si}-enh-${ei}`,
         `${sp.name} — Aprimoramento ${ei + 1}`, 'Magia', skillAttr, damageAttr, attrValue, enh.mpCost,
+        `spell-${si}`, spellMp,
       );
     });
   });
   (character.inventory ?? []).forEach((it, ii) => {
     if (it.suppressed) return;
-    pushModifierRows(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr, attrValue);
+    pushModifierRows(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr, attrValue, Number(it.mpCost) || 0);
   });
 
   return items;
@@ -257,6 +276,9 @@ export function composeAttack(
   const extraDice: string[] = [];
   let mpTotal = Number(atk.mpCost) || 0;
   const usedLabels: string[] = [];
+  // Custo base do Poder/Magia/Item dono: cobrado uma vez por entidade quando
+  // qualquer linha dela está marcada — não multiplica com o ×N das linhas.
+  const chargedEntities = new Set<string>();
 
   checklist.forEach((item) => {
     // Item não-repetível aplica no máximo 1×, mesmo que a contagem diga mais.
@@ -266,6 +288,10 @@ export function composeAttack(
     damageBonus += item.damageBonus * count;
     if (item.damageDice) extraDice.push(multiplyDamageDice(item.damageDice, count));
     mpTotal += item.mpCost * count;
+    if (item.entityMpCost > 0 && !chargedEntities.has(item.entityKey)) {
+      chargedEntities.add(item.entityKey);
+      mpTotal += item.entityMpCost;
+    }
     usedLabels.push(count > 1 ? `${item.label} ×${count}` : item.label);
   });
 
