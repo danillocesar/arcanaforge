@@ -315,6 +315,11 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{tempHp}</b>
           )}
         </div>
+        {!readOnly && (
+          <button type="button" className={styles.healAllBtn} onClick={() => setHpCurrent(hpMax)}>
+            ✚ Curar tudo
+          </button>
+        )}
       </Popover>
 
       <Popover
@@ -365,6 +370,11 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{tempMp}</b>
           )}
         </div>
+        {!readOnly && (
+          <button type="button" className={styles.healAllBtn} onClick={() => setMpCurrent(mpMax)}>
+            ✚ Curar tudo
+          </button>
+        )}
       </Popover>
 
       <Popover

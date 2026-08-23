@@ -450,6 +450,30 @@
   color: var(--ink-2);
 }
 
+/* "Curar tudo" — descanso rápido: enche PV/PM até o teto (máximo + temporário). */
+.healAllBtn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.healAllBtn:hover {
+  background: var(--line-2);
+  color: var(--ink);
+}
+
+.healAllBtn:active {
+  transform: scale(0.97);
+}
+
 .maxInput {
   width: 56px;
   background: var(--surface-2);
