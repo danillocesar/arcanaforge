@@ -373,6 +373,36 @@ describe('toggleBuffState', () => {
   });
 });
 
+describe('armor penalty on skills', () => {
+  const armored = (penalty: number, equipped?: boolean) =>
+    baseCharacter({
+      classes: [{ name: 'Guerreiro', level: 2 }],
+      attributes: { str: 2, dex: 3, con: 0, int: 0, wis: 1, cha: 0 },
+      defense: { base: 10, items: [{ name: 'Cota', value: 5, penalty, equipped }] },
+    });
+
+  it('applies the penalty to every Força/Destreza-based skill', () => {
+    const character = armored(-2);
+    const halfLevel = 1;
+    expect(calcTotalSkill(character, 'luta')).toBe(halfLevel + 2 - 2);
+    expect(calcTotalSkill(character, 'pontaria')).toBe(halfLevel + 3 - 2);
+    expect(calcTotalSkill(character, 'acrobacia')).toBe(halfLevel + 3 - 2);
+  });
+
+  it('never applies the penalty to Iniciativa nor to non-str/dex skills', () => {
+    const character = armored(-2);
+    const halfLevel = 1;
+    expect(calcTotalSkill(character, 'iniciativa')).toBe(halfLevel + 3);
+    expect(calcTotalSkill(character, 'cura')).toBe(halfLevel + 1);
+  });
+
+  it('ignores the penalty of an unequipped armor', () => {
+    const character = armored(-2, false);
+    const halfLevel = 1;
+    expect(calcTotalSkill(character, 'luta')).toBe(halfLevel + 2);
+  });
+});
+
 describe('equipped gating (arma/armadura)', () => {
   it('counts only equipped armors in total defense — legacy (undefined) counts as equipped', () => {
     const character = baseCharacter({

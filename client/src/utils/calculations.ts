@@ -144,7 +144,8 @@ export function calcArmorPenalty(character: Character): number {
   let pen = 0;
   if (character.defense?.items) {
     character.defense.items.forEach((item) => {
-      if (item.penalty) pen += item.penalty;
+      // Armadura guardada não pesa no corpo — penalidade só equipada.
+      if (item.penalty && isItemEquipped(item)) pen += item.penalty;
     });
   }
   return pen;
@@ -162,8 +163,11 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   const attributeMod = getEffectiveAttribute(character, usedAttribute);
   const trainingBonus = skill.trained ? trainingBonusForLevel(getTotalLevel(character)) : 0;
   const miscBonus = skill.misc || 0;
+  // Penalidade de armadura vale pra toda perícia usada com Força ou Destreza
+  // (inclusive Luta/Pontaria e atributo trocado pelo jogador), exceto Iniciativa.
   let armorPenalty = 0;
-  if (cfg.armorPenalty) {
+  const penalized = (usedAttribute === 'str' || usedAttribute === 'dex') && skillId !== 'iniciativa';
+  if (penalized) {
     armorPenalty = calcArmorPenalty(character);
   }
   let buffBonus = 0;
