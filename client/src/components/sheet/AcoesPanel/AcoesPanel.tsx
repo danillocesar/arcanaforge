@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { isWeaponAttack, weaponToAttack } from '../../../utils/calculations';
+import { isWeaponAttack, weaponToAttack, isItemEquipped } from '../../../utils/calculations';
 import type { EntityKind } from '../SheetForm/entityForms';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import EmptyState from '../../ui/EmptyState/EmptyState';
@@ -27,9 +27,10 @@ function AcoesPanel() {
 
   if (!character) return null;
 
+  // Arma desequipada não vira card de ataque — equipa pelo checkbox em Equipamentos.
   const weaponAttacks = (character.inventory ?? [])
     .map((item, index) => ({ item, index }))
-    .filter(({ item }) => isWeaponAttack(item));
+    .filter(({ item }) => isWeaponAttack(item) && isItemEquipped(item));
 
   const combinedAttacks: Array<{ attack: ReturnType<typeof weaponToAttack>; kind: EntityKind; index: number }> = [
     ...(character.attacks ?? []).map((attack, index) => ({ attack, kind: 'ataque' as const, index })),

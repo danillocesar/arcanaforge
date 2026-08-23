@@ -591,6 +591,8 @@ const armaduraConfig: EntityConfig = {
       effect: s(v.effect) || undefined,
       alwaysActive: s(v.alwaysActive) === 'true',
       buffs: effectsFromValues(v.buffs),
+      // Armadura nova nasce desequipada; edição preserva o estado atual.
+      equipped: i == null ? false : c.defense.items[i]?.equipped,
     };
     return { ...c, defense: { ...c.defense, items: upsert(c.defense.items, entry, i) } };
   },
@@ -773,6 +775,9 @@ const armaConfig: EntityConfig = {
       alwaysActive: s(v.alwaysActive) === 'true',
       buffs: effectsFromValues(v.buffs),
       attackModifiers: attackModifiersFromValues(v.attackModifiers),
+      // Arma nova nasce desequipada (equipa pelo checkbox em Equipamentos);
+      // edição preserva o estado atual, vindo do ...base.
+      equipped: i == null ? false : (base as { equipped?: boolean }).equipped,
     } as Character['inventory'][number];
     return { ...c, inventory: upsert(c.inventory, entry, i) };
   },

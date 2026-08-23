@@ -65,6 +65,11 @@ export function trainingBonusForLevel(level: number): number {
   return 2;
 }
 
+/** Arma/armadura fora do corpo não aplica efeito — `undefined` = equipada (legado). */
+export function isItemEquipped(item: { equipped?: boolean }): boolean {
+  return item.equipped !== false;
+}
+
 /**
  * Buffs sintéticos, sempre ativos, vindos de Poderes/Habilidades e Itens marcados
  * como `alwaysActive` — não ficam em `character.buffs[]`, são derivados na hora.
@@ -76,11 +81,13 @@ function synthesizeAlwaysActiveBuffs(character: Character): Buff[] {
     .filter((b) => b.effects.length > 0);
   const fromItems = (character.inventory ?? [])
     .filter((it) => it.alwaysActive && !it.suppressed)
+    // Arma guardada na mochila não aplica seus bônus fixos.
+    .filter((it) => it.category !== 'arma' || isItemEquipped(it))
     .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Item' }))
     .filter((b) => b.effects.length > 0);
   // Melhorias/encantos de armadura e escudo (defense.items) também são fixos.
   const fromDefense = (character.defense?.items ?? [])
-    .filter((it) => it.alwaysActive)
+    .filter((it) => it.alwaysActive && isItemEquipped(it))
     .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Armadura' }))
     .filter((b) => b.effects.length > 0);
   return [...fromAbilities, ...fromItems, ...fromDefense];
@@ -174,6 +181,7 @@ export function calcTotalDefense(character: Character): number {
   let total = (character.defense.base || 10) + getEffectiveAttribute(character, 'dex');
   if (character.defense.items) {
     character.defense.items.forEach((item) => {
+      if (!isItemEquipped(item)) return;
       total += item.value || 0;
     });
   }
@@ -218,7 +226,7 @@ export function getDefenseBreakdown(character: Character): DefenseBreakdown {
   const base = character.defense.base || 10;
   const dexterity = getEffectiveAttribute(character, 'dex');
   const items: DefenseBreakdownRow[] = (character.defense.items || [])
-    .filter((it) => (it.value || 0) !== 0)
+    .filter((it) => isItemEquipped(it) && (it.value || 0) !== 0)
     .map((it) => ({ name: it.name || 'Proteção', value: it.value || 0 }));
   const buffs: DefenseBreakdownRow[] = getActiveBuffs(character)
     .flatMap((b) => (b.effects || [])

@@ -183,12 +183,15 @@ export interface InventoryItem {
   attributeDamageBonus?: string;
   attackModifiers?: AttackModifier[];
   /** Se marcado, os `buffs` deste Item aplicam sempre — aparece na seção
-   * "Bônus Fixos", não na lista de Buffs & Condições. Vale independente de o item
-   * estar em `character.equipped` (mesma regra que já vale pra `attackModifiers`). */
+   * "Bônus Fixos", não na lista de Buffs & Condições. */
   alwaysActive?: boolean;
   /** Bônus fixo suspenso no momento — mesma semântica de `Ability.suppressed`. */
   suppressed?: boolean;
   buffs?: BuffEffect[];
+  /** Só pra `arma`: efeitos (buffs fixos, attackModifiers, card de Ataque) valem
+   * apenas equipada. `undefined` = equipada (fichas antigas continuam iguais);
+   * arma criada nova nasce `false`. */
+  equipped?: boolean;
 }
 
 export interface EquippedItem {
@@ -204,6 +207,9 @@ export interface DefenseItem {
   /** Buffs fixos da melhoria/encanto — sintetizados como bônus sempre ativo. */
   alwaysActive?: boolean;
   buffs?: BuffEffect[];
+  /** Defesa/penalidade/buffs só valem equipada. `undefined` = equipada (legado);
+   * armadura criada nova nasce `false`. */
+  equipped?: boolean;
 }
 
 /** Redução de Dano por tipo, ex. `{ name: 'fogo', value: 5 }`. "Geral" = contra tudo. */

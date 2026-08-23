@@ -373,6 +373,47 @@ describe('toggleBuffState', () => {
   });
 });
 
+describe('equipped gating (arma/armadura)', () => {
+  it('counts only equipped armors in total defense — legacy (undefined) counts as equipped', () => {
+    const character = baseCharacter({
+      defense: {
+        base: 10,
+        items: [
+          { name: 'Guardada', value: 2, penalty: 0, equipped: false },
+          { name: 'Legada', value: 3, penalty: 0 },
+          { name: 'Vestida', value: 1, penalty: 0, equipped: true },
+        ],
+      },
+    });
+    expect(calcTotalDefense(character)).toBe(14);
+  });
+
+  it('skips fixed buffs of unequipped armor and unequipped weapons', () => {
+    const character = baseCharacter({
+      defense: {
+        base: 10,
+        items: [{
+          name: 'Guardada', value: 2, penalty: 0, equipped: false,
+          alwaysActive: true, buffs: [{ type: 'defense', value: '1' }],
+        }],
+      },
+      inventory: [
+        {
+          name: 'Espada na mochila', quantity: 1, weight: 0, category: 'arma', equipped: false,
+          alwaysActive: true, buffs: [{ type: 'attack_roll', value: '1' }],
+        },
+        {
+          name: 'Anel', quantity: 1, weight: 0, category: 'acessorio',
+          alwaysActive: true, buffs: [{ type: 'defense', value: '1' }],
+        },
+      ],
+    });
+    // Só o acessório aplica: arma/armadura desequipadas ficam de fora.
+    const active = getActiveBuffs(character);
+    expect(active.map((b) => b.name)).toEqual(['Anel']);
+  });
+});
+
 describe('defense item enhancements (melhorias/encantos de armadura)', () => {
   it('synthesizes always-active buffs from defense items into the active set', () => {
     // Armadura "Reforçada": +1 Defesa via buff da melhoria, além do valor da peça.

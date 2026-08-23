@@ -120,6 +120,19 @@
   border-bottom: none;
 }
 
+/* checkbox "equipado" nas linhas de arma/armadura */
+.equipCheck {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.equipCheck:disabled {
+  cursor: default;
+}
+
 .tappable {
   cursor: pointer;
   transition: background 0.15s;

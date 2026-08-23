@@ -202,6 +202,16 @@ describe('buildAttackChecklist', () => {
     expect(buildAttackChecklist(character, baseAttack())).toEqual([]);
   });
 
+  it('skips the attackModifiers of an unequipped weapon (legacy undefined still counts)', () => {
+    const weapon = (equipped?: boolean) => ({
+      name: 'Espada Flamejante', quantity: 1, weight: 0, category: 'arma' as const, equipped,
+      attackModifiers: [{ label: 'Fogo', damageDice: '1d6' }],
+    });
+    expect(buildAttackChecklist(baseCharacter({ inventory: [weapon(false)] }), baseAttack())).toEqual([]);
+    expect(buildAttackChecklist(baseCharacter({ inventory: [weapon(undefined)] }), baseAttack())).toHaveLength(1);
+    expect(buildAttackChecklist(baseCharacter({ inventory: [weapon(true)] }), baseAttack())).toHaveLength(1);
+  });
+
   it('lists each spell enhancement with modifiers as its own item, adding the enhancement PM cost', () => {
     // Toque Chocante: o efeito base (+2d8 no dano, 1 PM) e cada aprimoramento com
     // modificadores viram itens individuais do checklist — o custo do item do

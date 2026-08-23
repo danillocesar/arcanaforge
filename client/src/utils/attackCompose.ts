@@ -1,5 +1,5 @@
 import type { Attack, AttackModifier, AttributeId, Character } from '../types/character';
-import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod } from './calculations';
+import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod, isItemEquipped } from './calculations';
 import { SKILLS_CONFIG } from '../data/pericias';
 
 export interface AttackChecklistItem {
@@ -217,6 +217,8 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
   });
   (character.inventory ?? []).forEach((it, ii) => {
     if (it.suppressed) return;
+    // Arma guardada na mochila não oferece seus modificadores.
+    if (it.category === 'arma' && !isItemEquipped(it)) return;
     pushModifierRows(items, it.attackModifiers, `item-${ii}`, it.name, 'Item', skillAttr, damageAttr, attrValue, Number(it.mpCost) || 0);
   });
 

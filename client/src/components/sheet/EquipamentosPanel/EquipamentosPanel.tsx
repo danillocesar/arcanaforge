@@ -1,5 +1,5 @@
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { formatMod, calcCarryCapacity, calcUsedLoad, isWeaponAttack } from '../../../utils/calculations';
+import { formatMod, calcCarryCapacity, calcUsedLoad, isWeaponAttack, isItemEquipped } from '../../../utils/calculations';
 import type { Coins, InventoryItem } from '../../../types/character';
 import Card from '../../ui/Card/Card';
 import SectionHeader from '../../ui/SectionHeader/SectionHeader';
@@ -66,6 +66,38 @@ function EquipamentosPanel() {
           onClick: () => openEdit(kind, idx),
         }
       : { className: styles.row };
+
+  const toggleWeaponEquipped = (index: number) =>
+    updateCharacter((f) => ({
+      ...f,
+      inventory: f.inventory.map((it, idx) =>
+        idx === index ? { ...it, equipped: !isItemEquipped(it) } : it,
+      ),
+    }));
+
+  const toggleArmorEquipped = (index: number) =>
+    updateCharacter((f) => ({
+      ...f,
+      defense: {
+        ...f.defense,
+        items: f.defense.items.map((it, idx) =>
+          idx === index ? { ...it, equipped: !isItemEquipped(it) } : it,
+        ),
+      },
+    }));
+
+  /** Checkbox "equipado" — clique não abre o form de edição da linha. */
+  const equipCheckbox = (checked: boolean, onToggle: () => void) => (
+    <input
+      type="checkbox"
+      className={styles.equipCheck}
+      title={checked ? 'Equipado — efeitos aplicando' : 'Desequipado — efeitos suspensos'}
+      checked={checked}
+      disabled={readOnly}
+      onClick={(e) => e.stopPropagation()}
+      onChange={onToggle}
+    />
+  );
 
   return (
     <div className={styles.panel}>
@@ -134,12 +166,13 @@ function EquipamentosPanel() {
         <Card padding={false} className={styles.list}>
           {armas.map(({ item, index }) => (
             <div key={index} {...rowProps('arma', index)}>
+              {equipCheckbox(isItemEquipped(item), () => toggleWeaponEquipped(index))}
               <div className={styles.rowName}>
                 {item.name || 'Arma'}
                 {item.effect && <small className={styles.effect}>{item.effect}</small>}
               </div>
               <div className={styles.rowMeta}>
-                {isWeaponAttack(item) && (
+                {isWeaponAttack(item) && isItemEquipped(item) && (
                   <span className={styles.linkedBadge} title="Aparece em Ações → Ataques">⚔</span>
                 )}
                 {item.slot && <span className={styles.slot}>{item.slot}</span>}
@@ -156,6 +189,7 @@ function EquipamentosPanel() {
         <Card padding={false} className={styles.list}>
           {armaduras.map((arm, idx) => (
             <div key={idx} {...rowProps('armadura', idx)}>
+              {equipCheckbox(isItemEquipped(arm), () => toggleArmorEquipped(idx))}
               <div className={styles.rowName}>{arm.name || 'Armadura'}</div>
               <div className={styles.rowMeta}>
                 <span className={styles.badge}>{formatMod(arm.value)}</span>
