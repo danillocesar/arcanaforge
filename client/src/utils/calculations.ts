@@ -458,6 +458,12 @@ export function normalizeDamageReductions(
  * nova, evitando contar o bônus em dobro. Duplicatas pré-existentes do mesmo nome
  * são colapsadas numa entrada só (sara fichas poluídas pelo bug antigo de
  * duplicação em buff de grupo). Buff sem nome nunca substitui outro sem nome.
+ *
+ * Também CURA o PV/PM atual na mesma quantidade dos efeitos de pool do buff novo
+ * (temp_hp/temp_mp/max_hp/max_mp), clampado no teto efetivo — o teto da barra
+ * sobe junto com o buff, então sem a cura o personagem pareceria ferido ao
+ * receber o bônus.
+ *
  * Espelha o mergeBuffIntoCharacter do servidor — mudou aqui, muda lá.
  *
  * Usado tanto para o próprio conjurador (auto-aplicação local) quanto ao receber a
@@ -500,10 +506,30 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
           return [buff];
         });
 
-  return {
+  let healHp = 0;
+  let healMp = 0;
+  buff.effects.forEach((eff) => {
+    const val = Number(eff.value) || 0;
+    const type = normalizeEffectType(eff.type);
+    if (type === 'temp_hp' || type === 'max_hp') healHp += val;
+    if (type === 'temp_mp' || type === 'max_mp') healMp += val;
+  });
+
+  const next = {
     ...character,
     buffs,
     temporaryHp: hpTemp,
     temporaryMp: mpTemp,
   };
+
+  if (healHp > 0) {
+    const ceiling = getEffectiveMaxHp(next) + next.temporaryHp;
+    next.hp = { ...next.hp, current: Math.min(next.hp.current + healHp, ceiling) };
+  }
+  if (healMp > 0) {
+    const ceiling = getEffectiveMaxMp(next) + next.temporaryMp;
+    next.mp = { ...next.mp, current: Math.min(next.mp.current + healMp, ceiling) };
+  }
+
+  return next;
 }

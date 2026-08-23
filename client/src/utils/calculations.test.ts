@@ -422,6 +422,43 @@ describe('applyBuffToCharacter', () => {
     const next = applyBuffToCharacter(character, blessing({ name: '' }));
     expect(next.buffs).toHaveLength(2);
   });
+
+  it('heals current HP/MP by the temp amounts received (the bar ceiling grew by the same)', () => {
+    const incoming = blessing({
+      effects: [{ type: 'temp_hp', value: '10' }, { type: 'temp_mp', value: '4' }],
+    });
+    const character = baseCharacter({
+      hp: { max: 30, current: 12 },
+      mp: { max: 10, current: 3 },
+    });
+    const next = applyBuffToCharacter(character, incoming);
+    expect(next.hp.current).toBe(22);
+    expect(next.mp.current).toBe(7);
+  });
+
+  it('heals for max_hp effects and clamps at the effective ceiling on recast', () => {
+    // Recast no personagem cheio: teto não muda, cura não pode estourar a barra.
+    const character = baseCharacter({
+      hp: { max: 30, current: 38 },
+      buffs: [blessing()],
+      temporaryHp: 10,
+    });
+    const next = applyBuffToCharacter(character, blessing());
+    expect(next.hp.current).toBe(40);
+
+    const maxBuff = blessing({ name: 'Vitalidade', effects: [{ type: 'max_hp', value: '5' }] });
+    const full = baseCharacter({ hp: { max: 30, current: 30 } });
+    const withMax = applyBuffToCharacter(full, maxBuff);
+    expect(withMax.hp.current).toBe(35);
+  });
+
+  it('leaves current HP/MP untouched for buffs without pool effects', () => {
+    const incoming = blessing({ effects: [{ type: 'attack_roll', value: '2' }] });
+    const character = baseCharacter({ hp: { max: 30, current: 12 }, mp: { max: 10, current: 3 } });
+    const next = applyBuffToCharacter(character, incoming);
+    expect(next.hp.current).toBe(12);
+    expect(next.mp.current).toBe(3);
+  });
 });
 
 describe('normalizeBuffs', () => {

@@ -82,10 +82,14 @@ async function findActiveById(id) {
 /** Grava o resultado de um merge de buff de grupo (lista inteira + pools temporários).
  * Substitui o antigo $push cego — a deduplicação por nome acontece no merge, então
  * aqui é um $set do estado já resolvido. */
-async function setBuffState(id, { buffs, temporaryHp, temporaryMp }) {
+async function setBuffState(id, { buffs, temporaryHp, temporaryMp, hp, mp }) {
+  const $set = { buffs, temporaryHp, temporaryMp };
+  // O merge pode ter curado o PV/PM atual junto com o buff — grava só quando veio.
+  if (hp !== undefined) $set.hp = hp;
+  if (mp !== undefined) $set.mp = mp;
   const updated = await Character.findOneAndUpdate(
     { _id: id, ...ACTIVE_FILTER },
-    { $set: { buffs, temporaryHp, temporaryMp } },
+    { $set },
     { new: true },
   )
     .select('_id')
