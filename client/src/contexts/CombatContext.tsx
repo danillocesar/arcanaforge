@@ -10,6 +10,7 @@ import {
 import { useWebSocket } from '../hooks/useWebSocket';
 import type { WsMessage } from '../hooks/useWebSocket';
 import { useToast } from '../components/ui/Toast/Toast';
+import { shouldAlert } from '../utils/alertThrottle';
 import { useAuth } from '../features/auth';
 import {
   normalizeCombatData,
@@ -132,7 +133,11 @@ export function CombatProvider({
                 buildOrdered(combatDataRef.current, next);
               }
             });
-            showToast(`PV/PM de ${(msg.name as string) || 'jogador'} atualizado`, 'sync');
+            // Arrastar a barra de PV dispara vários syncs — alerta 1× a cada 10s
+            // por personagem; o estado acima aplica sempre.
+            if (shouldAlert(`hp-sync:${charId}`)) {
+              showToast(`PV/PM de ${(msg.name as string) || 'jogador'} atualizado`, 'sync');
+            }
             return next;
           });
         }
@@ -151,7 +156,9 @@ export function CombatProvider({
                 buildOrdered(combatDataRef.current, next);
               }
             });
-            showToast(`PV de ${(msg.name as string) || 'jogador'} atualizado pelo Mestre`, 'info');
+            if (shouldAlert(`master-hp:${charId}`)) {
+              showToast(`PV de ${(msg.name as string) || 'jogador'} atualizado pelo Mestre`, 'info');
+            }
             return next;
           });
         }

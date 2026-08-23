@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
 import { createEmptyCharacter, normalizeBuffs, normalizeDamageReductions, applyBuffToCharacter } from '../utils/calculations';
+import { shouldAlert } from '../utils/alertThrottle';
 import {
   apiFetchCharacters,
   apiLoadCharacter,
@@ -108,7 +109,8 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
         };
         return next;
       });
-      showToast?.('PV/PM sincronizados de outra aba', 'sync');
+      // Rajadas de sync alertam 1× a cada 10s — o estado acima aplica sempre.
+      if (shouldAlert('own-hp-tab-sync')) showToast?.('PV/PM sincronizados de outra aba', 'sync');
     }
 
     if (msg.type === 'master_hp_sync' && msg.characterId === characterRef.current._id) {
@@ -124,7 +126,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
         };
         return next;
       });
-      showToast?.(`PV atualizado pelo mestre: ${currentHp}`, 'info');
+      if (shouldAlert('own-hp-master')) showToast?.(`PV atualizado pelo mestre: ${currentHp}`, 'info');
     }
 
     if (msg.type === 'character_spell_cast_sync' && msg.characterId === characterRef.current._id) {
