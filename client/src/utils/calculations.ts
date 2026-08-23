@@ -451,31 +451,36 @@ export function normalizeDamageReductions(
  * efeitos do tipo hp/mp (mesma soma que toggleBuffState faria ao ativar, mas sem
  * custo de PM — o custo já foi pago na conjuração) e insere o buff na lista.
  *
- * Se já existir um buff com o mesmo nome e origem (ex.: recastar a mesma magia no
- * mesmo alvo), substitui a instância existente em vez de duplicar — primeiro
- * desfaz a contribuição de PV/PM temporário da instância antiga (se estava ativa),
- * depois soma a da nova, evitando contar o bônus em dobro.
+ * Se já existir um buff com o mesmo NOME (normalizado — caixa/espaços ignorados,
+ * origem irrelevante; ex.: recastar a mesma magia, ou um buff manual homônimo),
+ * substitui a instância existente em vez de duplicar — primeiro desfaz a
+ * contribuição de PV/PM temporário de cada cópia antiga ativa, depois soma a da
+ * nova, evitando contar o bônus em dobro. Duplicatas pré-existentes do mesmo nome
+ * são colapsadas numa entrada só (sara fichas poluídas pelo bug antigo de
+ * duplicação em buff de grupo). Buff sem nome nunca substitui outro sem nome.
+ * Espelha o mergeBuffIntoCharacter do servidor — mudou aqui, muda lá.
  *
  * Usado tanto para o próprio conjurador (auto-aplicação local) quanto ao receber a
  * notificação em tempo real de um buff aplicado por outro jogador.
  */
+const buffNameKey = (name: string | undefined): string => String(name ?? '').trim().toLowerCase();
+
 export function applyBuffToCharacter(character: Character, buff: Buff): Character {
-  const existingIdx = character.buffs.findIndex(
-    (b) => b.name === buff.name && b.source === buff.source,
-  );
-  const existing = existingIdx === -1 ? null : character.buffs[existingIdx];
+  const key = buffNameKey(buff.name);
+  const matches = key === '' ? [] : character.buffs.filter((b) => buffNameKey(b.name) === key);
 
   let hpTemp = character.temporaryHp;
   let mpTemp = character.temporaryMp;
 
-  if (existing?.active) {
+  matches.forEach((existing) => {
+    if (!existing.active) return;
     (existing.effects || []).forEach((eff) => {
       const val = Number(eff.value) || 0;
       const type = normalizeEffectType(eff.type);
       if (type === 'temp_hp') hpTemp = Math.max(0, hpTemp - val);
       if (type === 'temp_mp') mpTemp = Math.max(0, mpTemp - val);
     });
-  }
+  });
 
   buff.effects.forEach((eff) => {
     const val = Number(eff.value) || 0;
@@ -484,10 +489,16 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
     if (type === 'temp_mp') mpTemp += val;
   });
 
+  let replaced = false;
   const buffs =
-    existingIdx === -1
+    matches.length === 0
       ? [...character.buffs, buff]
-      : character.buffs.map((b, i) => (i === existingIdx ? buff : b));
+      : character.buffs.flatMap((b) => {
+          if (buffNameKey(b.name) !== key) return [b];
+          if (replaced) return [];
+          replaced = true;
+          return [buff];
+        });
 
   return {
     ...character,

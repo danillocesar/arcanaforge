@@ -11,6 +11,7 @@ import {
   calcTotalSkill,
   trainingBonusForLevel,
   toggleBuffState,
+  applyBuffToCharacter,
   normalizeBuffs,
   normalizeDamageReductions,
   isWeaponAttack,
@@ -369,6 +370,57 @@ describe('toggleBuffState', () => {
     const next = toggleBuffState(character, 0);
     expect(next.temporaryHp).toBe(0);
     expect(next.buffs[0].active).toBe(true);
+  });
+});
+
+describe('applyBuffToCharacter', () => {
+  const blessing = (overrides: Partial<Buff> = {}): Buff => ({
+    name: 'Bênção',
+    source: 'Bênção',
+    effects: [{ type: 'temp_hp', value: '10' }],
+    mp: 0,
+    active: true,
+    ...overrides,
+  });
+
+  it('replaces a same-name buff even when the source differs, matching name case/space-insensitively', () => {
+    // Buff criado à mão pelo jogador (sem source, caixa diferente) deve ser
+    // substituído pelo recebido do grupo — não duplicado.
+    const existing = blessing({ name: ' bênção ', source: undefined, effects: [{ type: 'temp_hp', value: '5' }] });
+    const character = baseCharacter({ buffs: [existing], temporaryHp: 5 });
+    const next = applyBuffToCharacter(character, blessing());
+    expect(next.buffs).toHaveLength(1);
+    expect(next.buffs[0].source).toBe('Bênção');
+    expect(next.temporaryHp).toBe(10);
+  });
+
+  it('refreshes instead of stacking when recasting an active buff', () => {
+    const character = baseCharacter({ buffs: [blessing()], temporaryHp: 10 });
+    const next = applyBuffToCharacter(character, blessing());
+    expect(next.buffs).toHaveLength(1);
+    expect(next.temporaryHp).toBe(10);
+  });
+
+  it('does not refund pools from an inactive same-name buff', () => {
+    const character = baseCharacter({ buffs: [blessing({ active: false })], temporaryHp: 0 });
+    const next = applyBuffToCharacter(character, blessing());
+    expect(next.buffs).toHaveLength(1);
+    expect(next.buffs[0].active).toBe(true);
+    expect(next.temporaryHp).toBe(10);
+  });
+
+  it('collapses pre-existing duplicates of the same buff into one entry', () => {
+    // Fichas já poluídas pelo bug antigo de duplicação saram na próxima aplicação.
+    const character = baseCharacter({ buffs: [blessing(), blessing()], temporaryHp: 20 });
+    const next = applyBuffToCharacter(character, blessing());
+    expect(next.buffs).toHaveLength(1);
+    expect(next.temporaryHp).toBe(10);
+  });
+
+  it('appends a new buff and never merges unnamed buffs', () => {
+    const character = baseCharacter({ buffs: [blessing({ name: '' })], temporaryHp: 0 });
+    const next = applyBuffToCharacter(character, blessing({ name: '' }));
+    expect(next.buffs).toHaveLength(2);
   });
 });
 

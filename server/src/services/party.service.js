@@ -10,6 +10,7 @@ const characterLogsRepository = require('../repositories/characterLogs.repositor
 const combatRepository = require('../repositories/combat.repository');
 const { mergeCharacterDocs } = require('./character.service');
 const { sendSessionProposalEmail } = require('./email.service');
+const { mergeBuffIntoCharacter, isTempHpType, isTempMpType } = require('../utils/buffMerge');
 
 const VALID_SYSTEMS = ['tormenta'];
 
@@ -197,18 +198,6 @@ function createPartyService(refs) {
     return toCharacterDetailDTO(mergeCharacterDocs(character, content, logsDoc));
   }
 
-  // Fichas salvas antes da divisão de `hp`/`mp` em fixo/temporário gravaram o tipo
-  // legado `hp`/`mp` — que sempre significou "temporário". Aceita os dois nomes pra
-  // não quebrar buffs de grupo criados antes dessa mudança.
-  const isTempHpType = (type) => type === 'temp_hp' || type === 'hp';
-  const isTempMpType = (type) => type === 'temp_mp' || type === 'mp';
-
-  function sumEffectsByType(effects, matchesType) {
-    return (effects || [])
-      .filter((eff) => eff && matchesType(eff.type))
-      .reduce((sum, eff) => sum + (Number(eff.value) || 0), 0);
-  }
-
   async function applyBuff(partyId, body, uid) {
     const { targetCharacterIds, buff } = body || {};
     if (!Array.isArray(targetCharacterIds) || targetCharacterIds.length === 0) {
@@ -248,18 +237,19 @@ function createPartyService(refs) {
       dc: Number.isFinite(Number(buff.dc)) ? Number(buff.dc) : undefined,
     };
 
-    const tempDelta = {
-      hp: sumEffectsByType(entry.effects, isTempHpType),
-      mp: sumEffectsByType(entry.effects, isTempMpType),
-    };
-
+    // Ler-mesclar-gravar em vez de $push: buff homônimo já existente na ficha do
+    // alvo é SUBSTITUÍDO (não duplicado), com os pools temporários ajustados por
+    // diferença — mesma semântica do applyBuffToCharacter no client. Dois casts
+    // simultâneos no mesmo alvo podem se atropelar, mas o autosave da ficha já
+    // convive com essa janela.
     const results = await Promise.allSettled(
-      targets.map((id) =>
-        characterRepository.pushBuffs(id, [entry], tempDelta).then(() => {
-          refs.broadcastBuffApplied(partyId, { characterId: id, buff: entry });
-          return id;
-        }),
-      ),
+      targets.map(async (id) => {
+        const doc = await characterRepository.findActiveById(id);
+        if (!doc) throw new Error(`Character ${id} not found or inactive`);
+        await characterRepository.setBuffState(id, mergeBuffIntoCharacter(doc, entry));
+        refs.broadcastBuffApplied(partyId, { characterId: id, buff: entry });
+        return id;
+      }),
     );
 
     const appliedTo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
