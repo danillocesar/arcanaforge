@@ -12,6 +12,8 @@ export interface AttackChecklistItem {
   damageDice: string;
   mpCost: number;
   defaultChecked: boolean;
+  /** Aceita empilhar ×N na modal — vem do `repeatable` da linha do modificador. */
+  repeatable: boolean;
 }
 
 /** Valor efetivo de um atributo do personagem, pros bônus dirigidos por atributo. */
@@ -76,6 +78,7 @@ function pushModifierRows(
       damageDice: m.damageDice ?? '',
       mpCost: m.mpCost ?? 0,
       defaultChecked: false,
+      repeatable: Boolean(m.repeatable),
     });
   });
 }
@@ -123,6 +126,8 @@ function pushMergedModifiers(
     damageDice: dice.join(''),
     mpCost,
     defaultChecked: false,
+    // O aprimoramento empilha como unidade — basta uma linha optar pela repetição.
+    repeatable: list.some((m) => Boolean(m.repeatable)),
   });
 }
 
@@ -153,6 +158,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
       damageDice: '',
       mpCost: Number(b.mp) || 0,
       defaultChecked: true,
+      repeatable: false,
     });
   });
 
@@ -168,6 +174,7 @@ export function buildAttackChecklist(character: Character, atk: Attack): AttackC
       damageDice: isDice ? raw : '',
       mpCost: Number(d.mp) || 0,
       defaultChecked: true,
+      repeatable: false,
     });
   });
 
@@ -252,7 +259,8 @@ export function composeAttack(
   const usedLabels: string[] = [];
 
   checklist.forEach((item) => {
-    const count = countOf(item.key);
+    // Item não-repetível aplica no máximo 1×, mesmo que a contagem diga mais.
+    const count = Math.min(countOf(item.key), item.repeatable ? Infinity : 1);
     if (count === 0) return;
     attackRoll += item.attackRoll * count;
     damageBonus += item.damageBonus * count;

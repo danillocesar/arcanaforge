@@ -50,6 +50,9 @@ export interface AttackModifier {
    * ataque / no dano, acumulável com o valor fixo digitado na mesma linha. */
   attackRollAttribute?: AttributeId;
   damageBonusAttribute?: AttributeId;
+  /** Pode ser aplicado N vezes no mesmo ataque (ex.: Smite Divino, 1d8 por 1 PM) —
+   * habilita o stepper ×N na modal de compor ataque. Ausente/falso = aplica 1×. */
+  repeatable?: boolean;
   /** Bônus temporário de atributo (ex.: "+6 Força") — resolvido por ataque: soma
    * no acerto só se a perícia usada pelo ataque for regida por esse atributo, e
    * no dano só se o próprio ataque usar esse atributo como base de dano. */

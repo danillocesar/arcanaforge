@@ -95,6 +95,12 @@ const ATTACK_MODIFIER_ITEM_FIELDS: FieldDescriptor[] = [
   },
   { key: 'damageDice', label: 'Dado extra', type: 'text', placeholder: 'Ex.: +2d6', half: true },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+  // Habilita o stepper ×N na modal de ataque (ex.: Smite Divino, 1d8 por 1 PM).
+  // Linha nova de lista nasce com '' em selects — por isso o "Não" é value ''.
+  {
+    key: 'repeatable', label: 'Pode repetir?', type: 'select',
+    options: [{ value: '', label: 'Não' }, { value: 'true', label: 'Sim' }], half: true,
+  },
   {
     key: 'attributeId', label: 'Atributo (temporário)', type: 'select', options: attackModifierAttrOptions, half: true,
   },
@@ -119,6 +125,7 @@ function attackModifiersFromValues(raw: unknown): AttackModifier[] {
       damageBonusAttribute: (s(row.damageBonusAttribute) || undefined) as AttributeId | undefined,
       attributeId: (s(row.attributeId) || undefined) as AttributeId | undefined,
       attributeValue: n(row.attributeValue) || undefined,
+      repeatable: s(row.repeatable) === 'true' || undefined,
     }))
     .filter((m) => m.label);
 }
@@ -134,6 +141,7 @@ function attackModifiersToForm(mods: AttackModifier[] | undefined): FormValues[]
     damageBonusAttribute: m.damageBonusAttribute ?? '',
     attributeId: m.attributeId ?? '',
     attributeValue: m.attributeValue ?? 0,
+    repeatable: m.repeatable ? 'true' : '',
   }));
 }
 

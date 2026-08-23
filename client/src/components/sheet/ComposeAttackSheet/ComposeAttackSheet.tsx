@@ -149,7 +149,7 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
                 <span className={styles.itemName}>{item.label}</span>
                 {item.source && <span className={styles.itemSource}>{item.source}</span>}
               </span>
-              {count > 0 && (
+              {count > 0 && item.repeatable && (
                 <span className={styles.stack}>
                   <button
                     type="button"

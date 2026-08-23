@@ -94,6 +94,36 @@ describe('buildAttackChecklist', () => {
     expect(item.label).toBe('Smite Divino');
   });
 
+  it('marks an item repeatable only when its modifier line opts in', () => {
+    const ability: Ability = {
+      name: 'Smite Divino',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [
+        { label: 'Smite', damageDice: '1d8', mpCost: 1, repeatable: true },
+        { label: 'Acerto', attackRoll: 2 },
+      ],
+    };
+    const items = buildAttackChecklist(baseCharacter({ abilities: [ability] }), baseAttack());
+    expect(items[0].repeatable).toBe(true);
+    expect(items[1].repeatable).toBe(false);
+  });
+
+  it('marks a spell enhancement item repeatable when any of its lines opts in', () => {
+    const spell: Spell = {
+      name: 'Toque Chocante', school: 'Evocação', castingTime: '', range: '', area: '',
+      duration: '', resistance: '', mpCost: 1, spellLevel: 1, description: '',
+      enhancements: [{
+        description: '+1d8 por PM extra', mpCost: 1,
+        attackModifiers: [{ label: 'Dano', damageDice: '1d8', repeatable: true }],
+      }],
+    };
+    const [item] = buildAttackChecklist(baseCharacter({ spells: [spell] }), baseAttack());
+    expect(item.repeatable).toBe(true);
+  });
+
   it('resolves attribute-driven attack/damage bonuses into the item numbers', () => {
     // Bônus que vem de um atributo (ex.: soma a Sabedoria no teste e no dano),
     // acumulável com o valor fixo digitado na mesma linha.
@@ -241,6 +271,25 @@ describe('composeAttack', () => {
     expect(composed.usedLabels).toEqual([]);
   });
 
+  it('caps a non-repeatable item at one application even when the count says more', () => {
+    const ability: Ability = {
+      name: 'Ataque Poderoso',
+      source: 'Poder',
+      type: 'Poder',
+      mpCost: 0,
+      description: '',
+      attackModifiers: [{ label: 'Acerto', attackRoll: 2, mpCost: 1 }],
+    };
+    const character = baseCharacter({ abilities: [ability] });
+    const atk = baseAttack();
+    const checklist = buildAttackChecklist(character, atk);
+    const composed = composeAttack(character, atk, checklist, new Map([[checklist[0].key, 3]]));
+
+    expect(composed.attackRoll).toBe(calcTotalSkill(character, 'luta') + 2);
+    expect(composed.mpTotal).toBe(1);
+    expect(composed.usedLabels).toEqual(['Ataque Poderoso']);
+  });
+
   it('applies a stacked modifier N times: numbers, PM and dice all scale', () => {
     // Smite Divino: 1d8 de dano por 1 PM gasto — marcado 3 vezes vira 3d8 e 3 PM.
     const ability: Ability = {
@@ -249,7 +298,7 @@ describe('composeAttack', () => {
       type: 'Poder',
       mpCost: 0,
       description: '',
-      attackModifiers: [{ label: 'Smite', damageDice: '1d8', mpCost: 1, attackRoll: 1 }],
+      attackModifiers: [{ label: 'Smite', damageDice: '1d8', mpCost: 1, attackRoll: 1, repeatable: true }],
     };
     const character = baseCharacter({ abilities: [ability] });
     const atk = baseAttack();
