@@ -1,5 +1,8 @@
 .segctl {
   display: flex;
+  /* Muitas opções (ex.: os 6 tipos de item na modal) quebram pra linha de baixo
+   * em vez de estourar a largura do container. */
+  flex-wrap: wrap;
   gap: 4px;
   background: var(--surface-2);
   border-radius: 13px;
