@@ -136,6 +136,16 @@
   pointer-events: auto;
 }
 
+/* variante `wide`: mais alto como bottom sheet, mais largo como modal */
+.sheet.wide {
+  max-height: 92%;
+}
+
+.sheet.modal.wide {
+  width: min(780px, 94%);
+  max-height: 88%;
+}
+
 .sheet.modal .sheetHead::before {
   display: none;
 }

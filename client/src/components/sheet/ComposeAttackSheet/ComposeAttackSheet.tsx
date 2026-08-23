@@ -115,7 +115,7 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
   );
 
   return (
-    <Sheet open={Boolean(attack)} onClose={onClose} title={activeAttack.name || 'Ataque'} footer={footer}>
+    <Sheet open={Boolean(attack)} onClose={onClose} title={activeAttack.name || 'Ataque'} footer={footer} wide>
       <div className={styles.baseRow}>
         <div className={styles.baseStat}>
           <span className={styles.baseLabel}>Ataque</span>

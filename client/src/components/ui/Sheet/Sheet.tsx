@@ -9,6 +9,9 @@ interface SheetProps {
   footer?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Variante espaçosa pra conteúdo denso (ex.: checklist de ataque): modal mais
+   * largo no desktop e bottom sheet mais alto no mobile. */
+  wide?: boolean;
 }
 
 /**
@@ -32,7 +35,7 @@ function useDesktop(): boolean {
   return isDesktop;
 }
 
-function Sheet({ open, title, onClose, footer, children, className }: SheetProps) {
+function Sheet({ open, title, onClose, footer, children, className, wide }: SheetProps) {
   const isDesktop = useDesktop();
   // Keep the node mounted through the close animation.
   const [mounted, setMounted] = useState(open);
@@ -71,6 +74,7 @@ function Sheet({ open, title, onClose, footer, children, className }: SheetProps
   const sheetClass = [
     styles.sheet,
     isDesktop ? styles.modal : '',
+    wide ? styles.wide : '',
     open ? styles.open : '',
     className ?? '',
   ]
