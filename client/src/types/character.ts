@@ -199,6 +199,11 @@ export interface DefenseItem {
   name: string;
   value: number;
   penalty: number;
+  /** Linhas de melhoria/encanto aplicadas (texto do catálogo). */
+  effect?: string;
+  /** Buffs fixos da melhoria/encanto — sintetizados como bônus sempre ativo. */
+  alwaysActive?: boolean;
+  buffs?: BuffEffect[];
 }
 
 /** Redução de Dano por tipo, ex. `{ name: 'fogo', value: 5 }`. "Geral" = contra tudo. */

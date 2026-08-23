@@ -373,6 +373,42 @@ describe('toggleBuffState', () => {
   });
 });
 
+describe('defense item enhancements (melhorias/encantos de armadura)', () => {
+  it('synthesizes always-active buffs from defense items into the active set', () => {
+    // Armadura "Reforçada": +1 Defesa via buff da melhoria, além do valor da peça.
+    const character = baseCharacter({
+      defense: {
+        base: 10,
+        items: [{
+          name: 'Couraça', value: 2, penalty: 1,
+          alwaysActive: true,
+          effect: 'Reforçada: +1 na Defesa',
+          buffs: [{ type: 'defense', value: '1' }],
+        }],
+      },
+    });
+    const active = getActiveBuffs(character);
+    expect(active).toHaveLength(1);
+    expect(active[0].name).toBe('Couraça');
+    // 10 base + 0 Des + 2 da peça + 1 da melhoria
+    expect(calcTotalDefense(character)).toBe(13);
+  });
+
+  it('ignores defense items without alwaysActive or without effects', () => {
+    const character = baseCharacter({
+      defense: {
+        base: 10,
+        items: [
+          { name: 'Escudo', value: 1, penalty: 0 },
+          { name: 'Gibão', value: 2, penalty: 0, alwaysActive: true, buffs: [] },
+        ],
+      },
+    });
+    expect(getActiveBuffs(character)).toHaveLength(0);
+    expect(calcTotalDefense(character)).toBe(13);
+  });
+});
+
 describe('applyBuffToCharacter', () => {
   const blessing = (overrides: Partial<Buff> = {}): Buff => ({
     name: 'Bênção',

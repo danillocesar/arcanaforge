@@ -564,15 +564,34 @@ const armaduraConfig: EntityConfig = {
     { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome da proteção' },
     { key: 'value', label: 'Bônus de Defesa', type: 'number', half: true },
     { key: 'penalty', label: 'Penalidade', type: 'number', half: true },
+    // Onde o ItemEnhancementPicker anota a melhoria/encanto escolhida — sem este
+    // campo o clique no catálogo era descartado no salvar (nada acontecia).
+    { key: 'effect', label: 'Melhorias & Encantos', type: 'text', placeholder: 'Preenchido pelo catálogo abaixo' },
+    { key: 'alwaysActive', label: 'Sempre ativo', type: 'select', options: alwaysActiveOptions, half: true },
+    {
+      key: 'buffs', label: 'Efeitos de Buff', type: 'list', addLabel: 'Efeito',
+      itemFields: BUFF_EFFECT_ITEM_FIELDS,
+      showIf: (v) => v.alwaysActive === 'true',
+    },
     ENHANCEMENT_PICKER_FIELD('protecao'),
   ],
-  empty: () => ({ name: '', value: 0, penalty: 0 }),
+  empty: () => ({ name: '', value: 0, penalty: 0, effect: '', alwaysActive: 'false', buffs: [] }),
   fromEntry: (c, i) => {
     const d = c.defense.items[i];
-    return { name: d.name, value: d.value, penalty: d.penalty };
+    return {
+      name: d.name, value: d.value, penalty: d.penalty,
+      effect: d.effect ?? '',
+      alwaysActive: d.alwaysActive ? 'true' : 'false',
+      buffs: effectsToForm(d.buffs),
+    };
   },
   apply: (c, v, i) => {
-    const entry = { name: s(v.name), value: n(v.value), penalty: n(v.penalty) };
+    const entry = {
+      name: s(v.name), value: n(v.value), penalty: n(v.penalty),
+      effect: s(v.effect) || undefined,
+      alwaysActive: s(v.alwaysActive) === 'true',
+      buffs: effectsFromValues(v.buffs),
+    };
     return { ...c, defense: { ...c.defense, items: upsert(c.defense.items, entry, i) } };
   },
   remove: (c, i) => ({ ...c, defense: { ...c.defense, items: c.defense.items.filter((_, idx) => idx !== i) } }),

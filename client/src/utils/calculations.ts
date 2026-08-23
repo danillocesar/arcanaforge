@@ -78,7 +78,12 @@ function synthesizeAlwaysActiveBuffs(character: Character): Buff[] {
     .filter((it) => it.alwaysActive && !it.suppressed)
     .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Item' }))
     .filter((b) => b.effects.length > 0);
-  return [...fromAbilities, ...fromItems];
+  // Melhorias/encantos de armadura e escudo (defense.items) também são fixos.
+  const fromDefense = (character.defense?.items ?? [])
+    .filter((it) => it.alwaysActive)
+    .map((it) => ({ name: it.name, effects: filterFixedBonusEffects(it.buffs ?? []), mp: 0, active: true, source: 'Armadura' }))
+    .filter((b) => b.effects.length > 0);
+  return [...fromAbilities, ...fromItems, ...fromDefense];
 }
 
 /**
