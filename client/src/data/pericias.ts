@@ -31,8 +31,10 @@ export const SKILLS_CONFIG: SkillConfig[] = [
   { id: 'luta', name: 'Luta', attribute: 'str', armorPenalty: false },
   { id: 'misticismo', name: 'Misticismo', attribute: 'int', armorPenalty: false, trained: true },
   { id: 'nobreza', name: 'Nobreza', attribute: 'int', armorPenalty: false, trained: true },
-  { id: 'oficio1', name: 'Ofício', attribute: 'int', armorPenalty: false, trained: true, customLabel: true },
-  { id: 'oficio2', name: 'Ofício', attribute: 'int', armorPenalty: false, trained: true, customLabel: true },
+  // Dois slots de Ofício de propósito (T20 permite vários) — nomes padrão distintos
+  // pra não parecerem duplicata enquanto o jogador não dá o rótulo próprio.
+  { id: 'oficio1', name: 'Ofício 1', attribute: 'int', armorPenalty: false, trained: true, customLabel: true },
+  { id: 'oficio2', name: 'Ofício 2', attribute: 'int', armorPenalty: false, trained: true, customLabel: true },
   { id: 'percepacao', name: 'Percepção', attribute: 'wis', armorPenalty: false },
   { id: 'pilotagem', name: 'Pilotagem', attribute: 'dex', armorPenalty: false, trained: true },
   { id: 'pontaria', name: 'Pontaria', attribute: 'dex', armorPenalty: false },
