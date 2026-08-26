@@ -262,7 +262,10 @@ export interface SkillData {
   trained: boolean;
   misc: number;
   label?: string;
+  /** Atributo-base trocado pelo jogador (ex.: Sabedoria em vez de Carisma). */
   attribute?: AttributeId;
+  /** "+ atributo": um SEGUNDO atributo somado ao total (atributo-guia, sem ciclo). */
+  bonusAttribute?: AttributeId;
 }
 
 export interface HitPoints {

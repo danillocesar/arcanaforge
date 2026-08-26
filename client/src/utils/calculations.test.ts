@@ -448,6 +448,26 @@ describe('freezeEffects', () => {
   });
 });
 
+describe('calcTotalSkill com bonusAttribute na perícia', () => {
+  it('soma um segundo atributo (atributo-guia) ao total da perícia', () => {
+    const c = baseCharacter({
+      classes: [{ name: 'Bardo', level: 2 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 2, wis: 0, cha: 3 },
+      skills: { ...createEmptyCharacter('x').skills, diplomacia: { trained: false, misc: 0, bonusAttribute: 'int' } },
+    });
+    // meio nível 1 + Car 3 + Int 2 = 6
+    expect(calcTotalSkill(c, 'diplomacia')).toBe(6);
+  });
+
+  it('sem bonusAttribute o total não muda', () => {
+    const c = baseCharacter({
+      classes: [{ name: 'Bardo', level: 2 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 2, wis: 0, cha: 3 },
+    });
+    expect(calcTotalSkill(c, 'diplomacia')).toBe(4);
+  });
+});
+
 describe('deactivateAllBuffs / removeInactiveBuffs', () => {
   it('desliga todos os ativos devolvendo o temporário de cada um, sem devolver PM', () => {
     const c = baseCharacter({

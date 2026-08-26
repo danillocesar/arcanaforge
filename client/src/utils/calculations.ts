@@ -212,6 +212,8 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   const attributeMod = getEffectiveAttribute(character, usedAttribute);
   const trainingBonus = skill.trained ? trainingBonusForLevel(getTotalLevel(character)) : 0;
   const miscBonus = skill.misc || 0;
+  // "+ atributo" direto na perícia (E3/H3.4): segundo atributo somado, via atributo-guia.
+  const bonusAttr = skill.bonusAttribute ? guideAttribute(character, skill.bonusAttribute) : 0;
   // Penalidade de armadura vale pra toda perícia usada com Força ou Destreza
   // (inclusive Luta/Pontaria e atributo trocado pelo jogador), exceto Iniciativa.
   let armorPenalty = 0;
@@ -227,7 +229,7 @@ export function calcTotalSkill(character: Character, skillId: string): number {
       }
     });
   });
-  return halfLevel + attributeMod + trainingBonus + miscBonus + armorPenalty + buffBonus;
+  return halfLevel + attributeMod + trainingBonus + miscBonus + bonusAttr + armorPenalty + buffBonus;
 }
 
 export function calcTotalDefense(character: Character): number {
