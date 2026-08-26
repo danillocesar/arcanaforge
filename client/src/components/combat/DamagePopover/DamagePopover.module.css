@@ -90,3 +90,66 @@
 .btnHeal:active {
   transform: scale(0.95);
 }
+
+/* Jogador com RD cadastrada: popover mais largo, com chips de tipo/RD e prévia do líquido. */
+.popoverWide {
+  min-width: 300px;
+  max-width: 320px;
+}
+
+.section {
+  margin: 8px 0 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.chip:hover {
+  color: var(--text-primary);
+}
+
+.chipOn {
+  background: rgba(220, 53, 69, 0.22);
+  border-color: rgba(220, 53, 69, 0.6);
+  color: #f87171;
+}
+
+.chipRd.chipOn {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.preview {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.previewNote {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}

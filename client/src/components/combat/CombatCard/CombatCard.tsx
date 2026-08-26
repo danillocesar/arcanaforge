@@ -316,6 +316,9 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
           barRef={hpBarRef}
           onApply={handleHpApply}
           onClose={() => setPopoverOpen(false)}
+          damageReductions={isPartyCharacter ? row.damageReductions : undefined}
+          temporaryHp={isPartyCharacter ? row.temporaryHp : undefined}
+          currentHp={isPartyCharacter ? row.currentHp : undefined}
         />
       )}
     </div>
