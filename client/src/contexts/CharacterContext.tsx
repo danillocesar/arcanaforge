@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useRef, useMem
 import type { Character } from '../types/character';
 import { createEmptyCharacter, normalizeBuffs, normalizeDamageReductions, applyBuffToCharacter } from '../utils/calculations';
 import { normalizeVitals } from '../utils/vitals';
+// Puxa o catálogo (~250 KB) pro bundle inicial; alternativa futura: import() dinâmico após o 1º render.
+import { hydrateSpells } from '../utils/spellCatalog';
 import { shouldAlert } from '../utils/alertThrottle';
 import {
   apiFetchCharacters,
@@ -232,6 +234,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
         ...data,
         buffs: normalizeBuffs(data.buffs),
         damageReductions: normalizeDamageReductions(data.damageReductions, data.damageReduction),
+        spells: hydrateSpells(data.spells),
       });
       setCharacter(normalized);
       setCharacterOriginalId(data._id);
@@ -296,6 +299,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       ...char,
       buffs: normalizeBuffs(char.buffs),
       damageReductions: normalizeDamageReductions(char.damageReductions, char.damageReduction),
+      spells: hydrateSpells(char.spells),
     }));
     setCharacterOriginalId(char._id);
     resetUndoState();

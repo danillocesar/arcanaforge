@@ -129,6 +129,12 @@ export interface Spell {
   buffTargetScope?: BuffTargetScope;
   buffs?: BuffEffect[];
   attackModifiers?: AttackModifier[];
+  /** Slug do catálogo (`OfficialSpell.id`) de onde esta magia veio. Ausente = magia
+   * personalizada; nada é hidratado. */
+  catalogId?: string;
+  /** Campos hidratáveis que o jogador editou à mão — prevalecem sobre o catálogo na
+   * leitura (ver utils/spellCatalog.ts). */
+  overrides?: string[];
 }
 
 export type AbilityKind = 'Poder' | 'Habilidade';

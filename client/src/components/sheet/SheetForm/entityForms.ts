@@ -14,7 +14,8 @@ import { SKILLS_CONFIG } from '../../../data/pericias';
 import { ABILITY_CATEGORIES } from '../../../utils/abilityGroups';
 import type { ItemEnhancementTarget } from '../../../data/itemEnhancements';
 import type { OfficialCondition } from '../../../data/conditions';
-import type { OfficialSpell } from '../../../data/spells';
+import { OFFICIAL_SPELLS, type OfficialSpell } from '../../../data/spells';
+import { computeSpellOverrides } from '../../../utils/spellCatalog';
 import type { OfficialPower } from '../../../data/powers';
 import type { FieldDescriptor, FormValues } from './SheetForm';
 
@@ -356,11 +357,13 @@ const magiaConfig: EntityConfig = {
   empty: () => ({
     name: '', school: schoolOptions[0]?.value ?? '', spellLevel: 1, mpCost: baseMpCostForLevel(1), castingTime: '', range: '',
     area: '', duration: '', resistance: '', summary: '', description: '', enhancements: [],
-    buffTargetScope: 'self', buffs: [], attackModifiers: [],
+    buffTargetScope: 'self', buffs: [], attackModifiers: [], catalogId: '',
   }),
   fromEntry: (c, i) => {
     const sp = c.spells[i];
     return {
+      // `catalogId` não tem campo visível: viaja escondido no rascunho e volta no apply.
+      catalogId: sp.catalogId ?? '',
       name: sp.name, school: sp.school, spellLevel: sp.spellLevel, mpCost: sp.mpCost,
       castingTime: sp.castingTime, range: sp.range, area: sp.area, duration: sp.duration,
       resistance: sp.resistance, summary: sp.summary ?? '', description: sp.description,
@@ -398,6 +401,16 @@ const magiaConfig: EntityConfig = {
       })),
       attackModifiers: attackModifiersFromValues(v.attackModifiers),
     } as Character['spells'][number];
+    // Magia vinda do catálogo: guarda a referência e quais campos hidratáveis o jogador
+    // mudou — só esses prevalecem sobre o catálogo na leitura (utils/spellCatalog.ts).
+    const catalogId = s(v.catalogId);
+    if (catalogId) {
+      const official = OFFICIAL_SPELLS.find((o) => o.id === catalogId);
+      entry.catalogId = catalogId;
+      entry.overrides = official
+        ? computeSpellOverrides(entry, official)
+        : (base as { overrides?: string[] }).overrides;
+    }
     return { ...c, spells: upsert(c.spells, entry, i) };
   },
   remove: (c, i) => ({ ...c, spells: c.spells.filter((_, idx) => idx !== i) }),
@@ -406,6 +419,7 @@ const magiaConfig: EntityConfig = {
 /** Converte uma magia oficial do catálogo em rascunho de formulário para o magiaConfig acima. */
 export function spellToFormValues(spell: OfficialSpell): FormValues {
   return {
+    catalogId: spell.id,
     name: spell.name,
     school: spell.school,
     spellLevel: spell.spellLevel,
