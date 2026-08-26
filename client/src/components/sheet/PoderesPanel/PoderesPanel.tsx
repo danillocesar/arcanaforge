@@ -59,6 +59,7 @@ function PoderesPanel() {
       mpCost: Number(ab.mpCost) || 0,
       buffs: ab.buffs,
       buffTargetScope: ab.buffTargetScope,
+      sourceAbilityIndex: index,
     });
   };
 

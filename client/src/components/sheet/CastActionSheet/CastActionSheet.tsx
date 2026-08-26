@@ -22,6 +22,9 @@ export interface CastActionSpec {
   enhancements?: CastActionEnhancement[];
   /** Teste de resistência da magia de origem, ex. "Vontade anula" — vai junto no buff. */
   resistance?: string;
+  /** Índice em `character.abilities` do poder que está sendo usado — ao concluir, consome
+   * um uso do dia (`usesLeft`) se o poder tiver `usesPerDay`. */
+  sourceAbilityIndex?: number;
 }
 
 interface CastActionSheetProps {
@@ -80,9 +83,17 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   };
 
   const finish = () => {
+    const abilityIndex = activeAction.sourceAbilityIndex;
     updateCharacter((f) => ({
       ...f,
       mp: { ...f.mp, current: Math.max(0, f.mp.current - totalCost) },
+      abilities: abilityIndex == null
+        ? f.abilities
+        : f.abilities.map((a, i) =>
+            i === abilityIndex && a.usesPerDay
+              ? { ...a, usesLeft: Math.max(0, (a.usesLeft ?? a.usesPerDay) - 1) }
+              : a,
+          ),
       logs: [
         ...f.logs,
         {

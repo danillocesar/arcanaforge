@@ -22,6 +22,11 @@ function AbilityCard({ ability, index, onEdit, onUse, onToggleFavorite }: Abilit
   const hasBuffs = (ability.buffs ?? []).length > 0;
   const showUse = onUse && !ability.alwaysActive && (mpCost > 0 || hasBuffs);
   const isPassive = !showUse;
+  // Usos por dia: `usesLeft` ausente = dia ainda não começou a gastar (cheio).
+  const uses = ability.usesPerDay
+    ? { left: ability.usesLeft ?? ability.usesPerDay, max: ability.usesPerDay }
+    : null;
+  const exhausted = uses != null && uses.left <= 0;
   // Mesma regra do SpellCard: resumo no card, texto integral no formulário.
   const blurb = ability.summary?.trim() || firstSentence(ability.description);
 
@@ -60,18 +65,29 @@ function AbilityCard({ ability, index, onEdit, onUse, onToggleFavorite }: Abilit
             </button>
           )}
         </div>
-        {(ability.source || ability.prerequisite || mpCost > 0 || isPassive) && (
+        {(ability.source || ability.prerequisite || mpCost > 0 || isPassive || uses) && (
           <div className={styles.metaRow}>
             {isPassive && <span className={styles.source}>Passiva</span>}
             {ability.source && <span className={styles.source}>{ability.source}</span>}
             {ability.prerequisite && <span className={styles.source}>Pré-req.: {ability.prerequisite}</span>}
             {mpCost > 0 && <span className={styles.pm}>{mpCost} PM</span>}
+            {uses && (
+              <span className={`${styles.uses} ${exhausted ? styles.usesOut : ''}`.trim()}>
+                {uses.left}/{uses.max} usos
+              </span>
+            )}
           </div>
         )}
         {blurb && <p className={styles.desc}>{blurb}</p>}
       </div>
       {!readOnly && showUse && (
-        <button type="button" className={styles.btnUse} onClick={() => onUse?.(index)}>
+        <button
+          type="button"
+          className={styles.btnUse}
+          onClick={() => onUse?.(index)}
+          disabled={exhausted}
+          title={exhausted ? 'Sem usos hoje — renova no "Novo dia"' : undefined}
+        >
           ▶ Usar
         </button>
       )}

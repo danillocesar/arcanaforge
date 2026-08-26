@@ -123,3 +123,14 @@
 .btnUse:active {
   transform: scale(0.97);
 }
+
+/* Usos por dia: contador "2/3 usos"; esgotado fica em alerta e o "Usar" desabilita. */
+.uses {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.usesOut {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}

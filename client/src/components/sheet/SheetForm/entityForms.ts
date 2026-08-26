@@ -201,6 +201,8 @@ const abilityFields: FieldDescriptor[] = [
     showIf: (v) => v.type === 'Outro',
   },
   { key: 'mpCost', label: 'Custo (PM)', type: 'number', half: true },
+  // 0 = ilimitado. O contador do dia (`usesLeft`) é consumido ao "Usar" e renovado no "Novo dia".
+  { key: 'usesPerDay', label: 'Usos por dia (0 = ilimitado)', type: 'number', half: true },
   { key: 'prerequisite', label: 'Pré-requisito', type: 'text', placeholder: 'Ex.: Força 13' },
   { key: 'summary', label: 'Resumo', type: 'text', placeholder: '1 linha: o que o poder faz na prática' },
   { key: 'description', label: 'Descrição', type: 'textarea', placeholder: 'Efeito / regras' },
@@ -222,13 +224,14 @@ const abilidadeConfig: EntityConfig = {
   title: 'Poder / Habilidade',
   fields: abilityFields,
   empty: () => ({
-    kind: 'Poder', name: '', type: '', source: '', mpCost: 0, prerequisite: '', summary: '', description: '',
+    kind: 'Poder', name: '', type: '', source: '', mpCost: 0, usesPerDay: 0, prerequisite: '', summary: '', description: '',
     castable: 'false', alwaysActive: 'false', buffTargetScope: 'self', buffs: [], attackModifiers: [],
   }),
   fromEntry: (c, i) => {
     const a = c.abilities[i];
     return {
       kind: a.kind ?? 'Poder', name: a.name, type: a.type ?? '', source: a.source, mpCost: a.mpCost,
+      usesPerDay: a.usesPerDay ?? 0,
       prerequisite: a.prerequisite ?? '', summary: a.summary ?? '', description: a.description,
       castable: a.castable ? 'true' : 'false',
       alwaysActive: a.alwaysActive ? 'true' : 'false',
@@ -246,6 +249,11 @@ const abilidadeConfig: EntityConfig = {
       source: s(v.source),
       kind: (s(v.kind) || 'Poder') as AbilityKind,
       mpCost: n(v.mpCost),
+      usesPerDay: n(v.usesPerDay) || undefined,
+      // Mudar o limite não devolve usos já gastos hoje: o contador só encolhe se ficou acima do novo limite.
+      usesLeft: n(v.usesPerDay)
+        ? Math.min((base as { usesLeft?: number }).usesLeft ?? n(v.usesPerDay), n(v.usesPerDay))
+        : undefined,
       prerequisite: s(v.prerequisite) || undefined,
       summary: s(v.summary) || undefined,
       description: s(v.description),

@@ -54,7 +54,10 @@ function AcoesPanel() {
   const castAbility = (index: number) => {
     const ab = character.abilities[index];
     if (!ab) return;
-    setCastAction({ name: ab.name, mpCost: Number(ab.mpCost) || 0, buffs: ab.buffs, buffTargetScope: ab.buffTargetScope });
+    setCastAction({
+      name: ab.name, mpCost: Number(ab.mpCost) || 0, buffs: ab.buffs, buffTargetScope: ab.buffTargetScope,
+      sourceAbilityIndex: index,
+    });
   };
 
   return (
