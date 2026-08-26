@@ -530,33 +530,41 @@ describe('applyBuffToCharacter', () => {
     expect(next.buffs).toHaveLength(2);
   });
 
-  it('heals current HP/MP by the temp amounts received (the bar ceiling grew by the same)', () => {
+  it('NÃO cura o atual por temp_hp/temp_mp — o temporário é pool separado (sobrevida)', () => {
     const incoming = blessing({
-      effects: [{ type: 'temp_hp', value: '10' }, { type: 'temp_mp', value: '4' }],
+      effects: [{ type: 'temp_hp', value: '10' }, { type: 'temp_mp', value: '2' }],
     });
     const character = baseCharacter({
       hp: { max: 30, current: 12 },
       mp: { max: 10, current: 3 },
     });
     const next = applyBuffToCharacter(character, incoming);
-    expect(next.hp.current).toBe(22);
-    expect(next.mp.current).toBe(7);
+    expect(next.temporaryHp).toBe(10);
+    expect(next.temporaryMp).toBe(2);
+    expect(next.hp.current).toBe(12);
+    expect(next.mp.current).toBe(3);
   });
 
-  it('heals for max_hp effects and clamps at the effective ceiling on recast', () => {
-    // Recast no personagem cheio: teto não muda, cura não pode estourar a barra.
+  it('heals for max_hp effects and clamps at the effective ceiling (without the temp pool)', () => {
+    // Recast de um buff de temporário: nada muda no atual.
     const character = baseCharacter({
-      hp: { max: 30, current: 38 },
+      hp: { max: 30, current: 25 },
       buffs: [blessing()],
       temporaryHp: 10,
     });
     const next = applyBuffToCharacter(character, blessing());
-    expect(next.hp.current).toBe(40);
+    expect(next.hp.current).toBe(25);
+    expect(next.temporaryHp).toBe(10);
 
+    // max_hp sobe o máximo e cura o mesmo tanto (regra do T20), clampado no máximo efetivo.
     const maxBuff = blessing({ name: 'Vitalidade', effects: [{ type: 'max_hp', value: '5' }] });
     const full = baseCharacter({ hp: { max: 30, current: 30 } });
     const withMax = applyBuffToCharacter(full, maxBuff);
     expect(withMax.hp.current).toBe(35);
+
+    // O temporário não entra no teto: PV 30/30 + temp 10 recebendo +5 de máximo vai a 35, não a 45.
+    const withTemp = applyBuffToCharacter(baseCharacter({ hp: { max: 30, current: 30 }, temporaryHp: 10 }), maxBuff);
+    expect(withTemp.hp.current).toBe(35);
   });
 
   it('leaves current HP/MP untouched for buffs without pool effects', () => {
