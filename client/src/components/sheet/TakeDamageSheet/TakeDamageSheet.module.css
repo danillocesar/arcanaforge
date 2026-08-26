@@ -1,0 +1,95 @@
+.label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.label:first-child {
+  margin-top: 0;
+}
+
+/* Campo de dano: draft-string (nunca type=number controlado), grande, seleciona no foco. */
+.amount {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+
+.amount:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chipsOff {
+  opacity: 0.45;
+}
+
+.rdHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rdHead .label {
+  margin-bottom: 0;
+}
+
+.ignore {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.preview {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.preview b {
+  color: var(--ink);
+}
+
+.net {
+  font-size: 16px;
+}
+
+.split {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.hint {
+  color: var(--ink-3);
+}
+
+.flex {
+  flex: 1;
+}

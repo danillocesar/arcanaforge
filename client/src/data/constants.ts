@@ -100,6 +100,8 @@ export const LOG_ICONS: Record<string, string> = {
   spell: '✨',
   buff_on: '▲',
   buff_off: '▼',
+  damage: '💥',
+  rest: '🌅',
 };
 
 export const COMBAT_DEFAULT = {

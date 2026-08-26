@@ -30,6 +30,7 @@ import InfoSheet from '../InfoSheet/InfoSheet';
 import TemporaryEffectsSheet from '../TemporaryEffectsSheet/TemporaryEffectsSheet';
 import ProgressionSheet from '../ProgressionSheet/ProgressionSheet';
 import LogsSheet from '../LogsSheet/LogsSheet';
+import TakeDamageSheet from '../TakeDamageSheet/TakeDamageSheet';
 import styles from './VitalBar.module.css';
 
 interface VitalBarProps {
@@ -48,6 +49,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
   const [effectsOpen, setEffectsOpen] = useState(false);
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
+  const [damageOpen, setDamageOpen] = useState(false);
 
   const pvRef = useRef<HTMLButtonElement>(null);
   const pmRef = useRef<HTMLButtonElement>(null);
@@ -363,9 +365,21 @@ function VitalBar({ desktop = false }: VitalBarProps) {
           {tempSources('hp') && ` Origem: ${tempSources('hp')}.`}
         </div>
         {!readOnly && (
-          <button type="button" className={styles.healAllBtn} onClick={healAll('hp')}>
-            ✚ Curar tudo
-          </button>
+          <>
+            <button
+              type="button"
+              className={styles.healAllBtn}
+              onClick={() => {
+                setOpenPop(null);
+                setDamageOpen(true);
+              }}
+            >
+              💥 Tomar dano
+            </button>
+            <button type="button" className={styles.healAllBtn} onClick={healAll('hp')}>
+              ✚ Curar tudo
+            </button>
+          </>
         )}
       </Popover>
 
@@ -502,6 +516,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
       <TemporaryEffectsSheet open={effectsOpen} onClose={() => setEffectsOpen(false)} />
       <ProgressionSheet open={progressionOpen} onClose={() => setProgressionOpen(false)} />
       <LogsSheet open={logsOpen} onClose={() => setLogsOpen(false)} />
+      <TakeDamageSheet open={damageOpen} onClose={() => setDamageOpen(false)} />
     </header>
   );
 }

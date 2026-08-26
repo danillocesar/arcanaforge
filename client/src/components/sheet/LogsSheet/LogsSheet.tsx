@@ -9,9 +9,9 @@ interface LogsSheetProps {
 }
 
 function typeClass(type: string): string {
-  if (type === 'attack') return styles.typeAttack;
+  if (type === 'attack' || type === 'damage') return styles.typeAttack;
   if (type === 'spell') return styles.typeSpell;
-  if (type === 'buff_on') return styles.typeBuffOn;
+  if (type === 'buff_on' || type === 'rest') return styles.typeBuffOn;
   if (type === 'buff_off') return styles.typeBuffOff;
   return '';
 }
@@ -21,6 +21,14 @@ function formatDetails(details: unknown): string | null {
   if (typeof details === 'string') return details;
   if (typeof details === 'object') {
     const d = details as Record<string, unknown>;
+    // Dano recebido (TakeDamageSheet): bruto, tipo, RD somada, líquido e o que saiu do temporário.
+    if (d.net != null) {
+      const parts = [`Dano ${d.amount}${d.damageType ? ` de ${String(d.damageType).toLowerCase()}` : ''}`];
+      if (Number(d.rdTotal) > 0) parts.push(`RD ${d.rdTotal}`);
+      parts.push(`Líquido ${d.net}`);
+      if (Number(d.fromTemp) > 0) parts.push(`${d.fromTemp} do temporário`);
+      return parts.join(' · ');
+    }
     const parts: string[] = [];
     const rangeType = d.rangeType ?? d.custoTipo;
     const attackRoll = d.attackRoll ?? d.teste;
