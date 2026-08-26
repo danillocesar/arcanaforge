@@ -1,6 +1,32 @@
 import { describe, it, expect } from 'vitest';
 import type { BuffEffect } from '../types/character';
-import { normalizeEffectType, filterFixedBonusEffects, effectTag, summarizeEffects } from './buffEffects';
+import {
+  normalizeEffectType,
+  filterFixedBonusEffects,
+  effectTag,
+  summarizeEffects,
+  formatEffectFormula,
+} from './buffEffects';
+
+describe('formatEffectFormula', () => {
+  it('mostra fixo e variáveis', () => {
+    expect(formatEffectFormula({ type: 'skill', value: '2', attributeBonus: 'int' })).toBe('+2 +Int');
+    expect(formatEffectFormula({ type: 'defense', value: '', levelBonus: 'half' })).toBe('+½nível');
+    expect(formatEffectFormula({ type: 'attribute', attributeId: 'str', value: '-1', attributeBonus: 'dex', levelBonus: 'full' }))
+      .toBe('-1 +Des +nível');
+  });
+
+  it('sem fixo nem variável devolve null', () => {
+    expect(formatEffectFormula({ type: 'defense', value: '' })).toBeNull();
+    expect(formatEffectFormula({ type: 'defense', value: '0' })).toBeNull();
+  });
+});
+
+describe('summarizeEffects com variáveis', () => {
+  it('usa a fórmula quando o efeito tem variável', () => {
+    expect(summarizeEffects([{ type: 'skill', skillId: 'misticismo', value: '', attributeBonus: 'int' }])).toBe('Misticismo +Int');
+  });
+});
 
 describe('normalizeEffectType', () => {
   it('passes through current effect types unchanged', () => {

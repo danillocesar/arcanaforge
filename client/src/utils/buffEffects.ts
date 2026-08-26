@@ -8,6 +8,22 @@ export function formatEffectValue(raw: string): string | null {
   return /^[+-]/.test(trimmed) ? trimmed : `+${trimmed}`;
 }
 
+const LEVEL_LABEL = { full: '+nível', half: '+½nível' } as const;
+
+/**
+ * Fórmula legível de um efeito: termo fixo mais variáveis — "+2 +Int", "+½nível",
+ * "-1 +Des +nível". `null` quando não há nada a mostrar. Os números resolvidos ficam
+ * em `resolveEffectValue` (calculations.ts); aqui é só a etiqueta.
+ */
+export function formatEffectFormula(eff: BuffEffect): string | null {
+  const parts: string[] = [];
+  const fixed = formatEffectValue(eff.value);
+  if (fixed) parts.push(fixed);
+  if (eff.attributeBonus) parts.push(`+${ATTRIBUTE_LABELS[eff.attributeBonus]}`);
+  if (eff.levelBonus) parts.push(LEVEL_LABEL[eff.levelBonus]);
+  return parts.length ? parts.join(' ') : null;
+}
+
 /**
  * Fichas salvas antes da divisão de `hp`/`mp` em fixo/temporário gravaram o tipo
  * legado `hp`/`mp` — que sempre significou "temporário". Normaliza pra `temp_hp`/
@@ -70,7 +86,7 @@ export function effectTag(eff: BuffEffect): string {
  */
 export function summarizeEffects(effects: BuffEffect[]): string {
   const withValues = effects
-    .map((eff) => ({ eff, val: formatEffectValue(eff.value) }))
+    .map((eff) => ({ eff, val: formatEffectFormula(eff) }))
     .filter((e): e is { eff: BuffEffect; val: string } => e.val != null);
 
   if (withValues.length === 0) return '';

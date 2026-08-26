@@ -61,6 +61,12 @@ const attrOptions = (Object.entries(ATTRIBUTE_FULL_NAMES) as [AttributeId, strin
 );
 const buffTypeOptions = Object.entries(BUFF_TYPES).map(([value, label]) => ({ value, label }));
 const skillOptions = SKILLS_CONFIG.map((sk) => ({ value: sk.id, label: sk.name }));
+const effectAttrOptions = [{ value: '', label: '— Nenhum —' }, ...attrOptions];
+const levelBonusOptions = [
+  { value: '', label: 'Não' },
+  { value: 'full', label: 'Nível' },
+  { value: 'half', label: 'Metade do nível' },
+];
 
 /** Sub-campos de um efeito de buff — reutilizado no buff manual, em magias e em poderes. */
 const BUFF_EFFECT_ITEM_FIELDS: FieldDescriptor[] = [
@@ -73,10 +79,21 @@ const BUFF_EFFECT_ITEM_FIELDS: FieldDescriptor[] = [
     key: 'skillId', label: 'Perícia', type: 'select', options: skillOptions, half: true,
     showIf: (v) => v.type === 'skill',
   },
-  { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 2 ou 1d6', half: true },
+  { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 2, -1 ou 1d6 (dado só em Dano Extra)', half: true },
+  // Variáveis (E3): o efeito vale fixo + atributo-guia + nível. Dano Extra é dado (string), não aceita.
+  {
+    key: 'attributeBonus', label: '+ atributo', type: 'select', options: effectAttrOptions, half: true,
+    showIf: (v) => v.type !== 'extra_damage',
+  },
+  {
+    key: 'levelBonus', label: '+ nível', type: 'select', options: levelBonusOptions, half: true,
+    showIf: (v) => v.type !== 'extra_damage',
+  },
 ];
 
-const emptyBuffEffect = (): FormValues => ({ type: 'attack_roll', attributeId: 'str', skillId: '', value: '' });
+const emptyBuffEffect = (): FormValues => ({
+  type: 'attack_roll', attributeId: 'str', skillId: '', value: '', attributeBonus: '', levelBonus: '',
+});
 
 const attackModifierAttrOptions = [{ value: '', label: '— Nenhum —' }, ...attrOptions];
 
@@ -460,17 +477,27 @@ const buffFields: FieldDescriptor[] = [
 
 function effectsFromValues(raw: unknown): BuffEffect[] {
   const list = Array.isArray(raw) ? raw : [];
-  return list.map((row) => ({
-    type: (s(row.type) || buffTypeOptions[0]?.value || 'attack_roll') as BuffType,
-    attributeId: row.type === 'attribute' ? ((s(row.attributeId) || 'str') as AttributeId) : undefined,
-    skillId: row.type === 'skill' ? s(row.skillId) : undefined,
-    value: s(row.value),
-  }));
+  return list.map((row) => {
+    const type = (s(row.type) || buffTypeOptions[0]?.value || 'attack_roll') as BuffType;
+    const variablesAllowed = type !== 'extra_damage';
+    const attributeBonus = variablesAllowed ? s(row.attributeBonus) : '';
+    const levelBonus = variablesAllowed ? s(row.levelBonus) : '';
+    return {
+      type,
+      attributeId: row.type === 'attribute' ? ((s(row.attributeId) || 'str') as AttributeId) : undefined,
+      skillId: row.type === 'skill' ? s(row.skillId) : undefined,
+      value: s(row.value),
+      // Select vazio ⇒ campo ausente (não grava '').
+      ...(attributeBonus ? { attributeBonus: attributeBonus as AttributeId } : {}),
+      ...(levelBonus === 'full' || levelBonus === 'half' ? { levelBonus } : {}),
+    };
+  });
 }
 
 export function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
   return (effects ?? []).map((eff) => ({
     type: eff.type, attributeId: eff.attributeId ?? 'str', skillId: eff.skillId ?? '', value: eff.value,
+    attributeBonus: eff.attributeBonus ?? '', levelBonus: eff.levelBonus ?? '',
   }));
 }
 

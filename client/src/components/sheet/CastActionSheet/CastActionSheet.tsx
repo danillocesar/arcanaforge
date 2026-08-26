@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { getTotalLevel, applyBuffToCharacter, calcSpellResistance } from '../../../utils/calculations';
+import { getTotalLevel, applyBuffToCharacter, calcSpellResistance, freezeEffects } from '../../../utils/calculations';
 import { composeCast, formatResistanceLine, normalizeBuffDuration, type CastEnhancement } from '../../../utils/castAction';
 import { playMagicSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
@@ -194,9 +194,12 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
           if (!pid) return;
           byParty.set(pid, [...(byParty.get(pid) ?? []), id]);
         });
+        // Quem recebe leva os NÚMEROS do conjurador: variáveis (+atributo/+nível) são
+        // congeladas aqui, igual à CD. O buff local (só pra si) continua dinâmico.
+        const partyBuff = { ...buffPayload, effects: freezeEffects(combinedBuffs, character) };
         await Promise.all(
           [...byParty.entries()].map(([partyId, targetCharacterIds]) =>
-            apiApplyBuffToParty(partyId, { targetCharacterIds, buff: buffPayload }),
+            apiApplyBuffToParty(partyId, { targetCharacterIds, buff: partyBuff }),
           ),
         );
       }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { toggleBuffState, deactivateAllBuffs, removeInactiveBuffs } from '../../../utils/calculations';
 import { formatResistanceLine } from '../../../utils/castAction';
+import { formatEffectFormula } from '../../../utils/buffEffects';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import Sheet from '../../ui/Sheet/Sheet';
 import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
@@ -28,12 +29,6 @@ function inferVariant(buff: Buff): BuffVariant {
   return isNegative ? 'danger' : 'buff';
 }
 
-function formatEffectValue(raw: string): string | null {
-  const trimmed = (raw ?? '').toString().trim();
-  if (!trimmed || trimmed === '0') return null;
-  return /^[+-]/.test(trimmed) ? trimmed : `+${trimmed}`;
-}
-
 const DURATION_LABEL: Record<NonNullable<Buff['duration']>, string> = {
   cena: 'Até o fim da cena',
   dia: 'Até o novo dia',
@@ -42,7 +37,7 @@ const DURATION_LABEL: Record<NonNullable<Buff['duration']>, string> = {
 
 function buildSummary(buff: Buff): string | null {
   const values = (buff.effects || [])
-    .map((eff) => formatEffectValue(eff.value))
+    .map((eff) => formatEffectFormula(eff))
     .filter((v): v is string => v != null);
   return values.length > 0 ? values.join('/') : null;
 }
