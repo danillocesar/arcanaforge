@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { DAMAGE_TYPES } from '../../../data/constants';
 import { applicableRds, computeDamageTaken } from '../../../utils/vitals';
@@ -29,15 +29,18 @@ function TakeDamageSheet({ open, onClose }: TakeDamageSheetProps) {
 
   const rds = character?.damageReductions ?? [];
 
-  // Cada abertura começa limpa: valor vazio, sem tipo, só a RD Geral ligada.
-  useEffect(() => {
-    if (!open) return;
-    setDraft('');
-    setDamageType('');
-    setIgnoreRd(false);
-    setSelected(applicableRds(rds, undefined));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // Cada abertura começa limpa: valor vazio, sem tipo, só a RD Geral ligada. Padrão
+  // "adjust state while rendering" do React (sem useEffect), como no PoderesPanel.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setDraft('');
+      setDamageType('');
+      setIgnoreRd(false);
+      setSelected(applicableRds(rds, undefined));
+    }
+  }
 
   if (!character) return null;
 

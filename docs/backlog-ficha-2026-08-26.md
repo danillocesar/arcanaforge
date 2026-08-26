@@ -29,6 +29,32 @@ Referência-base: branch `feature/saas`, commit `4862aac`.
 - **RD** — as RDs aplicáveis **somam**.
 - **PV/PM temporários** de fontes diferentes — **somam** (mantém o comportamento atual).
 
+**Status de implantação (26/08/2026, branch `feature/saas`)** — as 16 histórias foram implementadas
+com testes (cliente: 222 vitest; servidor: 11 node:test; `tsc` e build de produção limpos). Planos
+executados: `docs/superpowers/plans/2026-08-26-{vitais-combate,catalogo-magias,variaveis-efeitos}-plan.md`.
+
+| História | Commits |
+|---|---|
+| H1.1 Desligar todos / limpar desligados | `5e1ad52` |
+| H1.2 Novo dia | `c2fd2d9` |
+| H1.3 Usos por dia | `941a632` |
+| H1.4 Duração + Fim de cena | `ec6c408` |
+| H2.1 Script de importação/diff (`tools/import_grimorio_t20.py`) | `5fb30aa`, `d4a1bb5` |
+| H2.2 `spells.ts` regenerado (93 magias com mudança de mecânica — ver `docs/catalogo-magias-diff-2026-08-26.md`) | `30c33c0` (merge `ef196df`) |
+| H2.3 `catalogId` + hidratação + migração por nome | `1e5f175` |
+| H3.1 Motor de variáveis (`resolveEffectValue`, anti-ciclo, `freezeEffects`) | `e2b727c` |
+| H3.2 Selects "+ atributo"/"+ nível", etiquetas, buff de grupo congelado | `ddaf943` |
+| H3.3 Modificadores próprios do ataque com atributo | `72893eb` |
+| H3.4 "+ atributo" na linha da perícia | `59b518e` |
+| H4.1 Modelo de sobrevida (`utils/vitals.ts`) | `a4d6579`, `7901c28`, `9af5637` |
+| H4.2 Barra com segmento de temporário | `9af5637` |
+| H4.3 Servidor, websocket e mestre | `ba0ff29`, `c5b462d` |
+| H5.1 "Tomar dano" com RDs | `29c5d54`, `def21c9` |
+| H5.2 Mestre aplica dano com as RDs do jogador | `e2187e7` |
+
+Pendência conhecida: a hidratação (H2.3) puxa o catálogo (~250 KB) para o bundle inicial — o build
+avisa chunk > 500 kB; a saída é `import()` dinâmico após o primeiro render, anotada no código.
+
 ---
 
 ## Resumo executivo
