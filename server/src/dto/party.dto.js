@@ -37,6 +37,10 @@ function toPartyCharacterDTO(doc) {
     ownerUid: doc.ownerUid ?? '',
     hp: doc.hp ?? null,
     mp: doc.mp ?? null,
+    // Sobrevida e RDs: o mestre mostra o temporário e aplica dano descontando as RDs do alvo.
+    temporaryHp: Number(doc.temporaryHp) || 0,
+    temporaryMp: Number(doc.temporaryMp) || 0,
+    damageReductions: Array.isArray(doc.damageReductions) ? doc.damageReductions : [],
   };
 }
 

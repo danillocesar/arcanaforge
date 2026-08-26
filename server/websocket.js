@@ -123,6 +123,9 @@ function attachWebSocket(server, opts) {
                 name: msg.name,
                 hp: msg.hp,
                 mp: msg.mp,
+                // Sobrevida (PV/PM temporário) viaja junto — o grupo e o mestre a exibem.
+                temporaryHp: msg.temporaryHp,
+                temporaryMp: msg.temporaryMp,
               });
               wss.clients.forEach((c) => {
                 if (c !== ws && c.readyState === 1 && sharesParty(ws, c)) c.send(out);
@@ -136,6 +139,7 @@ function attachWebSocket(server, opts) {
                 characterId: msg.characterId,
                 name: msg.name,
                 currentHp: msg.currentHp,
+                temporaryHp: msg.temporaryHp,
               });
               wss.clients.forEach((c) => {
                 if (c !== ws && c.readyState === 1 && sharesParty(ws, c)) c.send(out);

@@ -22,12 +22,13 @@ const buffNameKey = (name) => String(name || '').trim().toLowerCase();
  * da nova. Duplicatas pré-existentes (do bug antigo) são colapsadas numa entrada
  * só, na posição da primeira. Buff sem nome nunca substitui outro sem nome.
  *
- * Também CURA o PV/PM atual na mesma quantidade dos efeitos de pool do buff novo
- * (temp_hp/temp_mp/max_hp/max_mp) — o teto da barra sobe junto com o buff, então
- * sem a cura o personagem pareceria ferido ao receber o bônus. Clampa no teto
- * calculável aqui: máximo base + pool temporário novo + max_hp/mp dos buffs ativos
- * (bônus fixos de habilidades moram no doc de conteúdo e ficam de fora — o client
- * reclampa com o teto exato ao aplicar localmente).
+ * Também CURA o PV/PM atual na quantidade dos efeitos `max_hp`/`max_mp` do buff
+ * novo (subir o máximo sobe o atual junto — T20), clampado no teto calculável aqui:
+ * máximo base + max_hp/mp dos buffs ativos (bônus fixos de habilidades moram no doc
+ * de conteúdo e ficam de fora — o client reclampa com o teto exato ao aplicar
+ * localmente). `temp_hp`/`temp_mp` NÃO curam nem entram no teto: o temporário é
+ * sobrevida separada, consumida antes do PV e nunca reposta por cura
+ * (espelho de client/src/utils/vitals.ts).
  *
  * Puro: recebe/devolve { buffs, temporaryHp, temporaryMp, hp, mp } sem tocar no banco.
  */
@@ -59,14 +60,10 @@ function mergeBuffIntoCharacter(current, entry) {
           return [entry];
         });
 
-  const healHp = Math.max(
-    0,
-    sumEffectsByType(entry.effects, isTempHpType) + sumEffectsByType(entry.effects, isMaxHpType),
-  );
-  const healMp = Math.max(
-    0,
-    sumEffectsByType(entry.effects, isTempMpType) + sumEffectsByType(entry.effects, isMaxMpType),
-  );
+  // Só max_hp/max_mp curam (subir o máximo sobe o atual junto). temp_hp/temp_mp são
+  // sobrevida separada — não mexem no atual nem entram no teto.
+  const healHp = Math.max(0, sumEffectsByType(entry.effects, isMaxHpType));
+  const healMp = Math.max(0, sumEffectsByType(entry.effects, isMaxMpType));
 
   const activeMaxBonus = (matchesType) =>
     nextBuffs
@@ -75,13 +72,13 @@ function mergeBuffIntoCharacter(current, entry) {
 
   let hp = current.hp;
   if (healHp > 0 && hp && typeof hp === 'object') {
-    const ceiling = (Number(hp.max) || 0) + hpTemp + activeMaxBonus(isMaxHpType);
+    const ceiling = (Number(hp.max) || 0) + activeMaxBonus(isMaxHpType);
     hp = { ...hp, current: Math.min((Number(hp.current) || 0) + healHp, ceiling) };
   }
 
   let mp = current.mp;
   if (healMp > 0 && mp && typeof mp === 'object') {
-    const ceiling = (Number(mp.max) || 0) + mpTemp + activeMaxBonus(isMaxMpType);
+    const ceiling = (Number(mp.max) || 0) + activeMaxBonus(isMaxMpType);
     mp = { ...mp, current: Math.min((Number(mp.current) || 0) + healMp, ceiling) };
   }
 

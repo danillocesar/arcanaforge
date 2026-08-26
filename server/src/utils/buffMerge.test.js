@@ -73,26 +73,34 @@ describe('mergeBuffIntoCharacter', () => {
     assert.equal(next.buffs.length, 2);
   });
 
-  it('heals current HP/MP by the incoming temp amounts (the bar ceiling grew by the same)', () => {
+  it('does NOT heal current HP/MP for temp_hp/temp_mp (the temp pool is separate); max_hp still heals', () => {
     const incoming = buff({ effects: [{ type: 'temp_hp', value: '10' }, { type: 'temp_mp', value: '4' }] });
     const next = mergeBuffIntoCharacter(
       { buffs: [], temporaryHp: 0, temporaryMp: 0, hp: { max: 30, current: 12 }, mp: { max: 10, current: 3 } },
       incoming,
     );
-    assert.equal(next.hp.current, 22);
-    assert.equal(next.mp.current, 7);
+    assert.equal(next.temporaryHp, 10);
+    assert.equal(next.temporaryMp, 4);
+    assert.equal(next.hp.current, 12);
+    assert.equal(next.mp.current, 3);
+
+    const mixed = mergeBuffIntoCharacter(
+      { buffs: [], temporaryHp: 0, temporaryMp: 0, hp: { max: 30, current: 12 }, mp: { max: 10, current: 3 } },
+      buff({ effects: [{ type: 'temp_hp', value: '10' }, { type: 'max_hp', value: '5' }] }),
+    );
+    assert.equal(mixed.temporaryHp, 10);
+    assert.equal(mixed.hp.current, 17); // só o max_hp cura (teto 30 + 5 = 35)
   });
 
-  it('heals current HP by max_hp effects too, clamped to the new ceiling', () => {
-    // Recast no personagem cheio: teto não muda, cura não pode estourar.
+  it('heals current HP by max_hp effects, clamped to a ceiling that excludes the temp pool', () => {
+    // Recast de buff de temporário: o atual não muda.
     const incoming = buff({ effects: [{ type: 'temp_hp', value: '10' }] });
     const existing = buff({ effects: [{ type: 'temp_hp', value: '10' }] });
     const next = mergeBuffIntoCharacter(
-      { buffs: [existing], temporaryHp: 10, temporaryMp: 0, hp: { max: 30, current: 38 }, mp: { max: 0, current: 0 } },
+      { buffs: [existing], temporaryHp: 10, temporaryMp: 0, hp: { max: 30, current: 25 }, mp: { max: 0, current: 0 } },
       incoming,
     );
-    // teto = 30 base + 10 temp; current 38 + 10 → clampa em 40
-    assert.equal(next.hp.current, 40);
+    assert.equal(next.hp.current, 25);
     assert.equal(next.temporaryHp, 10);
 
     const maxHp = buff({ name: 'Vitalidade', effects: [{ type: 'max_hp', value: '5' }] });
@@ -102,6 +110,13 @@ describe('mergeBuffIntoCharacter', () => {
     );
     // max_hp ativo entra no teto (30 + 5) e cura os mesmos 5
     assert.equal(withMax.hp.current, 35);
+
+    // Com temporário 10 o teto continua 35 — o temp não estica o máximo.
+    const withTemp = mergeBuffIntoCharacter(
+      { buffs: [], temporaryHp: 10, temporaryMp: 0, hp: { max: 30, current: 30 }, mp: { max: 0, current: 0 } },
+      maxHp,
+    );
+    assert.equal(withTemp.hp.current, 35);
   });
 
   it('leaves hp/mp untouched when the buff has no pool effects', () => {
