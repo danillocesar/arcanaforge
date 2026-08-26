@@ -102,12 +102,61 @@ export function getActiveBuffs(character: Character): Buff[] {
   return [...(character.buffs ?? []).filter((b) => b.active), ...synthesizeAlwaysActiveBuffs(character)];
 }
 
+/** Termo de nível de um efeito: nível inteiro, metade, ou nada. */
+function levelTerm(eff: BuffEffect, character: Character): number {
+  if (eff.levelBonus === 'full') return getTotalLevel(character);
+  if (eff.levelBonus === 'half') return Math.floor(getTotalLevel(character) / 2);
+  return 0;
+}
+
+/**
+ * Atributo-guia para variáveis: base + efeitos `attribute` de VALOR FIXO (+ nível) — nunca os
+ * que dependem de outro atributo. Um nível de derivação, sem ciclo ("+For em Des" e "+Des em
+ * For" ativos ao mesmo tempo terminam, cada um lendo o guia do outro).
+ */
+export function guideAttribute(character: Character, attr: AttributeId): number {
+  let val = character.attributes[attr] || 0;
+  getActiveBuffs(character).forEach((b) => {
+    (b.effects || []).forEach((eff) => {
+      if (eff.type === 'attribute' && eff.attributeId === attr && !eff.attributeBonus) {
+        val += (Number(eff.value) || 0) + levelTerm(eff, character);
+      }
+    });
+  });
+  return val;
+}
+
+/**
+ * Valor numérico de um efeito: fixo + atributo-guia + nível. Único ponto de leitura de
+ * `BuffEffect.value` nos cálculos — não usar para `extra_damage` (que é string de dado).
+ */
+export function resolveEffectValue(eff: BuffEffect, character: Character): number {
+  const fixed = Number(eff.value) || 0;
+  const attr = eff.attributeBonus ? guideAttribute(character, eff.attributeBonus) : 0;
+  return fixed + attr + levelTerm(eff, character);
+}
+
+/**
+ * Buff que viaja para outro personagem leva os NÚMEROS do conjurador — variável resolvida
+ * aqui e removida, igual à CD (`dc`). Dados (`extra_damage`) e efeitos sem variável passam
+ * intactos.
+ */
+export function freezeEffects(effects: BuffEffect[], character: Character): BuffEffect[] {
+  return effects.map((eff) => {
+    if (normalizeEffectType(eff.type) === 'extra_damage' || (!eff.attributeBonus && !eff.levelBonus)) return eff;
+    const { attributeBonus: _attr, levelBonus: _lvl, ...rest } = eff;
+    void _attr;
+    void _lvl;
+    return { ...rest, value: String(resolveEffectValue(eff, character)) };
+  });
+}
+
 export function getEffectiveAttribute(character: Character, attr: AttributeId): number {
   let val = character.attributes[attr] || 0;
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'attribute' && eff.attributeId === attr) {
-        val += Number(eff.value) || 0;
+        val += resolveEffectValue(eff, character);
       }
     });
   });
@@ -123,7 +172,7 @@ export function getEffectiveMaxHp(character: Character): number {
   let val = character.hp.max || 0;
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (normalizeEffectType(eff.type) === 'max_hp') val += Number(eff.value) || 0;
+      if (normalizeEffectType(eff.type) === 'max_hp') val += resolveEffectValue(eff, character);
     });
   });
   return val;
@@ -134,7 +183,7 @@ export function getEffectiveMaxMp(character: Character): number {
   let val = character.mp.max || 0;
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (normalizeEffectType(eff.type) === 'max_mp') val += Number(eff.value) || 0;
+      if (normalizeEffectType(eff.type) === 'max_mp') val += resolveEffectValue(eff, character);
     });
   });
   return val;
@@ -174,7 +223,7 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'skill' && eff.skillId === skillId) {
-        buffBonus += Number(eff.value) || 0;
+        buffBonus += resolveEffectValue(eff, character);
       }
     });
   });
@@ -191,7 +240,7 @@ export function calcTotalDefense(character: Character): number {
   }
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (eff.type === 'defense') total += Number(eff.value) || 0;
+      if (eff.type === 'defense') total += resolveEffectValue(eff, character);
     });
   });
   return total;
@@ -235,7 +284,7 @@ export function getDefenseBreakdown(character: Character): DefenseBreakdown {
   const buffs: DefenseBreakdownRow[] = getActiveBuffs(character)
     .flatMap((b) => (b.effects || [])
       .filter((eff) => eff.type === 'defense')
-      .map((eff) => ({ name: b.name || 'Buff', value: Number(eff.value) || 0 })));
+      .map((eff) => ({ name: b.name || 'Buff', value: resolveEffectValue(eff, character) })));
   return { base, dexterity, items, buffs, total: calcTotalDefense(character) };
 }
 
@@ -262,7 +311,7 @@ export function toggleBuffState(character: Character, idx: number): Character {
   if (!wasActive && mpCost > 0) mpCurrent = Math.max(0, mpCurrent - mpCost);
 
   (b.effects || []).forEach((eff) => {
-    const val = Number(eff.value) || 0;
+    const val = resolveEffectValue(eff, character);
     const type = normalizeEffectType(eff.type);
     if (type === 'temp_hp') hpTemp = Math.max(0, hpTemp + sign * val);
     if (type === 'temp_mp') mpTemp = Math.max(0, mpTemp + sign * val);
@@ -348,7 +397,7 @@ export function calcAttackRoll(character: Character, atk: Character['attacks'][n
   if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.value) || 0; });
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (eff.type === 'attack_roll') total += Number(eff.value) || 0;
+      if (eff.type === 'attack_roll') total += resolveEffectValue(eff, character);
     });
   });
   return total;
@@ -360,7 +409,7 @@ export function calcDamageBonus(character: Character, atk: Character['attacks'][
   if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.value) || 0; });
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (eff.type === 'fixed_damage') total += Number(eff.value) || 0;
+      if (eff.type === 'fixed_damage') total += resolveEffectValue(eff, character);
     });
   });
   return total;
@@ -520,7 +569,7 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
   matches.forEach((existing) => {
     if (!existing.active) return;
     (existing.effects || []).forEach((eff) => {
-      const val = Number(eff.value) || 0;
+      const val = resolveEffectValue(eff, character);
       const type = normalizeEffectType(eff.type);
       if (type === 'temp_hp') hpTemp = Math.max(0, hpTemp - val);
       if (type === 'temp_mp') mpTemp = Math.max(0, mpTemp - val);
@@ -528,7 +577,7 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
   });
 
   buff.effects.forEach((eff) => {
-    const val = Number(eff.value) || 0;
+    const val = resolveEffectValue(eff, character);
     const type = normalizeEffectType(eff.type);
     if (type === 'temp_hp') hpTemp += val;
     if (type === 'temp_mp') mpTemp += val;
@@ -551,7 +600,7 @@ export function applyBuffToCharacter(character: Character, buff: Buff): Characte
   let healHp = 0;
   let healMp = 0;
   buff.effects.forEach((eff) => {
-    const val = Number(eff.value) || 0;
+    const val = resolveEffectValue(eff, character);
     const type = normalizeEffectType(eff.type);
     if (type === 'max_hp') healHp += val;
     if (type === 'max_mp') healMp += val;

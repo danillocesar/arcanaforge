@@ -1,5 +1,5 @@
 import type { Attack, AttackModifier, AttributeId, Character } from '../types/character';
-import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod, isItemEquipped } from './calculations';
+import { calcTotalSkill, getEffectiveAttribute, getActiveBuffs, formatMod, isItemEquipped, resolveEffectValue } from './calculations';
 import { SKILLS_CONFIG } from '../data/pericias';
 
 export interface AttackChecklistItem {
@@ -299,8 +299,8 @@ export function composeAttack(
 
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
-      if (eff.type === 'attack_roll') attackRoll += Number(eff.value) || 0;
-      if (eff.type === 'fixed_damage') damageBonus += Number(eff.value) || 0;
+      if (eff.type === 'attack_roll') attackRoll += resolveEffectValue(eff, character);
+      if (eff.type === 'fixed_damage') damageBonus += resolveEffectValue(eff, character);
       if (eff.type === 'extra_damage' && eff.value) extraDice.push(String(eff.value));
     });
   });

@@ -18,6 +18,9 @@ import {
   weaponToAttack,
   deactivateAllBuffs,
   removeInactiveBuffs,
+  resolveEffectValue,
+  guideAttribute,
+  freezeEffects,
 } from './calculations';
 
 function baseCharacter(overrides: Partial<Character> = {}): Character {
@@ -372,6 +375,76 @@ describe('toggleBuffState', () => {
     const next = toggleBuffState(character, 0);
     expect(next.temporaryHp).toBe(0);
     expect(next.buffs[0].active).toBe(true);
+  });
+});
+
+describe('resolveEffectValue (variáveis: atributo / nível)', () => {
+  const c = baseCharacter({
+    classes: [{ name: 'Mago', level: 9 }],
+    attributes: { str: 1, dex: 2, con: 0, int: 4, wis: 0, cha: 0 },
+  });
+
+  it('valor fixo continua igual', () => {
+    expect(resolveEffectValue({ type: 'skill', skillId: 'misticismo', value: '2' }, c)).toBe(2);
+  });
+
+  it('soma o atributo e o nível/metade do nível', () => {
+    expect(resolveEffectValue({ type: 'skill', skillId: 'misticismo', value: '2', attributeBonus: 'int' }, c)).toBe(6);
+    expect(resolveEffectValue({ type: 'defense', value: '', levelBonus: 'half' }, c)).toBe(4);
+    expect(resolveEffectValue({ type: 'defense', value: '1', levelBonus: 'full', attributeBonus: 'dex' }, c)).toBe(12);
+  });
+
+  it('o atributo-guia inclui buffs de atributo de valor fixo, mas não os derivados de outro atributo (sem ciclo)', () => {
+    const cyc = baseCharacter({
+      attributes: { str: 2, dex: 3, con: 0, int: 0, wis: 0, cha: 0 },
+      buffs: [
+        activeBuff({ name: 'fixo', effects: [{ type: 'attribute', attributeId: 'str', value: '1' }] }),
+        activeBuff({ name: 'For em Des', effects: [{ type: 'attribute', attributeId: 'dex', value: '', attributeBonus: 'str' }] }),
+        activeBuff({ name: 'Des em For', effects: [{ type: 'attribute', attributeId: 'str', value: '', attributeBonus: 'dex' }] }),
+      ],
+    });
+    // For-guia = 2 + 1 = 3 ; Des-guia = 3
+    expect(guideAttribute(cyc, 'str')).toBe(3);
+    expect(guideAttribute(cyc, 'dex')).toBe(3);
+    // For efetiva = 2 + 1 + Des-guia(3) = 6 ; Des efetiva = 3 + For-guia(3) = 6
+    expect(getEffectiveAttribute(cyc, 'str')).toBe(6);
+    expect(getEffectiveAttribute(cyc, 'dex')).toBe(6);
+  });
+
+  it('efeito de perícia com atributo entra em calcTotalSkill', () => {
+    const s = baseCharacter({
+      classes: [{ name: 'Mago', level: 4 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 3, wis: 0, cha: 0 },
+      buffs: [activeBuff({ effects: [{ type: 'skill', skillId: 'intimidacao', value: '', attributeBonus: 'int' }] })],
+    });
+    // meio nível 2 + Car 0 + Int 3 (buff) = 5
+    expect(calcTotalSkill(s, 'intimidacao')).toBe(5);
+  });
+
+  it('efeito de PV máximo com nível entra em getEffectiveMaxHp', () => {
+    const h = baseCharacter({
+      classes: [{ name: 'Bárbaro', level: 6 }],
+      hp: { max: 40, current: 40 },
+      buffs: [activeBuff({ effects: [{ type: 'max_hp', value: '', levelBonus: 'full' }] })],
+    });
+    expect(getEffectiveMaxHp(h)).toBe(46);
+  });
+});
+
+describe('freezeEffects', () => {
+  it('resolve as variáveis com os números do conjurador e remove os campos de variável', () => {
+    const c = baseCharacter({
+      classes: [{ name: 'Clérigo', level: 6 }],
+      attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 3, cha: 0 },
+    });
+    expect(freezeEffects([{ type: 'skill', skillId: 'cura', value: '1', attributeBonus: 'wis', levelBonus: 'half' }], c))
+      .toEqual([{ type: 'skill', skillId: 'cura', value: '7' }]);
+  });
+
+  it('extra_damage e efeitos sem variável passam intactos', () => {
+    const c = baseCharacter();
+    const plain = [{ type: 'extra_damage' as const, value: '1d6' }, { type: 'defense' as const, value: '2' }];
+    expect(freezeEffects(plain, c)).toEqual(plain);
   });
 });
 

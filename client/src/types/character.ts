@@ -76,7 +76,13 @@ export interface BuffEffect {
   type: BuffType;
   attributeId?: AttributeId;
   skillId?: string;
+  /** Termo fixo. Continua string por causa dos dados em `extra_damage` ("1d6"). */
   value: string;
+  /** Variável: soma o atributo-guia deste atributo (ex.: "+Int em Misticismo"). Resolvido em
+   * `resolveEffectValue` (calculations.ts); buff de grupo é congelado no conjurador. */
+  attributeBonus?: AttributeId;
+  /** Variável: soma o nível ('full') ou metade do nível ('half') do personagem. */
+  levelBonus?: 'full' | 'half';
 }
 
 /** Quanto um buff dura: some no "Fim de cena", no "Novo dia" ou nunca. Ausente = cena. */
