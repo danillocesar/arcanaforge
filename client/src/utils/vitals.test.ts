@@ -13,6 +13,8 @@ import {
   applicableRds,
   reduceDamage,
   computeDamageTaken,
+  newDay,
+  describeNewDay,
 } from './vitals';
 
 function char(overrides: Partial<Character> = {}): Character {
@@ -148,5 +150,55 @@ describe('computeDamageTaken', () => {
     expect(r.net).toBe(0);
     expect(r.character.hp.current).toBe(20);
     expect(r.character.temporaryHp).toBe(5);
+  });
+});
+
+describe('newDay', () => {
+  it('desliga todos os buffs, zera temporários (inclusive digitados) e cura PV/PM ao máximo efetivo', () => {
+    const c = char({
+      hp: { max: 30, current: 9 },
+      mp: { max: 10, current: 1 },
+      temporaryHp: 7,
+      temporaryMp: 3,
+      buffs: [{ name: 'A', effects: [{ type: 'temp_hp', value: '4' }], mp: 0, active: true }],
+      abilities: [
+        {
+          name: 'Vigor', source: '', type: '', mpCost: 0, description: '',
+          alwaysActive: true, buffs: [{ type: 'max_hp', value: '10' }],
+        },
+      ],
+    });
+    const d = newDay(c);
+    expect(d.buffs[0].active).toBe(false);
+    expect(d.temporaryHp).toBe(0);
+    expect(d.temporaryMp).toBe(0);
+    expect(d.hp.current).toBe(40);
+    expect(d.mp.current).toBe(10);
+  });
+
+  it('describeNewDay resume o que vai acontecer', () => {
+    const c = char({
+      hp: { max: 30, current: 9 },
+      mp: { max: 10, current: 1 },
+      temporaryHp: 7,
+      temporaryMp: 0,
+      buffs: [
+        { name: 'A', effects: [], mp: 0, active: true },
+        { name: 'B', effects: [], mp: 0, active: false },
+      ],
+    });
+    expect(describeNewDay(c)).toEqual({ buffsOff: 1, tempHp: 7, tempMp: 0, healHp: 21, healMp: 9 });
+  });
+
+  it('renova os usos por dia dos poderes', () => {
+    const c = char({
+      abilities: [
+        { name: 'Golpe', source: '', type: '', mpCost: 0, description: '', usesPerDay: 3, usesLeft: 0 },
+        { name: 'Sem limite', source: '', type: '', mpCost: 0, description: '' },
+      ],
+    });
+    const d = newDay(c);
+    expect(d.abilities[0].usesLeft).toBe(3);
+    expect(d.abilities[1].usesLeft).toBeUndefined();
   });
 });

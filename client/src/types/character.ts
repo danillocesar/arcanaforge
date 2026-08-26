@@ -154,6 +154,10 @@ export interface Ability {
   /** Marcado como favorito: aparece também na seção "Favoritos" fixa no topo da aba
    * Poderes, sem sair do seu grupo de categoria. */
   favorite?: boolean;
+  /** Usos por dia (0/ausente = ilimitado). `usesLeft` é o contador do dia, consumido ao
+   * "Usar" e renovado pelo "Novo dia" (utils/vitals.ts `newDay`). */
+  usesPerDay?: number;
+  usesLeft?: number;
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { Character, DamageReduction } from '../types/character';
-import { getEffectiveMaxHp, getEffectiveMaxMp } from './calculations';
+import { getEffectiveMaxHp, getEffectiveMaxMp, deactivateAllBuffs } from './calculations';
 import { normalizeSearch } from './formatters';
 
 export type VitalPool = 'hp' | 'mp';
@@ -79,6 +79,46 @@ export function normalizeVitals(c: Character): Character {
     hp.current === (c.hp.current || 0) && hp.temp === (c.temporaryHp || 0)
     && mp.current === (c.mp.current || 0) && mp.temp === (c.temporaryMp || 0);
   return same ? c : setVital(setVital(c, 'hp', hp), 'mp', mp);
+}
+
+/* ───────────────────────────── Novo dia ──────────────────────────── */
+
+/**
+ * Decisão da mesa (26/08): "Novo dia" = todos os buffs desligados, temporários zerados
+ * (inclusive os digitados à mão), PV e PM no máximo efetivo e usos por dia dos poderes
+ * renovados. Sem tabela de descanso. Bônus Fixos não mudam (não são buffs).
+ */
+export function newDay(c: Character): Character {
+  const off = deactivateAllBuffs(c);
+  const zeroed = setVital(
+    setVital(off, 'hp', { ...getVital(off, 'hp'), temp: 0 }),
+    'mp',
+    { ...getVital(off, 'mp'), temp: 0 },
+  );
+  const renewed: Character = {
+    ...zeroed,
+    abilities: (zeroed.abilities ?? []).map((a) => (a.usesPerDay ? { ...a, usesLeft: a.usesPerDay } : a)),
+  };
+  return applyHeal(applyHeal(renewed, Infinity, 'hp'), Infinity, 'mp');
+}
+
+/** Resumo do que `newDay` vai fazer — texto do modal de confirmação e do Histórico. */
+export function describeNewDay(c: Character): {
+  buffsOff: number;
+  tempHp: number;
+  tempMp: number;
+  healHp: number;
+  healMp: number;
+} {
+  const hp = getVital(c, 'hp');
+  const mp = getVital(c, 'mp');
+  return {
+    buffsOff: (c.buffs ?? []).filter((b) => b.active).length,
+    tempHp: hp.temp,
+    tempMp: mp.temp,
+    healHp: Math.max(0, hp.max - hp.current),
+    healMp: Math.max(0, mp.max - mp.current),
+  };
 }
 
 /* ───────────────────────── Redução de dano ───────────────────────── */

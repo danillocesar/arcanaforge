@@ -13,11 +13,14 @@ import {
   applyDamage,
   applyHeal,
   clampVital,
+  describeNewDay,
   getVital,
+  newDay,
   normalizeVitals,
   setVital,
   type VitalPool,
 } from '../../../utils/vitals';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import { getInitials } from '../../../utils/formatters';
 import { apiUploadAvatar } from '../../../api';
 import Popover from '../../ui/Popover/Popover';
@@ -50,6 +53,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
   const [damageOpen, setDamageOpen] = useState(false);
+  const [newDayOpen, setNewDayOpen] = useState(false);
 
   const pvRef = useRef<HTMLButtonElement>(null);
   const pmRef = useRef<HTMLButtonElement>(null);
@@ -119,6 +123,32 @@ function VitalBar({ desktop = false }: VitalBarProps) {
       .map((b) => b.name)
       .filter(Boolean)
       .join(', ');
+  };
+
+  /** "Novo dia" (decisão da mesa): desliga todos os buffs, zera temporários, cura tudo, renova usos. */
+  const newDaySummary = describeNewDay(character);
+  const newDayMessage =
+    `${newDaySummary.buffsOff} buff(s) desligado(s) · PV temporário ${newDaySummary.tempHp} e PM temporário `
+    + `${newDaySummary.tempMp} zerados · PV +${newDaySummary.healHp} e PM +${newDaySummary.healMp} (ao máximo) · `
+    + 'usos por dia renovados.';
+  const confirmNewDay = () => {
+    updateCharacter((f) => {
+      const d = describeNewDay(f);
+      return {
+        ...newDay(f),
+        logs: [
+          ...f.logs,
+          {
+            type: 'rest',
+            name: 'Novo dia',
+            mpSpent: 0,
+            timestamp: Date.now(),
+            details: `${d.buffsOff} buffs desligados · temp PV ${d.tempHp} / PM ${d.tempMp} zerados · PV +${d.healHp} · PM +${d.healMp}`,
+          },
+        ],
+      };
+    });
+    afterVitals();
   };
 
   const setHpCurrent = setCurrent('hp');
@@ -492,6 +522,16 @@ function VitalBar({ desktop = false }: VitalBarProps) {
           >
             ⏳ Efeitos Temporários
           </button>
+          {!readOnly && (
+            <button
+              type="button"
+              role="menuitem"
+              className={styles.menuItem}
+              onClick={() => { setMenuOpen(false); setNewDayOpen(true); }}
+            >
+              🌅 Novo dia
+            </button>
+          )}
           <button
             type="button"
             role="menuitem"
@@ -517,6 +557,15 @@ function VitalBar({ desktop = false }: VitalBarProps) {
       <ProgressionSheet open={progressionOpen} onClose={() => setProgressionOpen(false)} />
       <LogsSheet open={logsOpen} onClose={() => setLogsOpen(false)} />
       <TakeDamageSheet open={damageOpen} onClose={() => setDamageOpen(false)} />
+      <ConfirmModal
+        open={newDayOpen}
+        onClose={() => setNewDayOpen(false)}
+        onConfirm={confirmNewDay}
+        icon="🌅"
+        title="Novo dia"
+        message={newDayMessage}
+        confirmLabel="Virar o dia"
+      />
     </header>
   );
 }
