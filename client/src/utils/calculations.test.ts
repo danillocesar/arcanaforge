@@ -16,6 +16,8 @@ import {
   normalizeDamageReductions,
   isWeaponAttack,
   weaponToAttack,
+  deactivateAllBuffs,
+  removeInactiveBuffs,
 } from './calculations';
 
 function baseCharacter(overrides: Partial<Character> = {}): Character {
@@ -370,6 +372,35 @@ describe('toggleBuffState', () => {
     const next = toggleBuffState(character, 0);
     expect(next.temporaryHp).toBe(0);
     expect(next.buffs[0].active).toBe(true);
+  });
+});
+
+describe('deactivateAllBuffs / removeInactiveBuffs', () => {
+  it('desliga todos os ativos devolvendo o temporário de cada um, sem devolver PM', () => {
+    const c = baseCharacter({
+      mp: { max: 10, current: 4 },
+      temporaryHp: 12,
+      temporaryMp: 0,
+      buffs: [
+        activeBuff({ name: 'A', mp: 2, effects: [{ type: 'temp_hp', value: '10' }] }),
+        activeBuff({ name: 'B', effects: [{ type: 'attack_roll', value: '2' }] }),
+        activeBuff({ name: 'C', active: false, effects: [{ type: 'temp_hp', value: '2' }] }),
+      ],
+    });
+    const next = deactivateAllBuffs(c);
+    expect(next.buffs.map((b) => b.active)).toEqual([false, false, false]);
+    expect(next.temporaryHp).toBe(2);
+    expect(next.mp.current).toBe(4);
+  });
+
+  it('devolve a mesma referência quando não há buff ativo', () => {
+    const c = baseCharacter({ buffs: [activeBuff({ active: false })] });
+    expect(deactivateAllBuffs(c)).toBe(c);
+  });
+
+  it('removeInactiveBuffs apaga só os desligados', () => {
+    const c = baseCharacter({ buffs: [activeBuff({ name: 'on' }), activeBuff({ name: 'off', active: false })] });
+    expect(removeInactiveBuffs(c).buffs.map((b) => b.name)).toEqual(['on']);
   });
 });
 

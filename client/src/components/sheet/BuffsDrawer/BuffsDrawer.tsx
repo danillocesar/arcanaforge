@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
-import { toggleBuffState } from '../../../utils/calculations';
+import { toggleBuffState, deactivateAllBuffs, removeInactiveBuffs } from '../../../utils/calculations';
 import { formatResistanceLine } from '../../../utils/castAction';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import Sheet from '../../ui/Sheet/Sheet';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import EmptyState from '../../ui/EmptyState/EmptyState';
 import ConditionPicker from '../ConditionPicker/ConditionPicker';
 import type { FormValues } from '../SheetForm/SheetForm';
@@ -44,10 +45,17 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
   const { character, updateCharacter, readOnly } = useCharacterContext();
   const { openEdit, openCreate, openCreateWithValues } = useSheetForm();
   const [showPicker, setShowPicker] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   if (!character) return null;
 
   const buffs = character.buffs ?? [];
+  const activeCount = buffs.filter((b) => b.active).length;
+  const inactiveCount = buffs.length - activeCount;
+  // Limpezas pequenas são reversíveis pelo Desfazer; a partir de 4 itens pede confirmação.
+  const CONFIRM_CLEAR_FROM = 4;
+
+  const clearInactive = () => updateCharacter((f) => removeInactiveBuffs(f));
 
   const handleToggle = (index: number) =>
     updateCharacter((f) => toggleBuffState(f, index));
@@ -66,9 +74,31 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
   };
 
   const footer = !readOnly ? (
-    <button type="button" className={styles.btnAdd} onClick={() => openAfterClose(() => setShowPicker(true))}>
-      + Buff
-    </button>
+    <div className={styles.footerGroup}>
+      {buffs.length > 0 && (
+        <div className={styles.footerRow}>
+          <button
+            type="button"
+            className={styles.btnGhost}
+            disabled={activeCount === 0}
+            onClick={() => updateCharacter((f) => deactivateAllBuffs(f))}
+          >
+            Desligar todos{activeCount > 0 ? ` (${activeCount})` : ''}
+          </button>
+          <button
+            type="button"
+            className={styles.btnGhost}
+            disabled={inactiveCount === 0}
+            onClick={() => (inactiveCount >= CONFIRM_CLEAR_FROM ? setConfirmClear(true) : clearInactive())}
+          >
+            Limpar desligados{inactiveCount > 0 ? ` (${inactiveCount})` : ''}
+          </button>
+        </div>
+      )}
+      <button type="button" className={styles.btnAdd} onClick={() => openAfterClose(() => setShowPicker(true))}>
+        + Buff
+      </button>
+    </div>
   ) : undefined;
 
   return (
@@ -121,6 +151,15 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
         )}
       </Sheet>
       <ConditionPicker open={showPicker} onClose={() => setShowPicker(false)} onPick={handlePick} />
+      <ConfirmModal
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={clearInactive}
+        icon="🧹"
+        title="Limpar buffs desligados?"
+        message={`${inactiveCount} buffs desligados serão removidos da lista. Dá para desfazer logo em seguida.`}
+        confirmLabel="Limpar"
+      />
     </>
   );
 }

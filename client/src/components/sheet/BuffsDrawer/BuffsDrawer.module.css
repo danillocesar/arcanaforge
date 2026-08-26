@@ -171,3 +171,40 @@
 .btnRemove:active {
   transform: scale(0.88);
 }
+
+/* Rodapé: ações em massa (desligar todos / limpar desligados) acima do "+ Buff". */
+.footerGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.footerRow {
+  display: flex;
+  gap: 8px;
+}
+
+.btnGhost {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: var(--line-2);
+  color: var(--ink);
+}
+
+.btnGhost:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

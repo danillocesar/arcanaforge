@@ -278,6 +278,23 @@ export function toggleBuffState(character: Character, idx: number): Character {
   };
 }
 
+/**
+ * Desliga todo buff ativo (H1.1) — reaproveita a aritmética de `toggleBuffState`, então o
+ * temporário concedido por cada um é devolvido e o PM gasto NÃO volta (igual ao toggle).
+ * Devolve a mesma referência quando não há nada ativo, pra não disparar autosave à toa.
+ */
+export function deactivateAllBuffs(character: Character): Character {
+  return (character.buffs ?? []).reduce(
+    (acc, b, i) => (b.active ? toggleBuffState(acc, i) : acc),
+    character,
+  );
+}
+
+/** Remove da lista os buffs desligados (os ativos ficam intactos). */
+export function removeInactiveBuffs(character: Character): Character {
+  return { ...character, buffs: (character.buffs ?? []).filter((b) => b.active) };
+}
+
 export function calcCarryCapacity(character: Character): number {
   const strength = getEffectiveAttribute(character, 'str');
   if (strength < 0) return 10 + strength;
