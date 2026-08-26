@@ -9,9 +9,13 @@ interface StepperProps {
   max?: number;
   barColor?: string;
   className?: string;
+  /** Quando presente, os botões −/+ chamam isto (com ±step) em vez de `onChange` —
+   * permite que "−1" vire dano (consome o temporário primeiro) e "+1" vire cura.
+   * Arrastar a barra e digitar continuam usando `onChange`. */
+  onStep?: (delta: number) => void;
 }
 
-function Stepper({ value, onChange, step = 1, min, max, barColor, className }: StepperProps) {
+function Stepper({ value, onChange, step = 1, min, max, barColor, className, onStep }: StepperProps) {
   const atMin = min != null && value <= min;
   const atMax = max != null && value >= max;
   const dragging = useRef(false);
@@ -77,7 +81,7 @@ function Stepper({ value, onChange, step = 1, min, max, barColor, className }: S
         className={styles.stepBtn}
         aria-label="Diminuir"
         disabled={atMin}
-        onClick={() => onChange(clamp(value - step))}
+        onClick={() => (onStep ? onStep(-step) : onChange(clamp(value - step)))}
       >
         −
       </button>
@@ -138,7 +142,7 @@ function Stepper({ value, onChange, step = 1, min, max, barColor, className }: S
         className={`${styles.stepBtn} ${styles.plus}`}
         aria-label="Aumentar"
         disabled={atMax}
-        onClick={() => onChange(clamp(value + step))}
+        onClick={() => (onStep ? onStep(step) : onChange(clamp(value + step)))}
       >
         +
       </button>

@@ -2,11 +2,22 @@ import { useRef, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import {
   calcTotalDefense,
+  getActiveBuffs,
   getEffectiveMaxHp,
   getEffectiveMaxMp,
   getTotalLevel,
   hpPercent,
 } from '../../../utils/calculations';
+import { normalizeEffectType } from '../../../utils/buffEffects';
+import {
+  applyDamage,
+  applyHeal,
+  clampVital,
+  getVital,
+  normalizeVitals,
+  setVital,
+  type VitalPool,
+} from '../../../utils/vitals';
 import { getInitials } from '../../../utils/formatters';
 import { apiUploadAvatar } from '../../../api';
 import Popover from '../../ui/Popover/Popover';
@@ -68,40 +79,52 @@ function VitalBar({ desktop = false }: VitalBarProps) {
   const fixedHpBonus = effectiveMaxHp - hp.max;
   const fixedMpBonus = effectiveMaxMp - mp.max;
 
-  const hpMax = effectiveMaxHp + tempHp;
-  const mpMax = effectiveMaxMp + tempMp;
+  // Modelo de sobrevida (utils/vitals.ts): o atual nunca passa do máximo efetivo; o
+  // temporário é pool separado, consumido antes e nunca curado.
+  const afterVitals = () => setTimeout(sendHpUpdate, 50);
 
-  const setHpCurrent = (next: number) => {
-    const clamped = Math.max(0, Math.min(hpMax, next));
-    updateCharacter((f) => ({ ...f, hp: { ...f.hp, current: clamped } }));
-    setTimeout(sendHpUpdate, 50);
+  /** Digitar/arrastar define o atual, clampado no máximo efetivo (sem o temporário). */
+  const setCurrent = (pool: VitalPool) => (next: number) => {
+    updateCharacter((f) => setVital(f, pool, clampVital({ ...getVital(f, pool), current: next })));
+    afterVitals();
+  };
+  /** −/+ são dano/cura de 1: dano consome o temporário primeiro; cura nunca o repõe. */
+  const stepVital = (pool: VitalPool) => (delta: number) => {
+    updateCharacter((f) => (delta < 0 ? applyDamage(f, -delta, pool) : applyHeal(f, delta, pool)));
+    afterVitals();
+  };
+  const healAll = (pool: VitalPool) => () => {
+    updateCharacter((f) => applyHeal(f, Infinity, pool));
+    afterVitals();
+  };
+  const setMax = (pool: VitalPool) => (next: number) => {
+    updateCharacter((f) => normalizeVitals(
+      pool === 'hp'
+        ? { ...f, hp: { ...f.hp, max: Math.max(0, next) } }
+        : { ...f, mp: { ...f.mp, max: Math.max(0, next) } },
+    ));
+    afterVitals();
+  };
+  const setTemp = (pool: VitalPool) => (next: number) => {
+    updateCharacter((f) => setVital(f, pool, { ...getVital(f, pool), temp: Math.max(0, next) }));
+    afterVitals();
+  };
+  /** Buffs ativos que concedem temporário deste pool — a origem mostrada no popover. */
+  const tempSources = (pool: VitalPool) => {
+    const wanted = pool === 'hp' ? 'temp_hp' : 'temp_mp';
+    return getActiveBuffs(character)
+      .filter((b) => (b.effects || []).some((e) => normalizeEffectType(e.type) === wanted))
+      .map((b) => b.name)
+      .filter(Boolean)
+      .join(', ');
   };
 
-  const setMpCurrent = (next: number) => {
-    const clamped = Math.max(0, Math.min(mpMax, next));
-    updateCharacter((f) => ({ ...f, mp: { ...f.mp, current: clamped } }));
-    setTimeout(sendHpUpdate, 50);
-  };
-
-  const setHpMax = (next: number) => {
-    updateCharacter((f) => ({ ...f, hp: { ...f.hp, max: Math.max(0, next) } }));
-    setTimeout(sendHpUpdate, 50);
-  };
-
-  const setMpMax = (next: number) => {
-    updateCharacter((f) => ({ ...f, mp: { ...f.mp, max: Math.max(0, next) } }));
-    setTimeout(sendHpUpdate, 50);
-  };
-
-  const setTempHp = (next: number) => {
-    updateCharacter((f) => ({ ...f, temporaryHp: Math.max(0, next) }));
-    setTimeout(sendHpUpdate, 50);
-  };
-
-  const setTempMp = (next: number) => {
-    updateCharacter((f) => ({ ...f, temporaryMp: Math.max(0, next) }));
-    setTimeout(sendHpUpdate, 50);
-  };
+  const setHpCurrent = setCurrent('hp');
+  const setMpCurrent = setCurrent('mp');
+  const setHpMax = setMax('hp');
+  const setMpMax = setMax('mp');
+  const setTempHp = setTemp('hp');
+  const setTempMp = setTemp('mp');
 
   const toggle = (pop: Exclude<OpenPop, null>) =>
     setOpenPop((prev) => (prev === pop ? null : pop));
@@ -203,10 +226,20 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         <div className={styles.track}>
           <i
             style={{
-              width: `${hpPercent(hp.current, hpMax)}%`,
+              width: `${hpPercent(hp.current, effectiveMaxHp + tempHp)}%`,
               background: '#ef4444',
             }}
           />
+          {tempHp > 0 && (
+            <i
+              className={styles.tempSeg}
+              style={{
+                left: `${hpPercent(effectiveMaxHp, effectiveMaxHp + tempHp)}%`,
+                width: `${hpPercent(tempHp, effectiveMaxHp + tempHp)}%`,
+              }}
+              aria-hidden="true"
+            />
+          )}
         </div>
       </button>
 
@@ -225,10 +258,20 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         <div className={styles.track}>
           <i
             style={{
-              width: `${hpPercent(mp.current, mpMax)}%`,
+              width: `${hpPercent(mp.current, effectiveMaxMp + tempMp)}%`,
               background: '#3b82f6',
             }}
           />
+          {tempMp > 0 && (
+            <i
+              className={styles.tempSeg}
+              style={{
+                left: `${hpPercent(effectiveMaxMp, effectiveMaxMp + tempMp)}%`,
+                width: `${hpPercent(tempMp, effectiveMaxMp + tempMp)}%`,
+              }}
+              aria-hidden="true"
+            />
+          )}
         </div>
       </button>
 
@@ -276,7 +319,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
       >
         <div className={styles.popH}>Pontos de Vida</div>
         {!readOnly ? (
-          <Stepper value={hp.current} onChange={setHpCurrent} min={0} max={hpMax} barColor="#ef4444" />
+          <Stepper value={hp.current} onChange={setHpCurrent} onStep={stepVital('hp')} min={0} max={effectiveMaxHp} barColor="#ef4444" />
         ) : (
           <div className={styles.popRow}>
             <span>Atual</span>
@@ -315,8 +358,12 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{tempHp}</b>
           )}
         </div>
+        <div className={styles.popHint}>
+          Sobrevida: é consumida antes do PV e não é curada.
+          {tempSources('hp') && ` Origem: ${tempSources('hp')}.`}
+        </div>
         {!readOnly && (
-          <button type="button" className={styles.healAllBtn} onClick={() => setHpCurrent(hpMax)}>
+          <button type="button" className={styles.healAllBtn} onClick={healAll('hp')}>
             ✚ Curar tudo
           </button>
         )}
@@ -331,7 +378,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
       >
         <div className={styles.popH}>Pontos de Mana</div>
         {!readOnly ? (
-          <Stepper value={mp.current} onChange={setMpCurrent} min={0} max={mpMax} barColor="#3b82f6" />
+          <Stepper value={mp.current} onChange={setMpCurrent} onStep={stepVital('mp')} min={0} max={effectiveMaxMp} barColor="#3b82f6" />
         ) : (
           <div className={styles.popRow}>
             <span>Atual</span>
@@ -370,8 +417,12 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             <b>{tempMp}</b>
           )}
         </div>
+        <div className={styles.popHint}>
+          Sobrevida: é consumida antes do PM e não é curada.
+          {tempSources('mp') && ` Origem: ${tempSources('mp')}.`}
+        </div>
         {!readOnly && (
-          <button type="button" className={styles.healAllBtn} onClick={() => setMpCurrent(mpMax)}>
+          <button type="button" className={styles.healAllBtn} onClick={healAll('mp')}>
             ✚ Curar tudo
           </button>
         )}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { Character } from '../types/character';
 import { createEmptyCharacter, normalizeBuffs, normalizeDamageReductions, applyBuffToCharacter } from '../utils/calculations';
+import { normalizeVitals } from '../utils/vitals';
 import { shouldAlert } from '../utils/alertThrottle';
 import {
   apiFetchCharacters,
@@ -50,8 +51,18 @@ interface CharacterProviderProps {
 interface BroadcastSnapshot {
   hp: { current: number; max: number };
   mp: { current: number; max: number };
+  temporaryHp: number;
+  temporaryMp: number;
   name: string;
 }
+
+const snapshotOf = (c: Character): BroadcastSnapshot => ({
+  hp: { ...c.hp },
+  mp: { ...c.mp },
+  temporaryHp: c.temporaryHp || 0,
+  temporaryMp: c.temporaryMp || 0,
+  name: c.name,
+});
 
 export function CharacterProvider({ children, showToast, readOnly = false }: CharacterProviderProps) {
   const [character, setCharacter] = useState<Character | null>(null);
@@ -102,12 +113,11 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
             max: mp.max ?? prev.mp.max,
           };
         }
-        lastBroadcastRef.current = {
-          hp: { ...next.hp },
-          mp: { ...next.mp },
-          name: next.name,
-        };
-        return next;
+        if (typeof msg.temporaryHp === 'number') next.temporaryHp = msg.temporaryHp;
+        if (typeof msg.temporaryMp === 'number') next.temporaryMp = msg.temporaryMp;
+        const normalized = normalizeVitals(next);
+        lastBroadcastRef.current = snapshotOf(normalized);
+        return normalized;
       });
       // Rajadas de sync alertam 1× a cada 10s — o estado acima aplica sempre.
       if (shouldAlert('own-hp-tab-sync')) showToast?.('PV/PM sincronizados de outra aba', 'sync');
@@ -118,12 +128,12 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       skipNextSaveRef.current();
       setCharacter((prev) => {
         if (!prev) return prev;
-        const next = { ...prev, hp: { ...prev.hp, current: currentHp } };
-        lastBroadcastRef.current = {
-          hp: { ...next.hp },
-          mp: { ...next.mp },
-          name: next.name,
-        };
+        const next = normalizeVitals({
+          ...prev,
+          hp: { ...prev.hp, current: currentHp },
+          temporaryHp: typeof msg.temporaryHp === 'number' ? msg.temporaryHp : prev.temporaryHp,
+        });
+        lastBroadcastRef.current = snapshotOf(next);
         return next;
       });
       if (shouldAlert('own-hp-master')) showToast?.(`PV atualizado pelo mestre: ${currentHp}`, 'info');
@@ -150,17 +160,15 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     if (readOnly) return;
     const c = characterRef.current;
     if (!c) return;
-    lastBroadcastRef.current = {
-      hp: { ...c.hp },
-      mp: { ...c.mp },
-      name: c.name,
-    };
+    lastBroadcastRef.current = snapshotOf(c);
     send({
       type: 'character_hp_update',
       characterId: c._id,
       name: c.name,
       hp: c.hp,
       mp: c.mp,
+      temporaryHp: c.temporaryHp || 0,
+      temporaryMp: c.temporaryMp || 0,
     });
   }, [send, readOnly]);
 
@@ -199,6 +207,8 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
       || c.hp.max !== last.hp.max
       || c.mp.current !== last.mp.current
       || c.mp.max !== last.mp.max
+      || (c.temporaryHp || 0) !== last.temporaryHp
+      || (c.temporaryMp || 0) !== last.temporaryMp
       || c.name !== last.name;
 
     if (changed) {
@@ -216,19 +226,17 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   const loadCharacter = useCallback(async (id: string) => {
     const data = await apiLoadCharacter(id);
     if (data) {
-      const normalized = {
+      // Migrações de leitura (idempotentes): buffs legados, RD por tipo e PV/PM
+      // temporário como pool separado (o atual não pode passar do máximo efetivo).
+      const normalized = normalizeVitals({
         ...data,
         buffs: normalizeBuffs(data.buffs),
         damageReductions: normalizeDamageReductions(data.damageReductions, data.damageReduction),
-      };
+      });
       setCharacter(normalized);
       setCharacterOriginalId(data._id);
       resetUndoState();
-      lastBroadcastRef.current = {
-        hp: { ...data.hp },
-        mp: { ...data.mp },
-        name: data.name,
-      };
+      lastBroadcastRef.current = snapshotOf(normalized);
       history.replaceState(null, '', `?id=${encodeURIComponent(data._id)}`);
     }
   }, [resetUndoState]);
@@ -238,11 +246,7 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
     setCharacter(newCharacter);
     setCharacterOriginalId(newCharacter._id);
     resetUndoState();
-    lastBroadcastRef.current = {
-      hp: { ...newCharacter.hp },
-      mp: { ...newCharacter.mp },
-      name: newCharacter.name,
-    };
+    lastBroadcastRef.current = snapshotOf(newCharacter);
     history.replaceState(null, '', `?id=${encodeURIComponent(newCharacter._id)}`);
     await refreshList();
   }, [refreshList, resetUndoState]);
@@ -288,11 +292,11 @@ export function CharacterProvider({ children, showToast, readOnly = false }: Cha
   }, [readOnly, resetUndoState]);
 
   const setCharacterDirect = useCallback((char: Character) => {
-    setCharacter({
+    setCharacter(normalizeVitals({
       ...char,
       buffs: normalizeBuffs(char.buffs),
       damageReductions: normalizeDamageReductions(char.damageReductions, char.damageReduction),
-    });
+    }));
     setCharacterOriginalId(char._id);
     resetUndoState();
   }, [resetUndoState]);
