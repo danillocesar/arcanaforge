@@ -1,4 +1,4 @@
-import type { RPGSystem, BuffEffect, DamageReduction } from '../types/character';
+import type { RPGSystem, BuffEffect, BuffDuration, DamageReduction } from '../types/character';
 import type { Party } from '../types/party';
 import type { CombatData } from '../types/combat';
 import type { CharacterSummary } from '../types/character';
@@ -143,6 +143,8 @@ export interface ApplyBuffPayload {
     /** Teste de resistência da magia e sua CD — quem recebe o buff é quem precisa do número. */
     resistance?: string;
     dc?: number;
+    /** Duração normalizada (cena/dia/permanente) — o "Fim de cena" do alvo respeita. */
+    duration?: BuffDuration;
   };
 }
 

@@ -1,4 +1,18 @@
-import type { BuffEffect } from '../types/character';
+import type { BuffEffect, BuffDuration } from '../types/character';
+import { normalizeSearch } from './formatters';
+
+/**
+ * Texto de duração do catálogo → duração do buff. "cena", "sustentada", "1 rodada" e
+ * variantes "até ser descarregada" somem no fim da cena; "1 dia" some no novo dia;
+ * "permanente…" nunca some. Desconhecido/instantânea/"veja texto" cai em 'cena' — o
+ * padrão mais seguro (some no reset).
+ */
+export function normalizeBuffDuration(text?: string): BuffDuration {
+  const t = normalizeSearch(text ?? '');
+  if (t.startsWith('permanente')) return 'permanente';
+  if (/\bdias?\b/.test(t) && !t.startsWith('cena')) return 'dia';
+  return 'cena';
+}
 
 export interface CastEnhancement {
   description: string;

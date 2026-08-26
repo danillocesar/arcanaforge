@@ -79,11 +79,17 @@ export interface BuffEffect {
   value: string;
 }
 
+/** Quanto um buff dura: some no "Fim de cena", no "Novo dia" ou nunca. Ausente = cena. */
+export type BuffDuration = 'cena' | 'dia' | 'permanente';
+
 export interface Buff {
   name: string;
   effects: BuffEffect[];
   mp: number;
   active: boolean;
+  /** Normalizada da `Spell.duration` do catálogo na conjuração (utils/castAction.ts
+   * `normalizeBuffDuration`) ou escolhida no formulário. Ausente ⇒ 'cena'. */
+  duration?: BuffDuration;
   /** Texto de exibição, ex. "de Fulano" — presente só em buffs aplicados por magia/poder. */
   source?: string;
   /** Texto de regra, ex. condições oficiais do catálogo — lembrete do efeito, não recalculado. */

@@ -1,5 +1,5 @@
 import type { Character, DamageReduction } from '../types/character';
-import { getEffectiveMaxHp, getEffectiveMaxMp, deactivateAllBuffs } from './calculations';
+import { getEffectiveMaxHp, getEffectiveMaxMp, deactivateBuffsWhere } from './calculations';
 import { normalizeSearch } from './formatters';
 
 export type VitalPool = 'hp' | 'mp';
@@ -83,18 +83,31 @@ export function normalizeVitals(c: Character): Character {
 
 /* ───────────────────────────── Novo dia ──────────────────────────── */
 
+/** Zera PV e PM temporários — o que sobra de sobrevida some no fim da cena/dia (T20). */
+function zeroTemps(c: Character): Character {
+  return setVital(
+    setVital(c, 'hp', { ...getVital(c, 'hp'), temp: 0 }),
+    'mp',
+    { ...getVital(c, 'mp'), temp: 0 },
+  );
+}
+
 /**
- * Decisão da mesa (26/08): "Novo dia" = todos os buffs desligados, temporários zerados
- * (inclusive os digitados à mão), PV e PM no máximo efetivo e usos por dia dos poderes
- * renovados. Sem tabela de descanso. Bônus Fixos não mudam (não são buffs).
+ * "Fim de cena": desliga só os buffs de duração 'cena' (ou sem duração — o padrão) e
+ * zera os temporários. Não cura nada; buffs 'dia' e 'permanente' continuam.
+ */
+export function endScene(c: Character): Character {
+  return zeroTemps(deactivateBuffsWhere(c, (b) => (b.duration ?? 'cena') === 'cena'));
+}
+
+/**
+ * Decisão da mesa (26/08): "Novo dia" = buffs desligados (todos, exceto os marcados como
+ * permanentes), temporários zerados (inclusive os digitados à mão), PV e PM no máximo
+ * efetivo e usos por dia dos poderes renovados. Sem tabela de descanso. Bônus Fixos não
+ * mudam (não são buffs).
  */
 export function newDay(c: Character): Character {
-  const off = deactivateAllBuffs(c);
-  const zeroed = setVital(
-    setVital(off, 'hp', { ...getVital(off, 'hp'), temp: 0 }),
-    'mp',
-    { ...getVital(off, 'mp'), temp: 0 },
-  );
+  const zeroed = zeroTemps(deactivateBuffsWhere(c, (b) => b.duration !== 'permanente'));
   const renewed: Character = {
     ...zeroed,
     abilities: (zeroed.abilities ?? []).map((a) => (a.usesPerDay ? { ...a, usesLeft: a.usesPerDay } : a)),
@@ -113,7 +126,7 @@ export function describeNewDay(c: Character): {
   const hp = getVital(c, 'hp');
   const mp = getVital(c, 'mp');
   return {
-    buffsOff: (c.buffs ?? []).filter((b) => b.active).length,
+    buffsOff: (c.buffs ?? []).filter((b) => b.active && b.duration !== 'permanente').length,
     tempHp: hp.temp,
     tempMp: mp.temp,
     healHp: Math.max(0, hp.max - hp.current),

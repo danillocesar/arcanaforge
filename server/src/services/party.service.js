@@ -235,6 +235,8 @@ function createPartyService(refs) {
       // da CD na ficha, então acompanham a entrada em vez de ficar só no conjurador.
       resistance: buff.resistance ? String(buff.resistance) : undefined,
       dc: Number.isFinite(Number(buff.dc)) ? Number(buff.dc) : undefined,
+      // Duração normalizada (cena/dia/permanente): o "Fim de cena" do alvo só desliga o que expira.
+      duration: ['cena', 'dia', 'permanente'].includes(buff.duration) ? buff.duration : undefined,
     };
 
     // Ler-mesclar-gravar em vez de $push: buff homônimo já existente na ficha do

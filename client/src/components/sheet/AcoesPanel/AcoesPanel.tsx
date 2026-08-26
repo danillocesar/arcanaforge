@@ -47,7 +47,7 @@ function AcoesPanel() {
     setCastAction({
       name: sp.name, mpCost: Number(sp.mpCost) || 0, buffs: sp.buffs,
       buffTargetScope: sp.buffTargetScope, enhancements: sp.enhancements,
-      resistance: sp.resistance,
+      resistance: sp.resistance, duration: sp.duration,
     });
   };
 

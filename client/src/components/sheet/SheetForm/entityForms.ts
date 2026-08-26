@@ -2,6 +2,7 @@ import type {
   Character,
   AttributeId,
   BuffType,
+  BuffDuration,
   BuffEffect,
   AbilityKind,
   InventoryCategory,
@@ -425,9 +426,17 @@ export function spellToFormValues(spell: OfficialSpell): FormValues {
 
 /* ─────────────────────────────── Buff ──────────────────────────────────── */
 
+const buffDurationOptions: Array<{ value: string; label: string }> = [
+  { value: 'cena', label: 'Cena' },
+  { value: 'dia', label: 'Dia' },
+  { value: 'permanente', label: 'Permanente' },
+];
+
 const buffFields: FieldDescriptor[] = [
   { key: 'name', label: 'Nome', type: 'text', placeholder: 'Nome do buff/condição' },
   { key: 'mp', label: 'Custo (PM)', type: 'number', half: true },
+  // "Fim de cena" desliga só os de cena; "Novo dia" poupa os permanentes.
+  { key: 'duration', label: 'Duração', type: 'select', options: buffDurationOptions, half: true },
   { key: 'description', label: 'Descrição (regra)', type: 'textarea', placeholder: 'Efeito da condição, para referência' },
   {
     key: 'effects', label: 'Efeitos', type: 'list', addLabel: 'Efeito',
@@ -454,12 +463,13 @@ export function effectsToForm(effects: BuffEffect[] | undefined): FormValues[] {
 const buffConfig: EntityConfig = {
   title: 'Buff / Condição',
   fields: buffFields,
-  empty: () => ({ name: '', mp: 0, description: '', effects: [emptyBuffEffect()] }),
+  empty: () => ({ name: '', mp: 0, duration: 'cena', description: '', effects: [emptyBuffEffect()] }),
   fromEntry: (c, i) => {
     const b = c.buffs[i];
     return {
       name: b.name,
       mp: b.mp,
+      duration: b.duration ?? 'cena',
       description: b.description ?? '',
       effects: effectsToForm(b.effects),
     };
@@ -470,6 +480,7 @@ const buffConfig: EntityConfig = {
       ...base,
       name: s(v.name),
       mp: n(v.mp),
+      duration: (s(v.duration) || 'cena') as BuffDuration,
       description: s(v.description) || undefined,
       effects: effectsFromValues(v.effects),
       active: (base as { active?: boolean }).active ?? false,
@@ -484,6 +495,7 @@ export function conditionToFormValues(condition: OfficialCondition): FormValues 
   return {
     name: condition.name,
     mp: 0,
+    duration: 'cena',
     description: condition.description,
     effects: effectsToForm(condition.effects),
   };

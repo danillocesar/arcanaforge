@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { getTotalLevel, applyBuffToCharacter, calcSpellResistance } from '../../../utils/calculations';
-import { composeCast, formatResistanceLine, type CastEnhancement } from '../../../utils/castAction';
+import { composeCast, formatResistanceLine, normalizeBuffDuration, type CastEnhancement } from '../../../utils/castAction';
 import { playMagicSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
 import { apiFetchParties, apiFetchPartyCharacters, apiApplyBuffToParty, type PartyCharacter } from '../../../api';
@@ -22,6 +22,9 @@ export interface CastActionSpec {
   enhancements?: CastActionEnhancement[];
   /** Teste de resistência da magia de origem, ex. "Vontade anula" — vai junto no buff. */
   resistance?: string;
+  /** Duração do catálogo ("cena", "sustentada", "1 dia"…) — normalizada e gravada no buff,
+   * para "Fim de cena"/"Novo dia" desligarem só o que expira. */
+  duration?: string;
   /** Índice em `character.abilities` do poder que está sendo usado — ao concluir, consome
    * um uso do dia (`usesLeft`) se o poder tiver `usesPerDay`. */
   sourceAbilityIndex?: number;
@@ -71,6 +74,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
     name: activeAction.name,
     effects: combinedBuffs,
     source: `de ${character.name}`,
+    duration: normalizeBuffDuration(activeAction.duration),
     ...(resistanceLine ? { resistance: activeAction.resistance, dc } : {}),
   };
 

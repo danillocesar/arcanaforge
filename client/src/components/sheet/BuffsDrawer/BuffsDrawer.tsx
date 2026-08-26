@@ -34,6 +34,12 @@ function formatEffectValue(raw: string): string | null {
   return /^[+-]/.test(trimmed) ? trimmed : `+${trimmed}`;
 }
 
+const DURATION_LABEL: Record<NonNullable<Buff['duration']>, string> = {
+  cena: 'Até o fim da cena',
+  dia: 'Até o novo dia',
+  permanente: 'Permanente',
+};
+
 function buildSummary(buff: Buff): string | null {
   const values = (buff.effects || [])
     .map((eff) => formatEffectValue(eff.value))
@@ -125,6 +131,7 @@ function BuffsDrawer({ open, onClose }: BuffsDrawerProps) {
                   <div className={styles.info}>
                     <span className={styles.name}>{buff.name || 'Sem nome'}</span>
                     {buff.source && <span className={styles.sourceText}>{buff.source}</span>}
+                    <span className={styles.sourceText}>{DURATION_LABEL[buff.duration ?? 'cena']}</span>
                     {resistanceLine && <span className={styles.resistText}>{resistanceLine}</span>}
                     {buff.description && <span className={styles.descText}>{buff.description}</span>}
                     {buff.mp > 0 && <span className={styles.source}>{buff.mp} PM</span>}

@@ -284,8 +284,13 @@ export function toggleBuffState(character: Character, idx: number): Character {
  * Devolve a mesma referência quando não há nada ativo, pra não disparar autosave à toa.
  */
 export function deactivateAllBuffs(character: Character): Character {
+  return deactivateBuffsWhere(character, () => true);
+}
+
+/** Desliga os buffs ativos que passam no predicado (ex.: só os de duração "cena"). */
+export function deactivateBuffsWhere(character: Character, predicate: (buff: Buff) => boolean): Character {
   return (character.buffs ?? []).reduce(
-    (acc, b, i) => (b.active ? toggleBuffState(acc, i) : acc),
+    (acc, b, i) => (b.active && predicate(b) ? toggleBuffState(acc, i) : acc),
     character,
   );
 }

@@ -14,6 +14,7 @@ import {
   applyHeal,
   clampVital,
   describeNewDay,
+  endScene,
   getVital,
   newDay,
   normalizeVitals,
@@ -54,6 +55,7 @@ function VitalBar({ desktop = false }: VitalBarProps) {
   const [logsOpen, setLogsOpen] = useState(false);
   const [damageOpen, setDamageOpen] = useState(false);
   const [newDayOpen, setNewDayOpen] = useState(false);
+  const [endSceneOpen, setEndSceneOpen] = useState(false);
 
   const pvRef = useRef<HTMLButtonElement>(null);
   const pmRef = useRef<HTMLButtonElement>(null);
@@ -148,6 +150,28 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         ],
       };
     });
+    afterVitals();
+  };
+
+  /** "Fim de cena": só buffs de cena (ou sem duração) desligam; temporários zeram; nada é curado. */
+  const sceneBuffs = (character.buffs ?? []).filter((b) => b.active && (b.duration ?? 'cena') === 'cena').length;
+  const endSceneMessage =
+    `${sceneBuffs} buff(s) de cena desligado(s) · PV temporário ${tempHp} e PM temporário ${tempMp} zerados. `
+    + 'Buffs de dia/permanentes e o PV atual não mudam.';
+  const confirmEndScene = () => {
+    updateCharacter((f) => ({
+      ...endScene(f),
+      logs: [
+        ...f.logs,
+        {
+          type: 'rest',
+          name: 'Fim de cena',
+          mpSpent: 0,
+          timestamp: Date.now(),
+          details: `${sceneBuffs} buffs de cena desligados · temp PV ${f.temporaryHp || 0} / PM ${f.temporaryMp || 0} zerados`,
+        },
+      ],
+    }));
     afterVitals();
   };
 
@@ -523,14 +547,24 @@ function VitalBar({ desktop = false }: VitalBarProps) {
             ⏳ Efeitos Temporários
           </button>
           {!readOnly && (
-            <button
-              type="button"
-              role="menuitem"
-              className={styles.menuItem}
-              onClick={() => { setMenuOpen(false); setNewDayOpen(true); }}
-            >
-              🌅 Novo dia
-            </button>
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.menuItem}
+                onClick={() => { setMenuOpen(false); setEndSceneOpen(true); }}
+              >
+                ⏱ Fim de cena
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.menuItem}
+                onClick={() => { setMenuOpen(false); setNewDayOpen(true); }}
+              >
+                🌅 Novo dia
+              </button>
+            </>
           )}
           <button
             type="button"
@@ -565,6 +599,15 @@ function VitalBar({ desktop = false }: VitalBarProps) {
         title="Novo dia"
         message={newDayMessage}
         confirmLabel="Virar o dia"
+      />
+      <ConfirmModal
+        open={endSceneOpen}
+        onClose={() => setEndSceneOpen(false)}
+        onConfirm={confirmEndScene}
+        icon="⏱"
+        title="Fim de cena"
+        message={endSceneMessage}
+        confirmLabel="Encerrar cena"
       />
     </header>
   );

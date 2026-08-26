@@ -15,6 +15,7 @@ import {
   computeDamageTaken,
   newDay,
   describeNewDay,
+  endScene,
 } from './vitals';
 
 function char(overrides: Partial<Character> = {}): Character {
@@ -153,6 +154,27 @@ describe('computeDamageTaken', () => {
   });
 });
 
+describe('endScene', () => {
+  it('desliga só buffs de cena (ou sem duração), zera temporários e não cura', () => {
+    const c = char({
+      hp: { max: 30, current: 9 },
+      temporaryHp: 7,
+      temporaryMp: 2,
+      buffs: [
+        { name: 'Cena', effects: [{ type: 'temp_hp', value: '4' }], mp: 0, active: true, duration: 'cena' },
+        { name: 'Dia', effects: [], mp: 0, active: true, duration: 'dia' },
+        { name: 'Perm', effects: [], mp: 0, active: true, duration: 'permanente' },
+        { name: 'Sem duração', effects: [], mp: 0, active: true },
+      ],
+    });
+    const d = endScene(c);
+    expect(d.buffs.map((b) => b.active)).toEqual([false, true, true, false]);
+    expect(d.temporaryHp).toBe(0);
+    expect(d.temporaryMp).toBe(0);
+    expect(d.hp.current).toBe(9);
+  });
+});
+
 describe('newDay', () => {
   it('desliga todos os buffs, zera temporários (inclusive digitados) e cura PV/PM ao máximo efetivo', () => {
     const c = char({
@@ -188,6 +210,18 @@ describe('newDay', () => {
       ],
     });
     expect(describeNewDay(c)).toEqual({ buffsOff: 1, tempHp: 7, tempMp: 0, healHp: 21, healMp: 9 });
+  });
+
+  it('poupa buffs marcados como permanentes', () => {
+    const c = char({
+      buffs: [
+        { name: 'Cena', effects: [], mp: 0, active: true, duration: 'cena' },
+        { name: 'Dia', effects: [], mp: 0, active: true, duration: 'dia' },
+        { name: 'Perm', effects: [], mp: 0, active: true, duration: 'permanente' },
+        { name: 'Sem duração', effects: [], mp: 0, active: true },
+      ],
+    });
+    expect(newDay(c).buffs.map((b) => b.active)).toEqual([false, false, true, false]);
   });
 
   it('renova os usos por dia dos poderes', () => {

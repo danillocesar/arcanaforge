@@ -68,6 +68,7 @@ function MagiasPanel() {
                   buffTargetScope: sp.buffTargetScope,
                   enhancements: sp.enhancements,
                   resistance: sp.resistance,
+                  duration: sp.duration,
                 });
               }}
               onEdit={(i) => openEdit('magia', i)}

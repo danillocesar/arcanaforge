@@ -1,6 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import type { BuffEffect } from '../types/character';
-import { composeCast, formatResistanceLine } from './castAction';
+import { composeCast, formatResistanceLine, normalizeBuffDuration } from './castAction';
+
+describe('normalizeBuffDuration', () => {
+  it.each([
+    ['cena', 'cena'],
+    ['sustentada', 'cena'],
+    ['1 rodada', 'cena'],
+    ['cena, até ser descarregada', 'cena'],
+    ['1 dia', 'dia'],
+    ['permanente', 'permanente'],
+    ['permanente até ser descarregada', 'permanente'],
+    ['instantânea', 'cena'],
+    ['veja texto', 'cena'],
+    [undefined, 'cena'],
+  ] as const)('%s → %s', (input, expected) => {
+    expect(normalizeBuffDuration(input)).toBe(expected);
+  });
+});
 
 const dano = (value: string): BuffEffect => ({ type: 'extra_damage', value });
 
