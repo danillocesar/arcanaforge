@@ -557,6 +557,7 @@ const ataqueFields: FieldDescriptor[] = [
     itemFields: [
       { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Ataque Poderoso' },
       { key: 'value', label: 'Bônus', type: 'number' },
+      { key: 'attribute', label: '+ atributo', type: 'select', options: attackModifierAttrOptions },
       { key: 'mp', label: 'PM', type: 'number' },
     ],
   },
@@ -565,6 +566,7 @@ const ataqueFields: FieldDescriptor[] = [
     itemFields: [
       { key: 'name', label: 'Nome', type: 'text', placeholder: 'Ex.: Chama' },
       { key: 'value', label: 'Valor', type: 'text', placeholder: 'Ex.: 1d6 ou 2' },
+      { key: 'attribute', label: '+ atributo', type: 'select', options: attackModifierAttrOptions },
       { key: 'mp', label: 'PM', type: 'number' },
     ],
   },
@@ -582,8 +584,8 @@ const ataqueConfig: EntityConfig = {
     return {
       name: a.name, rangeType: a.rangeType, mpCost: a.mpCost, damage: a.damage,
       attributeDamageBonus: a.attributeDamageBonus || 'str', critical: a.critical, type: a.type,
-      extraBonuses: (a.extraBonuses ?? []).map((b) => ({ name: b.name, value: b.value, mp: b.mp })),
-      extraDamage: (a.extraDamage ?? []).map((d) => ({ name: d.name, value: d.value, mp: d.mp })),
+      extraBonuses: (a.extraBonuses ?? []).map((b) => ({ name: b.name, value: b.value, mp: b.mp, attribute: b.attribute ?? '' })),
+      extraDamage: (a.extraDamage ?? []).map((d) => ({ name: d.name, value: d.value, mp: d.mp, attribute: d.attribute ?? '' })),
     };
   },
   apply: (c, v, i) => {
@@ -597,8 +599,14 @@ const ataqueConfig: EntityConfig = {
       rangeType: s(v.rangeType),
       mpCost: n(v.mpCost),
       attributeDamageBonus: s(v.attributeDamageBonus),
-      extraBonuses: bonuses.map((b) => ({ name: s(b.name).trim(), value: n(b.value), mp: n(b.mp) })),
-      extraDamage: dmg.map((d) => ({ name: s(d.name).trim(), value: s(d.value), mp: n(d.mp) })),
+      extraBonuses: bonuses.map((b) => ({
+        name: s(b.name).trim(), value: n(b.value), mp: n(b.mp),
+        attribute: (s(b.attribute) || undefined) as AttributeId | undefined,
+      })),
+      extraDamage: dmg.map((d) => ({
+        name: s(d.name).trim(), value: s(d.value), mp: n(d.mp),
+        attribute: (s(d.attribute) || undefined) as AttributeId | undefined,
+      })),
     };
     return { ...c, attacks: upsert(c.attacks, entry, i) };
   },

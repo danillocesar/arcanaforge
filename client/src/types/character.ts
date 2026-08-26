@@ -32,12 +32,17 @@ export interface ExtraBonus {
   name: string;
   value: number;
   mp: number;
+  /** "+ atributo": soma o valor efetivo do atributo ao fixo, no teste de ataque. */
+  attribute?: AttributeId;
 }
 
 export interface ExtraDamage {
   name: string;
+  /** Número fixo ou dado ("1d6"). */
   value: string;
   mp: number;
+  /** "+ atributo": soma o valor efetivo do atributo como bônus fixo de dano (o dado, se houver, fica). */
+  attribute?: AttributeId;
 }
 
 export interface AttackModifier {

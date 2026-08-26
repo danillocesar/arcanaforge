@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Attack, Character, Ability, Spell } from '../types/character';
-import { createEmptyCharacter, calcTotalSkill, calcAttackRoll, buildDamageSummary } from './calculations';
+import { createEmptyCharacter, calcTotalSkill, calcAttackRoll, calcDamageBonus, buildDamageSummary } from './calculations';
 import { buildAttackChecklist, composeAttack, multiplyDamageDice } from './attackCompose';
 
 function baseCharacter(overrides: Partial<Character> = {}): Character {
@@ -238,6 +238,35 @@ describe('buildAttackChecklist', () => {
       attackRoll: 2, mpCost: 2, defaultChecked: false,
     });
     expect(items.map((i) => i.key)).toEqual(['spell-0-mod-0', 'spell-0-enh-1']);
+  });
+});
+
+describe('modificadores próprios do ataque com "+ atributo"', () => {
+  const character = baseCharacter({ attributes: { str: 3, dex: 1, con: 0, int: 0, wis: 0, cha: 0 } });
+  const atk = baseAttack({
+    damage: '1d8',
+    extraBonuses: [{ name: 'Foco', value: 1, mp: 0, attribute: 'dex' }],
+    extraDamage: [{ name: 'Brutal', value: '2', mp: 0, attribute: 'str' }],
+  });
+
+  it('o checklist soma o atributo efetivo ao fixo, no acerto e no dano', () => {
+    const items = buildAttackChecklist(character, atk);
+    expect(items.find((i) => i.key === 'own-bonus-0')?.attackRoll).toBe(2); // 1 + Des 1
+    expect(items.find((i) => i.key === 'own-damage-0')?.damageBonus).toBe(5); // 2 + For 3
+  });
+
+  it('calcAttackRoll/calcDamageBonus do card em repouso batem com a modal', () => {
+    // Luta: meio nível 0 + For 3 ; +Foco (1 + Des 1) = 5
+    expect(calcAttackRoll(character, atk)).toBe(5);
+    // For 3 + Brutal (2 + For 3) = 8
+    expect(calcDamageBonus(character, atk)).toBe(8);
+  });
+
+  it('dado extra com atributo: o dado fica em damageDice e o atributo vira bônus fixo', () => {
+    const dice = baseAttack({ extraDamage: [{ name: 'Chama', value: '1d6', mp: 0, attribute: 'str' }] });
+    const item = buildAttackChecklist(character, dice).find((i) => i.key === 'own-damage-0');
+    expect(item?.damageDice).toBe('1d6');
+    expect(item?.damageBonus).toBe(3);
   });
 });
 

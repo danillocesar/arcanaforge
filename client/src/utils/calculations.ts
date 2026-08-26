@@ -394,7 +394,11 @@ export function weaponToAttack(item: InventoryItem): Attack {
 export function calcAttackRoll(character: Character, atk: Character['attacks'][number]): number {
   const skillId = atk.rangeType === 'ranged' ? 'pontaria' : 'luta';
   let total = calcTotalSkill(character, skillId);
-  if (atk.extraBonuses) atk.extraBonuses.forEach((b) => { total += Number(b.value) || 0; });
+  if (atk.extraBonuses) {
+    atk.extraBonuses.forEach((b) => {
+      total += (Number(b.value) || 0) + (b.attribute ? getEffectiveAttribute(character, b.attribute) : 0);
+    });
+  }
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'attack_roll') total += resolveEffectValue(eff, character);
@@ -406,7 +410,12 @@ export function calcAttackRoll(character: Character, atk: Character['attacks'][n
 export function calcDamageBonus(character: Character, atk: Character['attacks'][number]): number {
   const attrKey = (atk.attributeDamageBonus || 'str') as AttributeId;
   let total = getEffectiveAttribute(character, attrKey);
-  if (atk.extraDamage) atk.extraDamage.forEach((b) => { total += Number(b.value) || 0; });
+  if (atk.extraDamage) {
+    atk.extraDamage.forEach((b) => {
+      // Dado ("1d6") não entra aqui (fica em buildDamageSummary); o atributo entra como fixo.
+      total += (Number(b.value) || 0) + (b.attribute ? getEffectiveAttribute(character, b.attribute) : 0);
+    });
+  }
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {
       if (eff.type === 'fixed_damage') total += resolveEffectValue(eff, character);
