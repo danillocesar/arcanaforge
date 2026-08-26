@@ -10,6 +10,9 @@ import {
   splitDamage,
   applyHeal,
   normalizeVitals,
+  applicableRds,
+  reduceDamage,
+  computeDamageTaken,
 } from './vitals';
 
 function char(overrides: Partial<Character> = {}): Character {
@@ -92,5 +95,58 @@ describe('wrappers de Character', () => {
     expect(splitDamage(c, 7, 'hp')).toEqual({ fromTemp: 5, fromCurrent: 2 });
     expect(applyHeal(hit, Infinity, 'hp').hp.current).toBe(30);
     expect(applyHeal(hit, Infinity, 'hp').temporaryHp).toBe(0);
+  });
+});
+
+describe('applicableRds', () => {
+  const rds = [
+    { name: 'Geral', value: 5 },
+    { name: 'fogo', value: 2 },
+    { name: 'Frio e Ácido', value: 3 },
+    { name: 'corte', value: 0 },
+  ];
+
+  it('liga Geral sempre e a RD do tipo escolhido (sem acento/caixa, como palavra)', () => {
+    expect(applicableRds(rds, 'Fogo')).toEqual([true, true, false, false]);
+    expect(applicableRds(rds, 'Ácido')).toEqual([true, false, true, false]);
+  });
+
+  it('sem tipo, só Geral', () => {
+    expect(applicableRds(rds, undefined)).toEqual([true, false, false, false]);
+  });
+
+  it('nome vazio conta como Geral; valor zero nunca liga', () => {
+    expect(applicableRds([{ name: '', value: 4 }, { name: 'Geral', value: 0 }], 'fogo')).toEqual([true, false]);
+  });
+});
+
+describe('reduceDamage', () => {
+  it('soma as RDs (regra da mesa) e nunca fica negativo', () => {
+    expect(reduceDamage(12, [{ name: 'Geral', value: 5 }, { name: 'fogo', value: 2 }])).toEqual({ rdTotal: 7, net: 5 });
+    expect(reduceDamage(3, [{ name: 'Geral', value: 5 }])).toEqual({ rdTotal: 5, net: 0 });
+  });
+});
+
+describe('computeDamageTaken', () => {
+  // hp 20/30, temp 5
+  const c = char({ damageReductions: [{ name: 'Geral', value: 5 }, { name: 'fogo', value: 2 }] });
+
+  it('aplica as RDs selecionadas, consome temporário primeiro e devolve o personagem', () => {
+    const r = computeDamageTaken(c, { amount: 12, damageType: 'fogo', selected: [true, true] });
+    expect(r).toMatchObject({ gross: 12, rdTotal: 7, net: 5, split: { fromTemp: 5, fromCurrent: 0 } });
+    expect(r.character.temporaryHp).toBe(0);
+    expect(r.character.hp.current).toBe(20);
+  });
+
+  it('ignoreRd zera a redução; RD não selecionada não conta', () => {
+    expect(computeDamageTaken(c, { amount: 12, selected: [true, true], ignoreRd: true }).net).toBe(12);
+    expect(computeDamageTaken(c, { amount: 12, selected: [true, false] }).net).toBe(7);
+  });
+
+  it('dano menor que a RD dá líquido 0 e não muda nada', () => {
+    const r = computeDamageTaken(c, { amount: 4, selected: [true, false] });
+    expect(r.net).toBe(0);
+    expect(r.character.hp.current).toBe(20);
+    expect(r.character.temporaryHp).toBe(5);
   });
 });

@@ -1,5 +1,6 @@
-import type { Character } from '../types/character';
+import type { Character, DamageReduction } from '../types/character';
 import { getEffectiveMaxHp, getEffectiveMaxMp } from './calculations';
+import { normalizeSearch } from './formatters';
 
 export type VitalPool = 'hp' | 'mp';
 
@@ -78,4 +79,61 @@ export function normalizeVitals(c: Character): Character {
     hp.current === (c.hp.current || 0) && hp.temp === (c.temporaryHp || 0)
     && mp.current === (c.mp.current || 0) && mp.temp === (c.temporaryMp || 0);
   return same ? c : setVital(setVital(c, 'hp', hp), 'mp', mp);
+}
+
+/* ───────────────────────── Redução de dano ───────────────────────── */
+
+/** RD "Geral" (ou sem nome) vale contra qualquer tipo de dano. */
+export function isGeneralRd(rd: DamageReduction): boolean {
+  const key = normalizeSearch(rd.name ?? '');
+  return key === '' || key === 'geral';
+}
+
+/**
+ * Pré-seleção das RDs para um tipo de dano: Geral sempre; RD cujo nome contém o tipo
+ * como palavra ("Frio e Ácido" casa "Ácido"); RD com valor ≤ 0 nunca. O jogador pode
+ * ligar/desligar cada chip depois.
+ */
+export function applicableRds(rds: DamageReduction[], damageType?: string): boolean[] {
+  const type = normalizeSearch(damageType ?? '');
+  return rds.map((rd) => {
+    if ((Number(rd.value) || 0) <= 0) return false;
+    if (isGeneralRd(rd)) return true;
+    if (!type) return false;
+    const words = normalizeSearch(rd.name).split(/[^a-z0-9]+/).filter(Boolean);
+    return words.includes(type);
+  });
+}
+
+/** Decisão da mesa (26/08): as RDs SOMAM (o T20 oficial usaria só a maior). */
+export function reduceDamage(amount: number, rds: DamageReduction[]): { rdTotal: number; net: number } {
+  const rdTotal = rds.reduce((sum, rd) => sum + Math.max(0, Number(rd.value) || 0), 0);
+  return { rdTotal, net: Math.max(0, positive(amount) - rdTotal) };
+}
+
+export interface DamageTakenInput {
+  amount: number;
+  damageType?: string;
+  /** Uma flag por entrada de `character.damageReductions`, na mesma ordem. */
+  selected: boolean[];
+  ignoreRd?: boolean;
+}
+
+export interface DamageTakenResult {
+  gross: number;
+  rdApplied: DamageReduction[];
+  rdTotal: number;
+  net: number;
+  split: DamageSplit;
+  character: Character;
+}
+
+/** Dano recebido: bruto − RDs selecionadas (somadas) → líquido, consumido do temporário
+ * primeiro. Devolve a prévia e o personagem resultante — a UI só renderiza isto. */
+export function computeDamageTaken(c: Character, input: DamageTakenInput): DamageTakenResult {
+  const rds = c.damageReductions ?? [];
+  const rdApplied = input.ignoreRd ? [] : rds.filter((_, i) => input.selected[i]);
+  const { rdTotal, net } = reduceDamage(input.amount, rdApplied);
+  const { state, split } = damageVital(getVital(c, 'hp'), net);
+  return { gross: positive(input.amount), rdApplied, rdTotal, net, split, character: setVital(c, 'hp', state) };
 }
