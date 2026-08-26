@@ -56,6 +56,8 @@ export function buildCombatRows(
       currentHp: p.currentHp,
       maxMp: p.maxMp,
       currentMp: p.currentMp,
+      temporaryHp: p.temporaryHp,
+      damageReductions: p.damageReductions,
       avatar: p.avatar,
       classes: p.classes,
       ownerUid: p.ownerUid,

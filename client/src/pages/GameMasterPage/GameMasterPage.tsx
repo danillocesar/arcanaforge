@@ -72,6 +72,8 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
           currentHp: p.currentHp,
           maxMp: p.maxMp,
           currentMp: p.currentMp,
+          temporaryHp: p.temporaryHp,
+          damageReductions: p.damageReductions,
           avatar: p.avatar,
           classes: p.classes,
           ownerUid: p.ownerUid,

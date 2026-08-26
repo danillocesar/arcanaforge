@@ -1,4 +1,4 @@
-import type { RPGSystem, BuffEffect } from '../types/character';
+import type { RPGSystem, BuffEffect, DamageReduction } from '../types/character';
 import type { Party } from '../types/party';
 import type { CombatData } from '../types/combat';
 import type { CharacterSummary } from '../types/character';
@@ -95,6 +95,10 @@ export async function apiRegenerateInviteCode(partyId: string): Promise<Party> {
 export interface PartyCharacter extends CharacterSummary {
   hp?: { max?: number; current?: number };
   mp?: { max?: number; current?: number };
+  /** Sobrevida e RDs — o mestre mostra o temporário e desconta as RDs ao aplicar dano. */
+  temporaryHp?: number;
+  temporaryMp?: number;
+  damageReductions?: DamageReduction[];
 }
 
 export async function apiFetchPartyCharacters(partyId: string): Promise<PartyCharacter[]> {

@@ -46,6 +46,8 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
 
   const maxHp = row.maxHp || 1;
   const currentHp = row.currentHp || 0;
+  const tempHp = row.temporaryHp || 0;
+  const hpLabel = `${currentHp}${tempHp > 0 ? ` (+${tempHp})` : ''} / ${maxHp}`;
   const maxMp = row.maxMp || 0;
   const currentMp = row.currentMp || 0;
   const hpPct = hpPercent(currentHp, maxHp);
@@ -202,7 +204,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
             >
               <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
               <span className={styles.barLabel}>
-                {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
+                {showEnemyBars ? hpLabel : ''}
               </span>
             </button>
           ) : (
@@ -214,7 +216,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
             >
               <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
               <span className={styles.barLabel}>
-                {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
+                {showEnemyBars ? hpLabel : ''}
               </span>
             </div>
           )}

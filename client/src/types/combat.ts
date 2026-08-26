@@ -1,4 +1,6 @@
-﻿export interface Enemy {
+﻿import type { DamageReduction } from './character';
+
+export interface Enemy {
   id: string;
   name: string;
   maxHp: number;
@@ -30,6 +32,9 @@ export interface CombatPlayer {
   currentHp: number;
   maxMp: number;
   currentMp: number;
+  /** PV temporário (sobrevida) e RDs do jogador — vindos do DTO de party. */
+  temporaryHp?: number;
+  damageReductions?: DamageReduction[];
 }
 
 export interface CombatRow {
@@ -48,4 +53,6 @@ export interface CombatRow {
   combatVisual?: CombatCharacterVisual;
   woundThreshold?: number;
   criticalThreshold?: number;
+  temporaryHp?: number;
+  damageReductions?: DamageReduction[];
 }

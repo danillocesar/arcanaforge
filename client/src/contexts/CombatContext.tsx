@@ -18,6 +18,8 @@ import {
   adjustTurnIndexAfterRowChange,
   getActivePlayers,
 } from '../utils/combatRows';
+import { normalizeBuffs, normalizeDamageReductions } from '../utils/calculations';
+import { applyDamage, applyHeal, normalizeVitals } from '../utils/vitals';
 
 interface CombatContextValue {
   combatData: CombatData;
@@ -110,12 +112,14 @@ export function CombatProvider({
             const existing = prev.find((p) => p._id === charId);
             if (!existing) return prev;
 
+            const tempHp = typeof msg.temporaryHp === 'number' ? msg.temporaryHp : undefined;
             const hpCurChanged = hp?.current !== undefined && hp.current !== existing.currentHp;
             const hpMaxChanged = hp?.max !== undefined && hp.max !== existing.maxHp;
             const mpCurChanged = mp?.current !== undefined && mp.current !== existing.currentMp;
             const mpMaxChanged = mp?.max !== undefined && mp.max !== existing.maxMp;
+            const tempChanged = tempHp !== undefined && tempHp !== (existing.temporaryHp ?? 0);
 
-            if (!hpCurChanged && !hpMaxChanged && !mpCurChanged && !mpMaxChanged) return prev;
+            if (!hpCurChanged && !hpMaxChanged && !mpCurChanged && !mpMaxChanged && !tempChanged) return prev;
 
             const next = prev.map((p) =>
               p._id === charId
@@ -125,6 +129,7 @@ export function CombatProvider({
                     maxHp: hp?.max ?? p.maxHp,
                     currentMp: mp?.current ?? p.currentMp,
                     maxMp: mp?.max ?? p.maxMp,
+                    temporaryHp: tempHp ?? p.temporaryHp,
                   }
                 : p,
             );
@@ -144,12 +149,15 @@ export function CombatProvider({
         if (msg.type === 'master_hp_sync' && msg.characterId) {
           const charId = msg.characterId as string;
           const currentHp = msg.currentHp as number;
+          const tempHp = typeof msg.temporaryHp === 'number' ? msg.temporaryHp : undefined;
           setPlayers((prev) => {
             const existing = prev.find((p) => p._id === charId);
-            if (!existing || existing.currentHp === currentHp) return prev;
+            if (!existing) return prev;
+            const tempSame = tempHp === undefined || tempHp === (existing.temporaryHp ?? 0);
+            if (existing.currentHp === currentHp && tempSame) return prev;
 
             const next = prev.map((p) =>
-              p._id === charId ? { ...p, currentHp } : p,
+              p._id === charId ? { ...p, currentHp, temporaryHp: tempHp ?? p.temporaryHp } : p,
             );
             queueMicrotask(() => {
               if (combatDataRef.current.ordered) {
@@ -200,6 +208,8 @@ export function CombatProvider({
         currentHp: r.hp?.current ?? 0,
         maxMp: r.mp?.max ?? 0,
         currentMp: r.mp?.current ?? 0,
+        temporaryHp: r.temporaryHp ?? 0,
+        damageReductions: r.damageReductions ?? [],
       })),
     [],
   );
@@ -423,26 +433,34 @@ export function CombatProvider({
   const applyHpChange = useCallback(
     async (rowType: string, characterId: string, enemyIdx: number | undefined, delta: number) => {
       if (rowType === 'player') {
-        const character = await apiLoadCharacter(characterId);
-        if (!character) return;
-        character.hp.current = Math.max(0, Math.min(character.hp.max, character.hp.current + delta));
-        await apiSaveCharacter(characterId, character);
+        const loaded = await apiLoadCharacter(characterId);
+        if (!loaded) return;
+        // Mesmas regras da ficha (utils/vitals.ts): dano consome o PV temporário primeiro,
+        // cura nunca passa do máximo EFETIVO (bônus fixos contam) nem repõe temporário.
+        const character = normalizeVitals({
+          ...loaded,
+          buffs: normalizeBuffs(loaded.buffs),
+          damageReductions: normalizeDamageReductions(loaded.damageReductions, loaded.damageReduction),
+        });
+        const next = delta < 0 ? applyDamage(character, -delta, 'hp') : applyHeal(character, delta, 'hp');
+        await apiSaveCharacter(characterId, next);
         send({
           type: 'master_hp_update',
           characterId,
-          name: character.name,
-          currentHp: character.hp.current,
+          name: next.name,
+          currentHp: next.hp.current,
+          temporaryHp: next.temporaryHp,
         });
         setPlayers((prev) => {
-          const next = prev.map((p) =>
-            p._id === characterId ? { ...p, currentHp: character.hp.current } : p,
+          const list = prev.map((p) =>
+            p._id === characterId ? { ...p, currentHp: next.hp.current, temporaryHp: next.temporaryHp } : p,
           );
           queueMicrotask(() => {
             if (combatDataRef.current.ordered) {
-              buildOrdered(combatDataRef.current, next);
+              buildOrdered(combatDataRef.current, list);
             }
           });
-          return next;
+          return list;
         });
       } else if (rowType === 'enemy' && enemyIdx !== undefined) {
         const enemies = combatDataRef.current.enemies.map((enemy, i) => {
