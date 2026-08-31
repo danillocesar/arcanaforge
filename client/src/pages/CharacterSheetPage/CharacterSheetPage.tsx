@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastProvider, useToast } from '../../components/ui/Toast/Toast';
+import { useToast } from '../../components/ui/Toast/Toast';
 import { CharacterProvider, useCharacterContext } from '../../contexts/CharacterContext';
 import TormentaSheetBody from '../../components/sheet/TormentaSheetBody/TormentaSheetBody';
 import SheetSkeleton from '../../components/sheet/SheetSkeleton/SheetSkeleton';
@@ -70,12 +70,12 @@ function CharacterSheetProviderWrapper({ children }: { children: React.ReactNode
   return <CharacterProvider showToast={showToast}>{children}</CharacterProvider>;
 }
 
+// O ToastProvider vive no root (main.tsx), não aqui: aninhar dois faria o
+// cleanup do de dentro apagar o handler global registrado pelo de fora.
 export default function CharacterSheetPage() {
   return (
-    <ToastProvider>
-      <CharacterSheetProviderWrapper>
-        <CharacterSheetInner />
-      </CharacterSheetProviderWrapper>
-    </ToastProvider>
+    <CharacterSheetProviderWrapper>
+      <CharacterSheetInner />
+    </CharacterSheetProviderWrapper>
   );
 }

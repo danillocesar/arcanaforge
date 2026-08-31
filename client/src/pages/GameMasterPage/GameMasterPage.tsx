@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { CombatProvider, useCombatContext } from '../../contexts/CombatContext';
-import { ToastProvider } from '../../components/ui/Toast/Toast';
 import { apiFetchParties } from '../../api';
 import type { Party } from '../../types/party';
 import type { CombatRow } from '../../types/combat';
@@ -281,12 +280,12 @@ export default function GameMasterPage() {
   if (accessDenied) return <AccessDeniedPage />;
   if (!partyId || !party) return null;
 
+  // O ToastProvider vive no root (main.tsx), não aqui: aninhar dois faria o
+  // cleanup do de dentro apagar o handler global registrado pelo de fora.
   return (
-    <ToastProvider>
-      <CombatProvider partyId={partyId} ownerUid={party.ownerUid}>
-        <GameMasterContent party={party} system={system!} />
-      </CombatProvider>
-    </ToastProvider>
+    <CombatProvider partyId={partyId} ownerUid={party.ownerUid}>
+      <GameMasterContent party={party} system={system!} />
+    </CombatProvider>
   );
 }
 

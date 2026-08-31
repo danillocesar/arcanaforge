@@ -4,7 +4,7 @@ import { CalendarDays, List } from 'lucide-react';
 import { apiFetchParties, apiProposeSession, apiRespondToSession, apiCancelSession } from '../../api';
 import type { Party } from '../../types/party';
 import { useAuth } from '../../features/auth';
-import { showToast } from '../../services/toastService';
+import { useToast } from '../../components/ui/Toast/Toast';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import type { WsMessage } from '../../hooks/useWebSocket';
 import Topbar from '../../components/layout/Topbar/Topbar';
@@ -45,6 +45,7 @@ export default function PartyCalendarPage() {
   const { system, partyId } = useParams<{ system: string; partyId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const uid = user?.uid ?? '';
 
   const [party, setParty] = useState<Party | null>(null);
@@ -106,7 +107,12 @@ export default function PartyCalendarPage() {
   );
 
   // Retorno do consentimento do Google: avisa e limpa a URL para o aviso não
-  // reaparecer a cada re-render ou refresh.
+  // reaparecer a cada re-render ou refresh. O showToast vem do contexto (e não
+  // do módulo `toastService`) porque o contexto já está disponível durante o
+  // render — não depende da ordem em que os effects de pai e filho rodam.
+  // A falha usa a variante 'attack': é a única de cor cheia que não aparece em
+  // notificação de rotina, então destoa do aviso comum. Não existe variante
+  // 'error' no ToastVariant, e inventar uma está fora do escopo daqui.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get('google');
@@ -115,10 +121,10 @@ export default function PartyCalendarPage() {
       status === 'ok'
         ? 'Google Agenda conectada.'
         : `Não foi possível conectar: ${params.get('reason') || 'erro'}`,
-      status === 'ok' ? 'info' : 'default',
+      status === 'ok' ? 'info' : 'attack',
     );
     window.history.replaceState({}, '', window.location.pathname);
-  }, []);
+  }, [showToast]);
 
   const changeView = (next: CalendarView) => {
     setView(next);
