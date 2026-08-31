@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getInitials, getAvatarColor } from '../../../utils/formatters';
 import type { Party } from '../../../types/party';
+import GoogleCalendarLink from '../GoogleCalendarLink/GoogleCalendarLink';
 import styles from './GroupInfoCard.module.css';
 
 interface GroupInfoCardProps {
@@ -43,6 +44,8 @@ function GroupInfoCard({ party, isOwner }: GroupInfoCardProps) {
           <span className={styles.codeValue}>{copied ? 'Copiado!' : party.inviteCode}</span>
         </button>
       )}
+
+      <GoogleCalendarLink />
     </aside>
   );
 }

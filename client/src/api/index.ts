@@ -29,3 +29,5 @@ export {
   apiCancelSession,
 } from './parties';
 export type { PartyCharacter, ApplyBuffPayload } from './parties';
+export { apiGetGoogleLink, apiStartGoogleOAuth, apiUnlinkGoogle } from './google';
+export type { GoogleLinkState } from './google';

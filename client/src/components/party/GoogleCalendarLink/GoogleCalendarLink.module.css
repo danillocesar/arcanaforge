@@ -1,0 +1,78 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.ok,
+.warn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.ok {
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.warn {
+  color: var(--warn);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  color: var(--accent-ink);
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.primary:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.72rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.primary:disabled,
+.link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
