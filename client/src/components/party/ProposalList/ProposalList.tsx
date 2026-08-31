@@ -17,6 +17,8 @@ interface ProposalListProps {
   onPropose: (date: string, time: string) => Promise<void>;
   onVote: (proposalId: string, vote: 'sim' | 'nao') => void;
   onCancel: (proposalId: string) => void;
+  /** Proposta com voto/cancelamento em voo; `null` quando não há nenhum. */
+  pendingProposalId: string | null;
 }
 
 export default function ProposalList({
@@ -26,10 +28,16 @@ export default function ProposalList({
   onPropose,
   onVote,
   onCancel,
+  pendingProposalId,
 }: ProposalListProps) {
   const [newDate, setNewDate] = useState('');
   const [newTime, setNewTime] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Um voto em voo desabilita os botões de TODAS as propostas: a requisição
+  // seguinte seria recusada de qualquer forma pela guarda da página, e recusar
+  // em silêncio um clique que parece ativo é pior do que desabilitar.
+  const votando = pendingProposalId !== null;
 
   const proposals = [...party.sessionProposals].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
@@ -135,6 +143,7 @@ export default function ProposalList({
                       type="button"
                       variant={myVote === 'sim' ? 'primary' : 'ghost'}
                       onClick={() => onVote(proposal.id, 'sim')}
+                      disabled={votando}
                     >
                       Sim, posso
                     </Button>
@@ -142,6 +151,7 @@ export default function ProposalList({
                       type="button"
                       variant={myVote === 'nao' ? 'primary' : 'ghost'}
                       onClick={() => onVote(proposal.id, 'nao')}
+                      disabled={votando}
                     >
                       Não posso
                     </Button>
@@ -150,6 +160,7 @@ export default function ProposalList({
                         type="button"
                         className={styles.cancelLink}
                         onClick={() => onCancel(proposal.id)}
+                        disabled={votando}
                       >
                         Cancelar proposta
                       </button>

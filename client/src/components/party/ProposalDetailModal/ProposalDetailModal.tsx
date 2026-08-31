@@ -16,6 +16,8 @@ interface ProposalDetailModalProps {
   onClose: () => void;
   onVote: (proposalId: string, vote: 'sim' | 'nao') => void;
   onCancel: (proposalId: string) => void;
+  /** Proposta com voto/cancelamento em voo; `null` quando não há nenhum. */
+  pendingProposalId: string | null;
 }
 
 export default function ProposalDetailModal({
@@ -26,8 +28,13 @@ export default function ProposalDetailModal({
   onClose,
   onVote,
   onCancel,
+  pendingProposalId,
 }: ProposalDetailModalProps) {
   if (!proposal) return null;
+
+  // Requisição em voo: desabilita os botões para o duplo clique não virar dois
+  // votos. Ver o comentário do handleVote em PartyCalendarPage.
+  const votando = pendingProposalId !== null;
 
   const status = getProposalStatus(party, proposal);
   const myVote = getMyVote(proposal, uid);
@@ -83,6 +90,7 @@ export default function ProposalDetailModal({
             type="button"
             variant={myVote === 'sim' ? 'primary' : 'ghost'}
             onClick={() => onVote(proposal.id, 'sim')}
+            disabled={votando}
           >
             Sim, posso
           </Button>
@@ -90,6 +98,7 @@ export default function ProposalDetailModal({
             type="button"
             variant={myVote === 'nao' ? 'primary' : 'ghost'}
             onClick={() => onVote(proposal.id, 'nao')}
+            disabled={votando}
           >
             Não posso
           </Button>
@@ -97,7 +106,12 @@ export default function ProposalDetailModal({
 
         <div className={styles.footer}>
           {canCancel && (
-            <button type="button" className={styles.cancelLink} onClick={() => onCancel(proposal.id)}>
+            <button
+              type="button"
+              className={styles.cancelLink}
+              onClick={() => onCancel(proposal.id)}
+              disabled={votando}
+            >
               Cancelar proposta
             </button>
           )}

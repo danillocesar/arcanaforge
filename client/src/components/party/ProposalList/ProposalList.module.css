@@ -135,8 +135,14 @@
   font-family: var(--font);
 }
 
-.cancelLink:hover {
+.cancelLink:hover:not(:disabled) {
   color: var(--danger);
+}
+
+/* Requisição em voo: o link não pode parecer clicável. */
+.cancelLink:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 
 @media (max-width: 550px) {

@@ -53,6 +53,10 @@ export default function PartyCalendarPage() {
   const [view, setView] = useState<CalendarView>(loadView);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [proposeSlot, setProposeSlot] = useState<ProposeSlot | null>(null);
+  // Proposta com requisição de voto/cancelamento em voo. Mesmo padrão do
+  // `busy` do GoogleCalendarLink e do `submitting` do ProposalList: enquanto
+  // não for null, os botões de voto e de cancelar ficam desabilitados.
+  const [pendingProposalId, setPendingProposalId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!partyId) return;
@@ -141,24 +145,35 @@ export default function PartyCalendarPage() {
     }
   };
 
+  // Guarda de in-flight. Duas requisições de voto sobrepostas leem o mesmo
+  // estado no server e, quando a proposta cruza para confirmada, cada uma faz
+  // o fan-out inteiro: dois eventos de verdade na Google Agenda de cada membro
+  // por um duplo clique. Isto estreita a janela no cliente; a corrida em si é
+  // do server e continua aberta lá.
   const handleVote = async (proposalId: string, vote: 'sim' | 'nao') => {
-    if (!party) return;
+    if (!party || pendingProposalId) return;
+    setPendingProposalId(proposalId);
     try {
       const updated = await apiRespondToSession(party.id, proposalId, vote);
       setParty(updated);
     } catch (err) {
       console.error('Erro ao votar:', err);
+    } finally {
+      setPendingProposalId(null);
     }
   };
 
   const handleCancel = async (proposalId: string) => {
-    if (!party) return;
+    if (!party || pendingProposalId) return;
+    setPendingProposalId(proposalId);
     setSelectedId((current) => (current === proposalId ? null : current));
     try {
       const updated = await apiCancelSession(party.id, proposalId);
       setParty(updated);
     } catch (err) {
       console.error('Erro ao cancelar proposta:', err);
+    } finally {
+      setPendingProposalId(null);
     }
   };
 
@@ -222,6 +237,7 @@ export default function PartyCalendarPage() {
               onPropose={handlePropose}
               onVote={handleVote}
               onCancel={handleCancel}
+              pendingProposalId={pendingProposalId}
             />
           )}
         </div>
@@ -237,6 +253,7 @@ export default function PartyCalendarPage() {
         onClose={() => setSelectedId(null)}
         onVote={handleVote}
         onCancel={handleCancel}
+        pendingProposalId={pendingProposalId}
       />
 
       <ProposeSessionModal
