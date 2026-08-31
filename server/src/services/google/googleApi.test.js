@@ -58,6 +58,12 @@ describe('classifyCalendarError', () => {
     assert.equal(result, 'transient');
   });
 
+  it('returns "transient" for 403 with backendError', () => {
+    const body = { error: { errors: [{ reason: 'backendError' }] } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
+  });
+
   it('returns "auth" for 403 with forbidden (not transient)', () => {
     const body = { error: { errors: [{ reason: 'forbidden' }] } };
     const result = classifyCalendarError(403, body);

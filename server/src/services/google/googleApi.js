@@ -41,7 +41,7 @@ function classifyCalendarError(status, body) {
   if (status === 403) {
     // Procura a razão do erro em body.error.errors[0].reason
     const reason = body?.error?.errors?.[0]?.reason;
-    if (reason === 'rateLimitExceeded' || reason === 'userRateLimitExceeded' || reason === 'quotaExceeded') {
+    if (reason === 'rateLimitExceeded' || reason === 'userRateLimitExceeded' || reason === 'quotaExceeded' || reason === 'backendError') {
       return 'transient';
     }
     // Qualquer outro 403 é tratado como credencial/permissão
