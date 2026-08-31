@@ -1,7 +1,7 @@
 # Ligar o ArcanaForge ao Google Agenda
 
 Passo a passo no Google Cloud Console. Feito uma vez, por quem administra o
-projeto. Ao final, seis valores vão para o `.env`.
+projeto. Ao final, sete valores vão para o `.env`.
 
 **Nota:** O Google Cloud Console se reorganiza periodicamente, e seus rótulos
 seguem a língua da conta/navegador. Os nomes abaixo são em inglês — se não
@@ -99,10 +99,16 @@ GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
 GOOGLE_TOKEN_ENC_KEY=<saída do openssl do passo 7>
 GOOGLE_OAUTH_SCOPES=openid email https://www.googleapis.com/auth/calendar.app.created
 DEFAULT_TIMEZONE=America/Sao_Paulo
+CLIENT_URL=http://localhost:5173
 ```
 
-Reinicie o server. Sem essas variáveis a integração fica desligada e a linha
-"Google Agenda" não aparece na sidebar do grupo — o resto do app funciona
+`CLIENT_URL` é para onde o callback do OAuth manda o navegador de volta (e a
+base do link do ArcanaForge na descrição do evento): em produção tem que ser a
+URL pública do app, ou a pessoa autoriza e cai em `localhost:5173`.
+
+Reinicie o server. Sem `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
+`GOOGLE_REDIRECT_URI` ou `GOOGLE_TOKEN_ENC_KEY` a integração fica desligada e a
+linha "Google Agenda" não aparece na sidebar do grupo — o resto do app funciona
 normalmente.
 
 ## 9. Conferir

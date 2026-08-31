@@ -109,6 +109,9 @@ async function getLinkState(uid) {
   if (!isEnabled()) return { linked: false, email: '', lastError: null };
   const link = await repo.findByUid(uid);
   if (!link) return { linked: false, email: '', lastError: null };
+  // `|| null` normaliza a mesma regra do `repo.isHealthy` para o fio: saudável
+  // manda `lastError: null`, e o cliente lê a ausência de erro sem ter que
+  // saber a diferença entre null, ausente e ''.
   return { linked: true, email: link.email || '', lastError: link.lastError || null };
 }
 
@@ -134,7 +137,7 @@ async function unlink(uid) {
 async function getAccessTokenFor(uid) {
   if (!isEnabled()) return null;
   const link = await repo.findByUid(uid);
-  if (!link || link.lastError) return null;
+  if (!repo.isHealthy(link)) return null;
   try {
     const accessToken = await googleApi.refreshAccessToken(
       tokenCrypto.decryptToken(link.refreshTokenEnc),

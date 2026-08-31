@@ -41,12 +41,18 @@ export default function GoogleCalendarLink() {
     try {
       await apiUnlinkGoogle();
       setState({ linked: false, email: '', lastError: null });
+    } catch (err) {
+      // Sem o catch a falha virava unhandled rejection e a linha continuava
+      // dizendo "Conectada" — que é a verdade, mas sem nenhum sinal de que o
+      // clique não fez nada. Mantém o estado como está e libera o botão.
+      console.error('Erro ao desconectar a Google Agenda:', err);
     } finally {
       setBusy(false);
     }
   };
 
-  const quebrado = state.linked && state.lastError != null;
+  // Mesma regra do server (`isHealthy`): saudável = lastError vazio.
+  const quebrado = state.linked && Boolean(state.lastError);
 
   return (
     <div className={styles.box}>

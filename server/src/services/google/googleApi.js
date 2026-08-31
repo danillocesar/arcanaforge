@@ -73,8 +73,14 @@ function classifyCalendarError(status, body) {
   return 'other';
 }
 
+// GOOGLE_REDIRECT_URI entra na conta: sem ele, um .env meio preenchido mostrava
+// o botão Conectar e mandava a pessoa para o Google com redirect_uri=undefined.
 function isConfigured() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID
+    && process.env.GOOGLE_CLIENT_SECRET
+    && process.env.GOOGLE_REDIRECT_URI,
+  );
 }
 
 function scopes() {

@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 process.env.GOOGLE_TOKEN_ENC_KEY = Buffer.alloc(32, 3).toString('base64');
 process.env.GOOGLE_CLIENT_ID = 'client-id-teste';
 process.env.GOOGLE_CLIENT_SECRET = 'client-secret-teste';
+// isConfigured() também exige o redirect: sem ele a feature fica desligada.
+process.env.GOOGLE_REDIRECT_URI = 'http://localhost:3001/auth/google/callback';
 
 const service = require('./googleLink.service');
 const repo = require('../../repositories/googleLink.repository');

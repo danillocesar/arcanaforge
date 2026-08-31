@@ -28,7 +28,7 @@ async function uniqueInviteCode() {
 function createPartyService(refs) {
   async function listParties(uid) {
     const docs = await partyRepository.findVisibleToUser(uid);
-    return docs.map(toPartyDTO);
+    return docs.map((doc) => toPartyDTO(doc, uid));
   }
 
   async function createParty(body, req) {
@@ -53,7 +53,7 @@ function createPartyService(refs) {
       }],
       ...owners,
     });
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), req.user.uid);
   }
 
   async function updateParty(id, body, uid) {
@@ -64,7 +64,7 @@ function createPartyService(refs) {
     if (system) update.system = system;
     const party = await partyRepository.updateOwnedParty(id, uid, update);
     if (!party) throw new AppError(404, 'Party not found');
-    return toPartyDTO(party);
+    return toPartyDTO(party, uid);
   }
 
   async function deleteParty(id, uid) {
@@ -92,7 +92,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(String(party._id));
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), req.user.uid);
   }
 
   async function addCharacterToParty(id, body, uid) {
@@ -121,7 +121,7 @@ function createPartyService(refs) {
         refs.broadcastPartyRoster(id);
       }
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   async function removeCharacterFromParty(id, body, uid) {
@@ -138,7 +138,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(id);
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   async function leaveParty(id, uid) {
@@ -162,14 +162,14 @@ function createPartyService(refs) {
     party.members = party.members.filter((m) => m.uid !== memberUid);
     await party.save();
     refs.broadcastPartyRoster(id);
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), ownerUid);
   }
 
   async function regenerateCode(id, ownerUid) {
     const inviteCode = await uniqueInviteCode();
     const party = await partyRepository.updateOwnedParty(id, ownerUid, { inviteCode });
     if (!party) throw new AppError(404, 'Party não encontrada ou você não é o dono');
-    return toPartyDTO(party);
+    return toPartyDTO(party, ownerUid);
   }
 
   async function listPartyCharacters(id, uid) {
@@ -303,7 +303,7 @@ function createPartyService(refs) {
       console.error('Falha ao enviar e-mail de proposta de sessão:', err.message);
     });
 
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), req.user.uid);
   }
 
   async function respondToSession(partyId, proposalId, body, uid) {
@@ -349,7 +349,7 @@ function createPartyService(refs) {
       eventsBefore,
     }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
 
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   async function cancelSession(partyId, proposalId, uid) {
@@ -387,7 +387,7 @@ function createPartyService(refs) {
       eventsBefore,
     }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
 
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   return {

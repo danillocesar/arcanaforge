@@ -21,10 +21,25 @@ async function remove(uid) {
   await GoogleLink.findByIdAndDelete(uid);
 }
 
-/** Só vínculos saudáveis: com lastError preenchido, o app para de tentar. */
+/**
+ * Vínculo saudável = `lastError` **vazio**. Uma regra só, escrita nos dois
+ * dialetos que o código precisa, e de propósito lado a lado para não voltarem a
+ * divergir: `isHealthy` em JS e `FILTRO_SAUDAVEL` em Mongo. "Vazio" inclui
+ * `null`, campo ausente e string vazia — era exatamente sobre o `''` que as
+ * quatro grafias anteriores discordavam.
+ *
+ * Com `lastError` preenchido o app para de tentar por aquele usuário, até a
+ * pessoa religar.
+ */
+function isHealthy(link) {
+  return Boolean(link) && !link.lastError;
+}
+
+const FILTRO_SAUDAVEL = { $or: [{ lastError: null }, { lastError: '' }] };
+
 async function findHealthyByUids(uids) {
   if (!uids || uids.length === 0) return [];
-  return GoogleLink.find({ _id: { $in: uids }, lastError: null }).lean();
+  return GoogleLink.find({ _id: { $in: uids }, ...FILTRO_SAUDAVEL }).lean();
 }
 
 async function createState(nonce, uid, expiresAt, returnTo) {
@@ -37,6 +52,7 @@ async function consumeState(nonce) {
 }
 
 module.exports = {
+  isHealthy,
   findByUid,
   upsert,
   setLastError,

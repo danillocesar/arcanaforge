@@ -60,6 +60,17 @@ describe('selectBackfillTargets', () => {
     });
     assert.equal(selectBackfillTargets({ parties: [party([comEvento])], uid: 'a', today: HOJE }).length, 1);
   });
+
+  // findVisibleToUser também devolve grupos em que a pessoa é só dona, e
+  // leaveParty não impede o dono de sair da lista de membros.
+  it('ignora grupo em que o uid não é membro (dono que saiu)', () => {
+    const alvos = selectBackfillTargets({
+      parties: [party([confirmada('2026-09-10')])],
+      uid: 'dono-que-saiu',
+      today: HOJE,
+    });
+    assert.deepEqual(alvos, []);
+  });
 });
 
 describe('todayKey', () => {
