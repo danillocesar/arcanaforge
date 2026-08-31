@@ -73,11 +73,15 @@ describe('googleLink.service — handleCallback: uid do state assinado vs. uid d
     const consumeStateOriginal = repo.consumeState;
     repo.consumeState = async () => ({ uid: 'uid-atacante', nonce, returnTo: '/x' });
 
+    // O stub é auto-contido de propósito: NÃO encadeia no original. Se a guarda
+    // de uid fosse removida, chamar o original faria este teste bater no
+    // endpoint de token do Google de verdade — pendurando ou floculando na CI
+    // em vez de falhar. Assim, a mutação quebra a asserção abaixo, offline.
     let exchangeCodeChamado = false;
     const exchangeCodeOriginal = googleApi.exchangeCode;
-    googleApi.exchangeCode = async (...args) => {
+    googleApi.exchangeCode = async () => {
       exchangeCodeChamado = true;
-      return exchangeCodeOriginal(...args);
+      throw new Error('exchangeCode não deveria ter sido chamado');
     };
 
     try {
