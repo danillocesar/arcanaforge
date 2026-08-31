@@ -61,4 +61,44 @@ describe('buildEventBody', () => {
   it('a duração padrão é 4 horas', () => {
     assert.equal(SESSION_DURATION_HOURS, 4);
   });
+
+  it('rejeita data malformada', () => {
+    assert.throws(
+      () => buildEventBody({
+        ...base,
+        proposal: { date: '03-09-2026', time: '' },
+      }),
+      /Data inválida/
+    );
+  });
+
+  it('rejeita horário sem padding (7:00 em vez de 07:00)', () => {
+    assert.throws(
+      () => buildEventBody({
+        ...base,
+        proposal: { date: '2026-09-03', time: '7:00', timezone: 'America/Sao_Paulo' },
+      }),
+      /Horário inválido/
+    );
+  });
+
+  it('rejeita horário com hora fora do intervalo (25:00)', () => {
+    assert.throws(
+      () => buildEventBody({
+        ...base,
+        proposal: { date: '2026-09-03', time: '25:00', timezone: 'America/Sao_Paulo' },
+      }),
+      /Horário inválido/
+    );
+  });
+
+  it('rejeita horário com minuto fora do intervalo (12:60)', () => {
+    assert.throws(
+      () => buildEventBody({
+        ...base,
+        proposal: { date: '2026-09-03', time: '12:60', timezone: 'America/Sao_Paulo' },
+      }),
+      /Horário inválido/
+    );
+  });
 });

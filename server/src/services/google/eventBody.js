@@ -26,12 +26,22 @@ function addHours(dateStr, timeStr, hours) {
  * instante absoluto — o Google já exibe no fuso local de quem olha.
  */
 function buildEventBody({ partyName, proposal, calendarUrl, defaultTimezone }) {
+  // Validação: data deve estar em formato YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(proposal.date)) {
+    throw new Error(`Data inválida: ${proposal.date}`);
+  }
+
   const body = {
     summary: `Sessão: ${partyName}`,
     description: `Confirmada no ArcanaForge: ${calendarUrl}`,
   };
 
   if (proposal.time) {
+    // Validação: horário deve estar em formato HH:mm com horas 00-23 e minutos 00-59
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(proposal.time)) {
+      throw new Error(`Horário inválido: ${proposal.time}`);
+    }
+
     const timeZone = proposal.timezone || defaultTimezone;
     body.start = { dateTime: `${proposal.date}T${proposal.time}:00`, timeZone };
     body.end = {

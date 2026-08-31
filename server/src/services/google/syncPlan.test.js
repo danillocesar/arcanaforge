@@ -102,7 +102,7 @@ describe('planSync', () => {
     assert.deepEqual(plano.toDelete, []);
   });
 
-  it('apaga evento de quem já não tem link saudável', () => {
+  it('a deleção é dirigida por existingEvents, não pela lista atual de membros', () => {
     const plano = planSync({
       prevConfirmed: true,
       nextConfirmed: false,
@@ -111,5 +111,16 @@ describe('planSync', () => {
       existingEvents: [evento('a')],
     });
     assert.deepEqual(plano.toDelete.map((e) => e.uid), ['a']);
+  });
+
+  it('de-duplica healthyUids e preserva ordem de primeira ocorrência', () => {
+    const plano = planSync({
+      prevConfirmed: false,
+      nextConfirmed: true,
+      proposalRemoved: false,
+      healthyUids: ['a', 'a', 'b'],
+      existingEvents: [],
+    });
+    assert.deepEqual(plano.toCreate, ['a', 'b']);
   });
 });

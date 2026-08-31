@@ -24,7 +24,18 @@ function planSync({ prevConfirmed, nextConfirmed, proposalRemoved, healthyUids, 
 
   if (!prevConfirmed && nextConfirmed) {
     const jaTem = new Set(eventos.map((e) => e.uid));
-    return { toCreate: (healthyUids || []).filter((uid) => !jaTem.has(uid)), toDelete: [] };
+    // De-duplica healthyUids e preserva ordem de primeira ocorrência
+    const seen = new Set();
+    const unique = [];
+    for (const uid of (healthyUids || [])) {
+      if (!seen.has(uid)) {
+        seen.add(uid);
+        if (!jaTem.has(uid)) {
+          unique.push(uid);
+        }
+      }
+    }
+    return { toCreate: unique, toDelete: [] };
   }
 
   return { toCreate: [], toDelete: [] };
