@@ -269,8 +269,15 @@ function createPartyService(refs) {
       throw new AppError(400, 'Horário inválido (esperado HH:mm)');
     }
     const { timezone } = body || {};
-    if (timezone && (typeof timezone !== 'string' || timezone.length > 64)) {
-      throw new AppError(400, 'timezone inválido');
+    // undefined/null = "não informado" (cai no DEFAULT_TIMEZONE); qualquer outro valor
+    // precisa ser string, dentro do tamanho e usar só os caracteres de um nome IANA
+    // (ex.: 'America/Sao_Paulo', 'Etc/GMT+5') — evita mandar lixo pro Google Calendar.
+    if (timezone !== undefined && timezone !== null) {
+      const isValid =
+        typeof timezone === 'string' && timezone.length <= 64 && /^[A-Za-z0-9/_+-]+$/.test(timezone);
+      if (!isValid) {
+        throw new AppError(400, 'timezone inválido');
+      }
     }
 
     const party = await partyRepository.findMemberParty(partyId, req.user.uid);
