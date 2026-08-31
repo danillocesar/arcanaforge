@@ -217,7 +217,7 @@ https://accounts.google.com/o/oauth2/v2/auth
   ?client_id=<GOOGLE_CLIENT_ID>
   &redirect_uri=<GOOGLE_REDIRECT_URI>
   &response_type=code
-  &scope=<GOOGLE_CALENDAR_SCOPE>
+  &scope=<GOOGLE_OAUTH_SCOPES>
   &access_type=offline
   &prompt=consent
   &state=<nonce assinado>
@@ -484,7 +484,7 @@ Google Cloud Console ao adicionar o escopo.
 Consequência se for non-sensitive: nem a tela de aviso existe, e "In production"
 resolve tudo sem ressalva. Se for sensitive: a tela de aviso aparece uma vez por
 pessoa, como descrito em "Por que o app precisa estar publicado". Em nenhum dos
-dois casos há impacto no código — é por isso que o escopo é variável de ambiente.
+dois casos há impacto no código — é por isso que os escopos são variável de ambiente.
 
 **Risco 2 — o prazo de 7 dias só desaparece se o status for realmente "In
 production".** A leitura da doc é clara ao amarrar o prazo ao status "Testing",
@@ -566,7 +566,7 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
 GOOGLE_TOKEN_ENC_KEY=          # 32 bytes em base64: openssl rand -base64 32
-GOOGLE_CALENDAR_SCOPE=https://www.googleapis.com/auth/calendar.app.created
+GOOGLE_OAUTH_SCOPES=openid email https://www.googleapis.com/auth/calendar.app.created
 DEFAULT_TIMEZONE=America/Sao_Paulo
 ```
 
@@ -575,8 +575,8 @@ No Google Cloud Console, fora do código:
 1. OAuth consent screen de tipo **External**, publishing status **"In
    production"** — não "Testing". É esse item que cumpre o requisito de não
    religar toda semana.
-2. O escopo `calendar.app.created` adicionado. É aqui que se lê o rótulo
-   Non-sensitive / Sensitive (Risco 1).
+2. Os escopos `openid`, `email` e `calendar.app.created` adicionados. É aqui que
+   se lê o rótulo Non-sensitive / Sensitive de cada um (Risco 1).
 3. Redirect URI registrada no cliente OAuth, batendo exatamente com
    `GOOGLE_REDIRECT_URI` — incluindo o host de produção quando houver, já que a
    do dev (`localhost:3001`) não serve para o app publicado.
@@ -585,5 +585,14 @@ No Google Cloud Console, fora do código:
 
 Não é necessária lista de test users — ela só existe no status "Testing".
 
-`GOOGLE_CALENDAR_SCOPE` é env, e não constante, para que trocar de escopo não
-exija mudança de código.
+`GOOGLE_OAUTH_SCOPES` é env, e não constante, para que trocar de escopo não
+exija mudança de código. Guarda a string completa, não só o escopo de calendário:
+`openid email` entram porque a UI mostra "Conectada como x@gmail.com", e
+`calendar.app.created` sozinho não devolve identidade nenhuma. Os dois são
+escopos básicos de perfil e não mudam a classificação de sensibilidade do
+conjunto.
+
+O e-mail sai do `id_token` que vem na resposta do endpoint de token: o payload é
+decodificado sem verificar assinatura, o que é seguro aqui porque a resposta veio
+direto do endpoint do Google por TLS, em resposta a uma requisição autenticada
+com o client secret — não é um token recebido de terceiro.
