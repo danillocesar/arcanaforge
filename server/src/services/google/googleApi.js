@@ -26,12 +26,38 @@ function classifyTokenError(status, body) {
 }
 
 /**
+ * Motivos de 403 que significam de verdade credencial/permissão morta **daquele
+ * usuário** — os únicos que autorizam gravar `lastError` e obrigar a religar.
+ *
+ * A allowlist é neste sentido (e não a de motivos transitórios) porque o que
+ * decide é o raio de alcance de errar. Um 403 de **projeto**
+ * (`dailyLimitExceeded`, `variableTermLimitExceeded`: a cota é do projeto, não
+ * da pessoa) classificado como 'auth' latcha o link de TODOS os membros na
+ * mesma confirmação, e a mesa inteira precisa religar — exatamente o que o
+ * usuário recusou. Um 403 de credencial morta classificado como transiente só
+ * atrasa o aviso de "religue" para uma pessoa, e o sync segue falhando de forma
+ * visível. Por isso 403 desconhecido é transiente.
+ *
+ * Motivos documentados pelo Google para 403 nas APIs do Workspace:
+ * - `forbidden`: sem permissão no recurso.
+ * - `insufficientPermissions`: os escopos concedidos não cobrem a operação
+ *   (é o caso de quem desmarca a permissão de calendário no consentimento).
+ * - `requiredAccessLevel`: nível de acesso insuficiente no calendário.
+ * - `authError`: credencial inválida.
+ */
+const RAZOES_403_AUTH = new Set([
+  'forbidden',
+  'insufficientPermissions',
+  'requiredAccessLevel',
+  'authError',
+]);
+
+/**
  * Classifica erros da API do Google Calendar.
  * 401 → 'auth' (credencial inválida)
- * 403 com razão de rate limit → 'transient'
- * 403 com outra razão → 'auth'
- * 404 → 'other' (o chamador decide o significado)
- * Outros → 'other'
+ * 403 com razão de permissão morta → 'auth'
+ * 403 com qualquer outra razão, ou sem razão → 'transient'
+ * Outros (404, 5xx, ...) → 'other' (o chamador decide o significado)
  */
 function classifyCalendarError(status, body) {
   if (status === 401) {
@@ -41,11 +67,7 @@ function classifyCalendarError(status, body) {
   if (status === 403) {
     // Procura a razão do erro em body.error.errors[0].reason
     const reason = body?.error?.errors?.[0]?.reason;
-    if (reason === 'rateLimitExceeded' || reason === 'userRateLimitExceeded' || reason === 'quotaExceeded' || reason === 'backendError') {
-      return 'transient';
-    }
-    // Qualquer outro 403 é tratado como credencial/permissão
-    return 'auth';
+    return RAZOES_403_AUTH.has(reason) ? 'auth' : 'transient';
   }
 
   return 'other';

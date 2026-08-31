@@ -64,6 +64,28 @@ describe('classifyCalendarError', () => {
     assert.equal(result, 'transient');
   });
 
+  // dailyLimitExceeded é cota de PROJETO: acontece para todo mundo ao mesmo
+  // tempo. Classificá-lo como 'auth' latcharia o link da mesa inteira numa
+  // confirmação só — o exato desfecho que a classificação existe para evitar.
+  it('returns "transient" for 403 with dailyLimitExceeded (cota do projeto, atinge todos)', () => {
+    const body = { error: { errors: [{ reason: 'dailyLimitExceeded' }] } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
+  });
+
+  it('returns "transient" for 403 with variableTermLimitExceeded (também do projeto)', () => {
+    const body = { error: { errors: [{ reason: 'variableTermLimitExceeded' }] } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
+  });
+
+  // O default é transiente: uma razão nova do Google não pode latchar link.
+  it('returns "transient" for 403 with an unknown reason (default não latcha)', () => {
+    const body = { error: { errors: [{ reason: 'razaoQueOGoogleAindaNaoDocumentou' }] } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
+  });
+
   it('returns "auth" for 403 with forbidden (not transient)', () => {
     const body = { error: { errors: [{ reason: 'forbidden' }] } };
     const result = classifyCalendarError(403, body);
@@ -76,16 +98,28 @@ describe('classifyCalendarError', () => {
     assert.equal(result, 'auth');
   });
 
-  it('returns "auth" for 403 with no errors array', () => {
-    const body = { error: { message: 'Forbidden' } };
+  it('returns "auth" for 403 with requiredAccessLevel', () => {
+    const body = { error: { errors: [{ reason: 'requiredAccessLevel' }] } };
     const result = classifyCalendarError(403, body);
     assert.equal(result, 'auth');
   });
 
-  it('returns "auth" for 403 with empty errors array', () => {
-    const body = { error: { errors: [] } };
+  it('returns "auth" for 403 with authError', () => {
+    const body = { error: { errors: [{ reason: 'authError' }] } };
     const result = classifyCalendarError(403, body);
     assert.equal(result, 'auth');
+  });
+
+  it('returns "transient" for 403 with no errors array (sem razão não latcha)', () => {
+    const body = { error: { message: 'Forbidden' } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
+  });
+
+  it('returns "transient" for 403 with empty errors array', () => {
+    const body = { error: { errors: [] } };
+    const result = classifyCalendarError(403, body);
+    assert.equal(result, 'transient');
   });
 
   it('returns "other" for 404 (the caller decides significance)', () => {
