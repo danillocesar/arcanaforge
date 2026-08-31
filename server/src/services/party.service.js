@@ -11,6 +11,8 @@ const combatRepository = require('../repositories/combat.repository');
 const { mergeCharacterDocs } = require('./character.service');
 const { sendSessionProposalEmail } = require('./email.service');
 const { mergeBuffIntoCharacter, isTempHpType, isTempMpType } = require('../utils/buffMerge');
+const { syncProposal } = require('./google/calendarSync');
+const { isConfirmed } = require('./google/syncPlan');
 
 const VALID_SYSTEMS = ['tormenta'];
 
@@ -316,6 +318,13 @@ function createPartyService(refs) {
     const proposal = party.sessionProposals.find((p) => p.id === proposalId);
     if (!proposal) throw new AppError(404, 'Proposta não encontrada');
 
+    const prevConfirmed = isConfirmed(party, proposal);
+    const eventsBefore = (proposal.googleEvents || []).map((e) => ({
+      uid: e.uid,
+      eventId: e.eventId,
+      calendarId: e.calendarId,
+    }));
+
     const existing = proposal.responses.find((r) => r.uid === uid);
     if (existing) {
       existing.vote = vote;
@@ -325,6 +334,16 @@ function createPartyService(refs) {
     }
     await party.save();
     refs.broadcastPartyRoster(partyId);
+
+    // Fire-and-forget: votar nunca falha porque o Google está fora do ar.
+    syncProposal({
+      party: party.toObject(),
+      proposal: party.sessionProposals.find((p) => p.id === proposalId),
+      prevConfirmed,
+      proposalRemoved: false,
+      eventsBefore,
+    }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
+
     return toPartyDTO(party.toObject());
   }
 
@@ -338,9 +357,31 @@ function createPartyService(refs) {
       throw new AppError(403, 'Só quem propôs ou o dono do grupo pode cancelar');
     }
 
+    // A ordem importa: googleEvents tem que ser lido ANTES do save() que
+    // remove a proposta, senão os ids dos eventos somem e ficam órfãos na
+    // agenda real de cada membro, sem nada no banco apontando pra eles.
+    const prevConfirmed = isConfirmed(party, proposal);
+    const eventsBefore = (proposal.googleEvents || []).map((e) => ({
+      uid: e.uid,
+      eventId: e.eventId,
+      calendarId: e.calendarId,
+    }));
+    const snapshot = party.toObject();
+
     party.sessionProposals = party.sessionProposals.filter((p) => p.id !== proposalId);
     await party.save();
     refs.broadcastPartyRoster(partyId);
+
+    const proposalSnapshot = typeof proposal.toObject === 'function' ? proposal.toObject() : proposal;
+
+    syncProposal({
+      party: snapshot,
+      proposal: proposalSnapshot,
+      prevConfirmed,
+      proposalRemoved: true,
+      eventsBefore,
+    }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
+
     return toPartyDTO(party.toObject());
   }
 

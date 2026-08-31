@@ -57,6 +57,15 @@ async function handleCallback({ code, state }) {
       calendarId,
     });
 
+    // Sem isso, quem liga a conta depois de uma confirmação não vê nada na agenda
+    // e conclui que a integração não funcionou.
+    // O require fica inline de propósito: backfill -> calendarSync ->
+    // googleLink.service fecha um ciclo, e resolvê-lo em tempo de chamada evita
+    // o módulo parcialmente carregado.
+    require('./backfill')
+      .backfillForUid(verificado.uid)
+      .catch((err) => console.error('Falha no backfill:', err.message));
+
     return { uid: verificado.uid, returnTo: safeReturnTo(guardado.returnTo) };
   } catch (err) {
     // Daqui em diante o returnTo já é conhecido (state consumido e validado):
