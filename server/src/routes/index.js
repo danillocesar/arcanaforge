@@ -5,6 +5,7 @@ const { errorHandler } = require('../middlewares/errorHandler');
 const { createCharacterRoutes } = require('./characters.routes');
 const { createPartyRoutes } = require('./parties.routes');
 const { createCombatRoutes } = require('./combat.routes');
+const { createGoogleRoutes } = require('./google.routes');
 
 /**
  * @param {import('express').Express} app
@@ -15,6 +16,7 @@ function registerRoutes(app, opts) {
   app.use(createCharacterRoutes());
   app.use(createPartyRoutes(refs));
   app.use(createCombatRoutes(refs));
+  app.use(createGoogleRoutes());
 
   if (fs.existsSync(paths.DIST_DIR)) {
     app.get('*', (_req, res) => {
