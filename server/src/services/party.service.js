@@ -335,10 +335,15 @@ function createPartyService(refs) {
     await party.save();
     refs.broadcastPartyRoster(partyId);
 
+    // Snapshot em objeto plano (mesmo padrão do cancelSession): syncProposal
+    // não deve depender de subdocumento Mongoose vivo.
+    const proposalAfter = party.sessionProposals.find((p) => p.id === proposalId);
+    const proposalSnapshot = typeof proposalAfter.toObject === 'function' ? proposalAfter.toObject() : proposalAfter;
+
     // Fire-and-forget: votar nunca falha porque o Google está fora do ar.
     syncProposal({
       party: party.toObject(),
-      proposal: party.sessionProposals.find((p) => p.id === proposalId),
+      proposal: proposalSnapshot,
       prevConfirmed,
       proposalRemoved: false,
       eventsBefore,
