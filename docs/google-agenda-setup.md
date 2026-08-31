@@ -11,7 +11,7 @@ seletor de idioma, ou procurar pelo controle pela descrição fornecida.
 ## 1. Projeto
 
 1. Abra <https://console.cloud.google.com/> com a conta que vai administrar.
-2. No seletor de projeto (topo), **Novo projeto**. Nome: `ArcanaForge`. Criar.
+2. No seletor de projeto (topo), **New project**. Nome: `ArcanaForge`. Criar.
 3. Confirme que o seletor mostra `ArcanaForge` antes de seguir.
 
 ## 2. Ativar a Calendar API
@@ -26,9 +26,9 @@ seletor de idioma, ou procurar pelo controle pela descrição fornecida.
    
    **Atenção:** essa escolha não pode ser mudada depois — se escolher errado, será preciso criar um novo projeto. **Internal** é apenas para organizações Google Workspace e não funciona com contas pessoais Gmail.
 3. Volte para a aba **Branding** (onde fica a identidade visual do app) e preencha:
-   - **Nome do app:** `ArcanaForge`
-   - **E-mail de suporte:** seu e-mail
-   - **E-mail do desenvolvedor:** seu e-mail
+   - **App name:** `ArcanaForge`
+   - **Support email:** seu e-mail
+   - **Developer email:** seu e-mail
 
    Esses dois aparecem para os membros na hora de autorizar.
 4. Salvar.
@@ -43,7 +43,7 @@ seletor de idioma, ou procurar pelo controle pela descrição fornecida.
 3. **Anote o rótulo que aparece ao lado do escopo de calendário**
    (Non-sensitive / Sensitive). Se for *Non-sensitive*, ninguém verá tela de
    aviso. Se for *Sensitive*, cada membro vê uma vez a tela de "app não
-   verificado" e precisa clicar em **Avançado → acessar ArcanaForge**.
+   verificado" e precisa clicar em **Advanced** → acessar ArcanaForge.
 4. Salvar.
 
 ## 5. Publicar o app — passo que não pode ser esquecido
