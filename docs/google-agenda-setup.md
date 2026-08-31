@@ -3,10 +3,12 @@
 Passo a passo no Google Cloud Console. Feito uma vez, por quem administra o
 projeto. Ao final, seis valores vão para o `.env`.
 
-**Nota:** O Google Cloud Console se reorganiza periodicamente. Se um rótulo não
-corresponder, procure pela área **Google Auth Platform** e a aba cujo nome
-combine com seu objetivo (Branding / Audience / Clients / Data Access), em vez
-de seguir um menu exato.
+**Nota:** O Google Cloud Console se reorganiza periodicamente e o Console mostra
+rótulos em inglês ou português conforme a língua do navegador. Cada rótulo abaixo
+aparece em ambas as formas: se a interface não mostrar exatamente a versão que
+você espera, procure pela versão na outra língua. Procure pela área **Google Auth
+Platform** e a aba cujo nome combine com seu objetivo, em vez de seguir um menu
+exato.
 
 ## 1. Projeto
 
@@ -16,13 +18,13 @@ de seguir um menu exato.
 
 ## 2. Ativar a Calendar API
 
-1. Menu → **APIs e serviços → Biblioteca**.
-2. Busque `Google Calendar API`. Abra e clique em **Ativar**.
+1. Menu → **APIs and services** (APIs e serviços) → **Library** (Biblioteca).
+2. Busque `Google Calendar API`. Abra e clique em **Enable** (Ativar).
 
 ## 3. Tela de consentimento
 
-1. Menu → **APIs e serviços → Google Auth Platform**.
-2. Aba **Branding**. Preencha:
+1. Menu → **APIs and services** (APIs e serviços) → **Google Auth Platform** (Plataforma Google Auth).
+2. Aba **Branding** (Identidade visual). Preencha:
    - **Nome do app:** `ArcanaForge`
    - **E-mail de suporte:** seu e-mail
    - **E-mail do desenvolvedor:** seu e-mail
@@ -32,7 +34,7 @@ de seguir um menu exato.
 
 ## 4. Escopos
 
-1. Na aba **Data Access**, clique em **Adicionar ou remover escopos**.
+1. Na aba **Data Access** (Acesso a dados), clique em **Add or remove scopes** (Adicionar ou remover escopos).
 2. Adicione os três escopos (o Console pode exibi-los abreviados):
    - `https://www.googleapis.com/auth/openid`
    - `https://www.googleapis.com/auth/userinfo.email`
@@ -45,11 +47,11 @@ de seguir um menu exato.
 
 ## 5. Publicar o app — passo que não pode ser esquecido
 
-1. Na aba **Audience**, clique em **Publicar app** e confirme.
-2. O status precisa ficar **Em produção**, não "Testes".
+1. Na aba **Audience** (Público-alvo), clique em **Publish app** (Publicar app) e confirme.
+2. O status precisa ficar **In production** (Em produção), não **Testing** (Testes).
 
-Por que importa: no status "Testes" o Google emite refresh token que **expira em
-7 dias**, o que obrigaria cada membro a religar a conta toda semana. Em produção
+Por que importa: no status **Testing** (Testes) o Google emite refresh token que **expira em
+7 dias**, o que obrigaria cada membro a religar a conta toda semana. Em **In production** (Em produção)
 o token não expira por status. Se em algum momento a agenda parar de receber as
 sessões para todos ao mesmo tempo, confira este item primeiro.
 
@@ -58,14 +60,13 @@ roda em produção normalmente, com o aviso "app não verificado" visível apena
 para escopos Sensitive, e está limitado a 100 usuários.
 
 Não é necessário cadastrar usuários de teste: essa lista só existe no status
-"Testes".
+**Testing** (Testes).
 
 ## 6. Credenciais OAuth
 
-1. Na aba **Clients**, clique em **Criar cliente OAuth** (ou equivalente em sua
-   interface).
-2. Tipo de aplicativo: **Aplicativo da Web**. Nome: `ArcanaForge web`.
-3. Em **URIs de redirecionamento autorizados**, adicione **exatamente**:
+1. Na aba **Clients** (Clientes), clique em **Create credentials** (Criar credenciais) → **OAuth client ID** (ID do cliente OAuth) (ou equivalente em sua interface).
+2. Tipo de aplicativo: **Web application** (Aplicativo da Web). Nome: `ArcanaForge web`.
+3. Em **Authorized redirect URIs** (URIs de redirecionamento autorizados), adicione **exatamente**:
    - `http://localhost:3001/auth/google/callback` (desenvolvimento)
    - `https://SEU-DOMINIO/auth/google/callback` (produção, quando houver)
 
