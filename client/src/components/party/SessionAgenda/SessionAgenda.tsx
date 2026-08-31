@@ -10,6 +10,7 @@ import {
   initialScrollHour,
   proposalTone,
   toDateKey,
+  visibleHourRange,
   WEEKDAY_SHORT,
   type ProposalTone,
 } from '../../../utils/weekAgenda';
@@ -19,7 +20,6 @@ import styles from './SessionAgenda.module.css';
 /** Altura de uma linha de hora. Espelha --hour-h no CSS: as duas precisam bater
  *  para o scroll inicial cair na hora certa. */
 const HOUR_HEIGHT = 44;
-const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 const toneClass: Record<ProposalTone, string> = {
   confirmed: styles.blockConfirmed,
@@ -42,14 +42,26 @@ export default function SessionAgenda({ party, uid, onSelectProposal, onSelectSl
 
   const weekDays = useMemo(() => getWeekDays(anchor), [anchor]);
   const grid = useMemo(() => buildWeekGrid(party.sessionProposals, weekDays), [party.sessionProposals, weekDays]);
+  // A grade mostra só 10h-22h por padrão, mas se expande quando a semana tem
+  // proposta fora dessa faixa — por isso é recalculada a cada semana, não fixa.
+  const [rangeStart, rangeEnd] = useMemo(() => visibleHourRange(grid), [grid]);
+  const HOURS = useMemo(
+    () => Array.from({ length: rangeEnd - rangeStart + 1 }, (_, i) => rangeStart + i),
+    [rangeStart, rangeEnd],
+  );
   const todayKey = toDateKey(new Date());
 
-  // Abre a semana já na altura da primeira sessão proposta (ou no início da noite).
+  // Abre a semana já na altura da primeira sessão proposta (ou no topo da
+  // faixa visível, já que a grade nem sempre começa em 0h agora). O offset é
+  // relativo a rangeStart e nunca negativo: initialScrollHour nunca devolve
+  // uma hora menor que rangeStart (visibleHourRange já expandiu a faixa para
+  // cobrir a proposta mais cedo), e o fallback é o próprio rangeStart.
   const weekStartKey = toDateKey(weekDays[0]);
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
-    scroller.scrollTop = initialScrollHour(grid) * HOUR_HEIGHT;
+    const offsetHours = Math.max(0, initialScrollHour(grid, rangeStart) - rangeStart);
+    scroller.scrollTop = offsetHours * HOUR_HEIGHT;
     // Depende só da semana: rolar de novo a cada voto seria desorientador.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekStartKey]);
