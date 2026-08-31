@@ -13,7 +13,7 @@ function sign(payloadB64) {
 function signState(uid, ttlSeconds = 600) {
   const nonce = crypto.randomBytes(32).toString('hex');
   const exp = Date.now() + ttlSeconds * 1000;
-  const payloadB64 = Buffer.from(`${uid}${SEP}${nonce}${SEP}${exp}`, 'utf8').toString('base64url');
+  const payloadB64 = Buffer.from(JSON.stringify({ uid, nonce, exp }), 'utf8').toString('base64url');
   return {
     state: `${payloadB64}${SEP}${sign(payloadB64)}`,
     nonce,
@@ -32,9 +32,18 @@ function verifyState(state, now = Date.now()) {
   if (esperado.length !== recebido.length) return null;
   if (!crypto.timingSafeEqual(esperado, recebido)) return null;
 
-  const [uid, nonce, exp] = Buffer.from(payloadB64, 'base64url').toString('utf8').split(SEP);
-  if (!uid || !nonce || !exp) return null;
-  if (Number(exp) <= now) return null;
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+  } catch (_) {
+    return null;
+  }
+
+  const { uid, nonce, exp } = payload;
+  if (typeof uid !== 'string' || !uid) return null;
+  if (typeof nonce !== 'string' || !nonce) return null;
+  if (!Number.isFinite(exp)) return null;
+  if (exp <= now) return null;
 
   return { uid, nonce };
 }
