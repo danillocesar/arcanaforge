@@ -364,17 +364,20 @@ git commit -m "feat(google): state do OAuth assinado com HMAC e ttl"
 - Create: `server/db/models/GoogleLink.js`
 - Create: `server/db/models/GoogleOauthState.js`
 - Create: `server/src/repositories/googleLink.repository.js`
+- Modify: `server/src/repositories/party.repository.js`
 
 **Interfaces:**
 - Consumes: nada.
+- Produces (`party.repository.js`):
+  - `updateProposalGoogleEvents(partyId, proposalId, googleEvents): Promise<void>` - usado pela Task 11. Fica aqui, e nao no service, porque no repo **nenhum service requer model direto**: todo acesso a model passa por `server/src/repositories/`.
 - Produces (`googleLink.repository.js`):
   - `findByUid(uid): Promise<Object|null>` — documento lean.
   - `upsert(uid, { email, refreshTokenEnc, scope, calendarId }): Promise<void>` — grava e zera `lastError`.
   - `setLastError(uid, message): Promise<void>`
   - `remove(uid): Promise<void>`
   - `findHealthyByUids(uids: string[]): Promise<Object[]>` — só os com `lastError` nulo.
-  - `createState(nonce, uid, expiresAt): Promise<void>`
-  - `consumeState(nonce): Promise<Object|null>` — `findOneAndDelete`, uso único.
+  - `createState(nonce, uid, expiresAt, returnTo): Promise<void>`
+  - `consumeState(nonce): Promise<Object|null>` — `findOneAndDelete`, uso único; o documento devolvido inclui `returnTo`.
 
 Sem teste unitário: é camada de acesso a dados sem lógica, e o repo não tem infraestrutura de Mongo em teste. A verificação vem no checkpoint da Task 7.
 
@@ -410,6 +413,11 @@ const googleOauthStateSchema = new mongoose.Schema(
   {
     _id: { type: String, required: true }, // nonce
     uid: { type: String, required: true },
+    // Caminho relativo para onde devolver o navegador depois do consentimento.
+    // Fica no banco (e nao no state assinado) para nao poder ser trocado no
+    // meio do fluxo, e para nao ter que embutir barras num payload separado
+    // por ponto.
+    returnTo: { type: String, default: '/' },
     // expires: 0 faz o Mongo apagar o documento quando expiresAt passa.
     expiresAt: { type: Date, required: true, expires: 0 },
   },
@@ -452,8 +460,8 @@ async function findHealthyByUids(uids) {
   return GoogleLink.find({ _id: { $in: uids }, lastError: null }).lean();
 }
 
-async function createState(nonce, uid, expiresAt) {
-  await GoogleOauthState.create({ _id: nonce, uid, expiresAt });
+async function createState(nonce, uid, expiresAt, returnTo) {
+  await GoogleOauthState.create({ _id: nonce, uid, expiresAt, returnTo: returnTo || '/' });
 }
 
 /** Uso único: some do banco na primeira leitura. */
@@ -472,6 +480,20 @@ module.exports = {
 };
 ```
 
+- [ ] **Step 3b: Acrescentar a funcao de eventos ao `party.repository.js`**
+
+```js
+/** Substitui a lista de eventos do Google de uma proposta, sem reescrever o resto. */
+async function updateProposalGoogleEvents(partyId, proposalId, googleEvents) {
+  await Party.updateOne(
+    { _id: partyId, 'sessionProposals.id': proposalId },
+    { $set: { 'sessionProposals.$.googleEvents': googleEvents } },
+  );
+}
+```
+
+E incluir `updateProposalGoogleEvents` no `module.exports` existente.
+
 - [ ] **Step 4: Confirmar que os modelos carregam sem erro**
 
 Run: `node -e "require('./server/db/models/GoogleLink'); require('./server/db/models/GoogleOauthState'); require('./server/src/repositories/googleLink.repository'); console.log('ok')"`
@@ -480,7 +502,7 @@ Expected: imprime `ok`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add server/db/models/GoogleLink.js server/db/models/GoogleOauthState.js server/src/repositories/googleLink.repository.js
+git add server/db/models/GoogleLink.js server/db/models/GoogleOauthState.js server/src/repositories/googleLink.repository.js server/src/repositories/party.repository.js
 git commit -m "feat(google): modelos do vínculo e do state, com repositório"
 ```
 
@@ -869,8 +891,8 @@ git commit -m "docs(google): runbook do Cloud Console e variáveis de ambiente"
 - Consumes: `tokenCrypto` (T1), `oauthState` (T2), `googleLink.repository` (T3), `googleApi` (T4).
 - Produces (`googleLink.service.js`):
   - `isEnabled(): boolean` — `googleApi.isConfigured() && tokenCrypto.isConfigured()`
-  - `startOAuth(uid): Promise<string>` — URL de consentimento; grava o nonce.
-  - `handleCallback({ code, state }): Promise<{ uid: string }>` — lança `AppError` em falha.
+  - `startOAuth(uid, returnTo): Promise<string>` — URL de consentimento; grava o nonce e o `returnTo` validado.
+  - `handleCallback({ code, state }): Promise<{ uid: string, returnTo: string }>` — lança `AppError` em falha.
   - `getLinkState(uid): Promise<{ linked, email, lastError }>`
   - `unlink(uid): Promise<void>`
   - `getAccessTokenFor(uid): Promise<{ accessToken, calendarId }|null>` — usado na Fase 2; marca link quebrado em `GoogleAuthError`.
@@ -893,10 +915,21 @@ function defaultTimezone() {
   return process.env.DEFAULT_TIMEZONE || 'America/Sao_Paulo';
 }
 
-async function startOAuth(uid) {
+/**
+ * Só caminho relativo de mesma origem. Sem isso o returnTo é um open redirect:
+ * bastaria mandar `https://malicioso/` para o callback jogar o navegador lá.
+ */
+function safeReturnTo(value) {
+  const v = String(value || '');
+  if (!/^\/[A-Za-z0-9/_-]*$/.test(v)) return '/';
+  if (v.startsWith('//')) return '/';
+  return v;
+}
+
+async function startOAuth(uid, returnTo) {
   if (!isEnabled()) throw new AppError(503, 'Integração com Google Agenda não configurada');
   const { state, nonce, expiresAt } = signState(uid);
-  await repo.createState(nonce, uid, expiresAt);
+  await repo.createState(nonce, uid, expiresAt, safeReturnTo(returnTo));
   return googleApi.buildConsentUrl(state);
 }
 
@@ -926,7 +959,7 @@ async function handleCallback({ code, state }) {
     calendarId,
   });
 
-  return { uid: verificado.uid };
+  return { uid: verificado.uid, returnTo: safeReturnTo(guardado.returnTo) };
 }
 
 async function getLinkState(uid) {
@@ -975,6 +1008,7 @@ async function getAccessTokenFor(uid) {
 module.exports = {
   isEnabled,
   defaultTimezone,
+  safeReturnTo,
   startOAuth,
   handleCallback,
   getLinkState,
@@ -992,17 +1026,19 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 function createGoogleController(googleLinkService) {
   return {
     async startOAuth(req, res) {
-      res.json({ url: await googleLinkService.startOAuth(req.user.uid) });
+      res.json({ url: await googleLinkService.startOAuth(req.user.uid, req.query.returnTo) });
     },
 
     // Redirect de navegador: erro também volta como redirect, não como JSON.
     async callback(req, res) {
       try {
-        await googleLinkService.handleCallback({
+        const { returnTo } = await googleLinkService.handleCallback({
           code: req.query.code,
           state: req.query.state,
         });
-        res.redirect(`${CLIENT_URL}/?google=ok`);
+        // Volta para a aba de onde a pessoa saiu: sem isso o Toast da Task 7,
+        // que vive na pagina do grupo, nunca dispara.
+        res.redirect(`${CLIENT_URL}${returnTo}?google=ok`);
       } catch (err) {
         const motivo = encodeURIComponent(err.message || 'erro');
         res.redirect(`${CLIENT_URL}/?google=error&reason=${motivo}`);
@@ -1097,7 +1133,7 @@ git commit -m "feat(google): endpoints de vínculo (start, callback, get, unlink
 - Produces:
   - `interface GoogleLinkState { linked: boolean; email: string; lastError: string | null }`
   - `apiGetGoogleLink(): Promise<GoogleLinkState>`
-  - `apiStartGoogleOAuth(): Promise<{ url: string }>`
+  - `apiStartGoogleOAuth(returnTo: string): Promise<{ url: string }>`
   - `apiUnlinkGoogle(): Promise<void>`
   - Componente `<GoogleCalendarLink />` (sem props).
 
@@ -1119,8 +1155,8 @@ export async function apiGetGoogleLink(): Promise<GoogleLinkState> {
   return res.json();
 }
 
-export async function apiStartGoogleOAuth(): Promise<{ url: string }> {
-  const res = await apiFetch('/api/google/oauth/start');
+export async function apiStartGoogleOAuth(returnTo: string): Promise<{ url: string }> {
+  const res = await apiFetch(`/api/google/oauth/start?returnTo=${encodeURIComponent(returnTo)}`);
   await assertOk(res);
   return res.json();
 }
@@ -1172,7 +1208,8 @@ export default function GoogleCalendarLink() {
   const conectar = async () => {
     setBusy(true);
     try {
-      const { url } = await apiStartGoogleOAuth();
+      // Para o callback devolver o navegador nesta mesma aba do grupo.
+      const { url } = await apiStartGoogleOAuth(window.location.pathname);
       window.location.href = url;
     } catch {
       setBusy(false);
@@ -1869,7 +1906,7 @@ git commit -m "feat(google): plano de sincronização (transições e idempotên
 - Create: `server/src/services/google/calendarSync.js`
 
 **Interfaces:**
-- Consumes: `googleLink.service` (T6), `googleApi` (T4), `eventBody` (T9), `syncPlan` (T10), `googleLink.repository` (T3).
+- Consumes: `googleLink.service` (T6), `googleApi` (T4), `eventBody` (T9), `syncPlan` (T10), `googleLink.repository` e `party.repository.updateProposalGoogleEvents` (T3).
 - Produces:
   - `syncProposal({ party, proposal, prevConfirmed, proposalRemoved, eventsBefore }): Promise<void>` — nunca lança; loga e marca `lastError` quando aplicável.
 
@@ -1879,7 +1916,7 @@ Sem teste unitário próprio: é a cola entre módulos já testados e a rede. A 
 
 ```js
 // server/src/services/google/calendarSync.js
-const Party = require('../../db/models/Party');
+const partyRepository = require('../../repositories/party.repository');
 const repo = require('../../repositories/googleLink.repository');
 const googleApi = require('./googleApi');
 const googleLinkService = require('./googleLink.service');
@@ -1892,12 +1929,10 @@ function calendarUrl(party) {
   return `${CLIENT_URL}/${party.system || 'tormenta'}/party/${party._id}/calendar`;
 }
 
-/** Persiste a lista de eventos da proposta sem reescrever o resto do documento. */
+/** Persiste a lista de eventos da proposta. Via repository: no repo, service
+ *  nunca requer model direto. */
 async function saveEvents(partyId, proposalId, googleEvents) {
-  await Party.updateOne(
-    { _id: partyId, 'sessionProposals.id': proposalId },
-    { $set: { 'sessionProposals.$.googleEvents': googleEvents } },
-  );
+  await partyRepository.updateProposalGoogleEvents(partyId, proposalId, googleEvents);
 }
 
 async function criarPara(uid, party, proposal) {
@@ -2149,7 +2184,7 @@ Expected: FAIL — `Cannot find module './backfill'`
 
 ```js
 // server/src/services/google/backfill.js
-const Party = require('../../db/models/Party');
+const partyRepository = require('../../repositories/party.repository');
 const { isConfirmed } = require('./syncPlan');
 const { syncProposal } = require('./calendarSync');
 
@@ -2181,7 +2216,8 @@ function todayKey() {
 /** Nunca lança: é efeito colateral do callback do OAuth. */
 async function backfillForUid(uid) {
   try {
-    const parties = await Party.find({ 'members.uid': uid }).lean();
+    // findVisibleToUser ja devolve lean as parties em que o uid e dono ou membro.
+    const parties = await partyRepository.findVisibleToUser(uid);
     const alvos = selectBackfillTargets({ parties, uid, today: todayKey() });
     for (const { party, proposal } of alvos) {
       // prevConfirmed=false força o caminho de criação para este uid; a
