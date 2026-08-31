@@ -32,6 +32,6 @@ describe('hasGoogleEventFor', () => {
   });
 
   it('é falso com uid vazio', () => {
-    expect(hasGoogleEventFor(proposal([{ uid: 'a', eventId: 'e', calendarId: 'c' }]), '')).toBe(false);
+    expect(hasGoogleEventFor(proposal([{ uid: '', eventId: 'e', calendarId: 'c' }]), '')).toBe(false);
   });
 });

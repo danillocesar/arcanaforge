@@ -218,6 +218,7 @@
 .blockSynced {
   margin-left: 3px;
   vertical-align: -1px;
+  color: var(--ok-ink);
   opacity: 0.85;
 }
 
