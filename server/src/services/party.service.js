@@ -265,7 +265,7 @@ function createPartyService(refs) {
     if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       throw new AppError(400, 'Data inválida (esperado YYYY-MM-DD)');
     }
-    if (time && (typeof time !== 'string' || !/^\d{2}:\d{2}$/.test(time))) {
+    if (time && (typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time))) {
       throw new AppError(400, 'Horário inválido (esperado HH:mm)');
     }
     const { timezone } = body || {};
