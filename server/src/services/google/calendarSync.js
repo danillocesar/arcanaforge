@@ -38,15 +38,27 @@ async function criarPara(uid, party, proposal) {
   }
 }
 
+/**
+ * Apaga um evento e devolve se ele está confirmadamente fora do Google:
+ * `true` quando `deleteEvent` teve sucesso (inclui "já não existia", que
+ * `googleApi.deleteEvent` já trata como sucesso). `false` quando não dá pra
+ * confirmar a remoção — sem token utilizável, ou credencial quebrada — casos
+ * em que o evento real pode continuar na agenda da pessoa. Um erro transiente
+ * é relançado para virar `rejected` no `allSettled` do chamador: nesses dois
+ * casos (`false` ou rejeitado) o chamador preserva a referência, porque não
+ * apagar o registro do evento que ainda existe de verdade é a única forma de
+ * não perder o único jeito de tentar apagá-lo de novo depois.
+ */
 async function apagarPara({ uid, eventId, calendarId }) {
   const token = await googleLinkService.getAccessTokenFor(uid);
-  if (!token) return;
+  if (!token) return false;
   try {
     await googleApi.deleteEvent(token.accessToken, calendarId, eventId);
+    return true;
   } catch (err) {
     if (err instanceof googleApi.GoogleAuthError) {
       await repo.setLastError(uid, err.message);
-      return;
+      return false;
     }
     throw err;
   }
@@ -74,8 +86,27 @@ async function syncProposal({ party, proposal, prevConfirmed, proposalRemoved, e
     });
 
     if (plano.toDelete.length > 0) {
-      await Promise.allSettled(plano.toDelete.map(apagarPara));
-      if (!proposalRemoved) await saveEvents(party._id, proposal.id, []);
+      const resultadosDelete = await Promise.allSettled(plano.toDelete.map(apagarPara));
+      // Só sai da lista quem foi confirmadamente apagado. Rejeitado (erro
+      // transiente) ou `false` (sem token, ou credencial quebrada) significa
+      // que o evento pode continuar de verdade na agenda da pessoa — apagar
+      // essa referência apagaria o único jeito de tentar de novo depois.
+      const idsConfirmados = new Set();
+      resultadosDelete.forEach((r, i) => {
+        const alvo = plano.toDelete[i];
+        if (r.status === 'fulfilled' && r.value === true) {
+          idsConfirmados.add(alvo.uid);
+        } else if (r.status === 'rejected') {
+          console.error(
+            `Falha ao apagar evento do Google Agenda (party=${party._id} proposal=${proposal.id} uid=${alvo.uid}):`,
+            r.reason,
+          );
+        }
+      });
+      if (!proposalRemoved) {
+        const sobreviventes = (eventsBefore || []).filter((e) => !idsConfirmados.has(e.uid));
+        await saveEvents(party._id, proposal.id, sobreviventes);
+      }
       return;
     }
 
@@ -84,6 +115,14 @@ async function syncProposal({ party, proposal, prevConfirmed, proposalRemoved, e
     const resultados = await Promise.allSettled(
       plano.toCreate.map((uid) => criarPara(uid, party, proposal)),
     );
+    resultados.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(
+          `Falha ao criar evento no Google Agenda (party=${party._id} proposal=${proposal.id} uid=${plano.toCreate[i]}):`,
+          r.reason,
+        );
+      }
+    });
     const criados = resultados
       .filter((r) => r.status === 'fulfilled' && r.value)
       .map((r) => r.value);
@@ -92,8 +131,11 @@ async function syncProposal({ party, proposal, prevConfirmed, proposalRemoved, e
       await saveEvents(party._id, proposal.id, [...(eventsBefore || []), ...criados]);
     }
   } catch (err) {
-    console.error('Falha ao sincronizar Google Agenda:', err.message);
+    // Loga o objeto de erro inteiro (com stack), não só a mensagem: aqui é o
+    // único lugar onde um bug de programação neste caminho fire-and-forget
+    // deixa rastro.
+    console.error('Falha ao sincronizar Google Agenda:', err);
   }
 }
 
-module.exports = { syncProposal };
+module.exports = { syncProposal, calendarUrl };
