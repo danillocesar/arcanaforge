@@ -488,8 +488,13 @@ formato dos três conjuntos que já existem. `openapi.yaml` é atualizado.
   indicador discreto "na sua Google Agenda", mostrado quando existe entrada em
   `googleEvents` para o **usuário que está olhando**. Sem isso não há como saber
   se o evento chegou ou se falhou em silêncio.
-- **Retorno do OAuth**: o redirect volta para a aba Calendário do grupo com
-  `?google=ok|error`, e a página mostra um `Toast` (componente já existente).
+- **Retorno do OAuth**: o redirect volta para a aba de onde a pessoa clicou
+  (o `returnTo` é o pathname do momento) com `?google=ok|error`, e um `Toast`
+  (componente já existente) mostra o resultado. Quem lê e limpa o parâmetro é o
+  próprio **`GroupInfoCard`**, não a página: o card hospeda o botão Conectar e
+  aparece tanto na aba Calendário quanto na de Membros. Com o leitor numa
+  página só, conectar pela outra voltava para uma URL onde ninguém lia nem
+  limpava o parâmetro — metade dos pontos de entrada sem retorno visível.
 
 O indicador é deliberadamente pessoal ("na *sua* agenda") em vez de um placar do
 grupo. Mostrar "3 de 6 membros receberam" convidaria a cobrar os outros, e o
@@ -602,8 +607,9 @@ server/
 client/src/
   api/google.ts                           chamadas dos 4 endpoints
   components/party/GoogleCalendarLink/    linha na sidebar
-  components/party/GroupInfoCard/         + a linha (todo membro)
-  pages/PartyCalendarPage/                lê ?google=ok|error e mostra Toast
+  components/party/GroupInfoCard/         + a linha (todo membro); lê
+                                          ?google=ok|error e mostra Toast
+  pages/PartyCalendarPage/                guarda de in-flight do voto/cancelar
   components/party/SessionAgenda/         indicador "na sua Google Agenda"
   components/party/ProposalDetailModal/   indicador "na sua Google Agenda"
 ```
