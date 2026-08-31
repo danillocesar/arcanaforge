@@ -68,12 +68,19 @@ Não é necessário cadastrar usuários de teste: essa lista só existe no statu
 1. Na aba **Clients** (onde ficam os clientes OAuth), clique em **Create credentials** → **OAuth client ID** (ou equivalente em sua interface).
 2. Tipo de aplicativo: **Web application**. Nome: `ArcanaForge web`.
 3. Em **Authorized redirect URIs** (a lista de URLs permitidas para retorno após autorização), adicione **exatamente**:
-   - `http://localhost:3001/auth/google/callback` (desenvolvimento)
+   - `http://localhost:5173/auth/google/callback` (desenvolvimento)
    - `https://SEU-DOMINIO/auth/google/callback` (produção, quando houver)
 
    Precisa bater caractere por caractere com o `GOOGLE_REDIRECT_URI` do `.env` —
    barra final, `http` vs `https` e porta incluídos. Divergência aqui gera
    `redirect_uri_mismatch` na hora de autorizar.
+
+   **Por que 5173 e não 3001 em desenvolvimento:** o callback é servido pelo
+   Express (porta 3001), mas o navegador fica no Vite (porta 5173). O
+   `vite.config.ts` faz proxy de `/auth/google` para o backend, então usar 5173
+   mantém todo o fluxo numa origem só — igual à produção, onde o Express serve o
+   app e o callback na mesma porta. Usar 3001 aqui também funciona, mas joga o
+   navegador para fora do dev server no meio do fluxo.
 4. Criar. Copie **Client ID** e **Client Secret**.
 
 ## 7. Gerar a chave de cifragem
@@ -95,7 +102,7 @@ Na raiz do projeto, no `.env`:
 ```
 GOOGLE_CLIENT_ID=<ID do cliente do passo 6>
 GOOGLE_CLIENT_SECRET=<Chave secreta do passo 6>
-GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
+GOOGLE_REDIRECT_URI=http://localhost:5173/auth/google/callback
 GOOGLE_TOKEN_ENC_KEY=<saída do openssl do passo 7>
 GOOGLE_OAUTH_SCOPES=openid email https://www.googleapis.com/auth/calendar.app.created
 DEFAULT_TIMEZONE=America/Sao_Paulo

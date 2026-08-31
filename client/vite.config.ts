@@ -33,6 +33,12 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': backendUrl,
         '/assets': backendUrl,
+        // O callback do OAuth do Google é servido pelo Express, não pelo SPA.
+        // Sem este proxy o Google redirecionaria para o dev server do Vite, que
+        // devolveria o index.html e o vínculo nunca seria criado.
+        // O prefixo é '/auth/google' e não '/auth' de propósito: '/auth' é a
+        // rota de login do cliente, e proxiá-la quebraria a entrada do app.
+        '/auth/google': backendUrl,
       },
     },
     build: {
