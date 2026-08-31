@@ -159,12 +159,17 @@ export async function apiApplyBuffToParty(partyId: string, payload: ApplyBuffPay
 
 export async function apiProposeSession(
   partyId: string,
-  data: { date: string; time?: string },
+  data: { date: string; time?: string; timezone?: string },
 ): Promise<Party> {
   const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      // Fixa o instante absoluto da sessão: sem isso o evento no Google pode
+      // cair em UTC e aparecer com horas de diferença.
+      timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
   });
   await assertOk(res);
   return res.json();

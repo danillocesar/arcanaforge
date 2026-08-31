@@ -268,6 +268,10 @@ function createPartyService(refs) {
     if (time && (typeof time !== 'string' || !/^\d{2}:\d{2}$/.test(time))) {
       throw new AppError(400, 'Horário inválido (esperado HH:mm)');
     }
+    const { timezone } = body || {};
+    if (timezone && (typeof timezone !== 'string' || timezone.length > 64)) {
+      throw new AppError(400, 'timezone inválido');
+    }
 
     const party = await partyRepository.findMemberParty(partyId, req.user.uid);
     if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
@@ -277,6 +281,8 @@ function createPartyService(refs) {
       proposedBy: req.user.uid,
       date,
       time: time || '',
+      timezone: timezone || '',
+      googleEvents: [],
       createdAt: new Date(),
       responses: [],
     };
