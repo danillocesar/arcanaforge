@@ -203,22 +203,49 @@ uid — se já existe entrada para aquele uid, não cria de novo.
 
 A lista é escrita **por uid**, nunca com um `$set` do array inteiro:
 `addProposalGoogleEvent(partyId, proposalId, ref)` faz `$pull` da entrada
-daquele uid e `$push` da nova (é o que mantém "uma entrada por uid" sem ler o
-array antes), e `removeProposalGoogleEvent(partyId, proposalId, uid)` faz o
-`$pull`. Cada criação confirmada é gravada na hora, e cada deleção confirmada é
-removida na hora — em vez de montar a lista em memória e gravá-la de uma vez no
-fim. A escrita única partia sempre de um snapshot lido no começo da requisição,
-e dois votos sobrepostos apagavam as referências um do outro: os eventos
-continuavam de verdade na agenda das pessoas, e o app perdia o único jeito de
-apagá-los.
+daquele uid e `$push` da nova, e `removeProposalGoogleEvent(partyId, proposalId, uid)`
+faz o `$pull`. Cada criação confirmada é gravada na hora, e cada deleção
+confirmada é removida na hora — em vez de montar a lista em memória e gravá-la
+de uma vez no fim. A escrita única partia sempre de um snapshot lido no começo
+da requisição, e dois votos sobrepostos apagavam as referências um do outro: os
+eventos continuavam de verdade na agenda das pessoas, e o app perdia o único
+jeito de apagá-los.
 
-Ressalva que fica: a checagem de idempotência lê o snapshot da requisição, então
-duas criações **para o mesmo uid** exatamente simultâneas ainda podem criar dois
-eventos de verdade e guardar referência de um só. A escrita por uid fecha a
-classe de perda de escrita entre uids **diferentes** — o caso comum: dois
-membros votando junto, ou o backfill de um rodando junto com o voto de outro.
-Fechar a do mesmo uid exigiria reservar a entrada antes da chamada ao Google, e
-isso não está nesta versão.
+O `cancelSession` segue a mesma regra: a proposta sai por
+`removeProposal(partyId, proposalId)`, que faz `$pull` de `sessionProposals`
+pelo id. Reatribuir o array em memória e chamar `save()` fazia o mongoose
+emitir `$set` do array **inteiro**, montado a partir do snapshot da
+requisição — e isso apagava as referências de `googleEvents` gravadas
+concorrentemente em **outra** proposta, com o mesmo desfecho de evento
+indeletável. A guarda otimista de versão do mongoose não protege esse caso:
+`updateOne` com `$push`/`$pull` não incrementa `__v`, então o `save()`
+versionado encontra o documento na versão que esperava e sobrescreve. Como o
+documento em memória fica velho depois do `$pull`, o DTO de retorno é montado
+a partir do snapshot já lido, com a proposta filtrada em memória — nunca por um
+segundo `save()`.
+
+**Até onde vai o invariante "uma entrada por uid".** O `$pull` do uid antes do
+`$push` mantém o invariante em escritas **sequenciais** — re-criação depois de
+uma deleção não confirmada, por exemplo: a entrada antiga sai e a nova entra.
+Sob duas escritas do mesmo uid ele não vale, e o desfecho depende do
+entrelaçamento: se o primeiro `add` completa inteiro antes do segundo começar,
+ficam dois eventos de verdade e referência de **um só** (o outro é um fantasma
+indeletável); se os dois `add` se entrelaçam, o `$pull` de cada escritor roda
+antes do `$push` do outro e ficam **duas** entradas para o mesmo uid — a mesma
+sessão duas vezes na agenda da pessoa, que se auto-cura no cancelamento (o
+`$pull` por uid leva as duas entradas e os dois eventos são apagados) e portanto
+é defeito de UX, não perda de dado.
+
+A escrita por uid fecha a classe de perda de escrita entre uids **diferentes**,
+que é o caso comum (dois membros votando junto, ou o backfill de um rodando
+junto com o voto de outro). Fechar a do mesmo uid exigiria reservar a entrada
+antes da chamada ao Google, e isso não está nesta versão. O gatilho alcançável
+era o duplo clique numa **mudança** de voto: ela vira `$set` num caminho
+específico, que não carrega guarda de versão do mongoose — ao contrário do voto
+novo, que é `$push` e faz a segunda requisição falhar com `VersionError`. Contra
+isso o cliente ganhou guarda de in-flight (`handleVote` e `handleCancel` recusam
+começar com requisição em voo, e os botões de voto e de cancelar ficam
+desabilitados enquanto isso), o que estreita a janela sem fechá-la no server.
 
 A lista também é o que permite desfazer: sem ela não há como achar os eventos no
 Google para apagar.
@@ -340,8 +367,10 @@ sem conta ligada, ou com link quebrado, é simplesmente pulado — não bloqueia
 outros.
 
 **Ordem no cancelamento.** `cancelSession` remove a proposta do documento, então
-`googleEvents` tem que ser lido **antes** do `save()` e passado para o sync. Fazer
-na ordem inversa perde os `eventId` e deixa eventos órfãos na agenda das pessoas.
+`googleEvents` (mais `prevConfirmed` e o snapshot do grupo) tem que ser lido
+**antes** do `removeProposal` e passado para o sync. Fazer na ordem inversa perde
+os `eventId` e deixa eventos órfãos na agenda das pessoas. As checagens de
+autorização (só quem propôs ou o dono do grupo cancela) vêm antes de tudo isso.
 
 ### 3.2 Transições
 

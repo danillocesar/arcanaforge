@@ -362,9 +362,10 @@ function createPartyService(refs) {
       throw new AppError(403, 'Só quem propôs ou o dono do grupo pode cancelar');
     }
 
-    // A ordem importa: googleEvents tem que ser lido ANTES do save() que
-    // remove a proposta, senão os ids dos eventos somem e ficam órfãos na
-    // agenda real de cada membro, sem nada no banco apontando pra eles.
+    // A ordem importa: googleEvents, prevConfirmed e o snapshot do grupo têm
+    // que ser lidos ANTES da remoção, senão os ids dos eventos somem e ficam
+    // órfãos na agenda real de cada membro, sem nada no banco apontando pra
+    // eles.
     const prevConfirmed = isConfirmed(party, proposal);
     const eventsBefore = (proposal.googleEvents || []).map((e) => ({
       uid: e.uid,
@@ -372,12 +373,14 @@ function createPartyService(refs) {
       calendarId: e.calendarId,
     }));
     const snapshot = party.toObject();
-
-    party.sessionProposals = party.sessionProposals.filter((p) => p.id !== proposalId);
-    await party.save();
-    refs.broadcastPartyRoster(partyId);
-
     const proposalSnapshot = typeof proposal.toObject === 'function' ? proposal.toObject() : proposal;
+
+    // `$pull` da proposta em vez de reatribuir o array e chamar save(): o
+    // save() emitiria `$set` do array INTEIRO a partir deste snapshot e
+    // apagaria as referências de googleEvents que outra requisição gravou em
+    // outra proposta no meio. Ver removeProposal no repositório.
+    await partyRepository.removeProposal(partyId, proposalId);
+    refs.broadcastPartyRoster(partyId);
 
     syncProposal({
       party: snapshot,
@@ -387,7 +390,17 @@ function createPartyService(refs) {
       eventsBefore,
     }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
 
-    return toPartyDTO(party.toObject(), uid);
+    // Depois do $pull o documento em memória está velho, e chamar save() nele
+    // é exatamente o `$set` que acabamos de evitar. O DTO sai do snapshot já
+    // lido, com a proposta removida em memória: é o que esta requisição viu,
+    // menos o que ela acabou de cancelar.
+    return toPartyDTO(
+      {
+        ...snapshot,
+        sessionProposals: (snapshot.sessionProposals || []).filter((p) => p.id !== proposalId),
+      },
+      uid,
+    );
   }
 
   return {

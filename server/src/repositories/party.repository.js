@@ -93,6 +93,25 @@ async function removeProposalGoogleEvent(partyId, proposalId, uid) {
   );
 }
 
+/**
+ * Remove UMA proposta do array, sem tocar nas outras.
+ *
+ * Pela mesma razão das duas funções acima: `party.sessionProposals = filter(...)`
+ * mais `save()` faz o mongoose emitir `$set` do array INTEIRO montado a partir
+ * do snapshot da requisição. Referências de `googleEvents` gravadas
+ * concorrentemente em OUTRA proposta desaparecem — e a guarda otimista do
+ * mongoose não pega, porque `updateOne` com `$push`/`$pull` não incrementa
+ * `__v`, então o `save()` versionado encontra o documento na versão que
+ * esperava. Os eventos continuam de verdade na agenda das pessoas e o app
+ * perde o único jeito de apagá-los.
+ */
+async function removeProposal(partyId, proposalId) {
+  await Party.updateOne(
+    { _id: partyId },
+    { $pull: { sessionProposals: { id: proposalId } } },
+  );
+}
+
 module.exports = {
   existsInviteCode,
   createParty,
@@ -107,4 +126,5 @@ module.exports = {
   findOwnedOrMemberPartyLean,
   addProposalGoogleEvent,
   removeProposalGoogleEvent,
+  removeProposal,
 };
