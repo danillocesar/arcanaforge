@@ -59,11 +59,37 @@ async function findOwnedOrMemberPartyLean(id, uid) {
   }).lean();
 }
 
-/** Substitui a lista de eventos do Google de uma proposta, sem reescrever o resto. */
-async function updateProposalGoogleEvents(partyId, proposalId, googleEvents) {
+/**
+ * Grava a referência do evento de UM uid, sem ler a lista antes.
+ *
+ * Por que não `$set` do array inteiro: quem chama só conhece um snapshot lido
+ * no começo da requisição. Dois votos que se sobrepõem partem do mesmo
+ * snapshot, e o segundo `$set` apaga as referências gravadas pelo primeiro —
+ * os eventos continuam de verdade na agenda das pessoas, e o app perde o único
+ * jeito de apagá-los. Mexendo só na entrada do uid, escritas de uids
+ * diferentes deixam de se atropelar.
+ *
+ * `$pull` do uid antes do `$push` é o que mantém o invariante "uma entrada por
+ * uid" sem precisar ler o array: se já havia entrada (re-criação depois de uma
+ * deleção não confirmada, por exemplo), ela sai e a nova entra. As duas
+ * operações não cabem num update só — o Mongo recusa `$pull` e `$push` no
+ * mesmo caminho.
+ */
+async function addProposalGoogleEvent(partyId, proposalId, ref) {
+  const filtro = { _id: partyId, 'sessionProposals.id': proposalId };
+  await Party.updateOne(filtro, {
+    $pull: { 'sessionProposals.$.googleEvents': { uid: ref.uid } },
+  });
+  await Party.updateOne(filtro, {
+    $push: { 'sessionProposals.$.googleEvents': ref },
+  });
+}
+
+/** Remove a referência de UM uid. Chamado só quando a deleção no Google foi confirmada. */
+async function removeProposalGoogleEvent(partyId, proposalId, uid) {
   await Party.updateOne(
     { _id: partyId, 'sessionProposals.id': proposalId },
-    { $set: { 'sessionProposals.$.googleEvents': googleEvents } },
+    { $pull: { 'sessionProposals.$.googleEvents': { uid } } },
   );
 }
 
@@ -79,5 +105,6 @@ module.exports = {
   findById,
   findOwnedParty,
   findOwnedOrMemberPartyLean,
-  updateProposalGoogleEvents,
+  addProposalGoogleEvent,
+  removeProposalGoogleEvent,
 };

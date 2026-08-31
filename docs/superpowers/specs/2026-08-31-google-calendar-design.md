@@ -198,9 +198,27 @@ Em `sessionProposals` (sub-schema de `Party`):
 }
 ```
 
-É **lista**, não objeto único: são N eventos independentes. A idempotência passa a
-ser por uid — se já existe entrada para aquele uid, não cria de novo. Sem isso,
-dois votos quase simultâneos duplicam o evento na agenda de todo mundo.
+É **lista**, não objeto único: são N eventos independentes. A idempotência é por
+uid — se já existe entrada para aquele uid, não cria de novo.
+
+A lista é escrita **por uid**, nunca com um `$set` do array inteiro:
+`addProposalGoogleEvent(partyId, proposalId, ref)` faz `$pull` da entrada
+daquele uid e `$push` da nova (é o que mantém "uma entrada por uid" sem ler o
+array antes), e `removeProposalGoogleEvent(partyId, proposalId, uid)` faz o
+`$pull`. Cada criação confirmada é gravada na hora, e cada deleção confirmada é
+removida na hora — em vez de montar a lista em memória e gravá-la de uma vez no
+fim. A escrita única partia sempre de um snapshot lido no começo da requisição,
+e dois votos sobrepostos apagavam as referências um do outro: os eventos
+continuavam de verdade na agenda das pessoas, e o app perdia o único jeito de
+apagá-los.
+
+Ressalva que fica: a checagem de idempotência lê o snapshot da requisição, então
+duas criações **para o mesmo uid** exatamente simultâneas ainda podem criar dois
+eventos de verdade e guardar referência de um só. A escrita por uid fecha a
+classe de perda de escrita entre uids **diferentes** — o caso comum: dois
+membros votando junto, ou o backfill de um rodando junto com o voto de outro.
+Fechar a do mesmo uid exigiria reservar a entrada antes da chamada ao Google, e
+isso não está nesta versão.
 
 A lista também é o que permite desfazer: sem ela não há como achar os eventos no
 Google para apagar.

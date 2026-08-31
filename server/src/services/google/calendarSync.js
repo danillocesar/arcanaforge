@@ -11,56 +11,74 @@ function calendarUrl(party) {
   return `${CLIENT_URL}/${party.system || 'tormenta'}/party/${party._id}/calendar`;
 }
 
-/** Persiste a lista de eventos da proposta. Via repository: no repo, service
- *  nunca requer model direto. */
-async function saveEvents(partyId, proposalId, googleEvents) {
-  await partyRepository.updateProposalGoogleEvents(partyId, proposalId, googleEvents);
-}
-
+/**
+ * Cria o evento de um membro e grava a referência dele na hora, por uid.
+ *
+ * Gravar aqui, e não numa escrita única no fim, é o que impede a corrida:
+ * montar a lista em memória e gravá-la de uma vez partia sempre de um snapshot
+ * lido no começo da requisição, e dois votos sobrepostos apagavam as
+ * referências um do outro — eventos de verdade na agenda das pessoas que o app
+ * nunca mais conseguiria apagar.
+ *
+ * Só criação confirmada é gravada: se `insertEvent` falha, nada é persistido.
+ * `buildEventBody` fica fora do `try` de propósito — validação inválida lança
+ * antes de qualquer chamada ao Google, e nada é gravado.
+ */
 async function criarPara(uid, party, proposal) {
   const token = await googleLinkService.getAccessTokenFor(uid);
-  if (!token) return null;
+  if (!token) return;
   const body = buildEventBody({
     partyName: party.name,
     proposal,
     calendarUrl: calendarUrl(party),
     defaultTimezone: googleLinkService.defaultTimezone(),
   });
+  let eventId;
   try {
-    const eventId = await googleApi.insertEvent(token.accessToken, token.calendarId, body);
-    return { uid, eventId, calendarId: token.calendarId, createdAt: new Date() };
+    eventId = await googleApi.insertEvent(token.accessToken, token.calendarId, body);
   } catch (err) {
     if (err instanceof googleApi.GoogleAuthError) {
       await repo.setLastError(uid, err.message);
-      return null;
+      return;
     }
     throw err;
   }
+  await partyRepository.addProposalGoogleEvent(party._id, proposal.id, {
+    uid,
+    eventId,
+    calendarId: token.calendarId,
+    createdAt: new Date(),
+  });
 }
 
 /**
- * Apaga um evento e devolve se ele está confirmadamente fora do Google:
- * `true` quando `deleteEvent` teve sucesso (inclui "já não existia", que
- * `googleApi.deleteEvent` já trata como sucesso). `false` quando não dá pra
- * confirmar a remoção — sem token utilizável, ou credencial quebrada — casos
- * em que o evento real pode continuar na agenda da pessoa. Um erro transiente
- * é relançado para virar `rejected` no `allSettled` do chamador: nesses dois
- * casos (`false` ou rejeitado) o chamador preserva a referência, porque não
- * apagar o registro do evento que ainda existe de verdade é a única forma de
- * não perder o único jeito de tentar apagá-lo de novo depois.
+ * Apaga o evento de um membro e, **só se a remoção foi confirmada**, tira a
+ * referência dele da proposta.
+ *
+ * Confirmada = `deleteEvent` retornou sem lançar (inclui "já não existia", que
+ * `googleApi.deleteEvent` trata como sucesso). Quando não dá pra confirmar —
+ * sem token utilizável, credencial quebrada, ou erro transiente — a referência
+ * **fica**: o evento pode continuar de verdade na agenda da pessoa, e apagar o
+ * registro apagaria o único jeito de tentar de novo depois. O erro transiente é
+ * relançado para virar `rejected` no `allSettled` do chamador e ir para o log.
+ *
+ * `proposalRemoved` = a proposta já saiu do documento (cancelamento): não há
+ * onde gravar, e não se escreve nada.
  */
-async function apagarPara({ uid, eventId, calendarId }) {
+async function apagarPara({ uid, eventId, calendarId }, { party, proposal, proposalRemoved }) {
   const token = await googleLinkService.getAccessTokenFor(uid);
-  if (!token) return false;
+  if (!token) return;
   try {
     await googleApi.deleteEvent(token.accessToken, calendarId, eventId);
-    return true;
   } catch (err) {
     if (err instanceof googleApi.GoogleAuthError) {
       await repo.setLastError(uid, err.message);
-      return false;
+      return;
     }
     throw err;
+  }
+  if (!proposalRemoved) {
+    await partyRepository.removeProposalGoogleEvent(party._id, proposal.id, uid);
   }
 }
 
@@ -86,27 +104,19 @@ async function syncProposal({ party, proposal, prevConfirmed, proposalRemoved, e
     });
 
     if (plano.toDelete.length > 0) {
-      const resultadosDelete = await Promise.allSettled(plano.toDelete.map(apagarPara));
-      // Só sai da lista quem foi confirmadamente apagado. Rejeitado (erro
-      // transiente) ou `false` (sem token, ou credencial quebrada) significa
-      // que o evento pode continuar de verdade na agenda da pessoa — apagar
-      // essa referência apagaria o único jeito de tentar de novo depois.
-      const idsConfirmados = new Set();
+      // Cada membro é independente: quem falha mantém a própria referência e
+      // não impede os outros de sair da lista.
+      const resultadosDelete = await Promise.allSettled(
+        plano.toDelete.map((alvo) => apagarPara(alvo, { party, proposal, proposalRemoved })),
+      );
       resultadosDelete.forEach((r, i) => {
-        const alvo = plano.toDelete[i];
-        if (r.status === 'fulfilled' && r.value === true) {
-          idsConfirmados.add(alvo.uid);
-        } else if (r.status === 'rejected') {
+        if (r.status === 'rejected') {
           console.error(
-            `Falha ao apagar evento do Google Agenda (party=${party._id} proposal=${proposal.id} uid=${alvo.uid}):`,
+            `Falha ao apagar evento do Google Agenda (party=${party._id} proposal=${proposal.id} uid=${plano.toDelete[i].uid}):`,
             r.reason,
           );
         }
       });
-      if (!proposalRemoved) {
-        const sobreviventes = (eventsBefore || []).filter((e) => !idsConfirmados.has(e.uid));
-        await saveEvents(party._id, proposal.id, sobreviventes);
-      }
       return;
     }
 
@@ -123,13 +133,6 @@ async function syncProposal({ party, proposal, prevConfirmed, proposalRemoved, e
         );
       }
     });
-    const criados = resultados
-      .filter((r) => r.status === 'fulfilled' && r.value)
-      .map((r) => r.value);
-
-    if (criados.length > 0) {
-      await saveEvents(party._id, proposal.id, [...(eventsBefore || []), ...criados]);
-    }
   } catch (err) {
     // Loga o objeto de erro inteiro (com stack), não só a mensagem: aqui é o
     // único lugar onde um bug de programação neste caminho fire-and-forget
