@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Party, SessionProposal } from '../types/party';
-import { getProposalStatus, getMyVote } from './sessionProposals';
+import { getProposalStatus, getMyVote, memberLabel } from './sessionProposals';
 
 function baseParty(overrides: Partial<Party> = {}): Party {
   return {
@@ -83,5 +83,24 @@ describe('getMyVote', () => {
       responses: [{ uid: 'owner1', vote: 'nao', respondedAt: '2026-08-18T01:00:00.000Z' }],
     });
     expect(getMyVote(proposal, 'owner1')).toBe('nao');
+  });
+});
+
+describe('memberLabel', () => {
+  const party = baseParty();
+
+  it('usa o e-mail do membro quando ele existe no grupo', () => {
+    expect(memberLabel(party, 'player2')).toBe('player2@test.com');
+  });
+
+  it('cai no uid quando o membro não está mais no grupo', () => {
+    expect(memberLabel(party, 'saiu-do-grupo')).toBe('saiu-do-grupo');
+  });
+
+  it('cai no uid quando o membro está sem e-mail', () => {
+    const semEmail = baseParty({
+      members: [{ uid: 'anon', email: '', characterIds: [], joinedAt: '2026-01-01' }],
+    });
+    expect(memberLabel(semEmail, 'anon')).toBe('anon');
   });
 });

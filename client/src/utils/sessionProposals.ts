@@ -25,3 +25,8 @@ export function getProposalStatus(party: Party, proposal: SessionProposal): Prop
 export function getMyVote(proposal: SessionProposal, uid: string): 'sim' | 'nao' | null {
   return proposal.responses.find((r) => r.uid === uid)?.vote ?? null;
 }
+
+/** Como exibir um membro: e-mail quando houver, senão o uid (membro removido). */
+export function memberLabel(party: Party, uid: string): string {
+  return party.members.find((m) => m.uid === uid)?.email || uid;
+}

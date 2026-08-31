@@ -1,0 +1,147 @@
+.proposeForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.proposeField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proposeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sectionTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.proposalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.proposalCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.proposalCardConfirmed {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.proposalHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.proposalWhen {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.proposalBy {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.confirmedBanner {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+
+.warningBanner {
+  font-size: 0.82rem;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.memberChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memberChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.memberChipSim {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.memberChipNao {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.memberChipPending {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.proposalActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cancelLink {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-family: var(--font);
+}
+
+.cancelLink:hover {
+  color: var(--danger);
+}
+
+@media (max-width: 550px) {
+  .proposeForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
