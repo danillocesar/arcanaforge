@@ -230,9 +230,16 @@ revogação deixaria o link inutilizável.
 
 ### 2.2 Callback
 
-`GET /api/google/oauth/callback?code=...&state=...` — **sem `requireAuth`**, e
-esse é o ponto delicado: o callback é um redirect de navegador vindo do Google,
-sem header `Authorization`. Logo, quem autentica a requisição é o `state`.
+`GET /auth/google/callback?code=...&state=...` — **fora de `/api`**, e esse é o
+ponto delicado: o callback é um redirect de navegador vindo do Google, sem header
+`Authorization`. Logo, quem autentica a requisição é o `state`.
+
+A rota fica fora de `/api` por uma razão concreta do código: `server/index.js:73`
+tem `app.use('/api', apiLimiter, requireAuth)`, ou seja, **todo** caminho sob
+`/api` exige Bearer token. Montar o callback ali significaria abrir uma exceção
+dentro do `requireAuth` global — enfraquecer a regra de autenticação de toda a
+API para acomodar uma rota. Mais seguro deixá-la num prefixo próprio que nunca
+esteve sob a regra.
 
 O `state` é `base64url(uid.nonce.exp)` mais `.` mais o HMAC-SHA256 da mesma
 carga.
@@ -403,10 +410,14 @@ digitada.
 
 | Método | Rota | Auth | Devolve |
 |---|---|---|---|
-| GET | `/api/google/oauth/start` | `requireAuth` | `{ url }` |
-| GET | `/api/google/oauth/callback` | `state` assinado | redirect para o cliente |
-| GET | `/api/google/link` | `requireAuth` | `{ linked, email, lastError }` |
-| DELETE | `/api/google/link` | `requireAuth` | `{ ok: true }` |
+| GET | `/api/google/oauth/start` | `requireAuth` global | `{ url }` |
+| GET | `/auth/google/callback` | `state` assinado | redirect para o cliente |
+| GET | `/api/google/link` | `requireAuth` global | `{ linked, email, lastError }` |
+| DELETE | `/api/google/link` | `requireAuth` global | `{ ok: true }` |
+
+O callback é o único fora de `/api`, pelo motivo explicado na secção 2.2. Os
+outros três não precisam declarar `requireAuth`: já herdam do
+`app.use('/api', ...)` em `server/index.js:73`.
 
 Todos operam sobre o link do **próprio** usuário autenticado. Não existe endpoint
 para ver ou mexer no link de outra pessoa.
@@ -553,7 +564,7 @@ rodando, como foi feito na agenda semanal.
 ```
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:3001/api/google/oauth/callback
+GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
 GOOGLE_TOKEN_ENC_KEY=          # 32 bytes em base64: openssl rand -base64 32
 GOOGLE_CALENDAR_SCOPE=https://www.googleapis.com/auth/calendar.app.created
 DEFAULT_TIMEZONE=America/Sao_Paulo
