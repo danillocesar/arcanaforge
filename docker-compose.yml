@@ -27,6 +27,14 @@ services:
     env_file: .env
     environment:
       - MONGODB_URI=mongodb://mongo:27017/arcanaforge
+      # O .env carrega os valores de desenvolvimento (localhost:5173, porque em
+      # dev o navegador fica no Vite). Aqui eles são sobrescritos pelos de
+      # produção: o túnel serve arcana-forge.com e o Express entrega o SPA e o
+      # callback do OAuth na mesma origem, então não há proxy no meio.
+      # Sem isto, quem autorizasse pelo site público seria redirecionado para o
+      # próprio localhost e o vínculo nunca se completaria.
+      - CLIENT_URL=https://arcana-forge.com
+      - GOOGLE_REDIRECT_URI=https://arcana-forge.com/auth/google/callback
     volumes:
       - ./data:/app/data
     healthcheck:
