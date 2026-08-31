@@ -274,11 +274,15 @@ O callback:
    rejeita: ou já foi usado, ou expirou pelo TTL.
 3. Troca o `code` por tokens em `POST https://oauth2.googleapis.com/token`.
 4. Cria o calendário secundário (`POST /calendar/v3/calendars` com
-   `{ summary: 'ArcanaForge', timeZone }`) e guarda o id devolvido. "Já existe" é
-   decidido só pelo `calendarId` gravado no `googleLinks`: se o campo está
-   preenchido, reaproveita. Se a pessoa apagou o calendário no Google, a próxima
-   chamada devolve 404 — tratado como link quebrado (secção 7), e religar cria um
-   calendário novo.
+   `{ summary: 'ArcanaForge', timeZone }`) e guarda o id devolvido. O
+   `calendarId` já gravado no `googleLinks` é reaproveitado **só quando ainda
+   serve**: o e-mail que acabou de autorizar bate com o gravado, **e** um
+   `GET /calendars/<id>` com o token novo alcança o calendário. Se a pessoa
+   apagou o calendário no Google, ou autorizou outra conta, a checagem falha e um
+   calendário novo é criado — é isso que faz religar recuperar de verdade.
+   Reaproveitar sem checar deixava o link permanentemente morto: o id apontava
+   para algo inalcançável, nada nunca o limpava, e a UI dizia "Conectada"
+   enquanto a confirmação seguinte quebrava o link outra vez.
 5. Grava o `googleLinks` com o refresh token cifrado e `lastError: null`.
 6. Dispara o backfill (secção 3.4), fire-and-forget.
 7. Redireciona para o cliente com `?google=ok` ou `?google=error&reason=...`.

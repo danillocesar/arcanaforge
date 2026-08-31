@@ -23,6 +23,35 @@ function safeReturnTo(value) {
   return v;
 }
 
+/**
+ * Calendário a usar depois de uma autorização. Reaproveita o guardado só
+ * enquanto ele ainda serve; fora disso, cria um novo.
+ *
+ * Antes o `calendarId` gravado era reaproveitado sempre que estivesse
+ * preenchido, e nada nunca o limpava. Consequência: quem apagou o calendário
+ * "ArcanaForge" no Google, ou autorizou outra conta, ficava com um link
+ * permanentemente morto — a UI dizia "Conectada", e a confirmação seguinte
+ * quebrava o link de novo, para sempre. Spec §2.2 passo 4 promete o oposto
+ * ("religar cria um calendário novo").
+ *
+ * Duas checagens, e a segunda é a que decide: o e-mail que acabou de autorizar
+ * tem que bater com o gravado (conta diferente = calendário de outra conta), e o
+ * calendário tem que ser alcançável com o token novo. Quando um dos e-mails é
+ * desconhecido (link antigo sem e-mail, ou id_token sem o campo) não dá pra
+ * afirmar que a conta mudou, e aí a alcançabilidade responde sozinha — ela é
+ * autoritativa, porque o token é da conta que acabou de autorizar.
+ */
+async function resolveCalendarId(anterior, email, accessToken) {
+  const guardado = anterior?.calendarId;
+  if (guardado) {
+    const contaPodeSerAMesma = !anterior.email || !email || anterior.email === email;
+    if (contaPodeSerAMesma && (await googleApi.calendarExists(accessToken, guardado))) {
+      return guardado;
+    }
+  }
+  return googleApi.createAppCalendar(accessToken, defaultTimezone());
+}
+
 async function startOAuth(uid, returnTo) {
   if (!isEnabled()) throw new AppError(503, 'Integração com Google Agenda não configurada');
   const { state, nonce, expiresAt } = signState(uid);
@@ -47,8 +76,7 @@ async function handleCallback({ code, state }) {
     const { refreshToken, accessToken, scope, email } = await googleApi.exchangeCode(code);
 
     const anterior = await repo.findByUid(verificado.uid);
-    const calendarId = anterior?.calendarId
-      || (await googleApi.createAppCalendar(accessToken, defaultTimezone()));
+    const calendarId = await resolveCalendarId(anterior, email, accessToken);
 
     await repo.upsert(verificado.uid, {
       email,

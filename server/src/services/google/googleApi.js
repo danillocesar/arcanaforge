@@ -194,6 +194,40 @@ async function createAppCalendar(accessToken, timeZone) {
   return body.id;
 }
 
+/**
+ * O calendário existe e é alcançável com ESTE access token.
+ *
+ * Serve para decidir, ao religar, se o `calendarId` guardado ainda vale. Cobre
+ * as duas formas de ele não valer mais: apagado no Google, e pertencente a
+ * outra conta — `calendar.app.created` só alcança os calendários que o app
+ * criou na conta que autorizou, então um calendário de outra conta é
+ * inalcançável por este token.
+ */
+async function calendarExists(accessToken, calendarId) {
+  const res = await calendarFetch(accessToken, `/calendars/${encodeURIComponent(calendarId)}`);
+  if (res.ok) return true;
+
+  // 404/410 = não existe; 403 = este token não alcança. Nos três o calendário
+  // guardado não serve — e nenhum é sinal de credencial morta, porque o token
+  // acabou de sair de uma autorização bem-sucedida.
+  if (res.status === 403 || res.status === 404 || res.status === 410) return false;
+
+  let responseBody = {};
+  try {
+    responseBody = await res.json();
+  } catch (_) {
+    // Não é JSON
+  }
+
+  // Sobra o que não dá pra concluir (401, rate limit, 5xx). Classifica no mesmo
+  // lugar que o resto e lança: religar falhar e ser repetido é melhor do que
+  // criar um calendário órfão ou reaproveitar um morto no escuro.
+  if (classifyCalendarError(res.status, responseBody) === 'auth') {
+    throw new GoogleAuthError(`Calendar ${res.status}`);
+  }
+  throw new Error(`Falha ao checar calendário: ${res.status}`);
+}
+
 async function insertEvent(accessToken, calendarId, body) {
   const res = await calendarFetch(
     accessToken,
@@ -257,6 +291,7 @@ module.exports = {
   refreshAccessToken,
   revokeToken,
   createAppCalendar,
+  calendarExists,
   insertEvent,
   deleteEvent,
   classifyTokenError,

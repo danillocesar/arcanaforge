@@ -8,6 +8,7 @@ process.env.GOOGLE_CLIENT_SECRET = 'client-secret-teste';
 const service = require('./googleLink.service');
 const repo = require('../../repositories/googleLink.repository');
 const googleApi = require('./googleApi');
+const backfill = require('./backfill');
 const { signState } = require('./oauthState');
 
 describe('googleLink.service — safeReturnTo (guarda contra open redirect)', () => {
@@ -132,5 +133,126 @@ describe('googleLink.service — handleCallback: returnTo anexado ao erro após 
         return true;
       },
     );
+  });
+});
+
+describe('googleLink.service — handleCallback: religar só reaproveita calendário que ainda serve', () => {
+  /**
+   * Roda handleCallback com todo o I/O trocado por stub, e devolve o que foi
+   * gravado mais o que foi chamado. `backfillForUid` também é stubado: é
+   * fire-and-forget dentro do callback, e sem stub tentaria falar com o Mongo.
+   */
+  async function rodarCallback({ anterior, emailNovo, existe }) {
+    const { state, nonce } = signState('uid-1');
+    const chamadas = { calendarExists: [], createAppCalendar: 0 };
+    let gravado = null;
+
+    const originais = {
+      consumeState: repo.consumeState,
+      findByUid: repo.findByUid,
+      upsert: repo.upsert,
+      exchangeCode: googleApi.exchangeCode,
+      calendarExists: googleApi.calendarExists,
+      createAppCalendar: googleApi.createAppCalendar,
+      backfillForUid: backfill.backfillForUid,
+    };
+
+    repo.consumeState = async () => ({ uid: 'uid-1', nonce, returnTo: '/x' });
+    repo.findByUid = async () => anterior;
+    repo.upsert = async (_uid, payload) => {
+      gravado = payload;
+    };
+    googleApi.exchangeCode = async () => ({
+      refreshToken: 'refresh-token-falso',
+      accessToken: 'access-token-falso',
+      scope: 'openid email',
+      email: emailNovo,
+    });
+    googleApi.calendarExists = async (_token, calendarId) => {
+      chamadas.calendarExists.push(calendarId);
+      return existe;
+    };
+    googleApi.createAppCalendar = async () => {
+      chamadas.createAppCalendar += 1;
+      return 'cal-novo';
+    };
+    backfill.backfillForUid = async () => {};
+
+    try {
+      await service.handleCallback({ code: 'codigo', state });
+    } finally {
+      Object.assign(repo, {
+        consumeState: originais.consumeState,
+        findByUid: originais.findByUid,
+        upsert: originais.upsert,
+      });
+      Object.assign(googleApi, {
+        exchangeCode: originais.exchangeCode,
+        calendarExists: originais.calendarExists,
+        createAppCalendar: originais.createAppCalendar,
+      });
+      backfill.backfillForUid = originais.backfillForUid;
+    }
+
+    return { gravado, chamadas };
+  }
+
+  it('reaproveita o calendário guardado quando é a mesma conta e ele ainda existe', async () => {
+    const { gravado, chamadas } = await rodarCallback({
+      anterior: { calendarId: 'cal-antigo', email: 'a@gmail.com' },
+      emailNovo: 'a@gmail.com',
+      existe: true,
+    });
+    assert.equal(gravado.calendarId, 'cal-antigo');
+    assert.deepEqual(chamadas.calendarExists, ['cal-antigo']);
+    assert.equal(chamadas.createAppCalendar, 0);
+  });
+
+  it('cria calendário novo quando o guardado foi apagado no Google', async () => {
+    const { gravado, chamadas } = await rodarCallback({
+      anterior: { calendarId: 'cal-antigo', email: 'a@gmail.com' },
+      emailNovo: 'a@gmail.com',
+      existe: false,
+    });
+    assert.equal(gravado.calendarId, 'cal-novo');
+    assert.equal(chamadas.createAppCalendar, 1);
+  });
+
+  it('cria calendário novo quando a pessoa autorizou outra conta Google', async () => {
+    const { gravado, chamadas } = await rodarCallback({
+      anterior: { calendarId: 'cal-antigo', email: 'antiga@gmail.com' },
+      emailNovo: 'nova@gmail.com',
+      existe: true,
+    });
+    assert.equal(gravado.calendarId, 'cal-novo');
+    assert.equal(gravado.email, 'nova@gmail.com');
+    assert.equal(chamadas.createAppCalendar, 1);
+    assert.deepEqual(
+      chamadas.calendarExists,
+      [],
+      'e-mail diferente já decide: não precisa nem checar a existência',
+    );
+  });
+
+  it('cai na alcançabilidade quando o e-mail guardado é desconhecido (link antigo)', async () => {
+    const { gravado, chamadas } = await rodarCallback({
+      anterior: { calendarId: 'cal-antigo', email: '' },
+      emailNovo: 'a@gmail.com',
+      existe: true,
+    });
+    assert.equal(gravado.calendarId, 'cal-antigo');
+    assert.deepEqual(chamadas.calendarExists, ['cal-antigo']);
+    assert.equal(chamadas.createAppCalendar, 0);
+  });
+
+  it('cria calendário quando não havia link anterior', async () => {
+    const { gravado, chamadas } = await rodarCallback({
+      anterior: null,
+      emailNovo: 'a@gmail.com',
+      existe: true,
+    });
+    assert.equal(gravado.calendarId, 'cal-novo');
+    assert.equal(chamadas.createAppCalendar, 1);
+    assert.deepEqual(chamadas.calendarExists, []);
   });
 });
