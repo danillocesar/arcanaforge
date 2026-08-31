@@ -1,7 +1,12 @@
 # Ligar o ArcanaForge ao Google Agenda
 
 Passo a passo no Google Cloud Console. Feito uma vez, por quem administra o
-projeto. Ao final, cinco valores vão para o `.env`.
+projeto. Ao final, seis valores vão para o `.env`.
+
+**Nota:** O Google Cloud Console se reorganiza periodicamente. Se um rótulo não
+corresponder, procure pela área **Google Auth Platform** e a aba cujo nome
+combine com seu objetivo (Branding / Audience / Clients / Data Access), em vez
+de seguir um menu exato.
 
 ## 1. Projeto
 
@@ -16,56 +21,58 @@ projeto. Ao final, cinco valores vão para o `.env`.
 
 ## 3. Tela de consentimento
 
-1. Menu → **APIs e serviços → Tela de permissão OAuth**.
-2. Tipo de usuário: **Externo**. Criar.
-3. Preencha:
+1. Menu → **APIs e serviços → Google Auth Platform**.
+2. Aba **Branding**. Preencha:
    - **Nome do app:** `ArcanaForge`
    - **E-mail de suporte:** seu e-mail
    - **E-mail do desenvolvedor:** seu e-mail
 
    Esses dois aparecem para os membros na hora de autorizar.
-4. Salvar e continuar.
+3. Salvar.
 
 ## 4. Escopos
 
-1. Na etapa **Escopos**, clique em **Adicionar ou remover escopos**.
-2. Adicione os três:
-   - `openid`
-   - `.../auth/userinfo.email`
+1. Na aba **Data Access**, clique em **Adicionar ou remover escopos**.
+2. Adicione os três escopos (o Console pode exibi-los abreviados):
+   - `https://www.googleapis.com/auth/openid`
+   - `https://www.googleapis.com/auth/userinfo.email`
    - `https://www.googleapis.com/auth/calendar.app.created`
 3. **Anote o rótulo que aparece ao lado do escopo de calendário**
    (Non-sensitive / Sensitive). Se for *Non-sensitive*, ninguém verá tela de
    aviso. Se for *Sensitive*, cada membro vê uma vez a tela de "app não
    verificado" e precisa clicar em **Avançado → acessar ArcanaForge**.
-4. Salvar e continuar.
+4. Salvar.
 
 ## 5. Publicar o app — passo que não pode ser esquecido
 
-1. Volte para **Tela de permissão OAuth**.
-2. Em **Status da publicação**, clique em **Publicar app** e confirme.
-3. O status precisa ficar **Em produção**, não "Testes".
+1. Na aba **Audience**, clique em **Publicar app** e confirme.
+2. O status precisa ficar **Em produção**, não "Testes".
 
 Por que importa: no status "Testes" o Google emite refresh token que **expira em
 7 dias**, o que obrigaria cada membro a religar a conta toda semana. Em produção
 o token não expira por status. Se em algum momento a agenda parar de receber as
 sessões para todos ao mesmo tempo, confira este item primeiro.
 
+A publicação não exige que o app passe por verificação: um app não verificado
+roda em produção normalmente, com o aviso "app não verificado" visível apenas
+para escopos Sensitive, e está limitado a 100 usuários.
+
 Não é necessário cadastrar usuários de teste: essa lista só existe no status
 "Testes".
 
 ## 6. Credenciais OAuth
 
-1. Menu → **APIs e serviços → Credenciais**.
-2. **Criar credenciais → ID do cliente OAuth**.
-3. Tipo de aplicativo: **Aplicativo da Web**. Nome: `ArcanaForge web`.
-4. Em **URIs de redirecionamento autorizados**, adicione **exatamente**:
+1. Na aba **Clients**, clique em **Criar cliente OAuth** (ou equivalente em sua
+   interface).
+2. Tipo de aplicativo: **Aplicativo da Web**. Nome: `ArcanaForge web`.
+3. Em **URIs de redirecionamento autorizados**, adicione **exatamente**:
    - `http://localhost:3001/auth/google/callback` (desenvolvimento)
    - `https://SEU-DOMINIO/auth/google/callback` (produção, quando houver)
 
    Precisa bater caractere por caractere com o `GOOGLE_REDIRECT_URI` do `.env` —
    barra final, `http` vs `https` e porta incluídos. Divergência aqui gera
    `redirect_uri_mismatch` na hora de autorizar.
-5. Criar. Copie **ID do cliente** e **Chave secreta do cliente**.
+4. Criar. Copie **ID do cliente** e **Chave secreta do cliente**.
 
 ## 7. Gerar a chave de cifragem
 
