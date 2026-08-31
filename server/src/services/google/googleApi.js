@@ -100,7 +100,7 @@ async function postForm(url, params) {
     if (classification === 'auth') {
       throw new GoogleAuthError(body.error_description || body.error || 'credencial inválida');
     }
-    throw new Error(`Google ${res.status}: ${body.error_description || body.error || text}`);
+    throw new Error(`Google ${res.status}: ${body.error_description || body.error || text.slice(0, 100)}`);
   }
   return body;
 }

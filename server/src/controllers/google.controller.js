@@ -1,3 +1,5 @@
+const { AppError } = require('../errors/AppError');
+
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 function createGoogleController(googleLinkService) {
@@ -17,7 +19,12 @@ function createGoogleController(googleLinkService) {
         // que vive na pagina do grupo, nunca dispara.
         res.redirect(`${CLIENT_URL}${returnTo}?google=ok`);
       } catch (err) {
-        const motivo = encodeURIComponent(err.message || 'erro');
+        // O log completo fica no servidor; a URL do navegador (histórico,
+        // referrer, logs de proxy) só recebe uma mensagem curta e controlada
+        // — nunca o corpo bruto de uma resposta de erro do Google.
+        console.error('Falha no callback OAuth do Google:', err);
+        const mensagem = err instanceof AppError ? err.message : 'falha ao conectar com o Google';
+        const motivo = encodeURIComponent(mensagem.slice(0, 120));
         res.redirect(`${CLIENT_URL}/?google=error&reason=${motivo}`);
       }
     },

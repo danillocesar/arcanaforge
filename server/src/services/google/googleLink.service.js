@@ -67,6 +67,7 @@ async function getLinkState(uid) {
 }
 
 async function unlink(uid) {
+  if (!isEnabled()) return;
   const link = await repo.findByUid(uid);
   if (!link) return;
   if (link.refreshTokenEnc && tokenCrypto.isConfigured()) {
