@@ -94,3 +94,43 @@ describe('googleLink.service — handleCallback: uid do state assinado vs. uid d
     }
   });
 });
+
+describe('googleLink.service — handleCallback: returnTo anexado ao erro após o state ser consumido', () => {
+  it('quando a troca de código falha depois do state válido e consumido, o erro carrega o returnTo gravado', async () => {
+    const { state, nonce } = signState('uid-legitimo');
+
+    const consumeStateOriginal = repo.consumeState;
+    repo.consumeState = async () => (
+      { uid: 'uid-legitimo', nonce, returnTo: '/tormenta/party/abc/calendar' }
+    );
+
+    const exchangeCodeOriginal = googleApi.exchangeCode;
+    googleApi.exchangeCode = async () => {
+      throw new Error('Google 500: falha simulada na troca de código');
+    };
+
+    try {
+      await assert.rejects(
+        () => service.handleCallback({ code: 'codigo-qualquer', state }),
+        (err) => {
+          assert.equal(err.returnTo, '/tormenta/party/abc/calendar');
+          return true;
+        },
+      );
+    } finally {
+      repo.consumeState = consumeStateOriginal;
+      googleApi.exchangeCode = exchangeCodeOriginal;
+    }
+  });
+
+  it('quando o state é inválido (falha antes de ser consumido), o erro NÃO carrega returnTo', async () => {
+    await assert.rejects(
+      () => service.handleCallback({ code: 'codigo-qualquer', state: 'state-invalido-sem-ponto' }),
+      (err) => {
+        assert.equal(err.statusCode, 400);
+        assert.equal(err.returnTo, undefined);
+        return true;
+      },
+    );
+  });
+});

@@ -25,7 +25,13 @@ function createGoogleController(googleLinkService) {
         console.error('Falha no callback OAuth do Google:', err);
         const mensagem = err instanceof AppError ? err.message : 'falha ao conectar com o Google';
         const motivo = encodeURIComponent(mensagem.slice(0, 120));
-        res.redirect(`${CLIENT_URL}/?google=error&reason=${motivo}`);
+        // Se o state já tinha sido consumido e validado quando o erro
+        // aconteceu (ex.: falha na troca de código), o returnTo é conhecido
+        // e vem anexado no erro — sem isso o Toast de erro nunca aparece,
+        // porque ele só existe dentro da página do grupo. Falha antes do
+        // state ser consumido genuinamente não tem returnTo; cai na raiz.
+        const destino = typeof err.returnTo === 'string' && err.returnTo ? err.returnTo : '/';
+        res.redirect(`${CLIENT_URL}${destino}?google=error&reason=${motivo}`);
       }
     },
 

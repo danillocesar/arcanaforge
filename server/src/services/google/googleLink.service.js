@@ -43,20 +43,29 @@ async function handleCallback({ code, state }) {
     throw new AppError(400, 'state já utilizado');
   }
 
-  const { refreshToken, accessToken, scope, email } = await googleApi.exchangeCode(code);
+  try {
+    const { refreshToken, accessToken, scope, email } = await googleApi.exchangeCode(code);
 
-  const anterior = await repo.findByUid(verificado.uid);
-  const calendarId = anterior?.calendarId
-    || (await googleApi.createAppCalendar(accessToken, defaultTimezone()));
+    const anterior = await repo.findByUid(verificado.uid);
+    const calendarId = anterior?.calendarId
+      || (await googleApi.createAppCalendar(accessToken, defaultTimezone()));
 
-  await repo.upsert(verificado.uid, {
-    email,
-    refreshTokenEnc: tokenCrypto.encryptToken(refreshToken),
-    scope,
-    calendarId,
-  });
+    await repo.upsert(verificado.uid, {
+      email,
+      refreshTokenEnc: tokenCrypto.encryptToken(refreshToken),
+      scope,
+      calendarId,
+    });
 
-  return { uid: verificado.uid, returnTo: safeReturnTo(guardado.returnTo) };
+    return { uid: verificado.uid, returnTo: safeReturnTo(guardado.returnTo) };
+  } catch (err) {
+    // Daqui em diante o returnTo já é conhecido (state consumido e validado):
+    // anexa no erro para o controller devolver o navegador pra aba certa mesmo
+    // quando a troca de código com o Google falha. Não reclassifica nem
+    // engole o erro, só anota.
+    err.returnTo = safeReturnTo(guardado.returnTo);
+    throw err;
+  }
 }
 
 async function getLinkState(uid) {
