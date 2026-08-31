@@ -19,12 +19,24 @@ const sessionResponseSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const googleEventRefSchema = new mongoose.Schema(
+  {
+    uid: { type: String, required: true },
+    eventId: { type: String, required: true },
+    calendarId: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
 const sessionProposalSchema = new mongoose.Schema(
   {
     id: { type: String, required: true },
     proposedBy: { type: String, required: true },
     date: { type: String, required: true }, // 'YYYY-MM-DD'
     time: { type: String, default: '' }, // 'HH:mm', opcional
+    timezone: { type: String, default: '' }, // IANA; '' cai no DEFAULT_TIMEZONE
+    googleEvents: { type: [googleEventRefSchema], default: [] },
     createdAt: { type: Date, default: Date.now },
     responses: { type: [sessionResponseSchema], default: [] },
   },

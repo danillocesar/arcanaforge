@@ -13,6 +13,44 @@ class GoogleAuthError extends Error {
   }
 }
 
+/**
+ * Classifica erros do endpoint de token.
+ * Retorna 'auth' se é falha de credencial por-usuário (só invalid_grant).
+ * Retorna 'other' para erros de config ou requisição.
+ */
+function classifyTokenError(status, body) {
+  if (body && body.error === 'invalid_grant') {
+    return 'auth';
+  }
+  return 'other';
+}
+
+/**
+ * Classifica erros da API do Google Calendar.
+ * 401 → 'auth' (credencial inválida)
+ * 403 com razão de rate limit → 'transient'
+ * 403 com outra razão → 'auth'
+ * 404 → 'other' (o chamador decide o significado)
+ * Outros → 'other'
+ */
+function classifyCalendarError(status, body) {
+  if (status === 401) {
+    return 'auth';
+  }
+
+  if (status === 403) {
+    // Procura a razão do erro em body.error.errors[0].reason
+    const reason = body?.error?.errors?.[0]?.reason;
+    if (reason === 'rateLimitExceeded' || reason === 'userRateLimitExceeded' || reason === 'quotaExceeded') {
+      return 'transient';
+    }
+    // Qualquer outro 403 é tratado como credencial/permissão
+    return 'auth';
+  }
+
+  return 'other';
+}
+
 function isConfigured() {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
@@ -44,9 +82,22 @@ async function postForm(url, params) {
     body: new URLSearchParams(params).toString(),
   });
   const text = await res.text();
-  const body = text ? JSON.parse(text) : {};
+
+  let body = {};
+  try {
+    body = text ? JSON.parse(text) : {};
+  } catch (_) {
+    // Resposta não é JSON (e.g. HTML). Inclui um trecho do texto para diagnóstico.
+    const truncated = text.slice(0, 100);
+    if (!res.ok) {
+      throw new Error(`Google ${res.status}: resposta não-JSON: ${truncated}`);
+    }
+    return body;
+  }
+
   if (!res.ok) {
-    if (body.error === 'invalid_grant' || res.status === 401) {
+    const classification = classifyTokenError(res.status, body);
+    if (classification === 'auth') {
       throw new GoogleAuthError(body.error_description || body.error || 'credencial inválida');
     }
     throw new Error(`Google ${res.status}: ${body.error_description || body.error || text}`);
@@ -117,9 +168,6 @@ async function calendarFetch(accessToken, path, init = {}) {
       ...(init.headers || {}),
     },
   });
-  if (res.status === 401 || res.status === 403) {
-    throw new GoogleAuthError(`Calendar ${res.status}`);
-  }
   return res;
 }
 
@@ -128,8 +176,22 @@ async function createAppCalendar(accessToken, timeZone) {
     method: 'POST',
     body: JSON.stringify({ summary: 'ArcanaForge', timeZone }),
   });
-  if (!res.ok) throw new Error(`Falha ao criar calendário: ${res.status}`);
-  return (await res.json()).id;
+
+  let body = {};
+  try {
+    body = await res.json();
+  } catch (_) {
+    // Não é JSON
+  }
+
+  if (!res.ok) {
+    const classification = classifyCalendarError(res.status, body);
+    if (classification === 'auth') {
+      throw new GoogleAuthError(`Calendar ${res.status}`);
+    }
+    throw new Error(`Falha ao criar calendário: ${res.status}`);
+  }
+  return body.id;
 }
 
 async function insertEvent(accessToken, calendarId, body) {
@@ -138,10 +200,30 @@ async function insertEvent(accessToken, calendarId, body) {
     `/calendars/${encodeURIComponent(calendarId)}/events`,
     { method: 'POST', body: JSON.stringify(body) },
   );
-  // Calendário apagado pela pessoa no Google: mesmo tratamento de credencial.
-  if (res.status === 404) throw new GoogleAuthError('calendário não encontrado');
-  if (!res.ok) throw new Error(`Falha ao criar evento: ${res.status}`);
-  return (await res.json()).id;
+
+  let responseBody = {};
+  try {
+    responseBody = await res.json();
+  } catch (_) {
+    // Não é JSON
+  }
+
+  // Calendário apagado pela pessoa no Google: tratado como credencial quebrada.
+  if (res.status === 404) {
+    throw new GoogleAuthError('calendário não encontrado');
+  }
+
+  if (!res.ok) {
+    const classification = classifyCalendarError(res.status, responseBody);
+    if (classification === 'auth') {
+      throw new GoogleAuthError(`Calendar ${res.status}`);
+    }
+    if (classification === 'transient') {
+      throw new Error(`Falha transiente ao criar evento: ${res.status}`);
+    }
+    throw new Error(`Falha ao criar evento: ${res.status}`);
+  }
+  return responseBody.id;
 }
 
 async function deleteEvent(accessToken, calendarId, eventId) {
@@ -152,6 +234,18 @@ async function deleteEvent(accessToken, calendarId, eventId) {
   );
   // Já não existe é o estado desejado.
   if (res.ok || res.status === 404 || res.status === 410) return;
+
+  let responseBody = {};
+  try {
+    responseBody = await res.json();
+  } catch (_) {
+    // Não é JSON
+  }
+
+  const classification = classifyCalendarError(res.status, responseBody);
+  if (classification === 'auth') {
+    throw new GoogleAuthError(`Calendar ${res.status}`);
+  }
   throw new Error(`Falha ao apagar evento: ${res.status}`);
 }
 
@@ -165,4 +259,6 @@ module.exports = {
   createAppCalendar,
   insertEvent,
   deleteEvent,
+  classifyTokenError,
+  classifyCalendarError,
 };
