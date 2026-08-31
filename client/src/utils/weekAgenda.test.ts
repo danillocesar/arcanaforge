@@ -13,6 +13,7 @@ import {
   initialScrollHour,
   formatWeekRange,
   formatProposalWhen,
+  visibleHourRange,
 } from './weekAgenda';
 
 describe('parseLocalDate', () => {
@@ -254,5 +255,45 @@ describe('formatProposalWhen', () => {
     expect(formatProposalWhen(proposal({ date: '2026-09-02', time: '' }))).toBe(
       'quarta-feira, 2 de setembro de 2026',
     );
+  });
+});
+
+describe('visibleHourRange', () => {
+  const week = getWeekDays(parseLocalDate('2026-09-02'));
+  const faixa = (times: string[]) =>
+    visibleHourRange(buildWeekGrid(times.map((t, i) => proposal({ id: `p${i}`, time: t })), week));
+
+  it('usa 10h-22h quando a semana está vazia', () => {
+    expect(visibleHourRange(buildWeekGrid([], week))).toEqual([10, 22]);
+  });
+
+  it('não expande para proposta dentro da faixa', () => {
+    expect(faixa(['19:00'])).toEqual([10, 22]);
+  });
+
+  it('inclui os limites sem expandir', () => {
+    expect(faixa(['10:00', '22:00'])).toEqual([10, 22]);
+  });
+
+  // Sem isto, cortar a grade em 10h-22h faria uma proposta das 23h sumir da
+  // tela sem aviso — o formulário ainda aceita qualquer hora de 00 a 23.
+  it('expande para baixo quando há proposta antes das 10h', () => {
+    expect(faixa(['08:00'])).toEqual([8, 22]);
+  });
+
+  it('expande para cima quando há proposta depois das 22h', () => {
+    expect(faixa(['23:30'])).toEqual([10, 23]);
+  });
+
+  it('expande dos dois lados', () => {
+    expect(faixa(['06:00', '23:00'])).toEqual([6, 23]);
+  });
+
+  it('ignora proposta sem horário', () => {
+    expect(faixa([''])).toEqual([10, 22]);
+  });
+
+  it('aceita faixa padrão customizada', () => {
+    expect(visibleHourRange(buildWeekGrid([], week), 9, 21)).toEqual([9, 21]);
   });
 });

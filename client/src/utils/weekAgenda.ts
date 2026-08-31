@@ -115,7 +115,7 @@ const WEEKDAY_FULL = [
   'sábado',
 ];
 const MONTH_SHORT = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const MONTH_FULL = [
+export const MONTH_FULL = [
   'janeiro',
   'fevereiro',
   'março',
@@ -150,4 +150,29 @@ export function formatProposalWhen(proposal: SessionProposal): string {
   const d = parseLocalDate(proposal.date);
   const when = `${WEEKDAY_FULL[d.getDay()]}, ${d.getDate()} de ${MONTH_FULL[d.getMonth()]} de ${d.getFullYear()}`;
   return proposal.time ? `${when} às ${proposal.time}` : when;
+}
+
+/**
+ * Faixa de horas que a grade semanal mostra, inclusiva nas duas pontas.
+ *
+ * O padrão 10h-22h existe porque a mesa não marca sessão de madrugada e as 24
+ * linhas só empurravam o horário útil para fora da tela. Mas o formulário
+ * ainda aceita qualquer hora de 00 a 23, então cortar a grade sem mais nada
+ * faria uma proposta fora da faixa sumir sem aviso. Por isso a faixa expande
+ * para caber o que existe naquela semana — nada fica invisível.
+ */
+export function visibleHourRange(grid: WeekGrid, min = 10, max = 22): [number, number] {
+  let inicio = min;
+  let fim = max;
+
+  for (const cell of grid.timed.values()) {
+    for (const proposal of cell) {
+      const hour = proposalHour(proposal);
+      if (hour == null) continue;
+      if (hour < inicio) inicio = hour;
+      if (hour > fim) fim = hour;
+    }
+  }
+
+  return [inicio, fim];
 }
