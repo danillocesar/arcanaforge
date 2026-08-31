@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getInitials, getAvatarColor } from '../../../utils/formatters';
+import { parseGoogleReturnToast } from '../../../utils/googleReturnToast';
 import type { Party } from '../../../types/party';
 import { useToast } from '../../ui/Toast/Toast';
 import GoogleCalendarLink from '../GoogleCalendarLink/GoogleCalendarLink';
@@ -35,19 +36,14 @@ function GroupInfoCard({ party, isOwner }: GroupInfoCardProps) {
   // os effects de pai e filho rodam. O ToastProvider é montado uma vez só, na
   // raiz (main.tsx), então funciona em qualquer lugar.
   //
-  // A falha usa a variante 'attack': é a única de cor cheia que não aparece em
-  // notificação de rotina, então destoa do aviso comum. Não existe variante
-  // 'error' no ToastVariant, e inventar uma está fora do escopo daqui.
+  // A decisão de mensagem/variante mora em parseGoogleReturnToast (utils):
+  // é a fatia pura, testável sem jsdom. Aqui fica só o efeito colateral —
+  // ler a URL, mostrar o toast e limpá-la para o aviso não reaparecer a cada
+  // re-render ou refresh.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get('google');
-    if (!status) return;
-    showToast(
-      status === 'ok'
-        ? 'Google Agenda conectada.'
-        : `Não foi possível conectar: ${params.get('reason') || 'erro'}`,
-      status === 'ok' ? 'info' : 'attack',
-    );
+    const toast = parseGoogleReturnToast(window.location.search);
+    if (!toast) return;
+    showToast(toast.message, toast.variant);
     window.history.replaceState({}, '', window.location.pathname);
   }, [showToast]);
 
