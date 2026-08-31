@@ -466,6 +466,38 @@ Não há retentativa automática nesta versão. Se a criação falhar para algu�
 ausência do indicador "na sua Google Agenda" é o sinal para aquela pessoa. Uma
 fila de retentativa é extensão separada, se a falha se mostrar comum.
 
+### Limitação conhecida: referência órfã pode fazer a UI mentir
+
+Quando uma **deleção** falha (a pessoa está sem token no momento, ou o Google
+devolve erro transitório), a entrada dela fica em `proposal.googleEvents` de
+propósito: apagar a referência apagaria o único jeito de tentar de novo depois.
+Isso é certo enquanto o registro do app corresponde à realidade.
+
+Existe uma cadeia de três passos em que ele deixa de corresponder:
+
+1. uma deleção falha e a referência permanece;
+2. a pessoa apaga o evento à mão no Google Calendar, ou liga outra conta;
+3. a proposta é re-confirmada.
+
+No passo 3 a checagem de idempotência vê a referência e **não** cria evento — a
+pessoa fica sem nada na agenda, e o indicador ainda diz "na sua Google Agenda".
+A interface afirma o que não é verdade, que é pior do que não afirmar nada.
+
+Isso ficou **aceito e não corrigido**, porque as duas correções candidatas trocam
+um problema por outro:
+
+- marcar a entrada como "deleção pendente" em vez de mantê-la faria o caminho
+  bem mais comum (falha transitória com o evento ainda lá) gerar evento
+  **duplicado** na agenda de todo mundo;
+- verificar no Google se o evento existe antes de pular custaria uma chamada de
+  API por membro por confirmação, e introduz um modo de falha novo justamente no
+  caminho que precisa ser resiliente.
+
+A correção de verdade é a fila de retentativa que este documento já pôs fora de
+escopo: com ela, a deleção pendente é reexecutada e a janela fecha. Se a
+limitação se mostrar real na prática, é por ali que se resolve — não por remendo
+na checagem de idempotência.
+
 ## 8. Riscos
 
 **O risco que existia e morreu.** Na versão anterior desta spec (evento único com
