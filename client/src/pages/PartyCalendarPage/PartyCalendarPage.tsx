@@ -204,6 +204,7 @@ export default function PartyCalendarPage() {
           {isAgenda ? (
             <SessionAgenda
               party={party}
+              uid={uid}
               onSelectProposal={setSelectedId}
               onSelectSlot={(date, time) => setProposeSlot({ date, time })}
             />

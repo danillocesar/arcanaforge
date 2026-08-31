@@ -215,6 +215,12 @@
   text-overflow: ellipsis;
 }
 
+.blockSynced {
+  margin-left: 3px;
+  vertical-align: -1px;
+  opacity: 0.85;
+}
+
 .blockConfirmed {
   background: var(--ok-soft);
   border-color: var(--ok);

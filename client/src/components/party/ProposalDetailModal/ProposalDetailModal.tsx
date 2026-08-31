@@ -1,8 +1,10 @@
+import { CalendarCheck } from 'lucide-react';
 import Modal from '../../ui/Modal/Modal';
 import Button from '../../ui/Button/Button';
 import type { Party, SessionProposal } from '../../../types/party';
 import { getMyVote, getProposalStatus, memberLabel } from '../../../utils/sessionProposals';
 import { formatProposalWhen } from '../../../utils/weekAgenda';
+import { hasGoogleEventFor } from '../../../utils/googleEvents';
 import styles from './ProposalDetailModal.module.css';
 
 interface ProposalDetailModalProps {
@@ -38,6 +40,13 @@ export default function ProposalDetailModal({
           <h3 className={styles.when}>{formatProposalWhen(proposal)}</h3>
           <span className={styles.by}>Proposto por {memberLabel(party, proposal.proposedBy)}</span>
         </div>
+
+        {hasGoogleEventFor(proposal, uid) && (
+          <p className={styles.synced}>
+            <CalendarCheck size={13} />
+            Na sua Google Agenda
+          </p>
+        )}
 
         {status.confirmed ? (
           <div className={styles.confirmedBanner}>Sessão confirmada! 🎲</div>

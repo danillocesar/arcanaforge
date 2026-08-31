@@ -33,6 +33,15 @@
   color: var(--text-muted);
 }
 
+.synced {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--ok-ink);
+}
+
 .confirmedBanner {
   font-size: 0.85rem;
   font-weight: 700;

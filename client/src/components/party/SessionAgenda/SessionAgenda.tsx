@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarCheck, CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Party, SessionProposal } from '../../../types/party';
 import {
   addDays,
@@ -13,6 +13,7 @@ import {
   WEEKDAY_SHORT,
   type ProposalTone,
 } from '../../../utils/weekAgenda';
+import { hasGoogleEventFor } from '../../../utils/googleEvents';
 import styles from './SessionAgenda.module.css';
 
 /** Altura de uma linha de hora. Espelha --hour-h no CSS: as duas precisam bater
@@ -28,13 +29,14 @@ const toneClass: Record<ProposalTone, string> = {
 
 interface SessionAgendaProps {
   party: Party;
+  uid: string;
   /** Clique num bloco de proposta. */
   onSelectProposal: (proposalId: string) => void;
   /** Clique numa célula vazia: dia 'YYYY-MM-DD' e hora 'HH:mm' (ou '' na faixa sem horário). */
   onSelectSlot: (date: string, time: string) => void;
 }
 
-export default function SessionAgenda({ party, onSelectProposal, onSelectSlot }: SessionAgendaProps) {
+export default function SessionAgenda({ party, uid, onSelectProposal, onSelectSlot }: SessionAgendaProps) {
   const [anchor, setAnchor] = useState(() => new Date());
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
@@ -63,7 +65,12 @@ export default function SessionAgenda({ party, onSelectProposal, onSelectSlot }:
       }}
     >
       {proposal.time && <span className={styles.blockTime}>{proposal.time}</span>}
-      <span className={styles.blockLabel}>Sessão</span>
+      <span className={styles.blockLabel}>
+        Sessão
+        {hasGoogleEventFor(proposal, uid) && (
+          <CalendarCheck size={10} className={styles.blockSynced} aria-label="Na sua Google Agenda" />
+        )}
+      </span>
     </button>
   );
 
