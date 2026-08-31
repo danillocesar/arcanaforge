@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiFetchParties, apiProposeSession, apiRespondToSession, apiCancelSession } from '../../api';
 import type { Party } from '../../types/party';
+import { migrateCalendarView, type CalendarView } from '../../utils/calendarView';
 import { useAuth } from '../../features/auth';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import type { WsMessage } from '../../hooks/useWebSocket';
@@ -20,8 +21,6 @@ import ProposeSessionModal, {
 } from '../../components/party/ProposeSessionModal/ProposeSessionModal';
 import styles from './PartyCalendarPage.module.css';
 
-type CalendarView = 'mes' | 'semana' | 'lista';
-
 const VIEW_KEY = 'arcanaforge:calendarView';
 
 const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
@@ -36,7 +35,7 @@ const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
 function loadView(): CalendarView {
   try {
     const stored = localStorage.getItem(VIEW_KEY);
-    const migrated: CalendarView = stored === 'agenda' ? 'semana' : stored === 'list' ? 'lista' : 'mes';
+    const migrated = migrateCalendarView(stored);
     if (migrated !== stored) saveView(migrated);
     return migrated;
   } catch {
