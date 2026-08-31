@@ -59,6 +59,14 @@ async function findOwnedOrMemberPartyLean(id, uid) {
   }).lean();
 }
 
+/** Substitui a lista de eventos do Google de uma proposta, sem reescrever o resto. */
+async function updateProposalGoogleEvents(partyId, proposalId, googleEvents) {
+  await Party.updateOne(
+    { _id: partyId, 'sessionProposals.id': proposalId },
+    { $set: { 'sessionProposals.$.googleEvents': googleEvents } },
+  );
+}
+
 module.exports = {
   existsInviteCode,
   createParty,
@@ -71,4 +79,5 @@ module.exports = {
   findById,
   findOwnedParty,
   findOwnedOrMemberPartyLean,
+  updateProposalGoogleEvents,
 };
