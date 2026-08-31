@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CalendarDays, List } from 'lucide-react';
 import { apiFetchParties, apiProposeSession, apiRespondToSession, apiCancelSession } from '../../api';
 import type { Party } from '../../types/party';
 import { useAuth } from '../../features/auth';
@@ -10,7 +9,9 @@ import Topbar from '../../components/layout/Topbar/Topbar';
 import SectionNav from '../../components/layout/SectionNav/SectionNav';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import Skeleton from '../../components/ui/Skeleton/Skeleton';
+import SegmentedControl from '../../components/ui/SegmentedControl/SegmentedControl';
 import GroupInfoCard from '../../components/party/GroupInfoCard/GroupInfoCard';
+import MonthAgenda from '../../components/party/MonthAgenda/MonthAgenda';
 import SessionAgenda from '../../components/party/SessionAgenda/SessionAgenda';
 import ProposalList from '../../components/party/ProposalList/ProposalList';
 import ProposalDetailModal from '../../components/party/ProposalDetailModal/ProposalDetailModal';
@@ -19,15 +20,27 @@ import ProposeSessionModal, {
 } from '../../components/party/ProposeSessionModal/ProposeSessionModal';
 import styles from './PartyCalendarPage.module.css';
 
-type CalendarView = 'agenda' | 'list';
+type CalendarView = 'mes' | 'semana' | 'lista';
 
 const VIEW_KEY = 'arcanaforge:calendarView';
 
+const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
+  { value: 'mes', label: 'Mês' },
+  { value: 'semana', label: 'Semana' },
+  { value: 'lista', label: 'Lista' },
+];
+
+// A grade semanal (24h) virou a de 10h-22h e ganhou companhia do mês; o nome
+// da chave antiga ('agenda') não descreve mais qual grade era. Migra o valor
+// salvo para o novo vocabulário e regrava, para a chave antiga não persistir.
 function loadView(): CalendarView {
   try {
-    return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'agenda';
+    const stored = localStorage.getItem(VIEW_KEY);
+    const migrated: CalendarView = stored === 'agenda' ? 'semana' : stored === 'list' ? 'lista' : 'mes';
+    if (migrated !== stored) saveView(migrated);
+    return migrated;
   } catch {
-    return 'agenda';
+    return 'mes';
   }
 }
 
@@ -177,7 +190,9 @@ export default function PartyCalendarPage() {
 
   const isOwner = party.ownerUid === uid;
   const selectedProposal = party.sessionProposals.find((p) => p.id === selectedId) ?? null;
-  const isAgenda = view === 'agenda';
+  // As duas grades (mês e semana) precisam da largura extra; só a lista cabe
+  // na coluna estreita.
+  const isWideView = view !== 'lista';
 
   const navItems = [
     { id: 'members', label: 'Membros', onClick: () => navigate(`/${system}/party/${partyId}/members`) },
@@ -185,33 +200,32 @@ export default function PartyCalendarPage() {
     { id: 'calendar', label: 'Calendário', active: true },
   ];
 
-  const viewToggle = (
-    <button
-      type="button"
-      className={styles.viewToggle}
-      onClick={() => changeView(isAgenda ? 'list' : 'agenda')}
-      title={isAgenda ? 'Ver como lista' : 'Ver como agenda'}
-      aria-label={isAgenda ? 'Ver como lista' : 'Ver como agenda'}
-    >
-      {isAgenda ? <List size={16} /> : <CalendarDays size={16} />}
-    </button>
-  );
+  const viewSwitch = <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={(v) => changeView(v as CalendarView)} />;
 
   return (
     <div className={styles.page}>
       <Topbar title={`Grupo - ${party.name}`} />
-      <SectionNav items={navItems} rightSlot={viewToggle} />
+      <SectionNav items={navItems} rightSlot={viewSwitch} />
 
-      <div className={`${styles.content} ${isAgenda ? styles.contentWide : ''}`}>
+      <div className={`${styles.content} ${isWideView ? styles.contentWide : ''}`}>
         <div className={styles.mainCol}>
-          {isAgenda ? (
+          {view === 'mes' && (
+            <MonthAgenda
+              party={party}
+              uid={uid}
+              onSelectProposal={setSelectedId}
+              onSelectSlot={(date, time) => setProposeSlot({ date, time })}
+            />
+          )}
+          {view === 'semana' && (
             <SessionAgenda
               party={party}
               uid={uid}
               onSelectProposal={setSelectedId}
               onSelectSlot={(date, time) => setProposeSlot({ date, time })}
             />
-          ) : (
+          )}
+          {view === 'lista' && (
             <ProposalList
               party={party}
               uid={uid}

@@ -38,33 +38,13 @@
   gap: 12px;
 }
 
-/* Botão de ícone que alterna agenda <-> lista, no rightSlot do SectionNav. */
-.viewToggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
-}
-
-.viewToggle:hover {
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
-
 @media (max-width: 550px) {
   .content {
     padding: 16px 12px;
   }
 }
 
-/* A grade semanal precisa de mais largura do que a lista de propostas. */
+/* As grades de mês e semana precisam de mais largura do que a lista de propostas. */
 .contentWide {
   max-width: 1280px;
 }
