@@ -1,0 +1,143 @@
+/* FAB + speed dial (lives inside .screen / .desktop, positioned absolute) */
+.fabWrap {
+  position: absolute;
+  z-index: 35;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.fabWrap.inPhone {
+  right: 18px;
+  bottom: 84px;
+}
+
+.fabWrap.inDesk {
+  right: 26px;
+  bottom: 26px;
+}
+
+.fab {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 28px -8px rgba(155, 184, 209, 0.7);
+  transition: transform 0.25s var(--ease), box-shadow 0.2s;
+}
+
+.fab:active {
+  transform: scale(0.9);
+}
+
+.fabIco {
+  display: block;
+  transition: transform 0.3s var(--ease);
+}
+
+.fabWrap.open .fab .fabIco {
+  transform: rotate(45deg);
+}
+
+.fabMenu {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.fabWrap.open .fabMenu {
+  pointer-events: auto;
+}
+
+.fabOpt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  opacity: 0;
+  transform: translateY(12px) scale(0.9);
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease);
+}
+
+.fabWrap.open .fabOpt {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.fabWrap.open .fabOpt:nth-child(1) {
+  transition-delay: 0.02s;
+}
+
+.fabWrap.open .fabOpt:nth-child(2) {
+  transition-delay: 0.06s;
+}
+
+.fabWrap.open .fabOpt:nth-child(3) {
+  transition-delay: 0.1s;
+}
+
+.fabWrap.open .fabOpt:nth-child(4) {
+  transition-delay: 0.14s;
+}
+
+.fabWrap.open .fabOpt:nth-child(5) {
+  transition-delay: 0.18s;
+}
+
+.foLab {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 7px 11px;
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+}
+
+.foIc {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  box-shadow: var(--shadow-soft);
+}
+
+.fabScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 34;
+  background: rgba(4, 5, 8, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+
+.fabScrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}

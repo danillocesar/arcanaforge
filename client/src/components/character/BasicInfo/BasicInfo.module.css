@@ -1,23 +1,23 @@
 .topRow {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 104px minmax(220px, 0.8fr) minmax(0, 1.4fr);
+  gap: 18px;
   align-items: center;
-  margin-bottom: 6px;
-  overflow: hidden;
+  margin-bottom: 18px;
 }
 
 .avatarCol {
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .avatarWrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+  width: 104px;
+  height: 104px;
+  border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
-  border: 2px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 42%, var(--border));
+  background: radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--accent-gold) 16%, transparent), var(--bg-input) 70%);
   position: relative;
   display: flex;
   align-items: center;
@@ -27,8 +27,8 @@
 
 .avatarWrapper:hover {
   border-color: var(--accent-gold);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
-  filter: brightness(1.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-gold) 14%, transparent);
+  filter: brightness(1.06);
 }
 
 .avatarImg {
@@ -38,121 +38,122 @@
 }
 
 .avatarPlaceholder {
-  font-size: 1.8rem;
-  font-weight: 300;
-  color: var(--text-muted);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-gold);
 }
 
 .nameCol {
-  flex: 0 0 220px;
   min-width: 0;
 }
 
 .nameField {
   width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid var(--border);
+  min-height: 58px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 1.15rem;
-  font-weight: 700;
-  padding: 4px 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  padding: 10px 14px;
 }
 
 .nameField:focus {
-  border-bottom-color: var(--accent-gold);
+  border-color: var(--accent-gold);
   outline: none;
 }
 
 .classCol {
-  flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
 .classHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 3px;
+  margin-bottom: 8px;
 }
 
 .classTitle {
-  font-size: 0.62rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 800;
   color: var(--text-muted);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .totalLevel {
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 26%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-gold) 8%, transparent);
   color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .totalLevel strong {
-  font-size: 0.85rem;
   color: var(--accent-gold);
 }
 
 .classBody {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: transparent;
-  border-radius: 6px;
-  padding: 8px 12px;
-}
-
-.classList {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1;
+  gap: 14px;
   min-width: 0;
 }
 
 .classIcon {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   flex-shrink: 0;
-  filter: invert(1) drop-shadow(0 0 3px rgba(255, 255, 255, 0.4));
-  opacity: 0.85;
+  filter: invert(1) drop-shadow(0 0 4px rgba(255, 255, 255, 0.24));
+  opacity: 0.88;
+}
+
+.classList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .classItem {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) auto 54px var(--touch-target-sm);
   align-items: center;
-  gap: 4px;
-  padding: 2px 0;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  min-width: min(100%, 300px);
 }
 
 .classNameInput {
-  flex: 0 1 120px;
-  min-width: 80px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  background: transparent;
+  min-width: 0;
+  min-height: var(--touch-target-sm);
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--text-primary);
-  border: none;
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  padding: 2px 4px;
-  font-family: var(--font);
   cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.classNameInput:hover {
-  border-bottom-color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 10px;
 }
 
 .classNameInput:focus {
   outline: none;
-  border-bottom-color: var(--accent-gold);
+  border-color: var(--accent-gold);
 }
 
 .classNameInput option {
@@ -161,27 +162,35 @@
 }
 
 .classLevelLabel {
-  font-size: 0.62rem;
   color: var(--text-muted);
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .classLevelInput {
-  width: 32px;
+  width: 54px;
+  min-height: var(--touch-target-sm);
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--accent-gold);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.98rem;
+  font-weight: 800;
   text-align: center;
 }
 
 .classRemove {
-  background: none;
-  border: none;
+  background: color-mix(in srgb, var(--accent-red) 8%, var(--bg-body));
+  border: 1px solid color-mix(in srgb, var(--accent-red) 24%, var(--border));
+  border-radius: 6px;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.75rem;
-  padding: 2px;
-  line-height: 1;
+  min-width: var(--touch-target-sm);
+  min-height: var(--touch-target-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .classRemove:hover {
@@ -189,57 +198,57 @@
 }
 
 .addClass {
-  background: var(--btn-add-bg);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-family: var(--font);
-  font-size: 0.68rem;
-  padding: 2px 8px;
+  min-height: var(--touch-target-sm);
+  padding: 8px 14px;
+  border: 1px dashed color-mix(in srgb, var(--accent-gold) 28%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-gold) 6%, var(--btn-add-bg));
+  color: var(--text-secondary);
   cursor: pointer;
-  margin-top: 3px;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .addClass:hover {
   color: var(--accent-gold);
-  border-color: var(--accent-gold-dim);
   background: var(--btn-add-hover);
 }
 
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
   gap: 12px;
 }
 
 .infoField {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
 .infoField label {
-  font-size: 0.7rem;
-  font-weight: 600;
   color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .infoField input,
 .infoField select {
-  background: var(--bg-input);
+  width: 100%;
+  min-height: var(--touch-target);
+  box-sizing: border-box;
+  background: var(--bg-body);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 7px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.9rem;
-  padding: 6px 10px;
-  width: 100%;
-  box-sizing: border-box;
-  min-width: 0;
-  transition: border-color 0.2s;
+  font-size: 0.98rem;
+  padding: 9px 11px;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .infoField input:focus,
@@ -248,29 +257,72 @@
   outline: none;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 980px) {
   .topRow {
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 96px minmax(0, 1fr);
   }
-  .nameCol {
-    flex: 1 1 auto;
-    width: 100%;
-  }
+
   .classCol {
-    width: 100%;
+    grid-column: 1 / -1;
   }
+
+  .avatarWrapper {
+    width: 96px;
+    height: 96px;
+  }
+
   .infoGrid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 450px) {
-  .infoGrid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 560px) {
+  .topRow {
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
   }
+
   .avatarWrapper {
-    width: 60px;
-    height: 60px;
+    width: 82px;
+    height: 82px;
+    border-radius: 14px;
+  }
+
+  .nameField {
+    min-height: 54px;
+    font-size: 1.25rem;
+    padding: 8px 12px;
+  }
+
+  .classBody {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .classIcon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .classItem {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) auto 54px var(--touch-target-sm);
+  }
+
+  .addClass {
+    width: 100%;
+    min-height: var(--touch-target);
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
   }
 }

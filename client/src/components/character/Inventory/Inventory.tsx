@@ -1,13 +1,17 @@
+import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { calcCarryCapacity, calcUsedLoad } from '../../../utils/calculations';
 import { EQUIP_ICONS } from '../../../data/constants';
 import Section from '../../ui/Section/Section';
 import Button from '../../ui/Button/Button';
 import NumericInput from '../../ui/NumericInput/NumericInput';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './Inventory.module.css';
 
 export default function Inventory() {
   const { character, updateCharacter } = useCharacterContext();
+  const [removeIdx, setRemoveIdx] = useState<number | null>(null);
 
   if (!character) return null;
 
@@ -48,6 +52,8 @@ export default function Inventory() {
       return { ...f, equipped };
     });
   };
+
+  const itemToRemove = removeIdx != null ? character.inventory[removeIdx] : null;
 
   return (
     <Section id="secInventory" title="Inventário">
@@ -102,7 +108,9 @@ export default function Inventory() {
                 value={item.weight}
                 onChange={(n) => updateItem(i, 'weight', n)}
               />
-              <Button variant="remove-sm" onClick={() => removeItem(i)}>✕</Button>
+              <button className={styles.removeItem} onClick={() => setRemoveIdx(i)} aria-label="Remover item">
+                <Trash2 size={16} aria-hidden="true" />
+              </button>
             </div>
           ))}
           <Button variant="add" onClick={addItem}>+ Item</Button>
@@ -126,6 +134,19 @@ export default function Inventory() {
           ))}
         </div>
       </div>
+
+      <ConfirmModal
+        open={removeIdx != null}
+        onClose={() => setRemoveIdx(null)}
+        onConfirm={() => {
+          if (removeIdx != null) removeItem(removeIdx);
+        }}
+        title="Remover item?"
+        message={`Isso apaga "${itemToRemove?.name || 'Item'}" do inventário.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
     </Section>
   );
 }

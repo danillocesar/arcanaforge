@@ -1,4 +1,4 @@
-import type { RPGSystem } from '../types/character';
+import type { RPGSystem, BuffEffect, BuffDuration, DamageReduction } from '../types/character';
 import type { Party } from '../types/party';
 import type { CombatData } from '../types/combat';
 import type { CharacterSummary } from '../types/character';
@@ -95,7 +95,10 @@ export async function apiRegenerateInviteCode(partyId: string): Promise<Party> {
 export interface PartyCharacter extends CharacterSummary {
   hp?: { max?: number; current?: number };
   mp?: { max?: number; current?: number };
-  clan?: string;
+  /** Sobrevida e RDs — o mestre mostra o temporário e desconta as RDs ao aplicar dano. */
+  temporaryHp?: number;
+  temporaryMp?: number;
+  damageReductions?: DamageReduction[];
 }
 
 export async function apiFetchPartyCharacters(partyId: string): Promise<PartyCharacter[]> {
@@ -129,4 +132,71 @@ export async function apiSaveCombat(partyId: string, data: CombatData): Promise<
     body: JSON.stringify(data),
   });
   await assertOk(res);
+}
+
+export interface ApplyBuffPayload {
+  targetCharacterIds: string[];
+  buff: {
+    name: string;
+    effects: BuffEffect[];
+    source: string;
+    /** Teste de resistência da magia e sua CD — quem recebe o buff é quem precisa do número. */
+    resistance?: string;
+    dc?: number;
+    /** Duração normalizada (cena/dia/permanente) — o "Fim de cena" do alvo respeita. */
+    duration?: BuffDuration;
+  };
+}
+
+export async function apiApplyBuffToParty(partyId: string, payload: ApplyBuffPayload): Promise<void> {
+  const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/apply-buff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  await assertOk(res);
+}
+
+export async function apiProposeSession(
+  partyId: string,
+  data: { date: string; time?: string; timezone?: string },
+): Promise<Party> {
+  const res = await apiFetch(`/api/parties/${encodeURIComponent(partyId)}/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...data,
+      // Fixa o instante absoluto da sessão: sem isso o evento no Google pode
+      // cair em UTC e aparecer com horas de diferença.
+      timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
+  });
+  await assertOk(res);
+  return res.json();
+}
+
+export async function apiRespondToSession(
+  partyId: string,
+  proposalId: string,
+  vote: 'sim' | 'nao',
+): Promise<Party> {
+  const res = await apiFetch(
+    `/api/parties/${encodeURIComponent(partyId)}/sessions/${encodeURIComponent(proposalId)}/respond`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote }),
+    },
+  );
+  await assertOk(res);
+  return res.json();
+}
+
+export async function apiCancelSession(partyId: string, proposalId: string): Promise<Party> {
+  const res = await apiFetch(
+    `/api/parties/${encodeURIComponent(partyId)}/sessions/${encodeURIComponent(proposalId)}`,
+    { method: 'DELETE' },
+  );
+  await assertOk(res);
+  return res.json();
 }

@@ -1,0 +1,45 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.control {
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  border-bottom: 1.5px solid var(--line-2);
+  padding: 8px 2px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.25s var(--ease);
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b707c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+}
+
+.control:focus {
+  border-bottom-color: var(--accent);
+}
+
+.control option {
+  background: var(--surface-2);
+  color: var(--ink);
+}

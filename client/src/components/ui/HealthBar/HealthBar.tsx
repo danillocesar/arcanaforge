@@ -6,7 +6,7 @@ interface HealthBarProps {
   max: number;
   variant: 'hp' | 'pm';
   showLabel?: boolean;
-  onClick?: MouseEventHandler<HTMLDivElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   className?: string;
 }
 
@@ -28,8 +28,22 @@ export default function HealthBar({
     .filter(Boolean)
     .join(' ');
 
+  const label = `${variant === 'hp' ? 'Vida' : 'Mana'}: ${current} de ${max}`;
+
+  if (!onClick) {
+    return (
+      <div className={cls} role="img" aria-label={label}>
+        <div
+          className={`${styles.fill} ${variant === 'hp' ? styles.hp : styles.pm}`}
+          style={{ width: `${pct}%` }}
+        />
+        {showLabel && <div className={styles.label}>{current}/{max}</div>}
+      </div>
+    );
+  }
+
   return (
-    <div className={cls} onClick={onClick}>
+    <button type="button" className={cls} onClick={onClick} aria-label={label}>
       <div
         className={`${styles.fill} ${variant === 'hp' ? styles.hp : styles.pm}`}
         style={{ width: `${pct}%` }}
@@ -39,6 +53,6 @@ export default function HealthBar({
           {current}/{max}
         </div>
       )}
-    </div>
+    </button>
   );
 }

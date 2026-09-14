@@ -2,9 +2,12 @@ const { ownerFieldsFromReq } = require('../../characters/userCharactersDir');
 const { AppError } = require('../errors/AppError');
 const { toCharacterSummaryDTO, toCharacterDetailDTO } = require('../dto/character.dto');
 const characterRepository = require('../repositories/character.repository');
+const characterContentRepository = require('../repositories/characterContent.repository');
+const characterLogsRepository = require('../repositories/characterLogs.repository');
 const avatarService = require('./avatar.service');
-const userService = require('./user.service');
 const { SOFT_DELETE_DELAY_DAYS } = require('../config/plans');
+
+const CONTENT_FIELDS = ['spells', 'abilities', 'powers', 'aptitudes', 'weapons', 'narpiItems'];
 
 function pendingDeleteAt() {
   const d = new Date();
@@ -23,9 +26,24 @@ async function listCharacterSummary(uid) {
 }
 
 async function getCharacter(id, uid) {
-  const doc = await characterRepository.findOwnedById(id, uid);
+  const [doc, content, logsDoc] = await Promise.all([
+    characterRepository.findOwnedById(id, uid),
+    characterContentRepository.findById(id),
+    characterLogsRepository.findById(id),
+  ]);
   if (!doc) throw new AppError(404, 'Character not found');
-  return toCharacterDetailDTO(doc);
+  const merged = mergeCharacterDocs(doc, content, logsDoc);
+  return toCharacterDetailDTO(merged);
+}
+
+function mergeCharacterDocs(doc, content, logsDoc) {
+  const merged = { ...doc };
+  if (content) {
+    const { _id, __v, createdAt, updatedAt, ...fields } = content;
+    Object.assign(merged, fields);
+  }
+  merged.logs = logsDoc?.logs || doc.logs || [];
+  return merged;
 }
 
 async function saveCharacter(id, body, req) {
@@ -38,22 +56,29 @@ async function saveCharacter(id, body, req) {
     throw new AppError(403, 'Acesso negado');
   }
 
-  if (!existing) {
-    const count = await characterRepository.countByOwner(req.user.uid);
-    const subUser = req.subscriptionUser;
-    const limit = userService.getSlotLimit(subUser);
-    if (count >= limit) {
-      throw new AppError(403, 'Limite de personagens atingido. Adquira mais slots.');
-    }
-  }
-
-  // Strip server-controlled lifecycle and ownership fields so the client
-  // cannot inject them (e.g. setting deletedAt: null to bypass soft-delete).
   // eslint-disable-next-line no-unused-vars
   const { deletedAt, pendingDeleteAt, ownerUid, ownerEmail, _id: _bodyId, ...safeBody } = body;
 
+  const { logs, ...bodyWithoutLogs } = safeBody;
+  const contentData = {};
+  const coreData = { ...bodyWithoutLogs };
+  for (const field of CONTENT_FIELDS) {
+    if (coreData[field] !== undefined) {
+      contentData[field] = coreData[field];
+      delete coreData[field];
+    }
+  }
+
   const owners = ownerFieldsFromReq(req);
-  await characterRepository.upsertById(id, { ...safeBody, _id: id, ...owners });
+  await Promise.all([
+    characterRepository.upsertById(id, { ...coreData, _id: id, ...owners }),
+    Object.keys(contentData).length > 0
+      ? characterContentRepository.upsertById(id, contentData)
+      : Promise.resolve(),
+    logs !== undefined
+      ? characterLogsRepository.upsertById(id, { logs })
+      : Promise.resolve(),
+  ]);
   return { ok: true, _id: id };
 }
 
@@ -86,4 +111,5 @@ module.exports = {
   deleteCharacter,
   restoreCharacter,
   uploadCharacterAvatar,
+  mergeCharacterDocs,
 };

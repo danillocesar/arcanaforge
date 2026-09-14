@@ -2,11 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const paths = require('../../paths');
 const { errorHandler } = require('../middlewares/errorHandler');
-const { createNarutoRoutes } = require('./naruto.routes');
 const { createCharacterRoutes } = require('./characters.routes');
 const { createPartyRoutes } = require('./parties.routes');
 const { createCombatRoutes } = require('./combat.routes');
-const { createBillingRoutes } = require('./billing.routes');
+const { createGoogleRoutes } = require('./google.routes');
 
 /**
  * @param {import('express').Express} app
@@ -14,11 +13,10 @@ const { createBillingRoutes } = require('./billing.routes');
  */
 function registerRoutes(app, opts) {
   const { refs } = opts;
-  app.use(createBillingRoutes());
   app.use(createCharacterRoutes());
-  app.use(createNarutoRoutes());
   app.use(createPartyRoutes(refs));
   app.use(createCombatRoutes(refs));
+  app.use(createGoogleRoutes());
 
   if (fs.existsSync(paths.DIST_DIR)) {
     app.get('*', (_req, res) => {

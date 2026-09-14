@@ -1,5 +1,7 @@
 const cron = require('node-cron');
 const characterRepository = require('../repositories/character.repository');
+const characterContentRepository = require('../repositories/characterContent.repository');
+const characterLogsRepository = require('../repositories/characterLogs.repository');
 
 async function deleteExpiredCharacters() {
   const expired = await characterRepository.findExpiredSoftDeletes();
@@ -9,7 +11,11 @@ async function deleteExpiredCharacters() {
 
   for (const char of expired) {
     try {
-      await characterRepository.hardDeleteById(char._id);
+      await Promise.all([
+        characterRepository.hardDeleteById(char._id),
+        characterContentRepository.deleteById(char._id),
+        characterLogsRepository.deleteById(char._id),
+      ]);
       console.log(`[cron] Personagem ${char._id} (${char.name}) removido permanentemente`);
     } catch (err) {
       console.error(`[cron] Erro ao remover personagem ${char._id}:`, err.message);

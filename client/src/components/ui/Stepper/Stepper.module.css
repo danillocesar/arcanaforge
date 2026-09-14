@@ -1,0 +1,114 @@
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar {
+  flex: 1;
+  height: 44px;
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+}
+
+.bar:active {
+  cursor: grabbing;
+}
+
+/* visual track — 12px tall, centered inside the larger tap target */
+.bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  height: 12px;
+  transform: translateY(-50%);
+  border-radius: 6px;
+  background: var(--line-2);
+}
+
+.bar i {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 12px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  min-width: 1.5ch;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+.val:hover {
+  background: var(--surface-2);
+}
+
+.valInput {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  width: 4ch;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 2px 4px;
+  box-sizing: content-box;
+}
+
+.valInput:focus {
+  outline: none;
+}
+
+.stepBtn {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 13px;
+  border: none;
+  cursor: pointer;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s var(--ease), background 0.2s;
+}
+
+.stepBtn:hover:not(:disabled) {
+  background: var(--line-2);
+}
+
+.stepBtn:active:not(:disabled) {
+  transform: scale(0.88);
+}
+
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepBtn.plus {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.stepBtn.plus:hover:not(:disabled) {
+  background: rgba(155, 184, 209, 0.22);
+}

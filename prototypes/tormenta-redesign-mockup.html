@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArcanaForge — Nova Ficha de Tormenta (proposta · dark)</title>
+<style>
+:root{
+  --page:#070709; --bg:#0d0d11; --surface:#141418; --surface-2:#1c1c22; --surface-3:#26262e;
+  --ink:#f3f3f6; --muted:#9a9aa6; --faint:#5e5e69;
+  --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.12);
+  --primary:#e2584c; --primary-soft:rgba(226,88,76,.15); --primary-tx:#ff938b; --primary-br:rgba(226,88,76,.4);
+  --mana:#5b8cff; --mana-soft:rgba(91,140,255,.15); --mana-tx:#9db6ff; --mana-br:rgba(91,140,255,.42);
+  --gold:#d8b15f; --gold-soft:rgba(216,177,95,.14); --gold-tx:#ecc97f; --gold-br:rgba(216,177,95,.4);
+  --green:#4ec77d; --green-soft:rgba(78,199,125,.15); --green-tx:#82e0a4; --green-br:rgba(78,199,125,.42);
+  --radius:18px; --radius-sm:13px;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.3);
+  --shadow-lg:0 30px 80px rgba(0,0,0,.65);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.45}
+svg{display:block}
+.demo-top{max-width:1240px;margin:0 auto;padding:26px 22px 6px;text-align:center}
+.demo-top h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+.demo-top p{color:var(--muted);font-size:.92rem;margin-top:6px}
+.toggle{display:inline-flex;gap:4px;margin:18px auto 4px;background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:5px}
+.toggle button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.85rem;padding:9px 20px;border-radius:999px;cursor:pointer;transition:.15s}
+.toggle button.on{background:var(--ink);color:#0d0d11}
+.legend{color:var(--faint);font-size:.78rem;margin-top:10px}
+.stage{display:flex;justify-content:center;align-items:flex-start;gap:44px;padding:28px 16px 80px;flex-wrap:wrap}
+.frame{background:#000;border-radius:46px;padding:11px;box-shadow:var(--shadow-lg);position:relative;flex:0 0 auto;border:1px solid #222}
+.frame::before{content:"";position:absolute;top:17px;left:50%;transform:translateX(-50%);width:118px;height:26px;background:#000;border-radius:0 0 18px 18px;z-index:30}
+.screen{position:relative;width:392px;height:812px;background:var(--bg);border-radius:36px;overflow:hidden;display:flex;flex-direction:column}
+.stage.ipad .frame{border-radius:32px;padding:15px}
+.stage.ipad .frame::before{display:none}
+.stage.ipad .screen{width:834px;height:1040px;border-radius:16px}
+.stage .frame.ipad-only{display:none}
+.stage.ipad .frame.phone-only{display:none}
+.stage.ipad .frame.ipad-only{display:block}
+.app{display:flex;flex-direction:column;height:100%;background:var(--bg)}
+.app-body{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.app-body::-webkit-scrollbar{width:0}
+.statusbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:.78rem;font-weight:700;color:var(--ink);flex:0 0 auto}
+.statusbar .dots{display:flex;gap:7px;align-items:center;color:var(--ink)}
+.vitals{flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--line);padding:9px 16px 13px;position:relative;z-index:10}
+.vitals-id{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.avatar{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#e2584c,#7d211c);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.1rem;flex:0 0 auto}
+.vitals-id .nm{font-weight:800;font-size:1.02rem;letter-spacing:-.01em}
+.vitals-id .sub{color:var(--muted);font-size:.77rem}
+.vitals-id .gear{margin-left:auto;width:38px;height:38px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface-2);display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mini{border-radius:13px;padding:8px 11px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;transition:.12s}
+.mini:active{transform:scale(.97)}
+.mini .k{font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.mini .v{font-size:1.15rem;font-weight:800;line-height:1.1;margin-top:1px}
+.mini .v small{font-size:.72rem;color:var(--faint);font-weight:600}
+.mini.hp{background:var(--primary-soft);border-color:var(--primary-br)} .mini.hp .v{color:var(--primary-tx)}
+.mini.mp{background:var(--mana-soft);border-color:var(--mana-br)} .mini.mp .v{color:var(--mana-tx)}
+.mini.def{background:var(--gold-soft);border-color:var(--gold-br)} .mini.def .v{color:var(--gold-tx)}
+.bar{height:5px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px}
+.mini.hp .bar i{background:var(--primary)} .mini.mp .bar i{background:var(--mana)}
+.pane{display:none;padding:16px 16px 30px}
+.pane.active{display:block}
+.cols{display:grid;gap:14px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.022),transparent 46%),var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card:last-child{margin-bottom:0}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+.card-h h3{font-size:.95rem;font-weight:800;letter-spacing:-.01em}
+.card-h .badge{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);padding:3px 9px;border-radius:99px}
+.sec-title{font-size:.73rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:22px 4px 10px}
+.sec-title:first-child{margin-top:2px}
+.attrs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.attr{background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:9px 4px;text-align:center;cursor:pointer;transition:.12s}
+.attr:active{transform:scale(.93)}
+.attr .a-k{font-size:.67rem;font-weight:800;color:var(--faint);letter-spacing:.04em}
+.attr .a-v{font-size:1.25rem;font-weight:800;margin-top:1px}
+.attr.hi{background:var(--primary-soft);border-color:var(--primary-br)}
+.attr.hi .a-v{color:var(--primary-tx)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.kvi{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+.kvi .kk{font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.kvi .kvv{font-weight:700;font-size:.88rem;margin-top:2px}
+.about-i{padding:11px 0;border-top:1px solid var(--line)}
+.about-i:first-child{border-top:0;padding-top:2px}
+.about-i .at{font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--primary-tx);margin-bottom:3px}
+.about-i p{font-size:.87rem;color:var(--muted);line-height:1.55}
+.row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .main{min-width:0;flex:1}
+.row .nm{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.row .meta{font-size:.75rem;color:var(--muted);margin-top:3px;display:flex;gap:9px;flex-wrap:wrap}
+.row .meta b{color:var(--ink);font-weight:700}
+.tag{font-size:.63rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:7px;background:var(--surface-2);color:var(--muted);border:1px solid var(--line-2)}
+.tag.tr{background:var(--green-soft);color:var(--green-tx);border-color:var(--green-br)}
+.tag.mp{background:var(--mana-soft);color:var(--mana-tx);border-color:var(--mana-br)}
+.roll{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;height:44px;padding:0 16px;border-radius:13px;font:inherit;font-weight:800;font-size:.95rem;cursor:pointer;border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink);transition:.12s;white-space:nowrap}
+.roll:active{transform:scale(.95)}
+.roll svg{width:16px;height:16px;opacity:.85}
+.roll.atk{background:var(--primary-soft);border-color:var(--primary-br);color:var(--primary-tx)}
+.roll.cast{background:var(--mana-soft);border-color:var(--mana-br);color:var(--mana-tx)}
+.switch{position:relative;width:44px;height:26px;border-radius:99px;background:var(--surface-3);border:1px solid var(--line-2);cursor:pointer;transition:.15s;flex:0 0 auto}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:99px;background:#fff;transition:.15s}
+.switch.on{background:var(--green);border-color:var(--green)} .switch.on::after{left:20px}
+.add-row{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:1px dashed var(--line-2);background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.86rem;padding:13px;border-radius:13px;cursor:pointer;transition:.12s;margin-top:6px}
+.add-row:hover{border-color:var(--primary-br);color:var(--primary-tx);background:var(--primary-soft)}
+.add-row svg{width:18px;height:18px}
+.defrow{display:flex;justify-content:space-between;font-size:.85rem;padding:9px 0;border-top:1px solid var(--line)}
+.defrow:first-child{border-top:0}
+.defrow span{color:var(--muted)} .defrow b{font-weight:800}
+.deftotal{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.deftotal .big{font-size:2.5rem;font-weight:800;color:var(--gold-tx)}
+.deftotal .lab{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.menu a{display:flex;align-items:center;gap:13px;padding:14px 4px;border-top:1px solid var(--line);text-decoration:none;color:var(--ink);cursor:pointer}
+.menu a:first-child{border-top:0}
+.menu .mi{width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);flex:0 0 auto}
+.menu .mt{font-weight:700;font-size:.92rem}
+.menu .ms{font-size:.75rem;color:var(--faint)}
+.menu .chev{margin-left:auto;color:var(--faint)}
+.tabbar{flex:0 0 auto;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;border-radius:14px;color:var(--faint);font:inherit;transition:.12s}
+.tabbar button svg{width:23px;height:23px}
+.tabbar button .tl{font-size:.64rem;font-weight:700}
+.tabbar button.on{color:var(--primary-tx)}
+.layout{display:flex;flex:1;min-height:0}
+.rail{display:none}
+.stage.ipad .rail{display:flex;flex-direction:column;width:112px;flex:0 0 112px;background:var(--surface);border-right:1px solid var(--line);padding:14px 10px;gap:5px}
+.rail .brand{font-weight:800;font-size:.78rem;text-align:center;color:var(--primary-tx);margin-bottom:12px}
+.rail button{border:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 4px;border-radius:15px;color:var(--muted);font:inherit;transition:.12s}
+.rail button svg{width:24px;height:24px}
+.rail button .tl{font-size:.69rem;font-weight:700}
+.rail button.on{background:var(--primary-soft);color:var(--primary-tx)}
+.stage.ipad .tabbar{display:none}
+.stage.ipad .app-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.stage.ipad .cols{grid-template-columns:1fr 1fr;align-items:start}
+.stage.ipad .pane{padding:20px 22px 30px}
+.stage.ipad .vitals{padding:12px 22px 14px}
+.stage.ipad .mini-stats{grid-template-columns:repeat(3,200px);justify-content:start}
+.full{grid-column:1/-1}
+.sheet-bk{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.sheet-bk.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:24px 24px 0 0;border-top:1px solid var(--line-2);transform:translateY(100%);transition:.3s cubic-bezier(.32,.72,0,1);z-index:61;max-height:88%;display:flex;flex-direction:column}
+.sheet.show{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--line-2);margin:9px auto 2px}
+.sheet-h{display:flex;align-items:center;padding:10px 18px 6px}
+.sheet-h h3{font-size:1.05rem;font-weight:800}
+.sheet-h .x{margin-left:auto;width:34px;height:34px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line-2);color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.sheet-b{overflow-y:auto;padding:10px 18px 16px}
+.sheet-a{padding:13px 18px calc(15px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:10px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;background:var(--surface-2);border:1px solid var(--line-2);border-radius:11px;color:var(--ink);font:inherit;font-size:.9rem;padding:11px 13px;outline:none}
+.field input::placeholder,.field textarea::placeholder{color:var(--faint)}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--primary-br)}
+.field textarea{min-height:72px;resize:vertical}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;flex-wrap:wrap;gap:7px}
+.seg button{border:1px solid var(--line-2);background:var(--surface-2);color:var(--muted);font:inherit;font-weight:700;font-size:.8rem;padding:8px 12px;border-radius:99px;cursor:pointer}
+.seg button.on{background:var(--primary-soft);border-color:var(--primary-br);color:var(--primary-tx)}
+.swrow{display:flex;align-items:center;gap:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.swrow .swt{font-weight:700;font-size:.88rem}.swrow .sws{font-size:.74rem;color:var(--faint)}
+.advanced{border:0;background:transparent;color:var(--mana-tx);font:inherit;font-weight:700;font-size:.84rem;cursor:pointer;padding:6px 0;display:flex;align-items:center;gap:6px}
+.advanced svg{width:15px;height:15px}
+.adv{display:none} .adv.show{display:block}
+.btn-primary{flex:1;height:48px;border:0;border-radius:13px;background:var(--primary);color:#fff;font:inherit;font-weight:800;font-size:.95rem;cursor:pointer;box-shadow:0 10px 26px rgba(226,88,76,.3)}
+.btn-ghost{height:48px;padding:0 18px;border:1px solid var(--line-2);border-radius:13px;background:var(--surface-2);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.toast{position:absolute;left:50%;bottom:92px;transform:translateX(-50%) translateY(20px);background:var(--surface-3);color:var(--ink);padding:12px 18px;border-radius:13px;font-weight:700;font-size:.9rem;opacity:0;pointer-events:none;transition:.25s;z-index:70;box-shadow:var(--shadow-lg);white-space:nowrap;border:1px solid var(--line-2)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast b{color:var(--gold-tx)}
+@media(max-width:900px){.stage.ipad .frame.ipad-only{transform:scale(.58);transform-origin:top center;margin-bottom:-430px}}
+@media(max-width:460px){.frame.phone-only{transform:scale(.86);transform-origin:top center}}
+.who{min-width:0}
+.res{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.res-i{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:7px 10px;cursor:pointer;transition:.12s}
+.res-i:active{transform:scale(.98)}
+.gauge{position:relative;width:42px;height:42px;flex:0 0 auto}
+.gauge .ring{width:100%;height:100%;border-radius:50%}
+.gauge.hp .ring{background:conic-gradient(var(--primary) calc(var(--p)*1%),rgba(255,255,255,.08) 0)}
+.gauge.mp .ring{background:conic-gradient(var(--mana) calc(var(--p)*1%),rgba(255,255,255,.08) 0)}
+.gauge .hole{position:absolute;inset:4px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-weight:800;font-size:.85rem}
+.gauge.hp .hole{color:var(--primary-tx)} .gauge.mp .hole{color:var(--mana-tx)}
+.res-t{min-width:0}
+.res-t .k{font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.res-t .vv{font-size:.82rem;font-weight:800;margin-top:1px}
+.def-badge{width:42px;height:42px;border-radius:12px;background:var(--gold-soft);border:1px solid var(--gold-br);display:grid;place-items:center;color:var(--gold-tx);font-weight:800;font-size:1.1rem;flex:0 0 auto}
+.astrip{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
+.atok{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:6px 2px;text-align:center;cursor:pointer;transition:.12s}
+.atok:active{transform:scale(.9)}
+.atok .k{font-size:.59rem;font-weight:800;color:var(--faint);letter-spacing:.02em}
+.atok .v{font-size:1rem;font-weight:800;margin-top:1px}
+.atok.hi{background:var(--primary-soft);border-color:var(--primary-br)} .atok.hi .v{color:var(--primary-tx)}
+.frame.desktop-only{display:none;padding:0;border-radius:14px;overflow:hidden;background:#0a0a0c;border:1px solid #222}
+.frame.desktop-only::before{display:none}
+.winbar{height:40px;background:#15151a;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--line)}
+.winbar i{width:11px;height:11px;border-radius:50%;background:#3a3a42}
+.winbar i.r{background:#e2584c}.winbar i.y{background:#d8b15f}.winbar i.g{background:#4ec77d}
+.winbar .url{color:var(--faint);font-size:.78rem;margin-left:12px;font-weight:600}
+.stage.ipad .frame.desktop-only{display:none}
+.stage.desktop .frame.phone-only,.stage.desktop .frame.ipad-only{display:none}
+.stage.desktop .frame.desktop-only{display:block}
+.stage.desktop .screen{width:1180px;height:720px;border-radius:0}
+.stage.desktop .rail{display:flex;flex-direction:column;width:172px;flex:0 0 172px;background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;gap:4px}
+.stage.desktop .rail .brand{margin-bottom:14px}
+.stage.desktop .rail button{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;border-radius:13px}
+.stage.desktop .rail button .tl{font-size:.84rem}
+.stage.desktop .tabbar{display:none}
+.stage.desktop .app-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.stage.desktop .vitals{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:14px 28px}
+.stage.desktop .vitals-id{margin-bottom:0;flex:0 0 auto}
+.stage.desktop .res{margin-left:auto;grid-template-columns:repeat(3,140px)}
+.stage.desktop .astrip{margin:0;grid-template-columns:repeat(6,58px)}
+.stage.desktop .pane{padding:24px 28px;max-width:1120px;margin:0 auto;width:100%}
+.stage.desktop .cols{grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1280px){.stage.desktop .frame.desktop-only{transform:scale(.76);transform-origin:top center;margin-bottom:-180px}}
+@media(max-width:1000px){.stage.desktop .frame.desktop-only{transform:scale(.56);margin-bottom:-330px}}
+</style>
+</head>
+<body>
+<div class="demo-top">
+  <h1>Nova Ficha de Tormenta — proposta</h1>
+  <p>Dark clean · ordem por prioridade de mesa (combate por último) · criação rápida de magias, poderes e buffs</p>
+  <div class="toggle"><button id="mMobile" class="on" onclick="setMode('mobile')">Mobile</button><button id="mIpad" onclick="setMode('ipad')">iPad</button><button id="mDesktop" onclick="setMode('desktop')">Desktop</button></div>
+  <div class="legend">Mockup interativo — troque de aba, toque nos vitais e nos botões "+ Adicionar".</div>
+</div>
+<div class="stage" id="stage">
+  <div class="frame phone-only"><div class="screen"><div class="app" id="appM"></div></div></div>
+  <div class="frame ipad-only"><div class="screen"><div class="app" id="appT"></div></div></div>
+  <div class="frame desktop-only"><div class="winbar"><i class="r"></i><i class="y"></i><i class="g"></i><span class="url">arcanaforge.app/tormenta/char</span></div><div class="screen"><div class="app" id="appD"></div></div></div>
+</div>
+<script>
+const S='stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"';
+const IC={
+  dice:`<svg viewBox="0 0 24 24" ${S}><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>`,
+  user:`<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>`,
+  target:`<svg viewBox="0 0 24 24" ${S}><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></svg>`,
+  spark:`<svg viewBox="0 0 24 24" ${S}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>`,
+  bag:`<svg viewBox="0 0 24 24" ${S}><path d="M7 9a5 5 0 0 1 10 0v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2zM9 9V7a3 3 0 0 1 6 0v2M9 13h6"/></svg>`,
+  swords:`<svg viewBox="0 0 24 24" ${S}><path d="M4 4h3l9 9-3 3-9-9zM20 4h-3l-3.5 3.5M14.5 14.5 17 17M4 20l3-3M20 20l-3-3"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" ${S}><path d="M12 5v14M5 12h14"/></svg>`,
+  x:`<svg viewBox="0 0 24 24" ${S}><path d="M6 6l12 12M18 6 6 18"/></svg>`,
+  chev:`<svg viewBox="0 0 24 24" ${S}><path d="M9 6l6 6-6 6"/></svg>`,
+  down:`<svg viewBox="0 0 24 24" ${S}><path d="M6 9l6 6 6-6"/></svg>`,
+  sliders:`<svg viewBox="0 0 24 24" ${S}><path d="M4 8h8M16 8h4M4 16h4M12 16h8"/><circle cx="14" cy="8" r="2"/><circle cx="10" cy="16" r="2"/></svg>`,
+  note:`<svg viewBox="0 0 24 24" ${S}><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>`,
+  chart:`<svg viewBox="0 0 24 24" ${S}><path d="M5 5v14h14M9 15v-3M13 15V9M17 15v-5"/></svg>`,
+  logs:`<svg viewBox="0 0 24 24" ${S}><path d="M8 6h11M8 12h11M8 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>`,
+  shield:`<svg viewBox="0 0 24 24" ${S}><path d="M12 3 5 6v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9V6z"/></svg>`,
+  dl:`<svg viewBox="0 0 24 24" ${S}><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14"/></svg>`,
+  wifi:`<svg width="16" height="16" viewBox="0 0 24 24" ${S}><path d="M5 12.5a10 10 0 0 1 14 0M8 16a5 5 0 0 1 8 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>`,
+  batt:`<svg width="22" height="16" viewBox="0 0 24 16" ${S}><rect x="1.5" y="3" width="18" height="10" rx="2.5"/><rect x="4" y="5.5" width="11" height="5" rx="1" fill="currentColor" stroke="none"/><path d="M21.5 6v4"/></svg>`,
+};
+const CHAR={
+  name:"Jinshi", sub:"Shugenya 2 · Aggelus · Herói Camponês",
+  hp:{c:26,m:26}, mp:{c:18,m:18}, def:14,
+  info:[["Raça","Suraggel (Aggelus)"],["Origem","Herói Camponês"],["Classe","Shugenya 2"],["Divindade","Lin-Wu"],["Alinhamento","Leal e Bom"],["Tamanho","Médio"],["Deslocamento","9 m"],["Nível / XP","2 · 1.300"]],
+  about:[["Personalidade","Sereno e observador; fala pouco e age com precisão. Leal a quem confia."],["Aparência","Jovem de vestes simples, traços angelicais discretos e um pincel sempre à mão."],["História","Camponês abençoado por Lin-Wu após um surto heroico que salvou sua vila de bandidos."],["Objetivos","Dominar a tradição de Lin-Wu e proteger os inocentes de Tamu-ra."]],
+  attrs:[["FOR",1],["DES",2],["CON",2],["INT",2],["SAB",5,true],["CAR",3]],
+  skills:[["Vontade","SAB","+10",true],["Percepção","SAB","+10",false],["Cura","SAB","+8",false],["Religião","SAB","+8",true],["Intuição","SAB","+8",false],["Iniciativa","DES","+7",false],["Diplomacia","CAR","+6",false],["Nobreza","INT","+5",true],["Misticismo","INT","+0",true],["Atletismo","FOR","+1",false],["Reflexos","DES","+3",false],["Fortitude","CON","+3",false]],
+  spells:[{nm:"Curar Ferimentos",esc:"Conv.",ex:"Padrão",alc:"Toque",dur:"Instant.",res:"—",mp:1},{nm:"Concentração de Combate",esc:"Encan.",ex:"Padrão",alc:"Pessoal",dur:"1 min",res:"—",mp:2},{nm:"Hipnotismo",esc:"Encan.",ex:"Padrão",alc:"Curto",dur:"Cena",res:"Von parcial",mp:1}],
+  powers:[["Coração Heroico","Raça","Recebe +3 PM ao subir em níveis-chave (5º, 11º, 17º)."],["Sortudo","Origem","Gaste 3 PM para rolar um teste novamente."],["Tradição de Lin-Wu","Classe","Katana como arma simples; +1 na margem de ameaça."],["Mente Vazia","Classe","+2 em Iniciativa, Percepção e Vontade."]],
+  buffs:[{nm:"Bênção de Lin-Wu",tipo:"Atributo",val:"+1 SAB",mp:0,on:true},{nm:"Foco em Combate",tipo:"Teste de ataque",val:"+2",mp:2,on:false},{nm:"Abençoado",tipo:"Perícia",val:"+5 Religião",mp:1,on:false}],
+  inventory:[["Katana",1,"1"],["Pincel de Lin-Wu",1,"—"],["Mochila de aventureiro",1,"1"],["Rações (5 dias)",5,"½"]],
+  attacks:[{nm:"Katana",d:"1d8+1",crit:"18/x2",tipo:"Corte",alc:"Corpo a corpo",atk:"+5"},{nm:"Arco curto",d:"1d6",crit:"19/x2",tipo:"Perfuração",alc:"18m",atk:"+4"},{nm:"Soco",d:"1d3+1",crit:"20/x2",tipo:"Impacto",alc:"Corpo a corpo",atk:"+5"}],
+  defense:[["Base",10],["Destreza",2],["Armadura",2],["Escudo",0],["Outros",0]],
+};
+function attrRow(test){return `<div class="attrs">${CHAR.attrs.map(a=>`<div class="attr ${a[2]?'hi':''}" ${test?`onclick="roll('${a[0]}',${a[1]})"`:''}><div class="a-k">${a[0]}</div><div class="a-v">${a[1]>=0?'+':''}${a[1]}</div></div>`).join('')}</div>`;}
+
+function paneChar(){return `
+  <div class="pane active" data-pane="personagem">
+    <div class="cols">
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Identidade</h3><span class="badge">valores base</span></div>
+          <div class="kv">${CHAR.info.map(i=>`<div class="kvi"><div class="kk">${i[0]}</div><div class="kvv">${i[1]}</div></div>`).join('')}</div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Interpretação</h3><span class="badge">editar</span></div>
+          ${CHAR.about.map(a=>`<div class="about-i"><div class="at">${a[0]}</div><p>${a[1]}</p></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;}
+
+function paneSkills(){return `
+  <div class="pane" data-pane="pericias">
+    <div class="card">
+      <div class="card-h"><h3>Perícias</h3><span class="badge">treinadas em destaque</span></div>
+      ${CHAR.skills.map(s=>`<div class="row"><div class="main"><div class="nm">${s[0]} ${s[3]?'<span class="tag tr">treinada</span>':''}</div><div class="meta"><span class="tag">${s[1]}</span></div></div><button class="roll" onclick="rollAtk('${s[0]}','${s[2]}','')">${IC.dice}${s[2]}</button></div>`).join('')}
+    </div>
+  </div>`;}
+
+function paneMagias(prefix){return `
+  <div class="pane" data-pane="magias">
+    <div class="cols">
+      <div>
+        <div class="sec-title">Magias · chave SAB +5 · CD 16</div>
+        <div class="card">
+          <div class="card-h"><h3>Magias — 1º círculo</h3><span class="badge">${CHAR.spells.length}</span></div>
+          ${CHAR.spells.map(s=>`<div class="row"><div class="main"><div class="nm">${s.nm} <span class="tag mp">${s.mp} PM</span></div><div class="meta"><span class="tag">${s.esc}</span><span>${s.ex}</span><span>${s.alc}</span><span>${s.dur}</span></div></div><button class="roll cast" onclick="toast('Conjurar ${s.nm} · ${s.mp} PM')">${IC.spark}</button></div>`).join('')}
+          <button class="add-row" onclick="openSheet('${prefix}','spell')">${IC.plus}Adicionar magia</button>
+        </div>
+      </div>
+      <div>
+        <div class="sec-title">Poderes &amp; habilidades</div>
+        <div class="card">
+          ${CHAR.powers.map(p=>`<div class="row" style="align-items:flex-start"><div class="main"><div class="nm">${p[0]} <span class="tag">${p[1]}</span></div><div class="meta" style="color:var(--muted)">${p[2]}</div></div></div>`).join('')}
+          <button class="add-row" onclick="openSheet('${prefix}','power')">${IC.plus}Adicionar poder</button>
+        </div>
+        <div class="sec-title">Buffs &amp; efeitos</div>
+        <div class="card">
+          ${CHAR.buffs.map(b=>`<div class="row"><div class="main"><div class="nm">${b.nm} ${b.mp?`<span class="tag mp">${b.mp} PM</span>`:''}</div><div class="meta"><span class="tag">${b.tipo}</span><span><b>${b.val}</b></span></div></div><div class="switch ${b.on?'on':''}" onclick="this.classList.toggle('on')"></div></div>`).join('')}
+          <button class="add-row" onclick="openSheet('${prefix}','buff')">${IC.plus}Adicionar buff</button>
+        </div>
+      </div>
+    </div>
+  </div>`;}
+function paneItens(prefix){return `
+  <div class="pane" data-pane="itens">
+    <div class="cols">
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Mochila</h3><span class="badge">Carga 2½ / 12</span></div>
+          ${CHAR.inventory.map(i=>`<div class="row"><div class="main"><div class="nm">${i[0]}</div><div class="meta"><span>Qtd <b>${i[1]}</b></span><span>Slots <b>${i[2]}</b></span></div></div></div>`).join('')}
+          <button class="add-row" onclick="openSheet('${prefix}','item')">${IC.plus}Adicionar item</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Moedas &amp; carga</h3></div>
+          <div class="defrow"><span>Tibares (T$)</span><b>45</b></div>
+          <div class="defrow"><span>Limite de carga</span><b>12 slots</b></div>
+          <div class="defrow"><span>Em uso</span><b>2½ slots</b></div>
+        </div>
+      </div>
+    </div>
+  </div>`;}
+
+function paneCombate(prefix){return `
+  <div class="pane" data-pane="combate">
+    <div class="cols">
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Defesa</h3></div>
+          <div class="deftotal"><div class="big">${CHAR.def}</div><div class="lab">Defesa<br>total</div></div>
+          ${CHAR.defense.map(d=>`<div class="defrow"><span>${d[0]}</span><b>${(d[0]!=='Base'&&d[1]>0?'+':'')}${d[1]}</b></div>`).join('')}
+          <div class="defrow"><span>Penalidade de armadura</span><b>0</b></div>
+          <div class="defrow"><span>Redução de dano</span><b>—</b></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>Ataques</h3><span class="badge">${CHAR.attacks.length}</span></div>
+          ${CHAR.attacks.map(a=>`<div class="row"><div class="main"><div class="nm">${a.nm}</div><div class="meta"><span>Dano <b>${a.d}</b></span><span>Crít <b>${a.crit}</b></span><span class="tag">${a.tipo}</span><span>${a.alc}</span></div></div><button class="roll atk" onclick="rollAtk('${a.nm}','${a.atk}','${a.d}')">${IC.dice}${a.atk}</button></div>`).join('')}
+          <button class="add-row" onclick="openSheet('${prefix}','attack')">${IC.plus}Adicionar ataque</button>
+        </div>
+      </div>
+    </div>
+  </div>`;}
+
+function fld(label,ph,type){return `<div class="field"><label>${label}</label><input type="${type||'text'}" placeholder="${ph||''}"></div>`;}
+function fsel(label,opts){return `<div class="field"><label>${label}</label><select>${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`;}
+function fta(label,ph){return `<div class="field"><label>${label}</label><textarea placeholder="${ph||''}"></textarea></div>`;}
+function fseg(label,opts){return `<div class="field"><label>${label}</label><div class="seg">${opts.map((o,i)=>`<button class="${i===0?'on':''}" onclick="segPick(this)">${o}</button>`).join('')}</div></div>`;}
+
+function sheetContent(type,prefix){
+  if(type==='spell')return ["Nova magia",
+    fld("Nome","Ex.: Bola de Fogo")+
+    `<div class="frow">${fsel("Escola",["Abjuração","Adivinhação","Convocação","Encantamento","Evocação","Ilusão","Necromancia","Transmutação"])}${fsel("Círculo",["1º","2º","3º","4º","5º"])}</div>`+
+    `<div class="frow">${fld("Execução","Padrão")}${fld("Custo PM","1","number")}</div>`+
+    `<div class="frow">${fld("Alcance","Curto")}${fld("Duração","Instantânea")}</div>`+
+    fta("Descrição","O que a magia faz…")+
+    `<button class="advanced" onclick="toggleAdv('${prefix}')">${IC.down}Opções avançadas</button>`+
+    `<div class="adv" id="adv-${prefix}"><div class="frow">${fld("Área","—")}${fld("Resistência","Reflexos parcial")}</div>${fld("Aprimoramentos","+1 PM: …")}</div>`,
+    `Magia`];
+  if(type==='power')return ["Novo poder",
+    fld("Nome","Ex.: Ataque Furtivo")+fseg("Fonte",["Raça","Origem","Classe","Poder geral"])+
+    `<div class="frow">${fld("Tipo","Ação livre")}${fld("Custo PM","0","number")}</div>`+
+    fta("Descrição","Efeito do poder…"),`Poder`];
+  if(type==='buff')return ["Novo buff",
+    fld("Nome","Ex.: Inspiração")+fseg("Tipo",["Atributo","Teste de ataque","Dano extra","Dano fixo","Vida","Mana","Perícia"])+
+    `<div class="frow">${fld("Valor","+2 / +1d6")}${fld("Custo PM","0","number")}</div>`+
+    `<div class="swrow"><div style="flex:1"><div class="swt">Ativar agora</div><div class="sws">Aplica o efeito imediatamente</div></div><div class="switch" onclick="this.classList.toggle('on')"></div></div>`,
+    `Buff`];
+  if(type==='item')return ["Novo item",fld("Nome","Ex.: Poção de cura")+`<div class="frow">${fld("Quantidade","1","number")}${fld("Slots","1")}</div>`,`Item`];
+  if(type==='attack')return ["Novo ataque",
+    fld("Nome","Ex.: Espada longa")+`<div class="frow">${fld("Bônus de ataque","+5")}${fld("Dano","1d8+2")}</div>`+
+    `<div class="frow">${fld("Crítico","19/x2")}${fld("Tipo","Corte")}</div>`+fld("Alcance","Corpo a corpo"),`Ataque`];
+  if(type==='vitals')return ["Ajustar vitais",
+    `<div class="field"><label>Pontos de Vida — ${CHAR.hp.c}/${CHAR.hp.m}</label><div class="seg"><button onclick="toast('−5 PV')">−5</button><button onclick="toast('−1 PV')">−1</button><button onclick="toast('+1 PV')">+1</button><button onclick="toast('+5 PV')">+5</button><button onclick="toast('Curar tudo')">Máx</button></div></div>`+
+    `<div class="field"><label>Pontos de Mana — ${CHAR.mp.c}/${CHAR.mp.m}</label><div class="seg"><button onclick="toast('−1 PM')">−1</button><button onclick="toast('−2 PM')">−2</button><button onclick="toast('+1 PM')">+1</button><button onclick="toast('Recuperar')">Máx</button></div></div>`,
+    ""];
+  if(type==='mais')return ["Mais",
+    `<div class="menu">
+      <a onclick="closeSheet('${prefix}');toast('Anotações')"><div class="mi">${IC.note}</div><div><div class="mt">Anotações</div><div class="ms">História, aliados, tesouros</div></div><div class="chev">${IC.chev}</div></a>
+      <a onclick="closeSheet('${prefix}');toast('Progressão')"><div class="mi">${IC.chart}</div><div><div class="mt">Progressão</div><div class="ms">Nível 2 · 1.300 XP</div></div><div class="chev">${IC.chev}</div></a>
+      <a onclick="closeSheet('${prefix}');toast('Proficiências')"><div class="mi">${IC.shield}</div><div><div class="mt">Proficiências</div><div class="ms">Armas marciais, armaduras leves</div></div><div class="chev">${IC.chev}</div></a>
+      <a onclick="closeSheet('${prefix}');toast('Logs')"><div class="mi">${IC.logs}</div><div><div class="mt">Logs de combate</div><div class="ms">Histórico de rolagens</div></div><div class="chev">${IC.chev}</div></a>
+      <a onclick="closeSheet('${prefix}');toast('Exportar')"><div class="mi">${IC.dl}</div><div><div class="mt">Exportar / Imprimir</div><div class="ms">PDF, JSON</div></div><div class="chev">${IC.chev}</div></a>
+    </div>`,""];
+  return ["","",""];
+}
+const TABS=[["personagem",IC.user,"Personagem"],["pericias",IC.target,"Perícias"],["magias",IC.spark,"Magias"],["itens",IC.bag,"Itens"],["combate",IC.swords,"Combate"]];
+
+function vitalsHeader(prefix){return `
+  <div class="vitals">
+    <div class="vitals-id">
+      <div class="avatar">J</div>
+      <div class="who"><div class="nm">${CHAR.name}</div><div class="sub">${CHAR.sub}</div></div>
+      <div class="gear" onclick="openSheet('${prefix}','mais')">${IC.sliders}</div>
+    </div>
+    <div class="res">
+      <div class="res-i" onclick="openSheet('${prefix}','vitals')"><div class="gauge hp" style="--p:100"><div class="ring"></div><div class="hole">${CHAR.hp.c}</div></div><div class="res-t"><div class="k">PV</div><div class="vv">${CHAR.hp.c}/${CHAR.hp.m}</div></div></div>
+      <div class="res-i" onclick="openSheet('${prefix}','vitals')"><div class="gauge mp" style="--p:100"><div class="ring"></div><div class="hole">${CHAR.mp.c}</div></div><div class="res-t"><div class="k">PM</div><div class="vv">${CHAR.mp.c}/${CHAR.mp.m}</div></div></div>
+      <div class="res-i" style="cursor:default"><div class="def-badge">${CHAR.def}</div><div class="res-t"><div class="k">Defesa</div><div class="vv">total</div></div></div>
+    </div>
+    <div class="astrip">${CHAR.attrs.map(a=>`<div class="atok ${a[2]?'hi':''}" onclick="roll('${a[0]}',${a[1]})"><div class="k">${a[0]}</div><div class="v">${a[1]>=0?'+':''}${a[1]}</div></div>`).join('')}</div>
+  </div>`;}
+
+function buildApp(prefix){
+  return `
+    <div class="statusbar"><span>9:41</span><span class="dots">${IC.wifi}${IC.batt}</span></div>
+    <div class="layout">
+      <div class="rail">
+        <div class="brand">Arcana<br>Forge</div>
+        ${TABS.map((t,i)=>`<button class="${i===0?'on':''}" data-tab="${t[0]}" onclick="go('${prefix}','${t[0]}')">${t[1]}<span class="tl">${t[2]}</span></button>`).join('')}
+      </div>
+      <div class="app-main">
+        ${vitalsHeader(prefix)}
+        <div class="app-body">${paneChar()}${paneSkills()}${paneMagias(prefix)}${paneItens(prefix)}${paneCombate(prefix)}</div>
+      </div>
+    </div>
+    <div class="tabbar">${TABS.map((t,i)=>`<button class="${i===0?'on':''}" data-tab="${t[0]}" onclick="go('${prefix}','${t[0]}')">${t[1]}<span class="tl">${t[2]}</span></button>`).join('')}</div>
+    <div class="sheet-bk" id="bk-${prefix}" onclick="closeSheet('${prefix}')"></div>
+    <div class="sheet" id="sh-${prefix}"><div class="grab"></div>
+      <div class="sheet-h"><h3 id="sht-${prefix}"></h3><div class="x" onclick="closeSheet('${prefix}')">${IC.x}</div></div>
+      <div class="sheet-b" id="shb-${prefix}"></div>
+      <div class="sheet-a" id="sha-${prefix}"></div>
+    </div>
+    <div class="toast" id="toast-${prefix}"></div>`;
+}
+
+document.getElementById('appM').innerHTML=buildApp('M');
+document.getElementById('appT').innerHTML=buildApp('T');
+document.getElementById('appD').innerHTML=buildApp('D');
+
+function go(prefix,tab){
+  const app=document.getElementById('app'+prefix);
+  app.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.dataset.pane===tab));
+  app.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  app.querySelector('.app-body').scrollTop=0;
+}
+function setMode(m){
+  document.getElementById('stage').className='stage'+(m==='mobile'?'':' '+m);
+  document.getElementById('mMobile').classList.toggle('on',m==='mobile');
+  document.getElementById('mIpad').classList.toggle('on',m==='ipad');
+  document.getElementById('mDesktop').classList.toggle('on',m==='desktop');
+}
+function openSheet(prefix,type){
+  const [title,body,save]=sheetContent(type,prefix);
+  document.getElementById('sht-'+prefix).textContent=title;
+  document.getElementById('shb-'+prefix).innerHTML=body;
+  const a=document.getElementById('sha-'+prefix);
+  if(save){a.style.display='flex';a.innerHTML=`<button class="btn-ghost" onclick="closeSheet('${prefix}')">Cancelar</button><button class="btn-primary" onclick="closeSheet('${prefix}');toast('${save} salvo')">Salvar ${save.toLowerCase()}</button>`;}
+  else{a.style.display='none';a.innerHTML='';}
+  document.getElementById('bk-'+prefix).classList.add('show');
+  document.getElementById('sh-'+prefix).classList.add('show');
+}
+function closeSheet(prefix){
+  document.getElementById('bk-'+prefix).classList.remove('show');
+  document.getElementById('sh-'+prefix).classList.remove('show');
+}
+function segPick(b){[...b.parentNode.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');}
+function toggleAdv(prefix){document.getElementById('adv-'+prefix).classList.toggle('show');}
+let toastTimer;
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>{ if(t.offsetParent!==null){t.innerHTML=msg;t.classList.add('show');} });
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>document.querySelectorAll('.toast').forEach(t=>t.classList.remove('show')),1700);
+}
+function d20(){return 1+Math.floor(Math.random()*20);}
+function roll(name,mod){const r=d20();toast(`${name}: <b>${r}${mod>=0?'+':''}${mod} = ${r+mod}</b>`);}
+function rollAtk(name,modStr,dmg){const mod=parseInt(modStr)||0;const r=d20();toast(`${name}: ${r}${mod>=0?'+':''}${mod} = <b>${r+mod}</b>${dmg?` · dano ${dmg}`:''}`);}
+</script>
+</body>
+</html>

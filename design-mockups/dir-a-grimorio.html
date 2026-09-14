@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Direção A — Grimório Iluminado · Ficha Tormenta 20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Marcellus&family=Marcellus+SC&family=Spectral:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#f3ead9;
+  --paper-2:#efe4cf;
+  --paper-3:#e8dbc1;
+  --ink:#2c2417;
+  --ink-soft:#5a4f3c;
+  --ink-faint:#8a7c63;
+  --wine:#8a2b2b;
+  --wine-deep:#6d1f1f;
+  --moss:#2f6b5e;
+  --moss-deep:#234f45;
+  --gold:#b08a3e;
+  --gold-soft:#c8a45a;
+  --rule:#cabb98;
+  --rule-soft:#d8ccb0;
+  --shadow:rgba(60,44,20,.22);
+  --display:"Cormorant Garamond",serif;
+  --display-alt:"Marcellus",serif;
+  --body:"EB Garamond",serif;
+  --label:"Marcellus SC","Spectral",serif;
+  --ui:"Spectral",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:
+    radial-gradient(120% 90% at 50% -10%, #4a3a22 0%, #34281a 45%, #241b12 100%);
+  min-height:100vh;
+  padding:42px 18px 90px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:46px;
+}
+
+/* ---------- Page title ---------- */
+.page-head{text-align:center;color:var(--paper);max-width:640px;animation:fadeUp .9s ease both}
+.page-head .eyebrow{
+  font-family:var(--label);letter-spacing:.42em;font-size:11px;text-transform:uppercase;
+  color:var(--gold-soft);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:14px;
+}
+.page-head .eyebrow::before,.page-head .eyebrow::after{content:"";height:1px;width:46px;background:linear-gradient(90deg,transparent,var(--gold))}
+.page-head h1{font-family:var(--display);font-weight:600;font-size:clamp(30px,6vw,46px);letter-spacing:.01em;line-height:1.04}
+.page-head h1 em{font-style:italic;color:var(--gold-soft)}
+.page-head p{font-family:var(--ui);font-size:13.5px;color:#d8cbab;margin-top:10px;opacity:.85;font-weight:300}
+
+/* ---------- Shared paper texture ---------- */
+.parchment{
+  position:relative;
+  background:
+    radial-gradient(140% 120% at 80% -10%, rgba(255,250,235,.55), transparent 55%),
+    radial-gradient(120% 120% at 0% 110%, rgba(176,138,62,.10), transparent 50%),
+    linear-gradient(180deg,var(--paper) 0%,var(--paper-2) 55%,var(--paper-3) 100%);
+}
+.parchment::before{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background-image:
+    radial-gradient(rgba(120,92,40,.05) 1px,transparent 1.4px),
+    radial-gradient(rgba(120,92,40,.04) 1px,transparent 1.4px);
+  background-size:5px 5px,7px 7px;
+  background-position:0 0,2px 3px;
+  mix-blend-mode:multiply;opacity:.7;
+}
+.parchment::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 0 60px rgba(90,64,24,.18), inset 0 0 0 1px rgba(110,80,30,.05);
+}
+
+/* ============== PHONE FRAME ============== */
+.phone{
+  width:390px;max-width:100%;height:798px;border-radius:46px;position:relative;
+  background:#1c150d;padding:11px;
+  box-shadow:0 2px 0 2px #0c0905,0 40px 80px -20px rgba(0,0,0,.7),0 0 0 1px rgba(176,138,62,.18);
+  animation:fadeUp 1s .1s ease both;
+}
+.phone-screen{
+  position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:140px;height:26px;background:#1c150d;border-radius:0 0 16px 16px;z-index:60;
+}
+.notch::after{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:42px;height:5px;border-radius:5px;background:#2e2415}
+.statusbar{
+  position:absolute;top:0;left:0;right:0;height:30px;z-index:55;
+  display:flex;align-items:center;justify-content:space-between;padding:0 24px;
+  font-family:var(--label);font-size:12px;letter-spacing:.06em;color:var(--ink);
+}
+.statusbar .right{display:flex;gap:7px;align-items:center;font-size:11px}
+
+/* ---------- Sticky header (vitals) ---------- */
+.app-header{
+  position:relative;z-index:40;padding:36px 18px 14px;
+  border-bottom:1px solid var(--rule);
+  flex-shrink:0;
+}
+.app-header::after{content:"";position:absolute;left:18px;right:18px;bottom:5px;height:1px;background:var(--rule-soft)}
+.hero-row{display:flex;align-items:center;gap:13px}
+.avatar{
+  width:58px;height:58px;border-radius:50%;flex-shrink:0;position:relative;
+  display:grid;place-items:center;
+  font-family:var(--display);font-weight:600;font-size:27px;color:var(--paper);
+  background:radial-gradient(120% 120% at 30% 25%,#3d8478,var(--moss-deep));
+  box-shadow:0 0 0 1px var(--moss-deep),0 0 0 4px var(--paper),0 0 0 5px var(--gold),0 6px 14px var(--shadow);
+}
+.avatar::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 -8px 14px rgba(0,0,0,.3)}
+.hero-id{flex:1;min-width:0}
+.hero-id .name{font-family:var(--display);font-weight:600;font-size:27px;line-height:1;letter-spacing:.01em}
+.hero-id .sub{font-family:var(--ui);font-size:12.5px;color:var(--ink-soft);margin-top:3px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.hero-id .sub .dot{width:3px;height:3px;border-radius:50%;background:var(--gold);display:inline-block}
+.deity{color:var(--moss);font-style:italic}
+.lvl-badge{
+  flex-shrink:0;text-align:center;font-family:var(--label);
+  padding:5px 11px;border:1px solid var(--gold);border-radius:3px;position:relative;
+  background:linear-gradient(180deg,rgba(176,138,62,.12),transparent);
+}
+.lvl-badge .n{font-family:var(--display);font-weight:700;font-size:22px;line-height:.9;color:var(--wine)}
+.lvl-badge .t{font-size:8.5px;letter-spacing:.25em;color:var(--ink-faint);text-transform:uppercase}
+
+.vitals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:14px}
+.vital{
+  position:relative;text-align:center;padding:7px 4px 8px;border-radius:5px;
+  background:rgba(255,252,244,.5);border:1px solid var(--rule-soft);
+}
+.vital + .vital::before{content:"";position:absolute;left:-5px;top:18%;bottom:18%;width:1px;background:var(--rule-soft)}
+.vital .lab{font-family:var(--label);font-size:9px;letter-spacing:.18em;color:var(--ink-faint)}
+.vital .val{font-family:var(--display);font-weight:600;font-size:21px;line-height:1.05;margin-top:1px}
+.vital .val small{font-size:13px;color:var(--ink-faint);font-weight:500}
+.vital.pv .val{color:var(--wine)}
+.vital.pm .val{color:var(--moss)}
+.vital .bar{height:3px;border-radius:3px;margin-top:5px;background:var(--rule-soft);overflow:hidden}
+.vital .bar i{display:block;height:100%;border-radius:3px}
+.vital.pv .bar i{width:100%;background:linear-gradient(90deg,var(--wine),#b94b4b)}
+.vital.pm .bar i{width:75%;background:linear-gradient(90deg,var(--moss),#4f9b8b)}
+
+/* ---------- Tab content area ---------- */
+.app-body{position:relative;flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 18px 18px;scrollbar-width:none}
+.app-body::-webkit-scrollbar{display:none}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp .55s ease both}
+
+/* section heading */
+.sec-head{display:flex;align-items:center;gap:12px;margin:4px 0 13px}
+.sec-head .glyph{font-family:var(--display);font-size:20px;color:var(--wine)}
+.sec-head h2{font-family:var(--display-alt);font-weight:400;font-size:16px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.sec-head .line{flex:1;height:0;border-top:1px solid var(--rule);position:relative}
+.sec-head .line::after{content:"";position:absolute;top:2px;left:0;right:0;border-top:1px solid var(--rule-soft)}
+.sec-head .floret{color:var(--gold);font-size:13px}
+
+/* ---------- Attribute emblems ---------- */
+.attr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.attr{
+  position:relative;text-align:center;padding:13px 4px 11px;border-radius:6px;
+  background:rgba(255,253,247,.55);border:1px solid var(--rule);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),0 2px 6px rgba(80,58,20,.08);
+  transition:transform .25s cubic-bezier(.2,.8,.3,1),box-shadow .25s;
+  --d:0ms;animation:rise .6s var(--d) both;
+}
+.attr:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 3px rgba(255,255,255,.5),0 8px 18px rgba(80,58,20,.18)}
+.attr .lab{font-family:var(--label);font-size:9.5px;letter-spacing:.2em;color:var(--ink-faint)}
+.attr .mod{font-family:var(--display);font-weight:600;font-size:34px;line-height:.9;margin-top:3px}
+.attr .glyph{font-size:13px;color:var(--gold);margin-top:3px;opacity:.7}
+.attr.key{
+  background:linear-gradient(180deg,rgba(47,107,94,.16),rgba(255,253,247,.5));
+  border-color:var(--moss);box-shadow:inset 0 0 0 3px rgba(255,255,255,.4),0 4px 14px rgba(35,79,69,.22);
+}
+.attr.key .mod{color:var(--moss-deep)}
+.attr.key .lab{color:var(--moss)}
+.attr.key::before{content:"✦ chave";position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  font-family:var(--label);font-size:8px;letter-spacing:.16em;background:var(--moss);color:var(--paper);
+  padding:2px 7px;border-radius:10px;text-transform:uppercase}
+
+/* ---------- Defense block ---------- */
+.defense{
+  margin-top:16px;display:flex;align-items:center;gap:14px;padding:13px 15px;border-radius:7px;
+  position:relative;border:1px solid var(--rule);
+  background:linear-gradient(180deg,rgba(138,43,43,.06),rgba(255,253,247,.4));
+}
+.defense .shield{
+  width:56px;height:62px;flex-shrink:0;position:relative;display:grid;place-items:center;
+  clip-path:polygon(50% 0,100% 14%,100% 60%,50% 100%,0 60%,0 14%);
+  background:linear-gradient(180deg,var(--wine),var(--wine-deep));color:var(--paper);
+  box-shadow:0 4px 10px rgba(109,31,31,.4);
+}
+.defense .shield::after{content:"";position:absolute;inset:3px;clip-path:inherit;border:1px solid rgba(255,255,255,.3)}
+.defense .shield b{font-family:var(--display);font-weight:700;font-size:26px}
+.defense .dx{flex:1}
+.defense .dx .t{font-family:var(--label);font-size:9.5px;letter-spacing:.2em;color:var(--ink-faint)}
+.defense .dx .breakdown{font-family:var(--ui);font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+.defense .dx .breakdown b{color:var(--ink);font-weight:600}
+
+/* ---------- Resource steppers ---------- */
+.res-wrap{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
+.res{padding:11px 12px;border-radius:7px;border:1px solid var(--rule);background:rgba(255,253,247,.5)}
+.res .top{display:flex;justify-content:space-between;align-items:baseline}
+.res .top .t{font-family:var(--label);font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint)}
+.res .top .now{font-family:var(--display);font-weight:600;font-size:20px}
+.res.pv .now{color:var(--wine)} .res.pm .now{color:var(--moss)}
+.res .top .now small{color:var(--ink-faint);font-size:13px}
+.stepper{display:flex;align-items:center;gap:8px;margin-top:9px}
+.stepper button{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--rule);background:rgba(255,255,255,.6);
+  font-family:var(--display);font-size:20px;font-weight:600;color:var(--ink);cursor:pointer;
+  display:grid;place-items:center;transition:.18s;line-height:0;
+}
+.stepper button:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);transform:scale(1.06)}
+.stepper button:active{transform:scale(.92)}
+.stepper .track{flex:1;height:7px;border-radius:7px;background:var(--rule-soft);overflow:hidden}
+.stepper .track i{display:block;height:100%;border-radius:7px;transition:width .4s cubic-bezier(.2,.8,.3,1)}
+.res.pv .track i{background:linear-gradient(90deg,var(--wine),#b94b4b)}
+.res.pm .track i{background:linear-gradient(90deg,var(--moss),#4f9b8b)}
+
+/* ---------- Condition chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.chip{
+  font-family:var(--ui);font-size:12px;padding:5px 11px 5px 9px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);
+  background:rgba(255,253,247,.6);color:var(--ink-soft);transition:.2s;cursor:default;
+}
+.chip .pip{width:7px;height:7px;border-radius:50%}
+.chip:hover{transform:translateY(-2px)}
+.chip.on{border-color:var(--moss);background:rgba(47,107,94,.1);color:var(--moss-deep)} .chip.on .pip{background:var(--moss);box-shadow:0 0 0 3px rgba(47,107,94,.2)}
+.chip.bad{border-color:var(--wine);background:rgba(138,43,43,.08);color:var(--wine-deep)} .chip.bad .pip{background:var(--wine)}
+.chip.hero{border-color:var(--gold);background:rgba(176,138,62,.12);color:#8a6a22} .chip.hero .pip{background:var(--gold)}
+
+/* ---------- Skills list ---------- */
+.skill-group-t{font-family:var(--ui);font-size:11.5px;letter-spacing:.06em;color:var(--ink-faint);font-style:italic;margin:14px 0 6px}
+.skill-group-t:first-of-type{margin-top:2px}
+.skill{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:5px;margin-bottom:5px;
+  background:rgba(255,253,247,.4);border:1px solid transparent;border-bottom:1px solid var(--rule-soft);
+  transition:.2s;
+}
+.skill:hover{background:rgba(255,253,247,.85);border-color:var(--rule);transform:translateX(3px)}
+.skill .ico{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--rule);flex-shrink:0}
+.skill.trained{background:rgba(176,138,62,.07)}
+.skill.trained .ico{border-color:var(--gold);background:var(--gold);box-shadow:0 0 0 3px rgba(176,138,62,.18)}
+.skill.trained .nm{font-weight:600}
+.skill .nm{flex:1;font-family:var(--body);font-size:15.5px}
+.skill .nm em{font-family:var(--ui);font-style:normal;font-size:10.5px;color:var(--gold);letter-spacing:.1em;margin-left:7px}
+.skill .v{font-family:var(--display);font-weight:600;font-size:19px;min-width:38px;text-align:right}
+.skill.trained .v{color:var(--wine)}
+
+/* ---------- Power cards ---------- */
+.source-t{font-family:var(--label);font-size:10px;letter-spacing:.2em;color:var(--moss);text-transform:uppercase;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.source-t:first-child{margin-top:2px}
+.source-t::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--rule),transparent)}
+.pcard{
+  position:relative;padding:12px 14px 13px 18px;border-radius:6px;margin-bottom:9px;
+  background:rgba(255,253,247,.55);border:1px solid var(--rule);
+  box-shadow:0 2px 5px rgba(80,58,20,.06);transition:.22s;overflow:hidden;
+}
+.pcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--wine),var(--moss))}
+.pcard:hover{transform:translateX(3px);box-shadow:0 6px 16px rgba(80,58,20,.16)}
+.pcard .ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pcard .pn{font-family:var(--display);font-weight:600;font-size:18.5px;line-height:1.1}
+.pcard .tag{font-family:var(--label);font-size:8.5px;letter-spacing:.12em;color:var(--ink-faint);white-space:nowrap;text-transform:uppercase}
+.pcard .pd{font-family:var(--body);font-size:14px;color:var(--ink-soft);line-height:1.45;margin-top:4px}
+
+/* ---------- Spellcasting block ---------- */
+.cast-block{
+  display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid var(--moss);
+  background:linear-gradient(135deg,rgba(47,107,94,.14),rgba(255,253,247,.5));
+}
+.cast-cell{flex:1;padding:12px;text-align:center;position:relative}
+.cast-cell + .cast-cell::before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:1px;background:var(--rule)}
+.cast-cell .t{font-family:var(--label);font-size:8.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.cast-cell .v{font-family:var(--display);font-weight:600;font-size:24px;color:var(--moss-deep);margin-top:2px}
+.cast-cell .v small{font-size:14px;color:var(--ink-soft);font-weight:500}
+
+.spell{
+  position:relative;padding:12px 14px;border-radius:7px;margin-bottom:10px;
+  background:rgba(255,253,247,.6);border:1px solid var(--rule);transition:.22s;
+}
+.spell:hover{box-shadow:0 6px 16px rgba(35,79,69,.16);transform:translateY(-2px)}
+.spell .sh{display:flex;align-items:flex-start;gap:10px}
+.spell .pm-cost{
+  flex-shrink:0;width:42px;height:42px;border-radius:8px;display:grid;place-items:center;text-align:center;
+  background:linear-gradient(180deg,var(--moss),var(--moss-deep));color:var(--paper);
+  box-shadow:0 3px 8px rgba(35,79,69,.3);
+}
+.spell .pm-cost b{font-family:var(--display);font-weight:700;font-size:19px;line-height:.8}
+.spell .pm-cost span{font-family:var(--label);font-size:7px;letter-spacing:.1em}
+.spell .si{flex:1;min-width:0}
+.spell .sn{font-family:var(--display);font-weight:600;font-size:18.5px;line-height:1.05}
+.spell .sm{font-family:var(--ui);font-size:9.5px;letter-spacing:.1em;color:var(--moss);text-transform:uppercase;margin-top:1px}
+.spell .sd{font-family:var(--body);font-size:13.5px;color:var(--ink-soft);line-height:1.4;margin-top:5px}
+.btn-cast{
+  margin-top:9px;width:100%;font-family:var(--label);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  padding:9px;border-radius:5px;border:1px solid var(--moss);color:var(--moss-deep);cursor:pointer;
+  background:rgba(47,107,94,.06);transition:.2s;
+}
+.btn-cast:hover{background:var(--moss);color:var(--paper);letter-spacing:.3em}
+.btn-cast:active{transform:scale(.98)}
+
+/* ---------- Equipment / weapon action cards ---------- */
+.weapon{
+  position:relative;padding:13px 14px;border-radius:8px;margin-bottom:11px;
+  background:linear-gradient(135deg,rgba(138,43,43,.08),rgba(255,253,247,.55));
+  border:1px solid var(--rule);transition:.22s;
+}
+.weapon:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(109,31,31,.16)}
+.weapon .wh{display:flex;align-items:center;gap:11px}
+.weapon .wg{
+  width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:20px;flex-shrink:0;
+  background:radial-gradient(120% 120% at 30% 25%,#a83b3b,var(--wine-deep));color:var(--paper);
+  box-shadow:0 3px 8px rgba(109,31,31,.35);
+}
+.weapon .wn{font-family:var(--display);font-weight:600;font-size:19px;flex:1;line-height:1}
+.weapon .wtype{font-family:var(--ui);font-size:10px;color:var(--ink-faint);font-style:italic}
+.weapon .stats{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.wstat{flex:1;min-width:60px;text-align:center;padding:6px 4px;border-radius:5px;background:rgba(255,255,255,.45);border:1px solid var(--rule-soft)}
+.wstat .t{font-family:var(--label);font-size:8px;letter-spacing:.12em;color:var(--ink-faint);text-transform:uppercase}
+.wstat .v{font-family:var(--display);font-weight:600;font-size:17px;color:var(--ink);margin-top:1px}
+.wstat .v.hit{color:var(--wine)}
+.btn-roll{
+  margin-top:10px;width:100%;font-family:var(--label);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  padding:10px;border-radius:6px;border:none;cursor:pointer;color:var(--paper);
+  background:linear-gradient(180deg,var(--wine),var(--wine-deep));
+  box-shadow:0 3px 8px rgba(109,31,31,.3);transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-roll:hover{letter-spacing:.32em;box-shadow:0 6px 16px rgba(109,31,31,.45)}
+.btn-roll:active{transform:scale(.98)}
+.btn-roll .d20{font-family:var(--display);font-size:14px}
+
+/* inventory */
+.inv-item{
+  display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:5px;margin-bottom:5px;
+  background:rgba(255,253,247,.4);border-bottom:1px solid var(--rule-soft);transition:.18s;
+}
+.inv-item:hover{background:rgba(255,253,247,.85);transform:translateX(3px)}
+.inv-item .ig{font-size:15px;width:22px;text-align:center;opacity:.8}
+.inv-item .inm{flex:1;font-family:var(--body);font-size:15px}
+.inv-item .qty{font-family:var(--label);font-size:11px;letter-spacing:.08em;color:var(--ink-faint)}
+.inv-item .qty b{font-family:var(--display);font-size:15px;color:var(--ink);font-weight:600}
+
+.load-bar{margin:14px 0 4px;padding:12px 14px;border-radius:7px;background:rgba(255,253,247,.5);border:1px solid var(--rule)}
+.load-bar .lh{display:flex;justify-content:space-between;align-items:baseline}
+.load-bar .lt{font-family:var(--label);font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint)}
+.load-bar .lv{font-family:var(--display);font-weight:600;font-size:17px}
+.load-track{display:flex;gap:4px;margin-top:9px}
+.load-track i{flex:1;height:9px;border-radius:2px;background:var(--rule-soft);border:1px solid var(--rule)}
+.load-track i.fill{background:linear-gradient(180deg,var(--gold-soft),var(--gold));border-color:var(--gold)}
+
+.coins{display:flex;gap:8px;margin-top:13px}
+.coin{flex:1;text-align:center;padding:11px 4px;border-radius:7px;border:1px solid var(--rule);background:rgba(255,253,247,.5)}
+.coin .cv{font-family:var(--display);font-weight:700;font-size:22px;line-height:.9}
+.coin .ct{font-family:var(--label);font-size:8.5px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;margin-top:3px}
+.coin.cobre .cv{color:#9c6b3b} .coin.prata .cv{color:#6f7782} .coin.ouro .cv{color:var(--gold)}
+
+/* ---------- Bottom tab bar ---------- */
+.tabbar{
+  position:relative;z-index:45;flex-shrink:0;display:flex;
+  border-top:1px solid var(--rule);background:linear-gradient(180deg,var(--paper-2),var(--paper-3));
+  padding:8px 4px 10px;
+}
+.tabbar::before{content:"";position:absolute;top:3px;left:14px;right:14px;height:1px;background:var(--rule-soft)}
+.tab{
+  flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 2px;color:var(--ink-faint);transition:.2s;position:relative;
+}
+.tab .ti{font-size:17px;line-height:1;transition:.25s}
+.tab .tl{font-family:var(--label);font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+.tab.active{color:var(--wine)}
+.tab.active .ti{transform:translateY(-2px) scale(1.12)}
+.tab.active::after{content:"";position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--wine);box-shadow:0 0 0 3px rgba(138,43,43,.15)}
+
+/* ---------- Toast ---------- */
+.toast-stack{position:absolute;left:14px;right:14px;bottom:78px;z-index:80;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  font-family:var(--ui);font-size:13.5px;color:var(--paper);padding:11px 15px;border-radius:8px;
+  background:linear-gradient(135deg,#33271a,#241b12);border:1px solid var(--gold);
+  box-shadow:0 10px 26px rgba(0,0,0,.4);display:flex;align-items:center;gap:11px;
+  animation:toastIn .4s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.toast.out{animation:toastOut .35s ease forwards}
+.toast .big{font-family:var(--display);font-weight:700;font-size:26px;color:var(--gold-soft);line-height:.9}
+.toast .tx b{color:var(--paper)}
+.toast .tx small{display:block;font-size:11px;color:#cbbb96;letter-spacing:.04em}
+
+/* ============== DESKTOP / TABLET FRAME ============== */
+.tablet-wrap{width:100%;max-width:1080px;animation:fadeUp 1s .25s ease both}
+.tablet-label{font-family:var(--label);font-size:11px;letter-spacing:.32em;color:var(--gold-soft);text-transform:uppercase;text-align:center;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:14px}
+.tablet-label::before,.tablet-label::after{content:"";height:1px;width:60px;background:linear-gradient(90deg,transparent,var(--gold))}
+.tablet{
+  border-radius:20px;padding:14px;background:#1c150d;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.65),0 0 0 1px rgba(176,138,62,.18);
+}
+.tablet-screen{border-radius:12px;overflow:hidden;position:relative}
+.t-header{
+  position:relative;z-index:5;display:flex;align-items:center;gap:18px;padding:20px 26px;border-bottom:1px solid var(--rule);
+}
+.t-header .avatar{width:64px;height:64px;font-size:30px}
+.t-header .hero-id .name{font-size:30px}
+.t-header .t-vitals{display:flex;gap:10px;margin-left:auto}
+.t-header .vital{padding:8px 16px;min-width:96px}
+.t-grid{
+  display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:18px;padding:22px 26px 28px;
+  position:relative;z-index:5;
+}
+.t-col{display:flex;flex-direction:column;gap:18px}
+.panel{
+  border-radius:10px;padding:16px 18px;border:1px solid var(--rule);
+  background:rgba(255,253,247,.45);box-shadow:0 2px 6px rgba(80,58,20,.07);position:relative;
+}
+.panel .sec-head{margin-top:0}
+.t-attr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.t-grid .skill{font-size:14px}
+.t-grid .skill .nm{font-size:14px}
+.t-grid .attr .mod{font-size:28px}
+
+/* drop cap for desktop intro line */
+.scribe-note{
+  font-family:var(--body);font-size:14.5px;color:var(--ink-soft);line-height:1.55;font-style:italic;
+}
+.scribe-note::first-letter{
+  font-family:var(--display);font-weight:700;font-size:50px;float:left;line-height:.72;margin:6px 9px 0 0;color:var(--wine);
+}
+
+/* ---------- keyframes ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px)}}
+
+@media(max-width:1020px){
+  .t-grid{grid-template-columns:1fr 1fr}
+  .t-header .hero-id .sub{display:none}
+}
+@media(max-width:720px){
+  .t-grid{grid-template-columns:1fr}
+  .t-header{flex-wrap:wrap}
+  .t-header .t-vitals{margin-left:0;width:100%}
+  .t-header .vital{flex:1}
+}
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="eyebrow">Mockup de Ficha · Tormenta 20</div>
+  <h1>Direção A — <em>Grimório Iluminado</em></h1>
+  <p>Manuscrito iluminado · tinta sépia, vinho &amp; verde-musgo, fio de ouro com parcimônia</p>
+</header>
+
+<!-- ================= PHONE ================= -->
+<div class="phone">
+  <div class="notch"></div>
+  <div class="phone-screen parchment">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="right">✶ &nbsp;◔&nbsp; ▮▮▮</span>
+    </div>
+
+    <!-- HEADER / VITALS (always visible) -->
+    <div class="app-header">
+      <div class="hero-row">
+        <div class="avatar">恩<span></span></div>
+        <div class="hero-id">
+          <div class="name">Enishi Tomoe</div>
+          <div class="sub">
+            <span>Shugenja 2</span><span class="dot"></span>
+            <span>Devoto de <span class="deity">Lin-Wu</span></span>
+          </div>
+        </div>
+        <div class="lvl-badge"><div class="n">2</div><div class="t">Nível</div></div>
+      </div>
+      <div class="vitals">
+        <div class="vital pv"><div class="lab">PONTOS DE VIDA</div><div class="val">26<small>/26</small></div><div class="bar"><i></i></div></div>
+        <div class="vital pm"><div class="lab">PONTOS DE MANA</div><div class="val">18<small>/24</small></div><div class="bar"><i></i></div></div>
+        <div class="vital"><div class="lab">DEFESA</div><div class="val">16</div><div class="bar" style="visibility:hidden"><i></i></div></div>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="app-body" id="phoneBody">
+
+      <!-- ============ ATRIBUTOS ============ -->
+      <section class="tab-panel active" data-tab="atributos">
+        <div class="sec-head"><span class="glyph">❦</span><h2>Atributos</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="attr-grid">
+          <div class="attr" style="--d:60ms"><div class="lab">FORÇA</div><div class="mod">0</div><div class="glyph">⚔</div></div>
+          <div class="attr" style="--d:120ms"><div class="lab">DESTREZA</div><div class="mod">+2</div><div class="glyph">➶</div></div>
+          <div class="attr" style="--d:180ms"><div class="lab">CONSTITUIÇÃO</div><div class="mod">+1</div><div class="glyph">✚</div></div>
+          <div class="attr" style="--d:240ms"><div class="lab">INTELIGÊNCIA</div><div class="mod">+1</div><div class="glyph">✒</div></div>
+          <div class="attr key" style="--d:300ms"><div class="lab">SABEDORIA</div><div class="mod">+3</div><div class="glyph">☯</div></div>
+          <div class="attr" style="--d:360ms"><div class="lab">CARISMA</div><div class="mod">0</div><div class="glyph">❀</div></div>
+        </div>
+
+        <div class="defense">
+          <div class="shield"><b>16</b></div>
+          <div class="dx">
+            <div class="t">DETALHAMENTO DA DEFESA</div>
+            <div class="breakdown"><b>10</b> base + <b>2</b> Des + <b>3</b> armadura + <b>1</b> outros</div>
+          </div>
+        </div>
+
+        <div class="sec-head" style="margin-top:20px"><span class="glyph">⟡</span><h2>Recursos</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="res-wrap">
+          <div class="res pv">
+            <div class="top"><span class="t">PONTOS DE VIDA</span><span class="now" id="pvNow">26<small>/26</small></span></div>
+            <div class="stepper">
+              <button onclick="step('pv',-1)">–</button>
+              <div class="track"><i id="pvTrack" style="width:100%"></i></div>
+              <button onclick="step('pv',1)">+</button>
+            </div>
+          </div>
+          <div class="res pm">
+            <div class="top"><span class="t">PONTOS DE MANA</span><span class="now" id="pmNow">18<small>/24</small></span></div>
+            <div class="stepper">
+              <button onclick="step('pm',-1)">–</button>
+              <div class="track"><i id="pmTrack" style="width:75%"></i></div>
+              <button onclick="step('pm',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec-head" style="margin-top:20px"><span class="glyph">✠</span><h2>Condições &amp; Buffs</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="chips">
+          <span class="chip on"><span class="pip"></span>Concentração +2</span>
+          <span class="chip bad"><span class="pip"></span>Sangrando</span>
+          <span class="chip hero"><span class="pip"></span>Surto Heroico</span>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ============ PERÍCIAS ============ -->
+      <section class="tab-panel" data-tab="pericias">
+        <div class="sec-head"><span class="glyph">✒</span><h2>Perícias</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="skill-group-t">— Treinadas —</div>
+        <div class="skill trained"><span class="ico"></span><span class="nm">Vontade<em>TREINO</em></span><span class="v">+10</span></div>
+        <div class="skill trained"><span class="ico"></span><span class="nm">Percepção<em>TREINO</em></span><span class="v">+10</span></div>
+        <div class="skill trained"><span class="ico"></span><span class="nm">Iniciativa<em>TREINO</em></span><span class="v">+7</span></div>
+        <div class="skill trained"><span class="ico"></span><span class="nm">Misticismo<em>TREINO</em></span><span class="v">+5</span></div>
+        <div class="skill trained"><span class="ico"></span><span class="nm">Luta<em>TREINO</em></span><span class="v">+2</span></div>
+        <div class="skill-group-t">— Não treinadas —</div>
+        <div class="skill"><span class="ico"></span><span class="nm">Reflexos</span><span class="v">+3</span></div>
+        <div class="skill"><span class="ico"></span><span class="nm">Furtividade</span><span class="v">+2</span></div>
+        <div class="skill"><span class="ico"></span><span class="nm">Fortitude</span><span class="v">+1</span></div>
+        <div class="skill"><span class="ico"></span><span class="nm">Atletismo</span><span class="v">+0</span></div>
+        <div class="skill"><span class="ico"></span><span class="nm">Diplomacia</span><span class="v">+0</span></div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ============ PODERES ============ -->
+      <section class="tab-panel" data-tab="poderes">
+        <div class="sec-head"><span class="glyph">❦</span><h2>Poderes</h2><span class="line"></span><span class="floret">✦</span></div>
+
+        <div class="source-t">Raça</div>
+        <div class="pcard"><div class="ph"><span class="pn">Coração Heroico</span><span class="tag">Humano</span></div>
+          <div class="pd">+3 pontos de mana; recebe +3 PM a cada novo patamar (5º, 11º e 17º nível).</div></div>
+
+        <div class="source-t">Origem</div>
+        <div class="pcard"><div class="ph"><span class="pn">Sortudo</span><span class="tag">Origem</span></div>
+          <div class="pd">Gaste 3 PM para rolar novamente um teste recém-feito e ficar com o melhor resultado.</div></div>
+
+        <div class="source-t">Classe</div>
+        <div class="pcard"><div class="ph"><span class="pn">Tradição de Lin-Wu</span><span class="tag">Shugenja</span></div>
+          <div class="pd">Considera a katana uma arma simples e recebe +1 na margem de ameaça ao empunhá-la.</div></div>
+        <div class="pcard"><div class="ph"><span class="pn">Mente Vazia</span><span class="tag">Shugenja</span></div>
+          <div class="pd">+2 em Iniciativa, Percepção e Vontade — a serenidade afia os sentidos.</div></div>
+
+        <div class="source-t">Poderes Gerais</div>
+        <div class="pcard"><div class="ph"><span class="pn">Surto Heroico</span><span class="tag">Combate</span></div>
+          <div class="pd">Uma vez por cena, recebe uma ação padrão adicional no seu turno.</div></div>
+        <div class="pcard"><div class="ph"><span class="pn">Torcida</span><span class="tag">Destino</span></div>
+          <div class="pd">Aliados próximos recebem +1 em testes de perícia enquanto puderem ouvi-lo.</div></div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ============ MAGIAS ============ -->
+      <section class="tab-panel" data-tab="magias">
+        <div class="sec-head"><span class="glyph">☯</span><h2>Magias</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="cast-block">
+          <div class="cast-cell"><div class="t">Atributo-chave</div><div class="v">Sab <small>+3</small></div></div>
+          <div class="cast-cell"><div class="t">CD de Resistência</div><div class="v">14</div></div>
+          <div class="cast-cell"><div class="t">Mana Atual</div><div class="v">18<small>/24</small></div></div>
+        </div>
+
+        <div class="spell">
+          <div class="sh">
+            <div class="pm-cost"><b>1</b><span>PM</span></div>
+            <div class="si"><div class="sn">Concentração de Combate</div><div class="sm">Abjuração · Toque</div>
+              <div class="sd">Concede +2 em rolagens de ataque até o fim da cena.</div></div>
+          </div>
+          <button class="btn-cast" onclick="cast('Concentração de Combate',1)">✦ Lançar</button>
+        </div>
+
+        <div class="spell">
+          <div class="sh">
+            <div class="pm-cost"><b>2</b><span>PM</span></div>
+            <div class="si"><div class="sn">Explosão de Chamas</div><div class="sm">Evocação · Cone 6m</div>
+              <div class="sd">2d6 de dano de fogo em cone; Reflexos CD 14 reduz à metade.</div></div>
+          </div>
+          <button class="btn-cast" onclick="cast('Explosão de Chamas',2)">✦ Lançar</button>
+        </div>
+
+        <div class="spell">
+          <div class="sh">
+            <div class="pm-cost"><b>1</b><span>PM</span></div>
+            <div class="si"><div class="sn">Curar Ferimentos</div><div class="sm">Conjuração · Toque</div>
+              <div class="sd">Restaura 2d8 pontos de vida a uma criatura tocada.</div></div>
+          </div>
+          <button class="btn-cast" onclick="cast('Curar Ferimentos',1)">✦ Lançar</button>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ============ EQUIPAMENTOS ============ -->
+      <section class="tab-panel" data-tab="equipamentos">
+        <div class="sec-head"><span class="glyph">⚔</span><h2>Equipamentos</h2><span class="line"></span><span class="floret">✦</span></div>
+
+        <div class="weapon">
+          <div class="wh"><div class="wg">🗡</div><div><div class="wn">Katana</div><div class="wtype">Corpo a corpo · empunhada</div></div></div>
+          <div class="stats">
+            <div class="wstat"><div class="t">Ataque</div><div class="v hit">+7</div></div>
+            <div class="wstat"><div class="t">Dano</div><div class="v">1d10+2</div></div>
+            <div class="wstat"><div class="t">Crítico</div><div class="v">18/×2</div></div>
+          </div>
+          <button class="btn-roll" onclick="roll('Katana',7)"><span class="d20">⬡</span> Rolar Ataque</button>
+        </div>
+
+        <div class="weapon">
+          <div class="wh"><div class="wg">🏹</div><div><div class="wn">Arco curto</div><div class="wtype">À distância · 18m</div></div></div>
+          <div class="stats">
+            <div class="wstat"><div class="t">Ataque</div><div class="v hit">+5</div></div>
+            <div class="wstat"><div class="t">Dano</div><div class="v">1d6+2</div></div>
+            <div class="wstat"><div class="t">Crítico</div><div class="v">×3</div></div>
+          </div>
+          <button class="btn-roll" onclick="roll('Arco curto',5)"><span class="d20">⬡</span> Rolar Ataque</button>
+        </div>
+
+        <div class="sec-head" style="margin-top:18px"><span class="glyph">⟡</span><h2>Inventário</h2><span class="line"></span><span class="floret">✦</span></div>
+        <div class="inv-item"><span class="ig">🖌</span><span class="inm">Pincel de Lin-Wu</span><span class="qty">×<b>1</b></span></div>
+        <div class="inv-item"><span class="ig">🗡</span><span class="inm">Katana</span><span class="qty">×<b>1</b></span></div>
+        <div class="inv-item"><span class="ig">🎒</span><span class="inm">Kit de aventureiro</span><span class="qty">×<b>1</b></span></div>
+        <div class="inv-item"><span class="ig">🧪</span><span class="inm">Poção de cura menor</span><span class="qty">×<b>2</b></span></div>
+
+        <div class="load-bar">
+          <div class="lh"><span class="lt">CARGA · ESPAÇOS</span><span class="lv">4 / 10</span></div>
+          <div class="load-track">
+            <i class="fill"></i><i class="fill"></i><i class="fill"></i><i class="fill"></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+
+        <div class="coins">
+          <div class="coin ouro"><div class="cv">8</div><div class="ct">Ouro</div></div>
+          <div class="coin prata"><div class="cv">12</div><div class="ct">Prata</div></div>
+          <div class="coin cobre"><div class="cv">40</div><div class="ct">Cobre</div></div>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast-stack" id="toastStack"></div>
+
+    <!-- TAB BAR -->
+    <nav class="tabbar">
+      <button class="tab active" data-target="atributos" onclick="showTab(this)"><span class="ti">❦</span><span class="tl">Atributos</span></button>
+      <button class="tab" data-target="pericias" onclick="showTab(this)"><span class="ti">✒</span><span class="tl">Perícias</span></button>
+      <button class="tab" data-target="poderes" onclick="showTab(this)"><span class="ti">✠</span><span class="tl">Poderes</span></button>
+      <button class="tab" data-target="magias" onclick="showTab(this)"><span class="ti">☯</span><span class="tl">Magias</span></button>
+      <button class="tab" data-target="equipamentos" onclick="showTab(this)"><span class="ti">⚔</span><span class="tl">Equip.</span></button>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= TABLET / DESKTOP ================= -->
+<div class="tablet-wrap">
+  <div class="tablet-label">A mesa inteira · Tablet &amp; Desktop</div>
+  <div class="tablet">
+    <div class="tablet-screen parchment">
+      <!-- header keeps vitals -->
+      <div class="t-header">
+        <div class="avatar">恩</div>
+        <div class="hero-id">
+          <div class="name">Enishi Tomoe</div>
+          <div class="sub"><span>Shugenja 2</span><span class="dot"></span><span>Nível 2</span><span class="dot"></span><span>Devoto de <span class="deity">Lin-Wu</span></span></div>
+        </div>
+        <div class="t-vitals">
+          <div class="vital pv"><div class="lab">PV</div><div class="val">26<small>/26</small></div><div class="bar"><i></i></div></div>
+          <div class="vital pm"><div class="lab">PM</div><div class="val">18<small>/24</small></div><div class="bar"><i></i></div></div>
+          <div class="vital"><div class="lab">DEFESA</div><div class="val">16</div></div>
+        </div>
+      </div>
+
+      <div class="t-grid">
+        <!-- COL 1 -->
+        <div class="t-col">
+          <div class="panel">
+            <div class="sec-head"><span class="glyph">❦</span><h2>Atributos</h2><span class="line"></span></div>
+            <div class="t-attr-grid">
+              <div class="attr"><div class="lab">FOR</div><div class="mod">0</div></div>
+              <div class="attr"><div class="lab">DES</div><div class="mod">+2</div></div>
+              <div class="attr"><div class="lab">CON</div><div class="mod">+1</div></div>
+              <div class="attr"><div class="lab">INT</div><div class="mod">+1</div></div>
+              <div class="attr key"><div class="lab">SAB</div><div class="mod">+3</div></div>
+              <div class="attr"><div class="lab">CAR</div><div class="mod">0</div></div>
+            </div>
+            <div class="defense" style="margin-top:14px">
+              <div class="shield"><b>16</b></div>
+              <div class="dx"><div class="t">DEFESA</div><div class="breakdown"><b>10</b> base + <b>2</b> Des + <b>3</b> arm. + <b>1</b> outros</div></div>
+            </div>
+            <div class="chips">
+              <span class="chip on"><span class="pip"></span>Concentração +2</span>
+              <span class="chip bad"><span class="pip"></span>Sangrando</span>
+              <span class="chip hero"><span class="pip"></span>Surto Heroico</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="sec-head"><span class="glyph">⚔</span><h2>Equipamentos</h2><span class="line"></span></div>
+            <div class="weapon" style="margin-bottom:10px">
+              <div class="wh"><div class="wg">🗡</div><div><div class="wn">Katana</div><div class="wtype">+7 · 1d10+2 · 18/×2</div></div></div>
+              <button class="btn-roll" onclick="roll('Katana',7)"><span class="d20">⬡</span> Rolar</button>
+            </div>
+            <div class="weapon">
+              <div class="wh"><div class="wg">🏹</div><div><div class="wn">Arco curto</div><div class="wtype">+5 · 1d6+2 · ×3 · 18m</div></div></div>
+              <button class="btn-roll" onclick="roll('Arco curto',5)"><span class="d20">⬡</span> Rolar</button>
+            </div>
+            <div class="coins">
+              <div class="coin ouro"><div class="cv">8</div><div class="ct">Ouro</div></div>
+              <div class="coin prata"><div class="cv">12</div><div class="ct">Prata</div></div>
+              <div class="coin cobre"><div class="cv">40</div><div class="ct">Cobre</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COL 2 -->
+        <div class="t-col">
+          <div class="panel">
+            <div class="sec-head"><span class="glyph">✒</span><h2>Perícias</h2><span class="line"></span></div>
+            <div class="skill trained"><span class="ico"></span><span class="nm">Vontade</span><span class="v">+10</span></div>
+            <div class="skill trained"><span class="ico"></span><span class="nm">Percepção</span><span class="v">+10</span></div>
+            <div class="skill trained"><span class="ico"></span><span class="nm">Iniciativa</span><span class="v">+7</span></div>
+            <div class="skill trained"><span class="ico"></span><span class="nm">Misticismo</span><span class="v">+5</span></div>
+            <div class="skill trained"><span class="ico"></span><span class="nm">Luta</span><span class="v">+2</span></div>
+            <div class="skill"><span class="ico"></span><span class="nm">Reflexos</span><span class="v">+3</span></div>
+            <div class="skill"><span class="ico"></span><span class="nm">Furtividade</span><span class="v">+2</span></div>
+            <div class="skill"><span class="ico"></span><span class="nm">Fortitude</span><span class="v">+1</span></div>
+            <div class="skill"><span class="ico"></span><span class="nm">Atletismo</span><span class="v">+0</span></div>
+            <div class="skill"><span class="ico"></span><span class="nm">Diplomacia</span><span class="v">+0</span></div>
+          </div>
+        </div>
+
+        <!-- COL 3 -->
+        <div class="t-col">
+          <div class="panel">
+            <div class="sec-head"><span class="glyph">☯</span><h2>Magias</h2><span class="line"></span></div>
+            <div class="cast-block" style="margin-bottom:12px">
+              <div class="cast-cell"><div class="t">Chave</div><div class="v">Sab+3</div></div>
+              <div class="cast-cell"><div class="t">CD</div><div class="v">14</div></div>
+            </div>
+            <div class="spell" style="margin-bottom:8px">
+              <div class="sh"><div class="pm-cost"><b>1</b><span>PM</span></div>
+                <div class="si"><div class="sn">Concentração de Combate</div><div class="sm">Abjuração</div></div></div>
+              <button class="btn-cast" onclick="cast('Concentração de Combate',1)">✦ Lançar</button>
+            </div>
+            <div class="spell" style="margin-bottom:8px">
+              <div class="sh"><div class="pm-cost"><b>2</b><span>PM</span></div>
+                <div class="si"><div class="sn">Explosão de Chamas</div><div class="sm">Evocação · 2d6</div></div></div>
+              <button class="btn-cast" onclick="cast('Explosão de Chamas',2)">✦ Lançar</button>
+            </div>
+            <div class="spell">
+              <div class="sh"><div class="pm-cost"><b>1</b><span>PM</span></div>
+                <div class="si"><div class="sn">Curar Ferimentos</div><div class="sm">Cura 2d8</div></div></div>
+              <button class="btn-cast" onclick="cast('Curar Ferimentos',1)">✦ Lançar</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="sec-head"><span class="glyph">❦</span><h2>Poderes</h2><span class="line"></span></div>
+            <p class="scribe-note">Coração Heroico concede +3 PM e mais a cada patamar. Mente Vazia afia Iniciativa, Percepção e Vontade. A Tradição de Lin-Wu torna a katana arma simples, com margem de ameaça ampliada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---- Tab switching ---- */
+function showTab(btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const target = btn.dataset.target;
+  document.querySelectorAll('#phoneBody .tab-panel').forEach(p=>{
+    p.classList.toggle('active', p.dataset.tab===target);
+  });
+  document.getElementById('phoneBody').scrollTop = 0;
+}
+
+/* ---- Resource steppers ---- */
+const RES = {
+  pv:{cur:26,max:26,el:'pvNow',track:'pvTrack'},
+  pm:{cur:18,max:24,el:'pmNow',track:'pmTrack'}
+};
+function step(k,d){
+  const r=RES[k];
+  r.cur=Math.max(0,Math.min(r.max,r.cur+d));
+  document.getElementById(r.el).innerHTML = r.cur+'<small>/'+r.max+'</small>';
+  document.getElementById(r.track).style.width = (r.cur/r.max*100)+'%';
+}
+
+/* ---- Toast ---- */
+function toast(html){
+  const stack=document.getElementById('toastStack');
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=html;
+  stack.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350)},2600);
+}
+
+/* ---- Roll d20 ---- */
+function roll(name,bonus){
+  const d=Math.floor(Math.random()*20)+1;
+  const total=d+bonus;
+  const crit = d===20 ? ' · ✦ ACERTO CRÍTICO!' : (d===1 ? ' · falha crítica' : '');
+  toast('<span class="big">'+total+'</span><span class="tx"><b>'+name+'</b> &nbsp;ataque<small>d20 ('+d+') + '+bonus+crit+'</small></span>');
+}
+
+/* ---- Cast spell ---- */
+function cast(name,pm){
+  const r=RES.pm;
+  r.cur=Math.max(0,r.cur-pm);
+  document.getElementById('pmNow').innerHTML = r.cur+'<small>/'+r.max+'</small>';
+  document.getElementById('pmTrack').style.width = (r.cur/r.max*100)+'%';
+  toast('<span class="big">☯</span><span class="tx"><b>Conjurou '+name+'</b><small>gastou '+pm+' PM · mana restante '+r.cur+'/'+r.max+'</small></span>');
+}
+</script>
+</body>
+</html>

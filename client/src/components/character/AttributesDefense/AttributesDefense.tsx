@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { getEffectiveAttribute, calcTotalDefense, formatMod } from '../../../utils/calculations';
 import { ATTRIBUTE_LABELS } from '../../../data/atributos';
 import type { AttributeId } from '../../../types/character';
 import Section from '../../ui/Section/Section';
 import NumericInput from '../../ui/NumericInput/NumericInput';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './AttributesDefense.module.css';
 
 const ATTR_ORDER: AttributeId[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -57,7 +59,9 @@ function AttributeCard({ attr }: { attr: AttributeId }) {
             {formatMod(effective)}
           </div>
           {isBuffed && <div className={styles.baseVal}>({formatMod(base)})</div>}
-          <button type="button" className={styles.editPencil} onClick={startEdit}>✎</button>
+          <button type="button" className={styles.editPencil} onClick={startEdit} aria-label="Editar atributo">
+            <Pencil size={16} aria-hidden="true" />
+          </button>
         </>
       )}
     </div>
@@ -66,6 +70,7 @@ function AttributeCard({ attr }: { attr: AttributeId }) {
 
 export default function AttributesDefense() {
   const { character, updateCharacter } = useCharacterContext();
+  const [removeDefenseIdx, setRemoveDefenseIdx] = useState<number | null>(null);
 
   if (!character) return null;
 
@@ -95,6 +100,8 @@ export default function AttributesDefense() {
       defense: { ...f.defense, items: f.defense.items.filter((_, i) => i !== idx) },
     }));
   };
+
+  const defenseToRemove = removeDefenseIdx != null ? character.defense.items[removeDefenseIdx] : null;
 
   return (
     <Section id="secAttributes" title="Atributos & Defesa">
@@ -137,7 +144,9 @@ export default function AttributesDefense() {
                   onChange={(n) => updateDefenseItem(i, 'penalty', n)}
                   title="Penalidade de Armadura"
                 />
-                <button type="button" className={styles.defenseRemove} onClick={() => removeDefenseItem(i)}>✕</button>
+                <button type="button" className={styles.defenseRemove} onClick={() => setRemoveDefenseIdx(i)} aria-label="Remover proteção">
+                  <Trash2 size={16} aria-hidden="true" />
+                </button>
               </div>
             ))}
           </div>
@@ -145,6 +154,19 @@ export default function AttributesDefense() {
           <button type="button" className={styles.addDefense} onClick={addDefenseItem}>+ Adicionar proteção</button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={removeDefenseIdx != null}
+        onClose={() => setRemoveDefenseIdx(null)}
+        onConfirm={() => {
+          if (removeDefenseIdx != null) removeDefenseItem(removeDefenseIdx);
+        }}
+        title="Remover proteção?"
+        message={`Isso apaga "${defenseToRemove?.name || 'Proteção'}" da defesa.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
     </Section>
   );
 }

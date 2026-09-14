@@ -12,7 +12,7 @@ export default function AttacksList() {
   const spellResistance = calcSpellResistance(character);
 
   const addAttack = () => {
-    updateCharacter(f => ({
+    updateCharacter((f) => ({
       ...f,
       attacks: [
         ...f.attacks,
@@ -34,7 +34,7 @@ export default function AttacksList() {
   return (
     <Section id="secAttacks" title="Ataques">
       <div className={styles.headerRow}>
-        <label>Resistência a Magia</label>
+        <span className={styles.headerLabel}>Resistência a Magia</span>
         <span className={styles.resistance}>{spellResistance}</span>
       </div>
       {character.attacks.map((_, idx) => (

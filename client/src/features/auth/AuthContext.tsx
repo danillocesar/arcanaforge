@@ -7,10 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { setAuthConfig } from '../../api/http';
 import { auth } from './firebase';
 import {
-  getCurrentUserToken,
   refreshUser,
   resendVerification,
   signInWithEmail,
@@ -52,18 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
     return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    setAuthConfig({
-      getToken: getCurrentUserToken,
-      onUnauthorized: async () => {
-        await signOutUser().catch(() => undefined);
-        if (window.location.pathname !== '/auth') {
-          window.location.assign('/auth');
-        }
-      },
-    });
   }, []);
 
   const signInGoogleHandler = useCallback(async () => {

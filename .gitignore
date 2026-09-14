@@ -45,8 +45,17 @@ Thumbs.db
 # Docker / MongoDB
 mongo-data/
 
+# Claude Code (local-only settings)
+.claude/settings.local.json
+
 # Misc
 *.tgz
 *.swp
 *.swo
 *.tsbuildinfo
+# Superpowers subagent-driven-development scratch workspace
+.superpowers/
+
+# HTML baixado do Grimório T20 pelo tools/import_grimorio_t20.py
+tools/cache/
+__pycache__/

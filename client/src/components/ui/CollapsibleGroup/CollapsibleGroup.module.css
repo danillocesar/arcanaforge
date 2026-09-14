@@ -1,0 +1,81 @@
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 9px;
+  padding: 6px 2px;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.count {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  padding: 1px 7px;
+  border-radius: 100px;
+}
+
+.chev {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--ink-3);
+  transition: transform 0.2s var(--ease);
+}
+
+.head:hover .title {
+  color: var(--ink);
+}
+
+.head:hover .chev {
+  color: var(--ink-2);
+}
+
+.collapsed .chev {
+  transform: rotate(-90deg);
+}
+
+.collapsed .head {
+  margin-bottom: 0;
+}
+
+/* Grupo em destaque (ex.: a prateleira de Favoritos fixa no topo). */
+.accent .title {
+  color: var(--accent-ink);
+}
+
+.accent .head {
+  border-bottom-color: var(--accent);
+}
+
+.accent .count {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}

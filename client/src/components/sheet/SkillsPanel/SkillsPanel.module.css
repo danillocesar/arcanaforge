@@ -1,0 +1,23 @@
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.search {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.list {
+  overflow: hidden;
+}
+
+.empty {
+  padding: 18px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}

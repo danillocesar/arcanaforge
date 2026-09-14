@@ -9,6 +9,9 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   min-height: 100vh;
+  /* App é dark-only — controles nativos (date/time picker, scrollbar de formulário)
+     desenham no esquema escuro em vez do claro padrão do navegador. */
+  color-scheme: dark;
 }
 
 /* scrollbar styles, input/select/textarea/button resets from the original */
@@ -47,21 +50,6 @@ a:hover { color: var(--accent-gold); }
   input, select, textarea {
     font-size: 16px !important;
   }
-}
-
-/* ========== READ-ONLY SHEET ========== */
-.readOnlySheet {
-  pointer-events: none;
-  user-select: text;
-}
-
-.readOnlySheet input,
-.readOnlySheet select,
-.readOnlySheet textarea,
-.readOnlySheet button {
-  pointer-events: none;
-  opacity: 0.7;
-  cursor: default;
 }
 
 /* ========== ATTACK ANIMATION OVERLAY ========== */

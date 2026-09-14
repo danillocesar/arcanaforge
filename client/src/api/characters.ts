@@ -35,6 +35,12 @@ export async function apiDeleteCharacter(id: string): Promise<void> {
   await assertOk(res);
 }
 
+export async function apiRestoreCharacter(id: string): Promise<{ ok: boolean }> {
+  const res = await apiFetch(`/api/characters/${encodeURIComponent(id)}/restore`, { method: 'POST' });
+  await assertOk(res);
+  return res.json();
+}
+
 export async function apiUploadAvatar(id: string, file: File): Promise<{ url: string }> {
   const url = await uploadCharacterAvatar(id, file);
   return { url };

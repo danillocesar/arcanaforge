@@ -1,0 +1,38 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.control {
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  border-bottom: 1.5px solid var(--line-2);
+  padding: 8px 2px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.25s var(--ease);
+  border-radius: 0;
+}
+
+.control::placeholder {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+.control:focus {
+  border-bottom-color: var(--accent);
+}

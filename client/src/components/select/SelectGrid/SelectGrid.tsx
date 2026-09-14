@@ -14,7 +14,6 @@ interface SelectGridProps {
 
 const SISTEMA_BADGE: Record<RPGSystem, string> = {
   tormenta: '⚔️',
-  naruto: '🍥',
 };
 
 export default function SelectGrid({ resumos, onNewCharacter, onDelete, newDisabled, newDisabledTooltip }: SelectGridProps) {
@@ -42,7 +41,7 @@ export default function SelectGrid({ resumos, onNewCharacter, onDelete, newDisab
             to={`${route}?id=${encodeURIComponent(r._id)}`}
             className={styles.card}
           >
-            <span className={styles.systemBadge} title={r.system === 'naruto' ? 'Naruto: Shinobi no Sho' : 'Tormenta 20'}>
+            <span className={styles.systemBadge} title="Tormenta 20">
               {SISTEMA_BADGE[r.system]}
             </span>
             <div

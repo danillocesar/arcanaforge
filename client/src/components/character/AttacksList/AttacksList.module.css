@@ -1,17 +1,33 @@
 .headerRow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;
+  min-height: 46px;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-.headerRow label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+.headerLabel {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .resistance {
-  font-size: 0.95rem;
-  font-weight: 700;
   color: var(--accent-gold);
+  font-size: 1.1rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .headerRow {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

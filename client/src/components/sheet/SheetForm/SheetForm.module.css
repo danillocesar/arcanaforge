@@ -1,0 +1,173 @@
+.header {
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.half {
+  grid-column: span 1;
+}
+
+.flex {
+  flex: 1;
+}
+
+/* ── list field (repeatable rows, e.g. attack modifiers) ── */
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 8px;
+}
+
+.listLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.listAdd {
+  border: none;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.listAdd:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* Botão que abre um catálogo oficial de dentro do formulário. */
+.catalogBtn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(155, 184, 209, 0.4);
+  background: transparent;
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.catalogBtn:hover {
+  background: var(--accent-soft);
+  border-color: rgba(155, 184, 209, 0.6);
+}
+
+.listEmpty {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 2px 2px 8px;
+}
+
+.listItem {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.listCell {
+  flex: 1;
+  min-width: 0;
+}
+
+.listRemove {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.listRemove:hover {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--line-2));
+}
+
+/* ── footer: remove / confirm ── */
+.btnDelGhost {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(251, 85, 112, 0.35);
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btnDelGhost:hover {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.btnDel {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: none;
+  background: var(--danger-soft);
+  color: var(--danger);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnDel:hover {
+  background: rgba(251, 85, 112, 0.22);
+}
+
+.confirmTxt {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .half {
+    grid-column: 1 / -1;
+  }
+}

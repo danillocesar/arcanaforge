@@ -56,10 +56,10 @@ export function buildCombatRows(
       currentHp: p.currentHp,
       maxMp: p.maxMp,
       currentMp: p.currentMp,
+      temporaryHp: p.temporaryHp,
+      damageReductions: p.damageReductions,
       avatar: p.avatar,
       classes: p.classes,
-      system: p.system,
-      clan: p.clan,
       ownerUid: p.ownerUid,
       combatVisual: data.gmCharacterVisual?.[p._id] ?? 'ally',
     });

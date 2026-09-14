@@ -7,13 +7,27 @@ COPY client/package.json client/package-lock.json ./client/
 
 RUN npm ci --ignore-scripts --legacy-peer-deps && cd client && npm ci --ignore-scripts
 
-COPY .env ./
 COPY client/ ./client/
 COPY server.js ./
 COPY server/ ./server/
 COPY assets/ ./assets/
 
-RUN cp .env client/.env && npm run build:client
+# Only the public VITE_* keys are needed at build time (Vite embeds them into
+# the client bundle). Never COPY the full .env here — it also holds
+# server-only secrets (Firebase Admin key, R2, Stripe, Mongo URI) that must
+# not end up baked into any image layer or build cache.
+ARG VITE_FIREBASE_API_KEY
+ARG VITE_FIREBASE_AUTH_DOMAIN
+ARG VITE_FIREBASE_PROJECT_ID
+ARG VITE_FIREBASE_APP_ID
+ARG VITE_FIREBASE_STORAGE_BUCKET
+ENV VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY
+ENV VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN
+ENV VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
+ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
+ENV VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
+
+RUN npm run build:client
 
 # Stage 2: production runtime
 FROM node:22-alpine
@@ -26,6 +40,11 @@ COPY server.js ./
 COPY server/ ./server/
 COPY assets/ ./assets/
 COPY --from=build /app/dist ./dist
+
+# node:22-alpine already ships an unprivileged `node` user (uid 1000) — run as
+# it instead of root.
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 

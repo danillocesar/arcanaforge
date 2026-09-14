@@ -1,6 +1,9 @@
+import { useState } from 'react';
+import { Sparkles, Trash2 } from 'lucide-react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import type { Spell, Enhancement } from '../../../types/character';
 import NumericInput from '../../ui/NumericInput/NumericInput';
+import ConfirmModal from '../../ui/ConfirmModal/ConfirmModal';
 import styles from './SpellCard.module.css';
 
 interface SpellCardProps {
@@ -10,13 +13,15 @@ interface SpellCardProps {
 
 export default function SpellCard({ index, onCast }: SpellCardProps) {
   const { character, updateCharacter } = useCharacterContext();
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
   if (!character) return null;
 
   const spell = character.spells[index];
   if (!spell) return null;
 
   const updateSpell = (updates: Partial<Spell>) => {
-    updateCharacter(f => {
+    updateCharacter((f) => {
       const spells = [...f.spells];
       spells[index] = { ...spells[index], ...updates };
       return { ...f, spells };
@@ -24,7 +29,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
   };
 
   const removeSpell = () => {
-    updateCharacter(f => ({ ...f, spells: f.spells.filter((_, i) => i !== index) }));
+    updateCharacter((f) => ({ ...f, spells: f.spells.filter((_, i) => i !== index) }));
   };
 
   const enhancements = Array.isArray(spell.enhancements) ? spell.enhancements : [];
@@ -57,18 +62,22 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
 
   return (
     <div className={styles.card}>
-      <button className={styles.cast} onClick={() => onCast(index)} title="Conjurar">
-        ✨
-      </button>
-      <button className={styles.remove} onClick={removeSpell} title="Remover">✕</button>
+      <div className={styles.cardActions}>
+        <button className={styles.cast} onClick={() => onCast(index)} title="Conjurar" aria-label="Conjurar magia">
+          <Sparkles size={18} aria-hidden="true" />
+        </button>
+        <button className={styles.remove} onClick={() => setConfirmRemove(true)} title="Remover" aria-label="Remover magia">
+          <Trash2 size={18} aria-hidden="true" />
+        </button>
+      </div>
 
       <div className={styles.grid}>
-        {fields.map(f => (
+        {fields.map((f) => (
           <div key={f.key} className={styles.field}>
             <label>{f.label}</label>
             <input
               value={spell[f.key] || ''}
-              onChange={e => updateSpell({ [f.key]: e.target.value })}
+              onChange={(e) => updateSpell({ [f.key]: e.target.value })}
             />
           </div>
         ))}
@@ -84,7 +93,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
           <textarea
             rows={3}
             value={spell.description}
-            onChange={e => updateSpell({ description: e.target.value })}
+            onChange={(e) => updateSpell({ description: e.target.value })}
           />
         </div>
       </div>
@@ -98,7 +107,7 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
             <input
               className={styles.enhDesc}
               value={enh.description}
-              onChange={e => updateEnhancement(aIdx, { description: e.target.value })}
+              onChange={(e) => updateEnhancement(aIdx, { description: e.target.value })}
               placeholder="Descrição"
             />
             <NumericInput
@@ -107,13 +116,24 @@ export default function SpellCard({ index, onCast }: SpellCardProps) {
               onChange={(n) => updateEnhancement(aIdx, { mpCost: n })}
               placeholder="PM"
             />
-            <button className={styles.removeSm} onClick={() => removeEnhancement(aIdx)}>
-              ✕
+            <button className={styles.removeSm} onClick={() => removeEnhancement(aIdx)} aria-label="Remover aprimoramento">
+              <Trash2 size={16} aria-hidden="true" />
             </button>
           </div>
         ))}
         <button className={styles.addApr} onClick={addEnhancement}>+ Aprimoramento</button>
       </div>
+
+      <ConfirmModal
+        open={confirmRemove}
+        onClose={() => setConfirmRemove(false)}
+        onConfirm={removeSpell}
+        title="Remover magia?"
+        message={`Isso apaga "${spell.name || 'Magia'}" da ficha.`}
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+      />
     </div>
   );
 }

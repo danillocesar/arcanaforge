@@ -4,39 +4,33 @@ import { apiFetchParties, apiCreateParty, apiDeleteParty, apiJoinParty, apiLeave
 import type { Party } from '../../types/party';
 import type { RPGSystem } from '../../types/character';
 import { useAuth } from '../../features/auth';
+import { getInitials, getAvatarColor } from '../../utils/formatters';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import type { WsMessage } from '../../hooks/useWebSocket';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import SystemFilter from '../../components/ui/SystemFilter/SystemFilter';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import styles from './PartySelectPage.module.css';
 
-type TabFilter = 'todos' | 'tormenta' | 'naruto';
-
 const SISTEMA_BADGE: Record<RPGSystem, string> = {
   tormenta: '⚔️',
-  naruto: '🍥',
 };
 
 const SISTEMA_LABEL: Record<RPGSystem, string> = {
   tormenta: 'Tormenta 20',
-  naruto: 'Naruto: SnS',
 };
 
 export default function PartySelectPage() {
   const { user } = useAuth();
   const [parties, setParties] = useState<Party[]>([]);
-  const [tab, setTab] = useState<TabFilter>('todos');
   const [modalOpen, setModalOpen] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [joinError, setJoinError] = useState('');
   const [joinLoading, setJoinLoading] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newSystem, setNewSystem] = useState<RPGSystem>('tormenta');
   const [deleteTarget, setDeleteTarget] = useState<Party | null>(null);
   const [leaveTarget, setLeaveTarget] = useState<Party | null>(null);
   const navigate = useNavigate();
@@ -65,12 +59,8 @@ export default function PartySelectPage() {
   const myParties = parties.filter((p) => p.ownerUid === uid);
   const joinedParties = parties.filter((p) => p.ownerUid !== uid);
 
-  const filterByTab = (list: Party[]) =>
-    tab === 'todos' ? list : list.filter((p) => p.system === tab);
-
   const openModal = () => {
     setNewName('');
-    setNewSystem('tormenta');
     setModalOpen(true);
   };
 
@@ -85,7 +75,7 @@ export default function PartySelectPage() {
     const name = newName.trim();
     if (!name) return;
 
-    const party = await apiCreateParty({ name, system: newSystem });
+    const party = await apiCreateParty({ name, system: 'tormenta' });
     setModalOpen(false);
     navigate(`/${party.system}/party/${party.id}`);
   };
@@ -124,7 +114,7 @@ export default function PartySelectPage() {
     setParties((prev) => prev.filter((p) => p.id !== leaveTarget.id));
   };
 
-  const copyInviteCode = (code: string, e: React.MouseEvent) => {
+  const copyInviteCode = (code: string, e: React.SyntheticEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(code).catch(() => {});
   };
@@ -168,34 +158,32 @@ export default function PartySelectPage() {
         </button>
       )}
 
-      <span className={styles.cardIcon}>🎲</span>
+      <span className={styles.cardAvatar} style={{ background: getAvatarColor(p.name) }} aria-hidden>
+        {getInitials(p.name)}
+      </span>
       <span className={styles.cardName}>{p.name}</span>
       <span className={styles.cardMeta}>
         {SISTEMA_LABEL[p.system]} &middot; {p.members.length} membro{p.members.length !== 1 ? 's' : ''}
       </span>
 
       {isOwner && p.inviteCode && (
-        <span
+        <button
+          type="button"
           className={styles.inviteCode}
           title="Clique para copiar código de convite"
           onClick={(e) => copyInviteCode(p.inviteCode, e)}
         >
           {p.inviteCode}
-        </span>
+        </button>
       )}
     </div>
   );
-
-  const filteredMy = filterByTab(myParties);
-  const filteredJoined = filterByTab(joinedParties);
 
   return (
     <div className={styles.page}>
       <Topbar title="Seleção de Grupos" />
 
       <div className={styles.content}>
-        <SystemFilter value={tab} onChange={setTab} />
-
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Meus Grupos</h2>
         </div>
@@ -206,7 +194,7 @@ export default function PartySelectPage() {
             <span className={styles.newLabel}>Novo Grupo</span>
           </button>
 
-          {filteredMy.map((p) => renderPartyCard(p, true))}
+          {myParties.map((p) => renderPartyCard(p, true))}
         </div>
 
         <div className={styles.sectionHeader}>
@@ -219,12 +207,12 @@ export default function PartySelectPage() {
             <span className={styles.newLabel}>Entrar com código</span>
           </button>
 
-          {filteredJoined.length === 0 ? (
+          {joinedParties.length === 0 ? (
             <div className={styles.emptyHint}>
               Use um código de convite para entrar em um grupo.
             </div>
           ) : (
-            filteredJoined.map((p) => renderPartyCard(p, false))
+            joinedParties.map((p) => renderPartyCard(p, false))
           )}
         </div>
       </div>
@@ -233,26 +221,6 @@ export default function PartySelectPage() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <form className={styles.newModal} onSubmit={handleCreate}>
           <h3 className={styles.newModalTitle}>Novo Grupo</h3>
-
-          <span className={styles.newModalLabel}>Sistema de RPG</span>
-          <div className={styles.systemSelector}>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'tormenta' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('tormenta')}
-            >
-              <span className={styles.systemIcon}>⚔️</span>
-              <span className={styles.systemName}>Tormenta 20</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'naruto' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('naruto')}
-            >
-              <span className={styles.systemIcon}>🍥</span>
-              <span className={styles.systemName}>Naruto: SnS</span>
-            </button>
-          </div>
 
           <label className={styles.newModalLabel} htmlFor="new-party-name">
             Nome da party

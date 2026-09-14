@@ -1,0 +1,141 @@
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+}
+
+.popH {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+
+.classRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.classRow select {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 8px;
+}
+
+.classRow b {
+  flex: 1;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.stepper {
+  flex: 0 0 auto;
+  transform: scale(0.82);
+  transform-origin: right center;
+}
+
+.remove {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.remove:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.confirmRow span {
+  flex: 1;
+  color: var(--ink-2);
+}
+
+.confirmBtn {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.confirmNo {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.confirmYes {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.tot {
+  border-top: 1px solid var(--line-2);
+  margin-top: 6px;
+  padding-top: 9px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.tot span {
+  color: var(--ink-2);
+}
+
+.tot b {
+  font-family: var(--font-display);
+  color: var(--accent-ink);
+  font-size: 16px;
+}
+
+.btnAdd {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1.5px dashed rgba(155, 184, 209, 0.4);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnAdd:hover {
+  background: rgba(155, 184, 209, 0.18);
+}

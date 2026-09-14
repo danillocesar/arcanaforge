@@ -1,35 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../features/auth';
-import { usePlan } from '../../../contexts/PlanContext';
 import styles from './Topbar.module.css';
-
-/** Marca do sistema RPG ao lado da logo Arcana Forge (ficha ou grupo). */
-export type SystemBrand = 'naruto' | 'tormenta';
 
 interface TopbarProps {
   title?: string;
   right?: ReactNode;
-  /** Quando definido, exibe a logo do sistema (SNS ou Tormenta) ao lado da logo do app. */
-  systemBrand?: SystemBrand;
 }
 
-const SYSTEM_LOGO: Record<SystemBrand, { src: string; alt: string }> = {
-  naruto: { src: '/assets/sns_logo.png', alt: 'Shinobi no Sentou' },
-  tormenta: { src: '/assets/tormenta_logo.png', alt: 'Tormenta RPG' },
-};
-
-/** Parâmetro de rota `/:system/...` → marca exibida na topbar. */
-export function systemParamToBrand(system: string | undefined): SystemBrand | undefined {
-  if (system === 'naruto') return 'naruto';
-  if (system === 'tormenta') return 'tormenta';
-  return undefined;
-}
-
-export default function Topbar({ title, right, systemBrand }: TopbarProps) {
+export default function Topbar({ title, right }: TopbarProps) {
   const { pathname } = useLocation();
   const { user, signOut } = useAuth();
-  const { status: planStatus } = usePlan();
   const [openMenu, setOpenMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -39,8 +20,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
 
   /** Lista principal de grupos */
   const isGrupos = pathname === '/parties';
-
-  const isBilling = pathname === '/billing';
 
   const displayName = useMemo(() => {
     if (!user) return 'Conta';
@@ -94,14 +73,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
             className={styles.logoImage}
             loading="eager"
           />
-          {systemBrand && (
-            <img
-              src={SYSTEM_LOGO[systemBrand].src}
-              alt={SYSTEM_LOGO[systemBrand].alt}
-              className={styles.systemLogoImage}
-              loading="eager"
-            />
-          )}
           {title && (
             <>
               <span className={styles.separator}>/</span>
@@ -138,20 +109,7 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
                 <div className={styles.dropdownUserInfo}>
                   <span className={styles.dropdownUserName}>{displayName}</span>
                   <span className={styles.dropdownUserEmail}>{displayEmail}</span>
-                  {planStatus && (
-                    <span className={styles.dropdownPlanBadge}>
-                      {planStatus.isExpired ? 'Expirado' : planStatus.plan === 'pro' ? 'Pro' : planStatus.isTrial ? 'Trial' : 'Free'}
-                    </span>
-                  )}
                 </div>
-                <Link
-                  to="/billing"
-                  className={styles.dropdownItem}
-                  role="menuitem"
-                  onClick={() => setOpenMenu(false)}
-                >
-                  Plano & Cobrança
-                </Link>
                 <button
                   type="button"
                   className={`${styles.dropdownItem} ${styles.dropdownDanger}`}
@@ -177,12 +135,6 @@ export default function Topbar({ title, right, systemBrand }: TopbarProps) {
           className={`${styles.navLink} ${isGrupos ? styles.navLinkActive : ''}`}
         >
           Grupos
-        </Link>
-        <Link
-          to="/billing"
-          className={`${styles.navLink} ${isBilling ? styles.navLinkActive : ''}`}
-        >
-          Plano
         </Link>
       </div>
     </nav>

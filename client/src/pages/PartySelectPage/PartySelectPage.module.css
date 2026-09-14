@@ -52,8 +52,18 @@
     0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
-.cardIcon {
-  font-size: 2rem;
+.cardAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   margin-bottom: 2px;
 }
 
@@ -166,48 +176,6 @@
   margin-top: 16px;
 }
 
-.systemSelector {
-  display: flex;
-  gap: 10px;
-}
-
-.systemOption {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 10px;
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-input);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font);
-}
-
-.systemOption:hover {
-  border-color: var(--text-muted);
-  background: var(--bg-card-hover);
-}
-
-.systemActive {
-  border-color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.08);
-  color: var(--accent-gold);
-  box-shadow: 0 0 12px rgba(201, 168, 76, 0.15);
-}
-
-.systemIcon {
-  font-size: 1.6rem;
-}
-
-.systemName {
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
 /* Section headers */
 .sectionHeader {
   display: flex;
@@ -229,13 +197,15 @@
 /* Invite code badge on cards */
 .inviteCode {
   display: inline-block;
+  appearance: none;
+  line-height: normal;
   font-size: 0.68rem;
   font-weight: 700;
   font-family: monospace;
   letter-spacing: 0.12em;
   color: var(--accent-gold);
-  background: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: rgba(155, 184, 209, 0.1);
+  border: 1px solid rgba(155, 184, 209, 0.25);
   border-radius: 6px;
   padding: 2px 8px;
   margin-top: 2px;
@@ -244,7 +214,7 @@
 }
 
 .inviteCode:hover {
-  background: rgba(201, 168, 76, 0.2);
+  background: rgba(155, 184, 209, 0.2);
 }
 
 /* Empty hint */

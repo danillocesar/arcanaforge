@@ -1,0 +1,37 @@
+.segctl {
+  display: flex;
+  /* Muitas opções (ex.: os 6 tipos de item na modal) quebram pra linha de baixo
+   * em vez de estourar a largura do container. */
+  flex-wrap: wrap;
+  gap: 4px;
+  background: var(--surface-2);
+  border-radius: 13px;
+  padding: 4px;
+  border: 1px solid var(--line);
+}
+
+.segctl button {
+  padding: 8px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.2s var(--ease), color 0.2s;
+}
+
+.gl {
+  font-size: 13px;
+}
+
+.segctl button.on {
+  background: var(--surface);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-soft);
+}

@@ -5,9 +5,16 @@ const { toCharacterDetailDTO } = require('../dto/character.dto');
 const { generatePartyId, generateInviteCode } = require('../utils/inviteCode');
 const partyRepository = require('../repositories/party.repository');
 const characterRepository = require('../repositories/character.repository');
+const characterContentRepository = require('../repositories/characterContent.repository');
+const characterLogsRepository = require('../repositories/characterLogs.repository');
 const combatRepository = require('../repositories/combat.repository');
+const { mergeCharacterDocs } = require('./character.service');
+const { sendSessionProposalEmail } = require('./email.service');
+const { mergeBuffIntoCharacter, isTempHpType, isTempMpType } = require('../utils/buffMerge');
+const { syncProposal } = require('./google/calendarSync');
+const { isConfirmed } = require('./google/syncPlan');
 
-const VALID_SYSTEMS = ['tormenta', 'naruto'];
+const VALID_SYSTEMS = ['tormenta'];
 
 async function uniqueInviteCode() {
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -21,7 +28,7 @@ async function uniqueInviteCode() {
 function createPartyService(refs) {
   async function listParties(uid) {
     const docs = await partyRepository.findVisibleToUser(uid);
-    return docs.map(toPartyDTO);
+    return docs.map((doc) => toPartyDTO(doc, uid));
   }
 
   async function createParty(body, req) {
@@ -46,7 +53,7 @@ function createPartyService(refs) {
       }],
       ...owners,
     });
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), req.user.uid);
   }
 
   async function updateParty(id, body, uid) {
@@ -57,7 +64,7 @@ function createPartyService(refs) {
     if (system) update.system = system;
     const party = await partyRepository.updateOwnedParty(id, uid, update);
     if (!party) throw new AppError(404, 'Party not found');
-    return toPartyDTO(party);
+    return toPartyDTO(party, uid);
   }
 
   async function deleteParty(id, uid) {
@@ -85,7 +92,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(String(party._id));
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), req.user.uid);
   }
 
   async function addCharacterToParty(id, body, uid) {
@@ -114,7 +121,7 @@ function createPartyService(refs) {
         refs.broadcastPartyRoster(id);
       }
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   async function removeCharacterFromParty(id, body, uid) {
@@ -131,7 +138,7 @@ function createPartyService(refs) {
       await party.save();
       refs.broadcastPartyRoster(id);
     }
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), uid);
   }
 
   async function leaveParty(id, uid) {
@@ -155,14 +162,14 @@ function createPartyService(refs) {
     party.members = party.members.filter((m) => m.uid !== memberUid);
     await party.save();
     refs.broadcastPartyRoster(id);
-    return toPartyDTO(party.toObject());
+    return toPartyDTO(party.toObject(), ownerUid);
   }
 
   async function regenerateCode(id, ownerUid) {
     const inviteCode = await uniqueInviteCode();
     const party = await partyRepository.updateOwnedParty(id, ownerUid, { inviteCode });
     if (!party) throw new AppError(404, 'Party não encontrada ou você não é o dono');
-    return toPartyDTO(party);
+    return toPartyDTO(party, ownerUid);
   }
 
   async function listPartyCharacters(id, uid) {
@@ -183,10 +190,217 @@ function createPartyService(refs) {
       throw new AppError(404, 'Personagem não pertence a esta party');
     }
 
-    const character = await characterRepository.findActiveById(characterId);
+    const [character, content, logsDoc] = await Promise.all([
+      characterRepository.findActiveById(characterId),
+      characterContentRepository.findById(characterId),
+      characterLogsRepository.findById(characterId),
+    ]);
     if (!character) throw new AppError(404, 'Personagem não encontrado');
 
-    return toCharacterDetailDTO(character);
+    return toCharacterDetailDTO(mergeCharacterDocs(character, content, logsDoc));
+  }
+
+  async function applyBuff(partyId, body, uid) {
+    const { targetCharacterIds, buff } = body || {};
+    if (!Array.isArray(targetCharacterIds) || targetCharacterIds.length === 0) {
+      throw new AppError(400, 'targetCharacterIds é obrigatório');
+    }
+    if (!buff || typeof buff !== 'object' || !Array.isArray(buff.effects)) {
+      throw new AppError(400, 'buff inválido');
+    }
+    const hasNegativeHpMp = buff.effects.some(
+      (eff) => eff && (isTempHpType(eff.type) || isTempMpType(eff.type)) && Number(eff.value) < 0,
+    );
+    if (hasNegativeHpMp) {
+      throw new AppError(400, 'Efeitos de PV/PM em um buff não podem ser negativos');
+    }
+
+    const party = await partyRepository.findMemberPartyLean(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const validIds = new Set(party.members.flatMap((m) => m.characterIds || []));
+    const targets = targetCharacterIds.filter((id) => validIds.has(id));
+    if (targets.length === 0) throw new AppError(400, 'Nenhum alvo válido neste grupo');
+
+    const entry = {
+      name: String(buff.name || ''),
+      effects: buff.effects.map((eff) => ({
+        type: String(eff.type || ''),
+        attributeId: eff.attributeId ? String(eff.attributeId) : undefined,
+        skillId: eff.skillId ? String(eff.skillId) : undefined,
+        value: String(eff.value ?? ''),
+      })),
+      mp: 0,
+      active: true,
+      source: buff.source ? String(buff.source) : undefined,
+      // Teste de resistência da magia: quem recebe o buff é quem precisa do tipo e
+      // da CD na ficha, então acompanham a entrada em vez de ficar só no conjurador.
+      resistance: buff.resistance ? String(buff.resistance) : undefined,
+      dc: Number.isFinite(Number(buff.dc)) ? Number(buff.dc) : undefined,
+      // Duração normalizada (cena/dia/permanente): o "Fim de cena" do alvo só desliga o que expira.
+      duration: ['cena', 'dia', 'permanente'].includes(buff.duration) ? buff.duration : undefined,
+    };
+
+    // Ler-mesclar-gravar em vez de $push: buff homônimo já existente na ficha do
+    // alvo é SUBSTITUÍDO (não duplicado), com os pools temporários ajustados por
+    // diferença — mesma semântica do applyBuffToCharacter no client. Dois casts
+    // simultâneos no mesmo alvo podem se atropelar, mas o autosave da ficha já
+    // convive com essa janela.
+    const results = await Promise.allSettled(
+      targets.map(async (id) => {
+        const doc = await characterRepository.findActiveById(id);
+        if (!doc) throw new Error(`Character ${id} not found or inactive`);
+        await characterRepository.setBuffState(id, mergeBuffIntoCharacter(doc, entry));
+        refs.broadcastBuffApplied(partyId, { characterId: id, buff: entry });
+        return id;
+      }),
+    );
+
+    const appliedTo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    const failed = targets.filter((id) => !appliedTo.includes(id));
+
+    return { ok: true, appliedTo, failed };
+  }
+
+  async function proposeSession(partyId, body, req) {
+    const { date, time } = body || {};
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new AppError(400, 'Data inválida (esperado YYYY-MM-DD)');
+    }
+    if (time && (typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time))) {
+      throw new AppError(400, 'Horário inválido (esperado HH:mm)');
+    }
+    const { timezone } = body || {};
+    // undefined/null = "não informado" (cai no DEFAULT_TIMEZONE); qualquer outro valor
+    // precisa ser string, dentro do tamanho e usar só os caracteres de um nome IANA
+    // (ex.: 'America/Sao_Paulo', 'Etc/GMT+5') — evita mandar lixo pro Google Calendar.
+    if (timezone !== undefined && timezone !== null) {
+      const isValid =
+        typeof timezone === 'string' && timezone.length <= 64 && /^[A-Za-z0-9/_+-]+$/.test(timezone);
+      if (!isValid) {
+        throw new AppError(400, 'timezone inválido');
+      }
+    }
+
+    const party = await partyRepository.findMemberParty(partyId, req.user.uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = {
+      id: generatePartyId(),
+      proposedBy: req.user.uid,
+      date,
+      time: time || '',
+      timezone: timezone || '',
+      googleEvents: [],
+      createdAt: new Date(),
+      responses: [],
+    };
+    party.sessionProposals.push(proposal);
+    await party.save();
+    refs.broadcastPartyRoster(partyId);
+
+    sendSessionProposalEmail(party, proposal).catch((err) => {
+      console.error('Falha ao enviar e-mail de proposta de sessão:', err.message);
+    });
+
+    return toPartyDTO(party.toObject(), req.user.uid);
+  }
+
+  async function respondToSession(partyId, proposalId, body, uid) {
+    const { vote } = body || {};
+    if (vote !== 'sim' && vote !== 'nao') {
+      throw new AppError(400, 'vote deve ser "sim" ou "nao"');
+    }
+
+    const party = await partyRepository.findMemberParty(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = party.sessionProposals.find((p) => p.id === proposalId);
+    if (!proposal) throw new AppError(404, 'Proposta não encontrada');
+
+    const prevConfirmed = isConfirmed(party, proposal);
+    const eventsBefore = (proposal.googleEvents || []).map((e) => ({
+      uid: e.uid,
+      eventId: e.eventId,
+      calendarId: e.calendarId,
+    }));
+
+    const existing = proposal.responses.find((r) => r.uid === uid);
+    if (existing) {
+      existing.vote = vote;
+      existing.respondedAt = new Date();
+    } else {
+      proposal.responses.push({ uid, vote, respondedAt: new Date() });
+    }
+    await party.save();
+    refs.broadcastPartyRoster(partyId);
+
+    // Snapshot em objeto plano (mesmo padrão do cancelSession): syncProposal
+    // não deve depender de subdocumento Mongoose vivo.
+    const proposalAfter = party.sessionProposals.find((p) => p.id === proposalId);
+    const proposalSnapshot = typeof proposalAfter.toObject === 'function' ? proposalAfter.toObject() : proposalAfter;
+
+    // Fire-and-forget: votar nunca falha porque o Google está fora do ar.
+    syncProposal({
+      party: party.toObject(),
+      proposal: proposalSnapshot,
+      prevConfirmed,
+      proposalRemoved: false,
+      eventsBefore,
+    }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
+
+    return toPartyDTO(party.toObject(), uid);
+  }
+
+  async function cancelSession(partyId, proposalId, uid) {
+    const party = await partyRepository.findMemberParty(partyId, uid);
+    if (!party) throw new AppError(404, 'Party não encontrada ou você não é membro');
+
+    const proposal = party.sessionProposals.find((p) => p.id === proposalId);
+    if (!proposal) throw new AppError(404, 'Proposta não encontrada');
+    if (proposal.proposedBy !== uid && party.ownerUid !== uid) {
+      throw new AppError(403, 'Só quem propôs ou o dono do grupo pode cancelar');
+    }
+
+    // A ordem importa: googleEvents, prevConfirmed e o snapshot do grupo têm
+    // que ser lidos ANTES da remoção, senão os ids dos eventos somem e ficam
+    // órfãos na agenda real de cada membro, sem nada no banco apontando pra
+    // eles.
+    const prevConfirmed = isConfirmed(party, proposal);
+    const eventsBefore = (proposal.googleEvents || []).map((e) => ({
+      uid: e.uid,
+      eventId: e.eventId,
+      calendarId: e.calendarId,
+    }));
+    const snapshot = party.toObject();
+    const proposalSnapshot = typeof proposal.toObject === 'function' ? proposal.toObject() : proposal;
+
+    // `$pull` da proposta em vez de reatribuir o array e chamar save(): o
+    // save() emitiria `$set` do array INTEIRO a partir deste snapshot e
+    // apagaria as referências de googleEvents que outra requisição gravou em
+    // outra proposta no meio. Ver removeProposal no repositório.
+    await partyRepository.removeProposal(partyId, proposalId);
+    refs.broadcastPartyRoster(partyId);
+
+    syncProposal({
+      party: snapshot,
+      proposal: proposalSnapshot,
+      prevConfirmed,
+      proposalRemoved: true,
+      eventsBefore,
+    }).catch((err) => console.error('Falha ao sincronizar Google Agenda:', err.message));
+
+    // Depois do $pull o documento em memória está velho, e chamar save() nele
+    // é exatamente o `$set` que acabamos de evitar. O DTO sai do snapshot já
+    // lido, com a proposta removida em memória: é o que esta requisição viu,
+    // menos o que ela acabou de cancelar.
+    return toPartyDTO(
+      {
+        ...snapshot,
+        sessionProposals: (snapshot.sessionProposals || []).filter((p) => p.id !== proposalId),
+      },
+      uid,
+    );
   }
 
   return {
@@ -202,6 +416,10 @@ function createPartyService(refs) {
     regenerateCode,
     listPartyCharacters,
     getPartyCharacter,
+    applyBuff,
+    proposeSession,
+    respondToSession,
+    cancelSession,
   };
 }
 

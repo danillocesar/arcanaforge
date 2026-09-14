@@ -1,39 +1,104 @@
 :root {
-  --bg-body: #0f1117;
-  --bg-card: #1a1d27;
-  --bg-card-hover: #222632;
-  --bg-input: #13151c;
-  --bg-topbar: #141720;
-  --border: #2a2e3a;
-  --border-focus: #c9a84c;
-  --text-primary: #e8e6e3;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --accent-gold: #c9a84c;
-  --accent-gold-dim: #8b7633;
-  --accent-red: #dc2626;
-  --accent-red-bg: #3b1111;
-  --accent-red-bar: #ef4444;
-  --accent-blue: #2563eb;
+  /* ============================================================
+     NEW DESIGN SYSTEM — "C dark" (ficha Tormenta redesign)
+     Canonical source: design-mockups/ficha-tormenta.html
+     ============================================================ */
+
+  /* Surfaces & ink — "Codex" direction (dark + ice, ref. hidden-codex) */
+  --bg: #0a0b0e;
+  --surface: #1a1d25;
+  --surface-2: #1f2330;
+  --ink: #e8e4dc;
+  --ink-2: #8a8b94;
+  --ink-3: #4a4d57;
+  --line: rgba(155, 184, 209, 0.15);
+  --line-2: rgba(155, 184, 209, 0.4);
+
+  /* Accents */
+  --accent: #9bb8d1;
+  --accent-deep: #5b7a96;
+  --accent-soft: rgba(155, 184, 209, 0.13);
+  --accent-ink: #c8dcea;
+  --warn: #d4a04c;
+  --warn-soft: rgba(212, 160, 76, 0.13);
+  --danger: #a8302a;
+  --danger-soft: rgba(168, 48, 42, 0.13);
+
+  /* Radii (new) */
+  --r-lg: 22px;
+  --r-md: 18px;
+  --r-sm: 13px;
+
+  /* Shadows (new) */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -6px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 18px 50px -16px rgba(155, 184, 209, 0.45);
+
+  /* Typography */
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-ui: var(--font-body);
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* ============================================================
+     LEGACY ALIASES — old token names kept so existing components
+     keep working. COLORS are remapped to the new palette (this
+     re-themes the whole app — validate later).
+     Radii / shadows keep their old values to avoid distorting
+     still-live legacy screens before the v2 cutover.
+     ============================================================ */
+
+  /* Surfaces */
+  --bg-body: var(--bg);
+  --bg-card: var(--surface);
+  --bg-card-hover: var(--surface-2);
+  --bg-input: #14161c;
+  --bg-topbar: var(--surface);
+  --border: var(--line);
+  --border-focus: var(--accent);
+
+  /* Text */
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-2);
+  --text-muted: var(--ink-3);
+
+  /* Accent colors (gold → green) */
+  --accent-gold: var(--accent);
+  --accent-gold-dim: var(--accent-deep);
+  --accent-red: var(--danger);
+  --accent-red-bg: var(--danger-soft);
+  --accent-red-bar: var(--danger);
+  --accent-blue: #3b82f6;
   --accent-blue-bg: #0f1d3d;
   --accent-blue-bar: #3b82f6;
-  --accent-green: #16a34a;
+  --accent-green: var(--accent);
+  --accent-green-bar: var(--accent);
   --accent-turn: #2dd4bf;
-  --accent-gm: #fb923c;
-  --btn-add-bg: #1e2433;
-  --btn-add-hover: #2a3040;
-  --accent-green-bar: #22c55e;
-  --accent-success: #2ecc40;
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.3);
-  --shadow-lg: 0 4px 20px rgba(0,0,0,0.4);
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --touch-target: 44px;
-  --touch-target-sm: 36px;
+  --accent-gm: var(--accent);
+  --accent-success: var(--accent);
+  --btn-add-bg: var(--surface-2);
+  --btn-add-hover: var(--line-2);
+
+  /* Radii — v2 cutover: legacy tiers now point at the same 3-step scale the
+     ficha already uses, instead of their own separate 4/8/12px values. */
+  --radius-sm: var(--r-sm);
+  --radius: var(--r-sm);
+  --radius-lg: var(--r-md);
+
+  /* Shadows — same cutover as radii above. */
+  --shadow-sm: var(--shadow-soft);
+  --shadow: var(--shadow-soft);
+  --shadow-md: var(--shadow-soft);
+  --shadow-lg: var(--shadow-card);
+
+  /* Fonts (legacy alias → new body font) */
+  --font: var(--font-body);
+
+  /* Sizing */
+  --touch-target: 48px;
+  --touch-target-sm: 40px;
   --font-xs: 0.75rem;
   --font-sm: 0.8rem;
   --font-base: 0.875rem;

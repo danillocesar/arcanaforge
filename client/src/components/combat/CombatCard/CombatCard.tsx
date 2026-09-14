@@ -1,28 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type RefObject } from 'react';
 import { ChevronRight, UserMinus, RefreshCw, UserCheck } from 'lucide-react';
 import { useCombatContext } from '../../../contexts/CombatContext';
 import { getInitials } from '../../../utils/formatters';
 import { hpPercent } from '../../../utils/calculations';
 import { getClassIconUrl } from '../../../features/tormenta/data/tormentaClasses';
-import { apiFetchNarutoClans } from '../../../api';
-import type { NarutoClanOption } from '../../../api';
 import DamagePopover from '../DamagePopover/DamagePopover';
 import type { CombatRow } from '../../../types/combat';
 import styles from './CombatCard.module.css';
-
-let cachedClans: NarutoClanOption[] | null = null;
-let clanFetchPromise: Promise<NarutoClanOption[]> | null = null;
-
-function fetchClansOnce(): Promise<NarutoClanOption[]> {
-  if (cachedClans) return Promise.resolve(cachedClans);
-  if (!clanFetchPromise) {
-    clanFetchPromise = apiFetchNarutoClans().then((clans) => {
-      cachedClans = clans;
-      return clans;
-    });
-  }
-  return clanFetchPromise;
-}
 
 const VILLAIN_ICON = (
   <svg className={styles.villainIcon} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -53,7 +37,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [editingMaxHp, setEditingMaxHp] = useState(false);
   const [draftMaxHp, setDraftMaxHp] = useState('');
-  const hpBarRef = useRef<HTMLDivElement>(null);
+  const hpBarRef = useRef<HTMLElement>(null);
 
   const isPartyCharacter = row.type === 'player';
   const visual = row.combatVisual ?? 'ally';
@@ -62,6 +46,8 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
 
   const maxHp = row.maxHp || 1;
   const currentHp = row.currentHp || 0;
+  const tempHp = row.temporaryHp || 0;
+  const hpLabel = `${currentHp}${tempHp > 0 ? ` (+${tempHp})` : ''} / ${maxHp}`;
   const maxMp = row.maxMp || 0;
   const currentMp = row.currentMp || 0;
   const hpPct = hpPercent(currentHp, maxHp);
@@ -71,27 +57,10 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
     ? parseInt(row.id.split('_').pop() || '0', 10)
     : undefined;
 
-  const isNaruto = row.system === 'naruto';
   const firstClassName = row.classes?.[0]?.name;
   const classIconSrc = firstClassName ? getClassIconUrl(firstClassName) : '';
 
-  const [clanIconSrc, setClanIconSrc] = useState('');
-  useEffect(() => {
-    if (!isNaruto || !row.clan?.trim()) {
-      setClanIconSrc('');
-      return;
-    }
-    const want = row.clan.trim().toLowerCase();
-    fetchClansOnce()
-      .then((clans) => {
-        const match = clans.find((c) => c.name.toLowerCase() === want);
-        setClanIconSrc(match?.icon ?? '');
-      })
-      .catch(() => setClanIconSrc(''));
-  }, [isNaruto, row.clan]);
-
-  const stripIconSrc = isNaruto ? clanIconSrc : classIconSrc;
-  const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && (isNaruto ? !!clanIconSrc : !!firstClassName);
+  const hasAllyStripIcon = isPartyCharacter && !showAsEnemyCard && !!firstClassName;
 
   useEffect(() => {
     if (!editingMaxHp) setDraftMaxHp(String(row.maxHp ?? 1));
@@ -175,7 +144,7 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
         <div className={styles.classStrip}>
           <img
             className={styles.classIcon}
-            src={stripIconSrc}
+            src={classIconSrc}
             alt=""
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
@@ -225,17 +194,32 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
         <div
           className={`${styles.bars} ${!cardLooksPlayer ? styles.barsEnemy : ''} ${!showEnemyBars ? styles.barsHidden : ''}`}
         >
-          <div
-            className={`${styles.bar} ${styles.barHp} ${isMaster && !spectatorMode ? styles.barClickable : ''}`}
-            ref={hpBarRef}
-            onClick={() => isMaster && !spectatorMode && showEnemyBars && setPopoverOpen(true)}
-            role="presentation"
-          >
-            <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
-            <span className={styles.barLabel}>
-              {showEnemyBars ? `${currentHp} / ${maxHp}` : ''}
-            </span>
-          </div>
+          {isMaster && !spectatorMode ? (
+            <button
+              type="button"
+              className={`${styles.bar} ${styles.barHp} ${styles.barClickable}`}
+              ref={hpBarRef as RefObject<HTMLButtonElement>}
+              onClick={() => showEnemyBars && setPopoverOpen(true)}
+              aria-label={showEnemyBars ? `Vida: ${currentHp} de ${maxHp}. Ajustar vida.` : 'Ajustar vida'}
+            >
+              <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
+              <span className={styles.barLabel}>
+                {showEnemyBars ? hpLabel : ''}
+              </span>
+            </button>
+          ) : (
+            <div
+              className={`${styles.bar} ${styles.barHp}`}
+              ref={hpBarRef as RefObject<HTMLDivElement>}
+              role="img"
+              aria-label={showEnemyBars ? `Vida: ${currentHp} de ${maxHp}` : 'Vida oculta'}
+            >
+              <div className={`${styles.barFill} ${styles.hpFill}`} style={{ width: `${hpPct}%` }} />
+              <span className={styles.barLabel}>
+                {showEnemyBars ? hpLabel : ''}
+              </span>
+            </div>
+          )}
 
           {!isPartyCharacter && isMaster && !spectatorMode && showEnemyBars && (
             <div className={styles.pvMaxEditRow}>
@@ -332,6 +316,9 @@ export default function CombatCard({ row, isActiveTurn, listVariant = 'active', 
           barRef={hpBarRef}
           onApply={handleHpApply}
           onClose={() => setPopoverOpen(false)}
+          damageReductions={isPartyCharacter ? row.damageReductions : undefined}
+          temporaryHp={isPartyCharacter ? row.temporaryHp : undefined}
+          currentHp={isPartyCharacter ? row.currentHp : undefined}
         />
       )}
     </div>

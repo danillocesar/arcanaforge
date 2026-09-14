@@ -1,0 +1,35 @@
+.secHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 4px 2px 11px;
+}
+
+.lead {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  min-width: 0;
+}
+
+.icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-self: center;
+  color: var(--ink-3);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.action {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 600;
+}

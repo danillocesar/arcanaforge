@@ -22,8 +22,6 @@ const { requireAuth } = require('./middleware/requireAuth');
 const { registerRoutes } = require('./routes');
 const { attachWebSocket } = require('./websocket');
 const { startCleanSoftDeletesJob } = require('./src/jobs/cleanSoftDeletes');
-const { asyncHandler } = require('./src/middlewares/asyncHandler');
-const billingController = require('./src/controllers/billing.controller');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 
@@ -34,10 +32,6 @@ async function start() {
 
   const { run: runMigrateToMongo } = require('./db/migrateToMongo');
   await runMigrateToMongo();
-  const { run: runMigrateNarutoClans } = require('./db/migrateNarutoClans');
-  await runMigrateNarutoClans();
-  const { run: runMigrateNarutoTechTemplates } = require('./db/migrateNarutoTechTemplates');
-  await runMigrateNarutoTechTemplates();
 
   const app = express();
   app.set('trust proxy', 1);
@@ -48,10 +42,7 @@ async function start() {
       crossOriginResourcePolicy: false,
     }),
   );
-  app.use((req, res, next) => {
-    if (req.originalUrl === '/api/billing/webhook') return next();
-    express.json({ limit: '5mb' })(req, res, next);
-  });
+  app.use(express.json({ limit: '5mb' }));
 
   const healthLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -79,15 +70,6 @@ async function start() {
     res.json({ ok: true });
   });
 
-  // Webhook must be registered BEFORE global requireAuth — Stripe sends no Firebase token.
-  // express.raw is safe here because the JSON bypass middleware above already skips
-  // JSON parsing for this path, leaving the body stream intact for signature verification.
-  app.post(
-    '/api/billing/webhook',
-    express.raw({ type: 'application/json' }),
-    asyncHandler(billingController.handleWebhook),
-  );
-
   app.use('/api', apiLimiter, requireAuth);
 
   const refs = {
@@ -95,6 +77,9 @@ async function start() {
       /* filled by attachWebSocket */
     },
     broadcastPartyRoster() {
+      /* filled by attachWebSocket */
+    },
+    broadcastBuffApplied() {
       /* filled by attachWebSocket */
     },
   };

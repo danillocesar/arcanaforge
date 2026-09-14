@@ -1,275 +1,276 @@
 .attrDefesaLayout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.18fr);
+  gap: 18px;
+  align-items: start;
 }
 
 .attributesGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  flex: 1 1 25%;
-  min-width: 0;
-}
-
-.defenseInline {
-  flex: 1 1 50%;
-  min-width: 0;
-  overflow: hidden;
-}
-
-@media (max-width: 768px) {
-  .attrDefesaLayout {
-    flex-direction: column;
-  }
-
-  .attributesGrid {
-    grid-template-columns: repeat(3, 1fr);
-    width: 100%;
-  }
-
-  .defenseInline {
-    width: 100%;
-  }
-}
-
-@media (max-width: 400px) {
-  .attributesGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .defenseRow {
-    flex-wrap: wrap;
-  }
-
-  .defenseRow input[type="number"] {
-    width: 45px;
-  }
-
-  .defensePenInput {
-    width: 38px !important;
-  }
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .card {
-  background: var(--bg-input);
+  min-height: 104px;
+  padding: 14px 10px 12px;
+  position: relative;
+  text-align: center;
+  background: var(--bg-body);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 8px 10px;
-  text-align: center;
-  position: relative;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .card:hover {
   border-color: var(--accent-gold-dim);
-}
-
-.card:hover .editPencil {
-  opacity: 1;
+  background: color-mix(in srgb, var(--accent-gold) 5%, var(--bg-body));
 }
 
 .label {
   display: block;
-  font-size: 0.65rem;
-  font-weight: 700;
+  margin-bottom: 5px;
   color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
   letter-spacing: 0.1em;
-  margin-bottom: 1px;
+  text-transform: uppercase;
 }
 
 .value {
   display: block;
-  font-size: 1.15rem;
-  font-weight: 700;
   color: var(--text-primary);
-  cursor: default;
+  font-size: 1.62rem;
+  font-weight: 900;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
 }
 
 .buffed {
   color: var(--accent-green);
-  font-size: 1rem;
 }
 
 .baseVal {
-  font-size: 0.7rem;
+  margin-top: 2px;
   color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .editPencil {
-  opacity: 0;
-  background: none;
-  border: none;
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target-sm);
+  min-height: var(--touch-target-sm);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.85rem;
-  padding: 2px 4px;
-  transition: opacity 0.2s, color 0.2s;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 
 .editPencil:hover {
   color: var(--accent-gold);
+  border-color: var(--border);
+  background: var(--bg-input);
 }
 
 .editInput {
-  width: 60px;
+  width: 76px;
+  min-height: var(--touch-target);
   text-align: center;
-  background: var(--bg-body);
+  background: var(--bg-input);
   border: 1px solid var(--accent-gold);
-  border-radius: 4px;
+  border-radius: 8px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 900;
 }
 
 .editInput:focus {
   outline: none;
-  padding: 2px;
+}
+
+.defenseInline {
+  min-width: 0;
 }
 
 .defenseTotal {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: var(--bg-input);
-  border: 1px solid var(--accent-gold-dim);
-  border-radius: var(--radius);
+  gap: 12px;
+  min-height: 72px;
+  padding: 14px 16px;
   margin-bottom: 10px;
+  background: color-mix(in srgb, var(--accent-gold) 8%, var(--bg-body));
+  border: 1px solid color-mix(in srgb, var(--accent-gold) 35%, var(--border));
+  border-radius: var(--radius);
 }
 
 .defenseTotalLabel {
-  font-size: 0.85rem;
-  font-weight: 600;
   color: var(--accent-gold);
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .defenseTotalValue {
-  font-size: 1.6rem;
-  font-weight: 800;
   color: var(--text-primary);
+  font-size: 2.25rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.defenseBase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch-target-sm);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.defenseBaseName {
+  color: var(--text-secondary);
+}
+
+.defenseBaseValue {
+  min-width: 34px;
+  color: var(--text-primary);
+  font-weight: 800;
+  text-align: right;
 }
 
 .defenseItems {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
+  gap: 8px;
 }
 
 .defenseRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px 42px 62px var(--touch-target);
   align-items: center;
   gap: 8px;
-  padding: 4px 0;
-  font-size: 0.85rem;
+  padding: 8px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-.defenseRow input[type="text"] {
-  flex: 1;
+.defenseRow input[type="text"],
+.defenseRow input[type="number"] {
   min-width: 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
+  min-height: var(--touch-target-sm);
+  box-sizing: border-box;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 0.85rem;
-  padding: 2px 4px;
-  box-sizing: border-box;
+  font-size: 0.95rem;
+  padding: 8px 10px;
 }
 
 .defenseRow input[type="number"] {
-  width: 55px;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
-  font-family: var(--font);
-  font-size: 0.85rem;
-  padding: 2px 4px;
   text-align: right;
-  box-sizing: border-box;
 }
 
 .defenseRow input:focus {
   outline: none;
-  border-bottom-color: var(--accent-gold);
+  border-color: var(--accent-gold);
 }
 
 .penaltyLabel {
-  font-size: 0.7rem;
   color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-align: right;
+  text-transform: uppercase;
 }
 
 .defensePenInput {
-  color: var(--accent-red) !important;
-  width: 45px !important;
+  color: var(--accent-red-bar) !important;
 }
 
 .defenseRemove {
-  background: none;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 28%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-red) 8%, transparent);
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0 4px;
-  transition: color 0.2s;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .defenseRemove:hover {
   color: var(--accent-red);
-}
-
-.defenseBase {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  margin-bottom: 6px;
-}
-
-.defenseBaseName {
-  flex: 1;
-  color: var(--text-secondary);
-}
-
-.defenseBaseValue {
-  font-weight: 600;
-  color: var(--text-primary);
-  min-width: 30px;
-  text-align: right;
+  border-color: color-mix(in srgb, var(--accent-red) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
 }
 
 .addDefense {
   display: block;
   width: 100%;
+  min-height: var(--touch-target);
+  margin-top: 10px;
+  padding: 11px 14px;
+  border: 1px dashed color-mix(in srgb, var(--accent-gold) 26%, var(--border));
+  border-radius: var(--radius);
   background: var(--btn-add-bg);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-family: var(--font);
-  font-size: 0.85rem;
-  padding: 10px;
+  color: var(--text-secondary);
   cursor: pointer;
-  margin-top: 8px;
-  transition: all 0.2s;
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 800;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
 .addDefense:hover {
   color: var(--accent-gold);
   border-color: var(--accent-gold-dim);
   background: var(--btn-add-hover);
+}
+
+@media (max-width: 760px) {
+  .attrDefesaLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .attributesGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .attributesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .defenseRow {
+    grid-template-columns: minmax(0, 1fr) 58px 48px var(--touch-target);
+  }
+
+  .penaltyLabel {
+    display: none;
+  }
 }

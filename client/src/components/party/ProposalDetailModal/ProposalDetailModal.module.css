@@ -1,0 +1,140 @@
+.panel {
+  --ok: #4f9d78;
+  --ok-soft: rgba(79, 157, 120, 0.16);
+  --ok-ink: #8fd6b4;
+
+  background: rgba(20, 22, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: min(460px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.when {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.by {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.synced {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--ok-ink);
+}
+
+.confirmedBanner {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ok-ink);
+  background: var(--ok-soft);
+  border: 1px solid var(--ok);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.warningBanner {
+  font-size: 0.82rem;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.memberChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memberChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.memberChipSim {
+  border-color: var(--ok);
+  color: var(--ok-ink);
+  background: var(--ok-soft);
+}
+
+.memberChipNao {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.memberChipPending {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.cancelLink,
+.closeLink {
+  background: transparent;
+  border: none;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-family: var(--font);
+  color: var(--text-muted);
+}
+
+.cancelLink:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+/* Requisição em voo: o link não pode parecer clicável. */
+.cancelLink:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.closeLink {
+  margin-left: auto;
+}
+
+.closeLink:hover {
+  color: var(--text-primary);
+}

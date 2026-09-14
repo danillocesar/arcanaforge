@@ -1,0 +1,81 @@
+import Card from '../../ui/Card/Card';
+import Button from '../../ui/Button/Button';
+import type { Spell } from '../../../types/character';
+import { useCharacterContext } from '../../../contexts/CharacterContext';
+import { firstSentence } from '../../../utils/formatters';
+import styles from './SpellCard.module.css';
+
+interface SpellCardProps {
+  spell: Spell;
+  index: number;
+  onCast: (index: number) => void;
+  onEdit?: (index: number) => void;
+}
+
+function SpellCard({ spell, index, onCast, onEdit }: SpellCardProps) {
+  const { readOnly } = useCharacterContext();
+
+  const mpCost = Number(spell.mpCost) || 0;
+  const circulo = Number(spell.spellLevel) || 0;
+  const enhancements = Array.isArray(spell.enhancements) ? spell.enhancements : [];
+
+  const summaryBits = [spell.school, spell.area].filter((b) => b && b.trim());
+  const summary = summaryBits.join(' · ');
+
+  // O card mostra o resumo, não a descrição integral do livro — sem `summary`
+  // preenchido, a primeira frase já diz o essencial sem virar paredão de texto.
+  // O texto completo continua no formulário de edição.
+  const blurb = spell.summary?.trim() || firstSentence(spell.description);
+
+  return (
+    <Card className={styles.spell}>
+      <div
+        className={`${styles.top} ${!readOnly ? styles.tappable : ''}`.trim()}
+        onClick={!readOnly ? () => onEdit?.(index) : undefined}
+        role={!readOnly ? 'button' : undefined}
+        tabIndex={!readOnly ? 0 : undefined}
+        onKeyDown={!readOnly ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onEdit?.(index);
+          }
+        } : undefined}
+      >
+        <div className={styles.cost}>
+          <b>{mpCost}</b>
+          <span>PM</span>
+        </div>
+        <div className={styles.meta}>
+          <h3 className={styles.name}>{spell.name || 'Sem nome'}</h3>
+          <div className={styles.sch}>
+            {circulo > 0 ? `${circulo}º Círculo` : 'Magia'}
+            {summary ? ` · ${summary}` : ''}
+          </div>
+          {blurb && <p className={styles.descr}>{blurb}</p>}
+          {enhancements.length > 0 && (
+            <ul className={styles.enhList}>
+              {enhancements.map((enh, i) => (
+                <li key={i} className={styles.enhItem}>
+                  <span className={styles.enhDesc}>
+                    {enh.description || `Aprimoramento ${i + 1}`}
+                  </span>
+                  <span className={styles.enhPm}>+{Number(enh.mpCost) || 0} PM</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {!readOnly && (
+        <Button className={styles.btnCast} onClick={() => onCast(index)}>
+          ✦ Lançar
+        </Button>
+      )}
+    </Card>
+  );
+}
+
+SpellCard.displayName = 'SpellCard';
+
+export default SpellCard;

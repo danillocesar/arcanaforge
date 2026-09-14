@@ -1,0 +1,136 @@
+.pow {
+  padding: 14px 15px;
+  margin-bottom: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.tappable {
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.tappable:hover {
+  border-color: var(--ink-3);
+}
+
+.txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tag {
+  padding: 2px 9px;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.fav {
+  margin-left: auto;
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s var(--ease);
+}
+
+.fav:hover {
+  color: var(--accent-ink);
+  transform: scale(1.15);
+}
+
+.favOn {
+  color: var(--accent);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.source {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.pm {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.desc {
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.btnUse {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 13px;
+  background: var(--accent);
+  color: #0a0b0e;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s var(--ease), background 0.2s;
+}
+
+.btnUse:hover {
+  background: var(--accent-deep);
+}
+
+.btnUse:active {
+  transform: scale(0.97);
+}
+
+/* Usos por dia: contador "2/3 usos"; esgotado fica em alerta e o "Usar" desabilita. */
+.uses {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.usesOut {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}

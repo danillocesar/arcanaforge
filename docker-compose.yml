@@ -13,15 +13,36 @@ services:
       retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file: .env
     environment:
       - MONGODB_URI=mongodb://mongo:27017/arcanaforge
+      # O .env carrega os valores de desenvolvimento (localhost:5173, porque em
+      # dev o navegador fica no Vite). Aqui eles são sobrescritos pelos de
+      # produção: o túnel serve arcana-forge.com e o Express entrega o SPA e o
+      # callback do OAuth na mesma origem, então não há proxy no meio.
+      # Sem isto, quem autorizasse pelo site público seria redirecionado para o
+      # próprio localhost e o vínculo nunca se completaria.
+      - CLIENT_URL=https://arcana-forge.com
+      - GOOGLE_REDIRECT_URI=https://arcana-forge.com/auth/google/callback
     volumes:
       - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     depends_on:
       mongo:
         condition: service_healthy

@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetchCharacterSummaries, apiSaveCharacter, apiDeleteCharacter } from '../../api';
-import { apiRestoreCharacter } from '../../api/billing';
-import { createEmptyCharacter, createEmptyNarutoCharacter } from '../../utils/calculations';
-import type { RPGSystem, CharacterSummary } from '../../types/character';
+import {
+  apiFetchCharacterSummaries,
+  apiSaveCharacter,
+  apiDeleteCharacter,
+  apiRestoreCharacter,
+} from '../../api';
+import { createEmptyCharacter } from '../../utils/calculations';
+import { normalizeSearch } from '../../utils/formatters';
+import type { CharacterSummary } from '../../types/character';
 import { SYSTEM_ROUTES } from '../../data/constants';
-import { usePlan } from '../../contexts/PlanContext';
 import Topbar from '../../components/layout/Topbar/Topbar';
-import SystemFilter from '../../components/ui/SystemFilter/SystemFilter';
 import SelectGrid from '../../components/select/SelectGrid/SelectGrid';
 import Modal from '../../components/ui/Modal/Modal';
 import Input from '../../components/ui/Input/Input';
 import Button from '../../components/ui/Button/Button';
 import ConfirmModal from '../../components/ui/ConfirmModal/ConfirmModal';
+import EmptyState from '../../components/ui/EmptyState/EmptyState';
 import styles from './SelectPage.module.css';
-
-type TabFilter = 'todos' | 'tormenta' | 'naruto';
 
 function hoursUntilDelete(pendingDeleteAt: string): number {
   const ms = new Date(pendingDeleteAt).getTime() - Date.now();
@@ -24,35 +26,27 @@ function hoursUntilDelete(pendingDeleteAt: string): number {
 
 export default function SelectPage() {
   const [resumos, setResumos] = useState<CharacterSummary[]>([]);
-  const [tab, setTab] = useState<TabFilter>('todos');
+  const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newSystem, setNewSystem] = useState<RPGSystem>('tormenta');
   const [deleteTarget, setDeleteTarget] = useState<CharacterSummary | null>(null);
   const navigate = useNavigate();
-  const { status, setSlotsUsed } = usePlan();
 
   useEffect(() => {
     apiFetchCharacterSummaries()
-      .then((data) => {
-        setResumos(data);
-        const activeCount = data.filter((r) => !r.deletedAt).length;
-        setSlotsUsed(activeCount);
-      })
+      .then(setResumos)
       .catch(console.error);
-  }, [setSlotsUsed]);
+  }, []);
 
   const activeChars = resumos.filter((r) => !r.deletedAt);
   const pendingDeleteChars = resumos.filter((r) => r.deletedAt);
-  const filtered = tab === 'todos' ? activeChars : activeChars.filter((r) => r.system === tab);
-
-  const slotLimit = status?.characterSlots ?? null;
-  const slotsUsedCount = activeChars.length;
-  const atLimit = slotLimit !== null && slotsUsedCount >= slotLimit;
+  const query = normalizeSearch(search);
+  const visibleChars = query
+    ? activeChars.filter((r) => normalizeSearch(r.name).includes(query))
+    : activeChars;
 
   const openNewModal = () => {
     setNewName('');
-    setNewSystem('tormenta');
     setModalOpen(true);
   };
 
@@ -61,11 +55,10 @@ export default function SelectPage() {
     const name = newName.trim();
     if (!name) return;
 
-    const character =
-      newSystem === 'naruto' ? createEmptyNarutoCharacter(name) : createEmptyCharacter(name);
+    const character = createEmptyCharacter(name);
     await apiSaveCharacter(character._id, character);
     setModalOpen(false);
-    navigate(`${SYSTEM_ROUTES[newSystem]}?id=${encodeURIComponent(character._id)}`);
+    navigate(`${SYSTEM_ROUTES.tormenta}?id=${encodeURIComponent(character._id)}`);
   };
 
   const handleDeleteConfirm = async () => {
@@ -78,7 +71,6 @@ export default function SelectPage() {
           : r,
       ),
     );
-    setSlotsUsed(activeChars.length - 1);
   };
 
   const handleRestore = async (char: CharacterSummary) => {
@@ -88,57 +80,31 @@ export default function SelectPage() {
         r._id === char._id ? { ...r, deletedAt: null, pendingDeleteAt: null } : r,
       ),
     );
-    setSlotsUsed(activeChars.length + 1);
   };
-
-  const trialBanner = status?.isTrial && !status.isExpired && status.trialDaysLeft <= 7;
-  const expiredBanner = status?.isExpired;
 
   return (
     <div className={styles.page}>
       <Topbar title="Seleção de Personagens" />
 
       <div className={styles.content}>
-        {expiredBanner && (
-          <div className={styles.bannerExpired}>
-            ⚠️ Seu plano expirou. <a href="/billing">Renove agora</a> para criar e editar personagens.
-          </div>
+        {activeChars.length > 0 && (
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar personagem por nome..."
+            className={styles.searchInput}
+            aria-label="Buscar personagem por nome"
+          />
         )}
 
-        {trialBanner && !expiredBanner && (
-          <div className={styles.bannerTrial}>
-            🕐 Seu trial expira em <strong>{status!.trialDaysLeft} dia(s)</strong>.{' '}
-            <a href="/billing">Assine o Pro</a> para continuar com acesso completo.
-          </div>
+        {query && visibleChars.length === 0 && (
+          <EmptyState compact icon="🔍" title={`Nenhum personagem encontrado para "${search}".`} />
         )}
-
-        {slotLimit !== null && (
-          <div className={styles.slotCounter}>
-            <span>
-              Personagens: <strong>{slotsUsedCount}</strong> / <strong>{slotLimit}</strong>
-            </span>
-            {atLimit && (
-              <a href="/billing" className={styles.slotBuyLink}>
-                + Comprar slot
-              </a>
-            )}
-          </div>
-        )}
-
-        <SystemFilter value={tab} onChange={setTab} />
 
         <SelectGrid
-          resumos={filtered}
+          resumos={visibleChars}
           onNewCharacter={openNewModal}
           onDelete={setDeleteTarget}
-          newDisabled={atLimit || !!expiredBanner}
-          newDisabledTooltip={
-            expiredBanner
-              ? 'Plano expirado'
-              : atLimit
-                ? `Limite de ${slotLimit} personagem(ns) atingido`
-                : undefined
-          }
         />
 
         {pendingDeleteChars.length > 0 && (
@@ -171,26 +137,6 @@ export default function SelectPage() {
         <form className={styles.newModal} onSubmit={handleCreate}>
           <h3 className={styles.newModalTitle}>Novo Personagem</h3>
 
-          <span className={styles.newModalLabel}>Sistema de RPG</span>
-          <div className={styles.systemSelector}>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'tormenta' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('tormenta')}
-            >
-              <span className={styles.systemIcon}>⚔️</span>
-              <span className={styles.systemName}>Tormenta 20</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.systemOption} ${newSystem === 'naruto' ? styles.systemActive : ''}`}
-              onClick={() => setNewSystem('naruto')}
-            >
-              <span className={styles.systemIcon}>🍥</span>
-              <span className={styles.systemName}>Naruto: SnS</span>
-            </button>
-          </div>
-
           <label className={styles.newModalLabel} htmlFor="new-char-name">
             Nome do personagem
           </label>
@@ -199,7 +145,7 @@ export default function SelectPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             autoFocus
-            placeholder="Ex: Aragorn, Naruto Uzumaki..."
+            placeholder="Ex: Aragorn, Kael..."
           />
 
           <div className={styles.newModalActions}>

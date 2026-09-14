@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Criação & Edição de Ficha · Tormenta 20</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0c0d11;
+    --surface:#16181e;
+    --surface-2:#1e2027;
+    --ink:#e9eaed;
+    --ink-2:#9ba1ad;
+    --ink-3:#6b707c;
+    --line:#23262e;
+    --line-2:#2c2f38;
+    --accent:#10b981;
+    --accent-deep:#0c9a6c;
+    --accent-soft:rgba(16,185,129,.13);
+    --accent-ink:#4ade80;
+    --warn:#f0a830;
+    --warn-soft:rgba(240,168,48,.13);
+    --danger:#fb5570;
+    --danger-soft:rgba(251,85,112,.13);
+    --r-lg:22px;
+    --r-md:18px;
+    --r-sm:13px;
+    --shadow-card:0 1px 2px rgba(0,0,0,.5), 0 12px 30px -14px rgba(0,0,0,.7);
+    --shadow-soft:0 1px 2px rgba(0,0,0,.4), 0 4px 12px -6px rgba(0,0,0,.5);
+    --shadow-pop:0 18px 50px -16px rgba(16,185,129,.45);
+    --font-display:"Bricolage Grotesque", "Plus Jakarta Sans", sans-serif;
+    --font-body:"Plus Jakarta Sans", sans-serif;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body{
+    font-family:var(--font-body);
+    background:
+      radial-gradient(1200px 600px at 12% -8%, rgba(16,185,129,.10) 0%, transparent 55%),
+      radial-gradient(1000px 700px at 108% 6%, rgba(96,165,250,.06) 0%, transparent 50%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    padding:46px 22px 90px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:30px;
+  }
+
+  /* ---------- page heading ---------- */
+  .page-head{ width:min(1100px,100%); display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; animation:rise .7s var(--ease) both; }
+  .page-eyebrow{
+    display:inline-flex; align-items:center; gap:9px;
+    font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-ink); background:var(--accent-soft);
+    padding:7px 14px; border-radius:999px;
+  }
+  .page-eyebrow::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(16,185,129,.16); }
+  .page-title{ font-family:var(--font-display); font-weight:700; font-size:30px; letter-spacing:-.02em; color:var(--ink); }
+  .page-sub{ font-size:13.5px; color:var(--ink-2); max-width:560px; line-height:1.5; }
+
+  /* ---------- section divider between mockups ---------- */
+  .mock-label{ width:min(1100px,100%); display:flex; flex-direction:column; align-items:center; gap:7px; text-align:center; margin-top:14px; animation:rise .6s var(--ease) both; }
+  .mock-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-2); background:var(--surface); border:1px solid var(--line);
+    padding:6px 14px; border-radius:999px;
+  }
+  .mock-tag b{ color:var(--accent-ink); }
+  .mock-h{ font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:-.02em; }
+  .mock-p{ font-size:13px; color:var(--ink-2); max-width:520px; line-height:1.5; }
+
+  /* ---------- phone frame ---------- */
+  .phone{
+    width:392px; max-width:100%;
+    background:#05060a;
+    border-radius:46px;
+    padding:11px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 2px 4px rgba(0,0,0,.5),
+      0 40px 80px -30px rgba(0,0,0,.85);
+    position:relative;
+    animation:rise .8s var(--ease) .05s both;
+  }
+  .screen{
+    background:var(--bg);
+    border-radius:36px;
+    overflow:hidden;
+    height:812px;
+    position:relative;
+    display:flex; flex-direction:column;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03);
+  }
+  .statusbar{
+    height:44px; flex:0 0 44px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 26px 0 30px;
+    font-size:13px; font-weight:600; color:var(--ink);
+    position:relative; z-index:6; background:var(--surface);
+  }
+  .statusbar .dots{ display:flex; gap:5px; align-items:center; }
+  .statusbar .sig{ display:flex; gap:2px; align-items:flex-end; }
+  .statusbar .sig i{ width:3px; background:var(--ink); border-radius:2px; display:block; }
+  .statusbar .sig i:nth-child(1){height:5px;opacity:.4}
+  .statusbar .sig i:nth-child(2){height:7px;opacity:.6}
+  .statusbar .sig i:nth-child(3){height:9px;opacity:.8}
+  .statusbar .sig i:nth-child(4){height:11px}
+  .statusbar .batt{ width:24px; height:12px; border:1.5px solid var(--ink); border-radius:3px; position:relative; opacity:.85; }
+  .statusbar .batt::after{ content:""; position:absolute; right:-3px; top:3px; width:2px; height:6px; background:var(--ink); border-radius:0 2px 2px 0; }
+  .statusbar .batt::before{ content:""; position:absolute; inset:1.5px; right:7px; background:var(--accent); border-radius:1px; }
+  .notch{ position:absolute; top:9px; left:50%; transform:translateX(-50%); width:118px; height:30px; background:#000; border-radius:18px; z-index:8; }
+
+  /* ---------- sticky header (vitals) ---------- */
+  .app-header{
+    flex:0 0 auto; background:var(--surface);
+    padding:8px 18px 16px; z-index:5;
+    box-shadow:0 10px 24px -18px rgba(0,0,0,.9);
+    border-bottom:1px solid var(--line);
+  }
+  .id-row{ display:flex; align-items:center; gap:13px; }
+  .avatar{
+    width:54px; height:54px; flex:0 0 54px; border-radius:17px;
+    background:linear-gradient(150deg,#10b981,#0b7d5c);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; font-size:24px; color:#fff;
+    box-shadow:var(--shadow-pop); position:relative;
+  }
+  .avatar.lvl::after{ content:"2"; position:absolute; right:-5px; bottom:-5px; width:23px; height:23px; border-radius:50%; background:var(--surface-2); color:var(--ink); font-family:var(--font-display); font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.5); border:2px solid var(--surface); }
+  .id-meta{ min-width:0; flex:1; }
+  .id-name{ font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:-.02em; line-height:1.05; }
+  .id-line{ font-size:12.5px; color:var(--ink-2); margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .id-line .div{ color:var(--accent-ink); font-weight:600; }
+  .id-line .dot{ width:3px;height:3px;border-radius:50%;background:var(--ink-3); }
+  .lvl-pill{ flex:0 0 auto; text-align:center; background:var(--surface-2); border-radius:14px; padding:6px 12px; }
+  .lvl-pill b{ display:block; font-family:var(--font-display); font-weight:700; font-size:18px; line-height:1; }
+  .lvl-pill span{ font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+
+  .vitals{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:14px; }
+  .vital{ background:var(--surface-2); border-radius:15px; padding:10px 12px; position:relative; overflow:hidden; }
+  .vital .lab{ font-size:9.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .vital .val{ font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:-.02em; margin-top:2px; line-height:1; }
+  .vital .val small{ font-size:12px; color:var(--ink-3); font-weight:600; }
+  .vital .track{ height:4px; border-radius:3px; background:var(--line-2); margin-top:8px; overflow:hidden; }
+  .vital .track i{ display:block; height:100%; border-radius:3px; }
+  .vital.pv .val{ color:var(--accent-ink); }
+  .vital.pv .track i{ width:100%; background:var(--accent); }
+  .vital.pm .val{ color:#60a5fa; }
+  .vital.pm .track i{ width:75%; background:#3b82f6; }
+  .vital.def{ display:flex; flex-direction:column; }
+  .vital.def .val{ color:var(--ink); }
+  .vital.def .shield{ position:absolute; right:9px; top:9px; font-size:13px; opacity:.5; }
+
+  /* ---------- scroll body ---------- */
+  .body{ flex:1; overflow-y:auto; overflow-x:hidden; padding:16px 16px 24px; scrollbar-width:none; position:relative; }
+  .body::-webkit-scrollbar{ display:none; }
+
+  .sec-head{ display:flex; align-items:baseline; justify-content:space-between; margin:4px 2px 11px; }
+  .sec-head h2{ font-family:var(--font-display); font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .sec-head span{ font-size:11px; color:var(--ink-3); font-weight:600; }
+  .sec-head.gap{ margin-top:24px; }
+
+  .card{ background:var(--surface); border-radius:var(--r-md); box-shadow:var(--shadow-soft); border:1px solid var(--line); }
+
+  /* ============================================================
+     DARK FORM CONTROLS (reusable: .field/.input/.select/.textarea/.toggle/.seg)
+     ============================================================ */
+  .field{ display:flex; flex-direction:column; gap:7px; }
+  .field .lbl{ font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--ink-2); display:flex; align-items:center; gap:6px; }
+  .field .lbl .opt{ font-weight:600; color:var(--ink-3); font-size:10.5px; letter-spacing:.02em; }
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  .input,.select,.textarea{
+    width:100%; min-height:46px; background:var(--surface-2);
+    border:1px solid var(--line-2); border-radius:12px;
+    color:var(--ink); font-family:var(--font-body); font-size:14px; font-weight:600;
+    padding:0 14px;
+    transition:border-color .2s, box-shadow .2s, background .2s;
+    appearance:none; -webkit-appearance:none;
+  }
+  .input::placeholder,.textarea::placeholder{ color:var(--ink-3); font-weight:500; }
+  .input:focus,.select:focus,.textarea:focus{
+    outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 4px var(--accent-soft);
+    background:#202530;
+  }
+  .textarea{ padding:13px 14px; min-height:96px; resize:vertical; line-height:1.45; }
+  .select{
+    cursor:pointer; padding-right:38px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b707c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .select:focus{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>"); }
+  .select option{ background:#1e2027; color:var(--ink); }
+
+  /* segmented control */
+  .seg{ display:flex; gap:5px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:13px; padding:5px; }
+  .seg button{
+    flex:1; min-height:38px; border:none; cursor:pointer; border-radius:9px;
+    background:transparent; color:var(--ink-2); font-family:var(--font-body); font-weight:700; font-size:13px;
+    transition:background .2s, color .2s, transform .12s var(--ease);
+  }
+  .seg button:active{ transform:scale(.94); }
+  .seg button.on{ background:var(--accent); color:#04130d; box-shadow:0 6px 16px -8px rgba(16,185,129,.7); }
+
+  /* toggle switch */
+  .toggle{ position:relative; width:46px; height:28px; flex:0 0 46px; border-radius:999px; background:var(--line-2); border:1px solid var(--line-2); cursor:pointer; transition:background .25s var(--ease); }
+  .toggle::after{ content:""; position:absolute; top:2px; left:2px; width:22px; height:22px; border-radius:50%; background:#cbd0d8; transition:transform .25s var(--ease), background .25s; box-shadow:0 2px 4px rgba(0,0,0,.4); }
+  .toggle.on{ background:var(--accent); border-color:var(--accent); }
+  .toggle.on::after{ transform:translateX(18px); background:#fff; }
+
+  /* avatar uploader */
+  .avatar-up{ display:flex; flex-direction:column; align-items:center; gap:10px; margin:4px 0 18px; }
+  .avatar-big{
+    width:96px; height:96px; border-radius:30px; cursor:pointer;
+    background:linear-gradient(150deg,#10b981,#0b7d5c);
+    display:flex; align-items:center; justify-content:center; position:relative;
+    font-family:var(--font-display); font-weight:700; font-size:38px; color:#fff;
+    box-shadow:var(--shadow-pop);
+    transition:transform .2s var(--ease);
+  }
+  .avatar-big:active{ transform:scale(.95); }
+  .avatar-big .cam{ position:absolute; right:-4px; bottom:-4px; width:32px; height:32px; border-radius:50%; background:var(--surface-2); border:2px solid var(--surface); display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,.5); }
+  .avatar-up .hint{ font-size:11.5px; color:var(--ink-3); font-weight:600; }
+
+  /* inline stepper field (number control) */
+  .num-row{ display:flex; align-items:center; gap:10px; }
+  .num-row .num-val{
+    flex:1; min-height:46px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:12px;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    font-family:var(--font-display); font-weight:700; font-size:18px;
+  }
+  .num-row .num-val small{ font-size:12px; color:var(--ink-3); font-weight:600; }
+
+  .step-btn{
+    width:42px; height:42px; flex:0 0 42px; border-radius:12px; border:none; cursor:pointer;
+    background:var(--surface-2); color:var(--ink); font-size:21px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s var(--ease), background .2s;
+  }
+  .step-btn:hover{ background:var(--line-2); }
+  .step-btn:active{ transform:scale(.88); }
+  .step-btn.plus{ background:var(--accent-soft); color:var(--accent-ink); }
+  .step-btn.plus:hover{ background:rgba(16,185,129,.22); }
+  .step-btn.sm{ width:34px; height:34px; flex:0 0 34px; border-radius:11px; font-size:19px; }
+  .step-btn:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+
+  /* ============================================================
+     WIZARD (Parte 1)
+     ============================================================ */
+  .wiz-head{ flex:0 0 auto; background:var(--surface); padding:12px 18px 16px; border-bottom:1px solid var(--line); z-index:5; box-shadow:0 10px 24px -18px rgba(0,0,0,.9); }
+  .wiz-head .top{ display:flex; align-items:center; justify-content:space-between; }
+  .wiz-head .ttl{ font-family:var(--font-display); font-weight:700; font-size:16px; letter-spacing:-.01em; }
+  .wiz-head .escape{ width:32px; height:32px; border-radius:10px; background:var(--surface-2); border:none; color:var(--ink-2); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .wiz-head .step-lbl{ font-size:11.5px; font-weight:700; color:var(--accent-ink); margin-top:2px; }
+  .wiz-head .step-name{ color:var(--ink-3); font-weight:600; }
+  .seg-prog{ display:flex; gap:5px; margin-top:11px; }
+  .seg-prog i{ flex:1; height:5px; border-radius:3px; background:var(--line-2); transition:background .4s var(--ease); }
+  .seg-prog i.done{ background:var(--accent-ink); }
+  .seg-prog i.now{ background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+
+  .wiz-step{ display:none; }
+  .wiz-step.active{ display:block; }
+  .wiz-step.active > *{ animation:rise .45s var(--ease) both; }
+  .wiz-step.active > *:nth-child(1){animation-delay:.02s}
+  .wiz-step.active > *:nth-child(2){animation-delay:.06s}
+  .wiz-step.active > *:nth-child(3){animation-delay:.10s}
+  .wiz-step.active > *:nth-child(4){animation-delay:.14s}
+  .wiz-step.active > *:nth-child(5){animation-delay:.18s}
+  .wiz-step.active > *:nth-child(6){animation-delay:.22s}
+  .wiz-step.active > *:nth-child(7){animation-delay:.26s}
+  .stack{ display:flex; flex-direction:column; gap:14px; }
+
+  .wiz-foot{
+    flex:0 0 auto; background:var(--surface); border-top:1px solid var(--line);
+    padding:12px 16px calc(14px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:5;
+  }
+  .btn{
+    min-height:50px; border-radius:14px; cursor:pointer; border:none;
+    font-family:var(--font-body); font-weight:800; font-size:14px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .15s var(--ease), box-shadow .2s, background .2s, border-color .2s;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn-ghost{ background:var(--surface-2); color:var(--ink); border:1px solid var(--line-2); flex:0 0 auto; padding:0 22px; }
+  .btn-ghost:hover{ background:var(--line-2); }
+  .btn-ghost:disabled{ opacity:.35; cursor:not-allowed; }
+  .btn-primary{ background:var(--accent); color:#04130d; flex:1; box-shadow:0 10px 24px -10px rgba(16,185,129,.7); }
+  .btn-primary:hover{ box-shadow:0 12px 30px -10px rgba(16,185,129,.85); }
+
+  /* points counter */
+  .points{ background:linear-gradient(150deg,#0e9d6f,#0a6f51); color:#fff; border-radius:var(--r-md); padding:16px 18px; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow-pop); margin-bottom:16px; }
+  .points .t{ font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.85; }
+  .points .v{ font-family:var(--font-display); font-weight:800; font-size:40px; line-height:1; margin-top:2px; }
+  .points .hint{ font-size:11px; opacity:.85; max-width:120px; text-align:right; line-height:1.35; }
+  .points.low{ background:linear-gradient(150deg,#c2453f,#8a2f2c); box-shadow:0 18px 50px -16px rgba(251,85,112,.45); }
+
+  /* attribute buy rows */
+  .attr-buy{ display:flex; align-items:center; gap:13px; padding:12px 14px; margin-bottom:9px; }
+  .attr-buy .nm{ flex:1; }
+  .attr-buy .nm b{ font-size:14px; font-weight:700; display:flex; align-items:center; gap:7px; }
+  .attr-buy .nm small{ display:block; font-size:10.5px; color:var(--ink-3); font-weight:600; margin-top:2px; }
+  .attr-buy .mod-big{ width:54px; text-align:center; font-family:var(--font-display); font-weight:700; font-size:26px; letter-spacing:-.02em; }
+  .attr-buy.key{ border-color:rgba(16,185,129,.35); background:linear-gradient(150deg,rgba(16,185,129,.10),rgba(16,185,129,.02)); }
+  .attr-buy.key .mod-big{ color:var(--accent-ink); }
+  .star-btn{ background:none; border:none; cursor:pointer; font-size:14px; color:var(--ink-3); padding:2px; }
+  .star-btn.on{ color:var(--accent-ink); }
+
+  /* search field */
+  .search{ position:relative; margin-bottom:13px; }
+  .search input{ padding-left:42px; }
+  .search .ico{ position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:15px; opacity:.6; }
+
+  .count-pill{ display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700; color:var(--accent-ink); background:var(--accent-soft); padding:6px 12px; border-radius:999px; }
+
+  /* skill toggle rows */
+  .sk-row{ display:flex; align-items:center; gap:12px; padding:12px 15px; border-bottom:1px solid var(--line); }
+  .sk-row:last-child{ border-bottom:none; }
+  .sk-row .ico{ width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .sk-row .nm{ flex:1; font-size:13.5px; font-weight:600; }
+  .sk-row .nm small{ display:block; font-size:10px; color:var(--ink-3); font-weight:600; margin-top:1px; }
+  .sk-row.on .ico{ background:var(--accent-soft); }
+
+  /* editable list cards (powers / spells with edit/delete) */
+  .lc{ padding:14px 15px; margin-bottom:9px; display:flex; gap:12px; align-items:flex-start; }
+  .lc .glyph{ width:38px; height:38px; flex:0 0 38px; border-radius:12px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .lc.hi .glyph{ background:var(--accent-soft); }
+  .lc .txt{ flex:1; min-width:0; }
+  .lc .txt h3{ font-size:13.5px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .lc .txt p{ font-size:12px; color:var(--ink-2); line-height:1.45; margin-top:4px; }
+  .lc .src-tag{ font-size:8.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); background:var(--surface-2); padding:2px 7px; border-radius:5px; }
+  .lc .pm-tag{ font-size:9px; font-weight:700; letter-spacing:.06em; color:var(--accent-ink); background:var(--accent-soft); padding:2px 7px; border-radius:5px; }
+  .lc .acts{ display:flex; gap:6px; flex:0 0 auto; }
+  .icon-btn{ width:30px; height:30px; border-radius:9px; border:none; cursor:pointer; background:var(--surface-2); color:var(--ink-2); font-size:13px; display:flex; align-items:center; justify-content:center; transition:background .2s, color .2s, transform .12s var(--ease); }
+  .icon-btn:hover{ background:var(--line-2); }
+  .icon-btn:active{ transform:scale(.88); }
+  .icon-btn.del:hover{ background:var(--danger-soft); color:#fb7185; }
+
+  /* dashed add card */
+  .add-card{
+    width:100%; padding:15px; border-radius:var(--r-md); cursor:pointer;
+    background:transparent; border:1.5px dashed var(--line-2); color:var(--ink-2);
+    font-family:var(--font-body); font-weight:700; font-size:13.5px;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    transition:border-color .2s, color .2s, background .2s, transform .15s var(--ease);
+  }
+  .add-card:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-soft); }
+  .add-card:active{ transform:scale(.98); }
+  .add-card .plus{ font-size:17px; }
+
+  /* conjuration compact block */
+  .conj{ padding:15px 16px; display:flex; gap:12px; align-items:center; background:linear-gradient(150deg,#0e9d6f,#0a6f51); color:#fff; box-shadow:var(--shadow-pop); margin-bottom:14px; }
+  .conj .ic{ width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:21px; }
+  .conj .info{ flex:1; }
+  .conj .info .t{ font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; opacity:.85; }
+  .conj .stats{ display:flex; gap:18px; margin-top:5px; }
+  .conj .stats div b{ font-family:var(--font-display); font-weight:700; font-size:20px; display:block; line-height:1; }
+  .conj .stats div span{ font-size:10px; opacity:.85; font-weight:600; }
+
+  /* sub-block label */
+  .sub-lbl{ font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:20px 4px 10px; display:flex; align-items:center; gap:8px; }
+  .sub-lbl:first-child{ margin-top:4px; }
+  .sub-lbl::after{ content:""; flex:1; height:1px; background:var(--line-2); }
+
+  /* coins steppers row */
+  .coin-step{ display:flex; align-items:center; gap:11px; padding:12px 14px; margin-bottom:9px; }
+  .coin-step .dot{ width:36px; height:36px; flex:0 0 36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:800; font-size:13px; }
+  .coin-step.copper .dot{ background:rgba(216,146,79,.16); color:#d8924f; }
+  .coin-step.silver .dot{ background:rgba(170,179,194,.16); color:#aab3c2; }
+  .coin-step.gold .dot{ background:rgba(230,192,74,.16); color:#e6c04a; }
+  .coin-step .nm{ flex:1; font-size:13.5px; font-weight:700; }
+  .coin-step .nm small{ display:block; font-size:10.5px; color:var(--ink-3); font-weight:600; margin-top:1px; }
+  .coin-step .cv{ width:46px; text-align:center; font-family:var(--font-display); font-weight:700; font-size:18px; }
+
+  /* ============================================================
+     EDIT MODE (Parte 2)
+     ============================================================ */
+  .edit-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--accent-soft); border:1px solid rgba(16,185,129,.3); border-radius:14px;
+    padding:11px 13px; margin-bottom:16px;
+  }
+  .edit-bar .lhs{ display:flex; align-items:center; gap:9px; font-size:13px; font-weight:700; color:var(--accent-ink); }
+  .edit-bar .pen{ width:28px; height:28px; border-radius:9px; background:var(--accent); color:#04130d; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .btn-save{ min-height:38px; padding:0 18px; border-radius:11px; border:none; cursor:pointer; background:var(--accent); color:#04130d; font-family:var(--font-body); font-weight:800; font-size:13px; box-shadow:0 8px 20px -8px rgba(16,185,129,.6); transition:transform .15s var(--ease); }
+  .btn-save:active{ transform:scale(.95); }
+
+  /* editable attribute grid */
+  .attr-edit{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ae{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:11px 12px 12px; box-shadow:var(--shadow-soft); }
+  .ae .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .ae .lab{ font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .ae.key{ border-color:rgba(16,185,129,.35); }
+  .ae.key .lab{ color:var(--accent-ink); }
+  .ae .row{ display:flex; align-items:center; gap:8px; }
+  .ae .mod-cell{ flex:1; min-height:40px; background:var(--surface-2); border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:22px; }
+  .ae.key .mod-cell{ color:var(--accent-ink); }
+
+  /* editable vitals: input fields */
+  .vit-edit{ display:flex; flex-direction:column; gap:11px; }
+  .vit-card{ padding:13px 14px; display:flex; align-items:center; gap:13px; }
+  .vit-card .badge{ width:40px; height:40px; flex:0 0 40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:800; font-size:13px; }
+  .vit-card.pv .badge{ background:var(--accent-soft); color:var(--accent-ink); }
+  .vit-card.pm .badge{ background:rgba(59,130,246,.16); color:#60a5fa; }
+  .vit-card.def .badge{ background:var(--surface-2); color:var(--ink); }
+  .vit-card .nm{ flex:1; font-size:13px; font-weight:700; }
+  .vit-card .nm small{ display:block; font-size:10.5px; color:var(--ink-3); font-weight:600; margin-top:1px; }
+  .mini-input{ width:56px; min-height:42px; text-align:center; background:var(--surface-2); border:1px solid var(--line-2); border-radius:11px; color:var(--ink); font-family:var(--font-display); font-weight:700; font-size:17px; transition:border-color .2s, box-shadow .2s; }
+  .mini-input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+  .slash{ color:var(--ink-3); font-weight:700; }
+
+  /* condition chips edit */
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:999px;
+    font-size:12px; font-weight:600; background:var(--surface); box-shadow:var(--shadow-soft);
+    border:1px solid var(--line);
+  }
+  .chip::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--ink-3); }
+  .chip.on{ background:var(--accent-soft); border-color:rgba(16,185,129,.3); color:var(--accent-ink); }
+  .chip.on::before{ background:var(--accent); box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+  .chip.bleed{ background:var(--danger-soft); border-color:rgba(251,85,112,.3); color:#fb7185; }
+  .chip.bleed::before{ background:var(--danger); }
+  .chip.surge{ background:var(--warn-soft); border-color:rgba(240,168,48,.3); color:#fbbf24; }
+  .chip.surge::before{ background:var(--warn); }
+  .chip .x{ cursor:pointer; font-size:14px; opacity:.7; margin-left:1px; }
+  .chip .x:hover{ opacity:1; }
+  .chip.add{ background:transparent; border:1.5px dashed var(--line-2); color:var(--ink-2); cursor:pointer; }
+  .chip.add::before{ display:none; }
+  .chip.add:hover{ border-color:var(--accent); color:var(--accent-ink); }
+
+  /* ============================================================
+     BOTTOM SHEET (Parte 3)
+     ============================================================ */
+  .overlay{
+    position:absolute; inset:0; z-index:20; background:rgba(3,4,8,.62);
+    backdrop-filter:blur(2px); opacity:0; pointer-events:none;
+    transition:opacity .3s var(--ease);
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; z-index:21;
+    background:var(--surface); border-radius:26px 26px 0 0;
+    border-top:1px solid var(--line-2);
+    max-height:88%; display:flex; flex-direction:column;
+    transform:translateY(102%);
+    transition:transform .38s var(--ease);
+    box-shadow:0 -24px 60px -20px rgba(0,0,0,.85);
+  }
+  .sheet.open{ transform:translateY(0); }
+  .sheet .grab{ width:38px; height:4px; border-radius:3px; background:var(--line-2); margin:10px auto 2px; flex:0 0 auto; }
+  .sheet-head{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:10px 18px 14px; border-bottom:1px solid var(--line); }
+  .sheet-head h2{ font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:-.01em; }
+  .sheet-head .close{ width:34px; height:34px; border-radius:11px; border:none; cursor:pointer; background:var(--surface-2); color:var(--ink-2); font-size:17px; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+  .sheet-head .close:hover{ background:var(--line-2); }
+  .sheet-body{ flex:1; overflow-y:auto; padding:16px 18px 18px; scrollbar-width:none; display:flex; flex-direction:column; gap:14px; }
+  .sheet-body::-webkit-scrollbar{ display:none; }
+  .sheet-foot{ flex:0 0 auto; display:flex; gap:10px; padding:13px 18px calc(15px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--surface); }
+
+  .improv{ display:flex; align-items:center; gap:9px; }
+  .improv .pm-in{ width:78px; flex:0 0 78px; }
+  .improv .ef-in{ flex:1; }
+
+  /* note caption */
+  .note{ width:392px; max-width:100%; font-size:12px; color:var(--ink-3); line-height:1.5; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:12px 16px; }
+  .note b{ color:var(--ink-2); }
+
+  @keyframes rise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes pop{ 0%{transform:scale(1)} 40%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .bump{ animation:pop .4s var(--ease); }
+
+  @media (max-width:430px){
+    body{ padding:30px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="page-head">
+    <span class="page-eyebrow">ArcanaForge — Fluxos de produto</span>
+    <h1 class="page-title">Criação & Edição de Ficha · Tormenta 20</h1>
+    <p class="page-sub">Mesma linguagem visual da Direção C (Tático Escuro): fundo carvão, cartões elevados e acento esmeralda. Aqui mostramos o assistente de criação passo a passo, o modo de edição da ficha e o formulário em bottom-sheet.</p>
+  </header>
+
+  <!-- ===================================================================
+       PARTE 1 — ASSISTENTE DE CRIAÇÃO (interativo)
+       =================================================================== -->
+  <div class="mock-label">
+    <span class="mock-tag"><b>Parte 1</b> · Assistente de criação</span>
+    <div class="mock-h">Onboarding passo a passo</div>
+    <p class="mock-p">Seis etapas, uma por vez, com barra de progresso segmentada. Use Voltar / Próximo para navegar — a última etapa vira "Criar ficha".</p>
+  </div>
+
+  <div class="phone">
+    <div class="screen" id="wizardScreen">
+      <div class="notch"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="dots">
+          <div class="sig"><i></i><i></i><i></i><i></i></div>
+          <span style="font-size:11px;font-weight:700;letter-spacing:.04em">5G</span>
+          <div class="batt"></div>
+        </div>
+      </div>
+
+      <!-- wizard header -->
+      <div class="wiz-head">
+        <div class="top">
+          <div>
+            <div class="ttl">Nova ficha</div>
+            <div class="step-lbl">Etapa <span id="stepNum">1</span> de 6 · <span class="step-name" id="stepName">Identidade</span></div>
+          </div>
+          <button class="escape" aria-label="Fechar">✕</button>
+        </div>
+        <div class="seg-prog" id="segProg">
+          <i class="now"></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <!-- STEP 1 — IDENTIDADE -->
+        <section class="wiz-step active" data-name="Identidade">
+          <div class="avatar-up">
+            <div class="avatar-big">AK<div class="cam">📷</div></div>
+            <div class="hint">Toque para adicionar retrato</div>
+          </div>
+          <div class="stack">
+            <div class="field">
+              <label class="lbl" for="f-nome">Nome do personagem</label>
+              <input class="input" id="f-nome" value="Akihiro" placeholder="Ex.: Akihiro" />
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="f-raca">Raça</label>
+                <select class="select" id="f-raca">
+                  <option>Humano</option><option>Anão</option><option>Dahllan</option><option>Elfo</option>
+                  <option>Goblin</option><option>Lefou</option><option>Minotauro</option><option>Qareen</option>
+                  <option>Hynne</option><option>Kliren</option><option>Medusa</option><option>Osteon</option>
+                  <option>Sereia/Tritão</option><option>Sílfide</option><option selected>Suraggel</option><option>Trog</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="lbl" for="f-classe">Classe</label>
+                <select class="select" id="f-classe">
+                  <option>Arcanista</option><option>Bárbaro</option><option>Bardo</option><option>Bucaneiro</option>
+                  <option>Cavaleiro</option><option>Caçador</option><option>Clérigo</option><option>Druida</option>
+                  <option>Guerreiro</option><option>Inventor</option><option>Ladino</option><option>Lutador</option>
+                  <option>Nobre</option><option>Paladino</option><option selected>Shugenja</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl">Nível</label>
+                <div class="num-row">
+                  <button class="step-btn" onclick="lvlStep(-1)">−</button>
+                  <div class="num-val"><span id="lvlVal">2</span></div>
+                  <button class="step-btn plus" onclick="lvlStep(1)">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <label class="lbl" for="f-tam">Tamanho</label>
+                <select class="select" id="f-tam">
+                  <option>Minúsculo</option><option>Pequeno</option><option selected>Médio</option>
+                  <option>Grande</option><option>Enorme</option><option>Colossal</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="f-origem">Origem</label>
+              <select class="select" id="f-origem">
+                <option selected>Herói Camponês</option><option>Acólito</option><option>Amnésico</option>
+                <option>Artesão</option><option>Batedor</option><option>Charlatão</option><option>Criminoso</option>
+                <option>Escravo</option><option>Forasteiro</option><option>Nobre</option>
+              </select>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="f-div">Divindade</label>
+                <select class="select" id="f-div">
+                  <option selected>Lin-Wu</option><option>Allihanna</option><option>Khalmyr</option>
+                  <option>Lena</option><option>Marah</option><option>Tanna-Toh</option><option>Valkaria</option>
+                  <option>Sem divindade</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="lbl" for="f-tend">Tendência</label>
+                <select class="select" id="f-tend">
+                  <option>Leal e Bom</option><option>Neutro e Bom</option><option>Caótico e Bom</option>
+                  <option>Leal e Neutro</option><option>Neutro</option><option>Caótico e Neutro</option>
+                  <option>Leal e Mau</option><option>Neutro e Mau</option><option>Caótico e Mau</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="f-desl">Deslocamento</label>
+              <select class="select" id="f-desl">
+                <option>3m</option><option>6m</option><option selected>9m</option><option>12m</option><option>15m</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 2 — ATRIBUTOS -->
+        <section class="wiz-step" data-name="Atributos">
+          <div class="points" id="pointsBox">
+            <div>
+              <div class="t">Pontos restantes</div>
+              <div class="v" id="pointsVal">4</div>
+            </div>
+            <div class="hint">Compra por pontos · +1 custa 1 ponto, mínimo −1</div>
+          </div>
+          <div id="attrBuy"></div>
+          <p style="font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.5;margin-top:4px;">Toque na ★ para definir o atributo-chave da classe.</p>
+        </section>
+
+        <!-- STEP 3 — PERÍCIAS -->
+        <section class="wiz-step" data-name="Perícias">
+          <div class="search">
+            <span class="ico">🔍</span>
+            <input class="input" id="skSearch" placeholder="Buscar perícia…" oninput="filterSkills(this.value)" />
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 12px;">
+            <span class="count-pill">Treinadas: <b id="trCount">5</b> / 9 disponíveis</span>
+            <span style="font-size:11px;color:var(--ink-3);font-weight:600;">Toque para treinar</span>
+          </div>
+          <div class="card" id="skillList"></div>
+        </section>
+
+        <!-- STEP 4 — PODERES -->
+        <section class="wiz-step" data-name="Poderes">
+          <div class="sec-head"><h2>Poderes</h2><span>2 adicionados</span></div>
+          <div class="card lc hi">
+            <div class="glyph">❤️</div>
+            <div class="txt">
+              <h3>Coração Heroico <span class="src-tag">Raça</span></h3>
+              <p>+3 pontos de mana; +3 PM a cada novo patamar.</p>
+            </div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <div class="card lc hi">
+            <div class="glyph">🧘</div>
+            <div class="txt">
+              <h3>Mente Vazia <span class="src-tag">Classe</span></h3>
+              <p>+2 em Iniciativa, Percepção e Vontade.</p>
+            </div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <button class="add-card" onclick="openSheet('poder')"><span class="plus">＋</span> Adicionar poder</button>
+        </section>
+
+        <!-- STEP 5 — MAGIAS -->
+        <section class="wiz-step" data-name="Magias">
+          <div class="card conj">
+            <div class="ic">🌙</div>
+            <div class="info">
+              <div class="t">Atributo-chave · Sabedoria</div>
+              <div class="stats">
+                <div><b>+3</b><span>Chave</span></div>
+                <div><b>14</b><span>CD de resistência</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="sec-head"><h2>Magias conhecidas</h2><span>2 magias</span></div>
+          <div class="card lc">
+            <div class="glyph">🔮</div>
+            <div class="txt">
+              <h3>Concentração de Combate <span class="pm-tag">1 PM</span></h3>
+              <p>Abjuração · +2 em ataque enquanto concentrado.</p>
+            </div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <div class="card lc">
+            <div class="glyph">🔥</div>
+            <div class="txt">
+              <h3>Explosão de Chamas <span class="pm-tag">2 PM</span></h3>
+              <p>Evocação · 2d6 de dano, cone de 6m, Reflexos CD 14.</p>
+            </div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <button class="add-card" onclick="openSheet('magia')"><span class="plus">＋</span> Adicionar magia</button>
+        </section>
+
+        <!-- STEP 6 — EQUIPAMENTOS -->
+        <section class="wiz-step" data-name="Equipamentos">
+          <div class="sub-lbl">Armas</div>
+          <div class="card lc">
+            <div class="glyph">🗡</div>
+            <div class="txt"><h3>Katana</h3><p>Corpo a corpo · +7 · 1d10+2 · 18/×2</p></div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <div class="card lc">
+            <div class="glyph">🏹</div>
+            <div class="txt"><h3>Arco curto</h3><p>Distância · +5 · 1d6+2 · ×3 · 18m</p></div>
+            <div class="acts">
+              <button class="icon-btn" aria-label="Editar">✎</button>
+              <button class="icon-btn del" aria-label="Excluir">🗑</button>
+            </div>
+          </div>
+          <button class="add-card" onclick="openSheet('arma')"><span class="plus">＋</span> Adicionar arma</button>
+
+          <div class="sub-lbl">Itens</div>
+          <div class="card" style="margin-bottom:12px;">
+            <div class="sk-row"><div class="ico">🖌</div><div class="nm">Pincel de Lin-Wu<small>1 espaço</small></div><span class="lc"><span class="src-tag">×1</span></span></div>
+            <div class="sk-row"><div class="ico">🎒</div><div class="nm">Kit de aventureiro<small>2 espaços</small></div><span class="lc"><span class="src-tag">×1</span></span></div>
+          </div>
+          <button class="add-card" onclick="openSheet('item')"><span class="plus">＋</span> Adicionar item</button>
+
+          <div class="sub-lbl">Tibares</div>
+          <div class="card coin-step copper">
+            <div class="dot">C</div>
+            <div class="nm">Cobre<small>Tibar de cobre</small></div>
+            <button class="step-btn sm" onclick="coinStep('cobre',-1)">−</button>
+            <div class="cv" id="cobreVal">40</div>
+            <button class="step-btn sm plus" onclick="coinStep('cobre',1)">+</button>
+          </div>
+          <div class="card coin-step silver">
+            <div class="dot">P</div>
+            <div class="nm">Prata<small>Tibar de prata</small></div>
+            <button class="step-btn sm" onclick="coinStep('prata',-1)">−</button>
+            <div class="cv" id="prataVal">12</div>
+            <button class="step-btn sm plus" onclick="coinStep('prata',1)">+</button>
+          </div>
+          <div class="card coin-step gold">
+            <div class="dot">O</div>
+            <div class="nm">Ouro<small>Tibar de ouro</small></div>
+            <button class="step-btn sm" onclick="coinStep('ouro',-1)">−</button>
+            <div class="cv" id="ouroVal">8</div>
+            <button class="step-btn sm plus" onclick="coinStep('ouro',1)">+</button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- wizard footer -->
+      <div class="wiz-foot">
+        <button class="btn btn-ghost" id="btnBack" onclick="wizGo(-1)" disabled>Voltar</button>
+        <button class="btn btn-primary" id="btnNext" onclick="wizGo(1)">Próximo →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PARTE 2 — MODO DE EDIÇÃO DA FICHA
+       =================================================================== -->
+  <div class="mock-label">
+    <span class="mock-tag"><b>Parte 2</b> · Modo de edição</span>
+    <div class="mock-h">A ficha pronta, agora editável</div>
+    <p class="mock-p">Barra "Editando ficha" sob os vitais; cada valor ganha affordance de alteração — steppers, inputs de número e botões de remover/adicionar.</p>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="notch"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="dots">
+          <div class="sig"><i></i><i></i><i></i><i></i></div>
+          <span style="font-size:11px;font-weight:700;letter-spacing:.04em">5G</span>
+          <div class="batt"></div>
+        </div>
+      </div>
+
+      <!-- vitals header -->
+      <div class="app-header">
+        <div class="id-row">
+          <div class="avatar lvl">時</div>
+          <div class="id-meta">
+            <div class="id-name">Akihiro</div>
+            <div class="id-line">
+              <span>Shugenja 2</span><span class="dot"></span>
+              <span>Suraggel</span><span class="dot"></span>
+              <span class="div">✦ Lin-Wu</span>
+            </div>
+          </div>
+          <div class="lvl-pill"><b>2</b><span>Nível</span></div>
+        </div>
+        <div class="vitals">
+          <div class="vital pv"><div class="lab">PV</div><div class="val">26<small>/26</small></div><div class="track"><i></i></div></div>
+          <div class="vital pm"><div class="lab">PM</div><div class="val">18<small>/24</small></div><div class="track"><i></i></div></div>
+          <div class="vital def"><span class="shield">🛡</span><div class="lab">Defesa</div><div class="val">16</div></div>
+        </div>
+      </div>
+
+      <div class="body">
+
+        <!-- edit mode bar -->
+        <div class="edit-bar">
+          <div class="lhs"><span class="pen">✎</span> Editando ficha</div>
+          <button class="btn-save">Salvar</button>
+        </div>
+
+        <!-- ABA: ATRIBUTOS em edição -->
+        <div class="sec-head"><h2>Atributos</h2><span>Aba · em edição</span></div>
+        <div class="attr-edit">
+          <div class="ae"><div class="top"><span class="lab">Força</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">0</div><button class="step-btn sm plus">+</button></div></div>
+          <div class="ae"><div class="top"><span class="lab">Destreza</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">+2</div><button class="step-btn sm plus">+</button></div></div>
+          <div class="ae"><div class="top"><span class="lab">Constituição</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">+1</div><button class="step-btn sm plus">+</button></div></div>
+          <div class="ae"><div class="top"><span class="lab">Inteligência</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">+1</div><button class="step-btn sm plus">+</button></div></div>
+          <div class="ae key"><div class="top"><span class="lab">Sabedoria</span><span style="font-size:12px;color:var(--accent-ink)">★ Chave</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">+3</div><button class="step-btn sm plus">+</button></div></div>
+          <div class="ae"><div class="top"><span class="lab">Carisma</span></div><div class="row"><button class="step-btn sm">−</button><div class="mod-cell">0</div><button class="step-btn sm plus">+</button></div></div>
+        </div>
+
+        <div class="sec-head gap"><h2>Vitais & Defesa</h2><span>Valores editáveis</span></div>
+        <div class="vit-edit">
+          <div class="card vit-card pv">
+            <div class="badge">PV</div>
+            <div class="nm">Pontos de Vida<small>atual / máximo</small></div>
+            <input class="mini-input" value="26" aria-label="PV atual" />
+            <span class="slash">/</span>
+            <input class="mini-input" value="26" aria-label="PV máximo" />
+          </div>
+          <div class="card vit-card pm">
+            <div class="badge">PM</div>
+            <div class="nm">Pontos de Mana<small>atual / máximo</small></div>
+            <input class="mini-input" value="18" aria-label="PM atual" />
+            <span class="slash">/</span>
+            <input class="mini-input" value="24" aria-label="PM máximo" />
+          </div>
+          <div class="card vit-card def">
+            <div class="badge">🛡</div>
+            <div class="nm">Defesa<small>10 + Des + outros</small></div>
+            <input class="mini-input" value="16" aria-label="Defesa" />
+          </div>
+        </div>
+
+        <div class="sec-head gap"><h2>Condições & Buffs</h2><span>Toque no × para remover</span></div>
+        <div class="chips">
+          <span class="chip on">Concentração +2 <span class="x">✕</span></span>
+          <span class="chip surge">Surto Heroico <span class="x">✕</span></span>
+          <span class="chip bleed">Sangrando <span class="x">✕</span></span>
+          <span class="chip">Coberto <span class="x">✕</span></span>
+          <span class="chip add">＋ Adicionar</span>
+        </div>
+
+        <!-- ABA: MAGIAS em edição -->
+        <div class="sec-head gap"><h2>Magias</h2><span>Aba · em edição</span></div>
+        <div class="card conj">
+          <div class="ic">🌙</div>
+          <div class="info">
+            <div class="t">Atributo-chave · Sabedoria</div>
+            <div class="stats">
+              <div><b>+3</b><span>Chave</span></div>
+              <div><b>14</b><span>CD resist.</span></div>
+              <div><b>18</b><span>PM disp.</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card lc">
+          <div class="glyph">🔮</div>
+          <div class="txt"><h3>Concentração de Combate <span class="pm-tag">1 PM</span></h3><p>Abjuração · +2 em ataque.</p></div>
+          <div class="acts"><button class="icon-btn" aria-label="Editar">✎</button><button class="icon-btn del" aria-label="Excluir">🗑</button></div>
+        </div>
+        <div class="card lc">
+          <div class="glyph">🔥</div>
+          <div class="txt"><h3>Explosão de Chamas <span class="pm-tag">2 PM</span></h3><p>Evocação · 2d6, cone 6m.</p></div>
+          <div class="acts"><button class="icon-btn" aria-label="Editar">✎</button><button class="icon-btn del" aria-label="Excluir">🗑</button></div>
+        </div>
+        <button class="add-card" onclick="openSheet('magia')"><span class="plus">＋</span> Nova magia</button>
+
+        <div style="height:8px"></div>
+      </div>
+
+      <nav class="tabbar" style="flex:0 0 auto;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:9px 8px calc(9px + env(safe-area-inset-bottom));">
+        <button class="tab" style="background:none;border:none;cursor:pointer;padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent-ink);font-family:var(--font-body);"><span style="font-size:19px">◈</span><span style="font-size:9.5px;font-weight:700">Atributos</span></button>
+        <button class="tab" style="background:none;border:none;cursor:pointer;padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-3);"><span style="font-size:19px">✓</span><span style="font-size:9.5px;font-weight:700">Perícias</span></button>
+        <button class="tab" style="background:none;border:none;cursor:pointer;padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-3);"><span style="font-size:19px">✦</span><span style="font-size:9.5px;font-weight:700">Poderes</span></button>
+        <button class="tab" style="background:none;border:none;cursor:pointer;padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent-ink);"><span style="font-size:19px">🜂</span><span style="font-size:9.5px;font-weight:700">Magias</span></button>
+        <button class="tab" style="background:none;border:none;cursor:pointer;padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-3);"><span style="font-size:19px">🜸</span><span style="font-size:9.5px;font-weight:700">Equipam.</span></button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       PARTE 3 — BOTTOM-SHEET "NOVA MAGIA"
+       =================================================================== -->
+  <div class="mock-label">
+    <span class="mock-tag"><b>Parte 3</b> · Bottom-sheet de formulário</span>
+    <div class="mock-h">Nova Magia (overlay deslizante)</div>
+    <p class="mock-p">Formulário rico que sobe de baixo com overlay escurecido. Aberto pelos botões "+ Adicionar magia" / "+ Nova magia" acima.</p>
+  </div>
+
+  <div class="phone">
+    <div class="screen" id="sheetScreen">
+      <div class="notch"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="dots">
+          <div class="sig"><i></i><i></i><i></i><i></i></div>
+          <span style="font-size:11px;font-weight:700;letter-spacing:.04em">5G</span>
+          <div class="batt"></div>
+        </div>
+      </div>
+
+      <!-- dimmed backdrop content (the magias list) -->
+      <div class="app-header">
+        <div class="id-row">
+          <div class="avatar lvl">時</div>
+          <div class="id-meta">
+            <div class="id-name">Akihiro</div>
+            <div class="id-line"><span>Shugenja 2</span><span class="dot"></span><span class="div">✦ Lin-Wu</span></div>
+          </div>
+          <div class="lvl-pill"><b>2</b><span>Nível</span></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="sec-head"><h2>Magias</h2><span>Conhecidas</span></div>
+        <div class="card lc"><div class="glyph">🔮</div><div class="txt"><h3>Concentração de Combate <span class="pm-tag">1 PM</span></h3><p>Abjuração</p></div></div>
+        <div class="card lc"><div class="glyph">🔥</div><div class="txt"><h3>Explosão de Chamas <span class="pm-tag">2 PM</span></h3><p>Evocação</p></div></div>
+        <button class="add-card" onclick="openSheet('magia')"><span class="plus">＋</span> Adicionar magia</button>
+      </div>
+
+      <!-- overlay + sheet (open by default in this demo frame) -->
+      <div class="overlay open" id="sheetOverlay" onclick="closeSheet()"></div>
+      <div class="sheet open" id="sheet">
+        <div class="grab"></div>
+        <div class="sheet-head">
+          <h2 id="sheetTitle">Nova Magia</h2>
+          <button class="close" onclick="closeSheet()" aria-label="Fechar">✕</button>
+        </div>
+        <div class="sheet-body">
+          <div class="field">
+            <label class="lbl" for="m-nome">Nome</label>
+            <input class="input" id="m-nome" placeholder="Ex.: Bola de Fogo" />
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="lbl" for="m-escola">Escola</label>
+              <select class="select" id="m-escola">
+                <option>Abjuração</option><option>Adivinhação</option><option>Convocação</option>
+                <option>Encantamento</option><option selected>Evocação</option><option>Ilusão</option>
+                <option>Necromancia</option><option>Transmutação</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="lbl" for="m-exec">Execução</label>
+              <select class="select" id="m-exec">
+                <option selected>Ação padrão</option><option>Movimento</option><option>Completa</option>
+                <option>Reação</option><option>Livre</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl">Círculo</label>
+            <div class="seg" id="circleSeg">
+              <button class="on" onclick="segPick(this)">1º</button>
+              <button onclick="segPick(this)">2º</button>
+              <button onclick="segPick(this)">3º</button>
+              <button onclick="segPick(this)">4º</button>
+              <button onclick="segPick(this)">5º</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="lbl" for="m-alc">Alcance</label>
+              <select class="select" id="m-alc">
+                <option>Pessoal</option><option>Toque</option><option selected>Curto</option>
+                <option>Médio</option><option>Longo</option><option>Ilimitado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="lbl" for="m-area">Alvo / Área</label>
+              <input class="input" id="m-area" placeholder="cone de 6m" />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label class="lbl" for="m-dur">Duração</label>
+              <input class="input" id="m-dur" placeholder="Instantânea" />
+            </div>
+            <div class="field">
+              <label class="lbl" for="m-res">Resistência</label>
+              <input class="input" id="m-res" placeholder="Reflexos CD 14" />
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl">Custo de PM</label>
+            <div class="num-row">
+              <button class="step-btn" onclick="pmStep(-1)">−</button>
+              <div class="num-val"><span id="pmCost">2</span> <small>PM</small></div>
+              <button class="step-btn plus" onclick="pmStep(1)">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="m-desc">Descrição</label>
+            <textarea class="textarea" id="m-desc" placeholder="Descreva o efeito da magia…">Causa 2d6 de dano de fogo em um cone de 6 metros.</textarea>
+          </div>
+
+          <div>
+            <label class="lbl" style="margin-bottom:9px;display:block;">Aprimoramentos</label>
+            <div id="improvList" class="stack" style="gap:9px;margin-bottom:10px;">
+              <div class="improv">
+                <input class="input pm-in" value="+1 PM" aria-label="Custo do aprimoramento" />
+                <input class="input ef-in" value="+1d6 de dano" aria-label="Efeito do aprimoramento" />
+                <button class="icon-btn del" onclick="this.closest('.improv').remove()" aria-label="Remover">🗑</button>
+              </div>
+            </div>
+            <button class="add-card" onclick="addImprov()"><span class="plus">＋</span> Adicionar aprimoramento</button>
+          </div>
+
+          <!-- reuse note -->
+          <p class="note" style="width:auto;text-align:left;">
+            <b>Padrão reutilizável:</b> o mesmo bottom-sheet serve para <b>Poder</b>, <b>Arma</b> e <b>Item</b> — apenas com menos campos. O título e os campos mudam conforme a origem do botão "+".
+          </p>
+        </div>
+        <div class="sheet-foot">
+          <button class="btn btn-ghost" style="flex:1" onclick="closeSheet()">Cancelar</button>
+          <button class="btn btn-primary" onclick="closeSheet()">Salvar magia</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="note">Arquivo único e autocontido. Wizard, steppers, toggles, compra de pontos e bottom-sheet são funcionais em JavaScript inline. Estética idêntica à Direção C — Tático Escuro.</p>
+
+<script>
+  /* ============ WIZARD NAV ============ */
+  const STEP_NAMES = ['Identidade','Atributos','Perícias','Poderes','Magias','Equipamentos'];
+  let curStep = 0;
+  const steps = document.querySelectorAll('#wizardScreen .wiz-step');
+
+  function renderWiz(){
+    steps.forEach((s,i)=> s.classList.toggle('active', i===curStep));
+    // segmented progress
+    const seg = document.querySelectorAll('#segProg i');
+    seg.forEach((b,i)=>{ b.className = i<curStep ? 'done' : (i===curStep ? 'now' : ''); });
+    document.getElementById('stepNum').textContent = curStep+1;
+    document.getElementById('stepName').textContent = STEP_NAMES[curStep];
+    document.getElementById('btnBack').disabled = curStep===0;
+    document.getElementById('btnNext').textContent = curStep===5 ? '✦ Criar ficha' : 'Próximo →';
+    const body = steps[curStep].closest('.body');
+    if(body) body.scrollTo({top:0,behavior:'smooth'});
+  }
+  function wizGo(d){
+    if(curStep===5 && d>0){ alert('Ficha criada! (mockup)'); return; }
+    curStep = Math.max(0, Math.min(5, curStep+d));
+    renderWiz();
+  }
+
+  /* ============ STEP 1: level stepper ============ */
+  let lvl = 2;
+  function lvlStep(d){ lvl = Math.max(1, Math.min(20, lvl+d)); document.getElementById('lvlVal').textContent = lvl; }
+
+  /* ============ STEP 2: point-buy attributes ============ */
+  // Custo simples solicitado: cada +1 custa 1 ponto; mínimo -1 devolve pontos.
+  const ATTRS = [
+    {key:'For', name:'Força',        val:0},
+    {key:'Des', name:'Destreza',     val:2},
+    {key:'Con', name:'Constituição', val:1},
+    {key:'Int', name:'Inteligência', val:1},
+    {key:'Sab', name:'Sabedoria',    val:3, keyAttr:true},
+    {key:'Car', name:'Carisma',      val:0},
+  ];
+  const POINTS_BUDGET = 4; // "Pontos restantes: 4" no estado inicial
+  function spent(){ return ATTRS.reduce((s,a)=> s + a.val, 0); }
+  function remaining(){ return POINTS_BUDGET + (1+2+1+1+3+0) - spent(); } // budget relative to initial spread
+
+  function fmt(v){ return v>0 ? '+'+v : ''+v; }
+  function buildAttrBuy(){
+    const wrap = document.getElementById('attrBuy');
+    wrap.innerHTML = ATTRS.map((a,i)=>`
+      <div class="card attr-buy ${a.keyAttr?'key':''}" id="ab-${i}">
+        <button class="star-btn ${a.keyAttr?'on':''}" onclick="setKey(${i})" aria-label="Definir como chave">★</button>
+        <div class="nm"><b>${a.name}</b><small>${a.key} · valor é o modificador</small></div>
+        <div class="mod-big" id="abv-${i}">${fmt(a.val)}</div>
+        <button class="step-btn sm" onclick="attrStep(${i},-1)" aria-label="Diminuir">−</button>
+        <button class="step-btn sm plus" onclick="attrStep(${i},1)" aria-label="Aumentar">+</button>
+      </div>`).join('');
+    refreshPoints();
+  }
+  function attrStep(i,d){
+    const a = ATTRS[i];
+    const next = a.val + d;
+    if(next < -1) return;                 // mínimo -1
+    if(d>0 && remaining() <= 0) { flashLow(); return; } // sem pontos
+    a.val = next;
+    document.getElementById('abv-'+i).textContent = fmt(a.val);
+    const cell = document.getElementById('abv-'+i);
+    cell.classList.remove('bump'); void cell.offsetWidth; cell.classList.add('bump');
+    refreshPoints();
+  }
+  function setKey(i){
+    ATTRS.forEach((a,j)=>{ a.keyAttr = (j===i); document.getElementById('ab-'+j).classList.toggle('key', j===i); document.querySelectorAll('.star-btn')[j].classList.toggle('on', j===i); });
+  }
+  function refreshPoints(){
+    const r = remaining();
+    const el = document.getElementById('pointsVal');
+    el.textContent = r;
+    el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+    document.getElementById('pointsBox').classList.toggle('low', r<=0);
+  }
+  function flashLow(){
+    const box = document.getElementById('pointsBox');
+    box.classList.add('low'); setTimeout(()=>refreshPoints(),350);
+  }
+
+  /* ============ STEP 3: skills toggle ============ */
+  const SKILLS = [
+    ['Acrobacia','Des'],['Adestramento','Car'],['Atletismo','For'],['Atuação','Car'],['Cavalgar','Des'],
+    ['Conhecimento','Int'],['Cura','Sab'],['Diplomacia','Car'],['Enganação','Car'],['Fortitude','Con'],
+    ['Furtividade','Des'],['Guerra','Int'],['Iniciativa','Des'],['Intimidação','Car'],['Intuição','Sab'],
+    ['Investigação','Int'],['Jogatina','Car'],['Ladinagem','Des'],['Luta','For'],['Misticismo','Int'],
+    ['Nobreza','Int'],['Ofício','Int'],['Percepção','Sab'],['Pilotagem','Des'],['Pontaria','Des'],
+    ['Reflexos','Des'],['Religião','Sab'],['Sobrevivência','Sab'],['Vontade','Sab']
+  ];
+  const TRAINED = new Set(['Percepção','Vontade','Misticismo','Luta','Iniciativa']);
+  function buildSkills(){
+    const list = document.getElementById('skillList');
+    list.innerHTML = SKILLS.map(([n,a])=>{
+      const on = TRAINED.has(n);
+      return `<div class="sk-row ${on?'on':''}" data-name="${n.toLowerCase()}">
+        <div class="ico">✦</div>
+        <div class="nm">${n}<small>${a==='For'?'Força':a==='Des'?'Destreza':a==='Con'?'Constituição':a==='Int'?'Inteligência':a==='Sab'?'Sabedoria':'Carisma'}</small></div>
+        <div class="toggle ${on?'on':''}" role="switch" aria-checked="${on}" onclick="toggleSkill(this,'${n}')"></div>
+      </div>`;
+    }).join('');
+  }
+  function toggleSkill(tg,name){
+    if(TRAINED.has(name)) TRAINED.delete(name); else TRAINED.add(name);
+    const on = TRAINED.has(name);
+    tg.classList.toggle('on', on);
+    tg.setAttribute('aria-checked', on);
+    tg.closest('.sk-row').classList.toggle('on', on);
+    document.getElementById('trCount').textContent = TRAINED.size;
+  }
+  function filterSkills(q){
+    q = q.trim().toLowerCase();
+    document.querySelectorAll('#skillList .sk-row').forEach(r=>{
+      r.style.display = r.dataset.name.includes(q) ? '' : 'none';
+    });
+  }
+
+  /* ============ STEP 6: coin steppers ============ */
+  const COINS = { cobre:40, prata:12, ouro:8 };
+  function coinStep(k,d){ COINS[k]=Math.max(0,COINS[k]+d); document.getElementById(k+'Val').textContent = COINS[k]; }
+
+  /* ============ BOTTOM SHEET ============ */
+  // O mesmo sheet é reutilizado: muda apenas o título conforme a origem.
+  function openSheet(kind){
+    const titles = { magia:'Nova Magia', poder:'Novo Poder', arma:'Nova Arma', item:'Novo Item' };
+    document.getElementById('sheetTitle').textContent = titles[kind] || 'Nova Magia';
+    document.getElementById('sheetOverlay').classList.add('open');
+    document.getElementById('sheet').classList.add('open');
+  }
+  function closeSheet(){
+    document.getElementById('sheetOverlay').classList.remove('open');
+    document.getElementById('sheet').classList.remove('open');
+  }
+  function segPick(btn){
+    btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  let pmCost = 2;
+  function pmStep(d){ pmCost = Math.max(0, pmCost+d); document.getElementById('pmCost').textContent = pmCost; }
+  function addImprov(){
+    const row = document.createElement('div');
+    row.className = 'improv';
+    row.innerHTML = `<input class="input pm-in" placeholder="+1 PM" aria-label="Custo" />
+      <input class="input ef-in" placeholder="Efeito adicional" aria-label="Efeito" />
+      <button class="icon-btn del" onclick="this.closest('.improv').remove()" aria-label="Remover">🗑</button>`;
+    document.getElementById('improvList').appendChild(row);
+  }
+
+  /* ============ init ============ */
+  buildAttrBuy();
+  buildSkills();
+  renderWiz();
+</script>
+</body>
+</html>

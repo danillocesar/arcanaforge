@@ -1,0 +1,78 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 9px;
+}
+
+/* Suspenso: o bônus não conta em nenhum cálculo, e a linha mostra isso. */
+.rowOff {
+  border-left-color: var(--line-2);
+  opacity: 0.55;
+}
+
+.rowOff .name,
+.rowOff .tag {
+  text-decoration: line-through;
+}
+
+.rowOff .tag {
+  color: var(--ink-3);
+}
+
+.dot {
+  flex: 0 0 11px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  background: var(--surface);
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dot:disabled {
+  cursor: default;
+}
+
+.dotOn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.name {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 130px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  white-space: nowrap;
+}

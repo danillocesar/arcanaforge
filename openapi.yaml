@@ -13,7 +13,6 @@ servers:
 tags:
   - name: Health
   - name: Characters
-  - name: Naruto
   - name: Parties
   - name: Combat
 
@@ -190,47 +189,6 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
-  /api/naruto/clans:
-    get:
-      tags: [Naruto]
-      summary: Lista clãs Naruto ativos
-      responses:
-        "200":
-          description: Lista de clãs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/NarutoClan"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-  /api/naruto/technique-templates:
-    get:
-      tags: [Naruto]
-      summary: Lista templates de técnicas Naruto
-      parameters:
-        - in: query
-          name: source
-          schema:
-            type: string
-        - in: query
-          name: sourceDetail
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Lista de templates
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/NarutoTechniqueTemplate"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
   /api/parties:
     get:
       tags: [Parties]
@@ -261,7 +219,7 @@ paths:
                   type: string
                 system:
                   type: string
-                  enum: [tormenta, naruto]
+                  enum: [tormenta]
       responses:
         "200":
           description: Grupo criado
@@ -327,7 +285,7 @@ paths:
                   type: string
                 system:
                   type: string
-                  enum: [tormenta, naruto]
+                  enum: [tormenta]
       responses:
         "200":
           description: Grupo atualizado
@@ -694,7 +652,6 @@ components:
           type: string
         system:
           type: string
-          enum: [tormenta, naruto]
         inviteCode:
           type: string
         members:
@@ -706,60 +663,6 @@ components:
         ownerEmail:
           type: string
       additionalProperties: true
-
-    NarutoClan:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        icon:
-          type: string
-        system:
-          type: string
-        active:
-          type: boolean
-      required: [id, name, icon, system, active]
-
-    NarutoTechniqueTemplate:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        unlockLevel:
-          type: number
-        category:
-          type: string
-        action:
-          type: string
-        range:
-          type: string
-        baseDamage:
-          type: string
-        duration:
-          type: string
-        target:
-          type: string
-        chakraCost:
-          type: string
-        description:
-          type: string
-        evolutions:
-          type: string
-        availableFor:
-          type: array
-          items:
-            type: string
-        dealsDamage:
-          type: boolean
-        source:
-          type: string
-        sourceDetail:
-          type: string
-      additionalProperties: false
 
     CombatData:
       type: object

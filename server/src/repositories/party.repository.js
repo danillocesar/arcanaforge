@@ -59,6 +59,59 @@ async function findOwnedOrMemberPartyLean(id, uid) {
   }).lean();
 }
 
+/**
+ * Grava a referência do evento de UM uid, sem ler a lista antes.
+ *
+ * Por que não `$set` do array inteiro: quem chama só conhece um snapshot lido
+ * no começo da requisição. Dois votos que se sobrepõem partem do mesmo
+ * snapshot, e o segundo `$set` apaga as referências gravadas pelo primeiro —
+ * os eventos continuam de verdade na agenda das pessoas, e o app perde o único
+ * jeito de apagá-los. Mexendo só na entrada do uid, escritas de uids
+ * diferentes deixam de se atropelar.
+ *
+ * `$pull` do uid antes do `$push` é o que mantém o invariante "uma entrada por
+ * uid" sem precisar ler o array: se já havia entrada (re-criação depois de uma
+ * deleção não confirmada, por exemplo), ela sai e a nova entra. As duas
+ * operações não cabem num update só — o Mongo recusa `$pull` e `$push` no
+ * mesmo caminho.
+ */
+async function addProposalGoogleEvent(partyId, proposalId, ref) {
+  const filtro = { _id: partyId, 'sessionProposals.id': proposalId };
+  await Party.updateOne(filtro, {
+    $pull: { 'sessionProposals.$.googleEvents': { uid: ref.uid } },
+  });
+  await Party.updateOne(filtro, {
+    $push: { 'sessionProposals.$.googleEvents': ref },
+  });
+}
+
+/** Remove a referência de UM uid. Chamado só quando a deleção no Google foi confirmada. */
+async function removeProposalGoogleEvent(partyId, proposalId, uid) {
+  await Party.updateOne(
+    { _id: partyId, 'sessionProposals.id': proposalId },
+    { $pull: { 'sessionProposals.$.googleEvents': { uid } } },
+  );
+}
+
+/**
+ * Remove UMA proposta do array, sem tocar nas outras.
+ *
+ * Pela mesma razão das duas funções acima: `party.sessionProposals = filter(...)`
+ * mais `save()` faz o mongoose emitir `$set` do array INTEIRO montado a partir
+ * do snapshot da requisição. Referências de `googleEvents` gravadas
+ * concorrentemente em OUTRA proposta desaparecem — e a guarda otimista do
+ * mongoose não pega, porque `updateOne` com `$push`/`$pull` não incrementa
+ * `__v`, então o `save()` versionado encontra o documento na versão que
+ * esperava. Os eventos continuam de verdade na agenda das pessoas e o app
+ * perde o único jeito de apagá-los.
+ */
+async function removeProposal(partyId, proposalId) {
+  await Party.updateOne(
+    { _id: partyId },
+    { $pull: { sessionProposals: { id: proposalId } } },
+  );
+}
+
 module.exports = {
   existsInviteCode,
   createParty,
@@ -71,4 +124,7 @@ module.exports = {
   findById,
   findOwnedParty,
   findOwnedOrMemberPartyLean,
+  addProposalGoogleEvent,
+  removeProposalGoogleEvent,
+  removeProposal,
 };

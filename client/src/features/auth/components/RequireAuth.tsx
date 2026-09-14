@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import type { ReactElement } from 'react';
+import AuthLoading from './AuthLoading';
 import VerifyEmailNotice from './VerifyEmailNotice';
 import { useAuth } from '../useAuth';
 
@@ -8,7 +9,7 @@ export default function RequireAuth({ children }: { children: ReactElement }) {
   const location = useLocation();
 
   if (loading) {
-    return <div style={{ minHeight: '100vh', background: 'var(--bg-body)' }} />;
+    return <AuthLoading />;
   }
 
   if (!isAuthenticated) {

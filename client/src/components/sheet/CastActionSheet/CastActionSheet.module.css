@@ -1,0 +1,210 @@
+.baseCost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid var(--line-2);
+  margin-bottom: 12px;
+}
+
+.baseLabel {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.baseVal {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.enhHeader {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+}
+
+.enhList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.enhItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+.enhItemOn {
+  border-color: var(--accent);
+}
+
+.enhDesc {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.enhStepper {
+  flex: 0 0 auto;
+}
+
+.enhPm {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  padding: 3px 8px;
+  border-radius: 7px;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.resistRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid var(--line-2);
+}
+
+.resistLabel {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.resistVal {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--warn);
+  text-align: right;
+}
+
+.totalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-2);
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.totalVal {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--accent-ink);
+}
+
+.warn {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f87171;
+}
+
+.btnCancel {
+  flex: 1;
+  padding: 11px;
+  border-radius: 11px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.btnConfirm {
+  flex: 1;
+  padding: 11px;
+  border-radius: 11px;
+  border: none;
+  background: var(--accent);
+  color: #0a0b0e;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.targetList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.targetRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.targetAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.targetAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.targetName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.targetEmpty {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
