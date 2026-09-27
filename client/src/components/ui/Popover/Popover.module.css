@@ -2,6 +2,8 @@
   position: fixed;
   z-index: 9999;
   min-width: 200px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 14px;
   background: var(--surface);
   border: 1px solid var(--line-2);

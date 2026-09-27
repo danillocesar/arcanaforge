@@ -7,6 +7,8 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { computePopoverPlacement } from './computePopoverPlacement';
+import type { PopoverAlign, PopoverPlacement } from './PopoverPlacement';
 import styles from './Popover.module.css';
 
 interface PopoverProps {
@@ -14,7 +16,7 @@ interface PopoverProps {
   anchorRef: RefObject<HTMLElement | null>;
   onClose: () => void;
   children: ReactNode;
-  align?: 'start' | 'center' | 'end';
+  align?: PopoverAlign;
   className?: string;
   /** Accent glow shadow (default). Set false for a neutral shadow (e.g. menus). */
   glow?: boolean;
@@ -30,34 +32,21 @@ function Popover({
   glow = true,
 }: PopoverProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [pos, setPos] = useState<PopoverPlacement | null>(null);
 
   const reposition = () => {
     const anchor = anchorRef.current;
     const panel = panelRef.current;
     if (!anchor) return;
-    const rect = anchor.getBoundingClientRect();
-    const panelW = panel?.offsetWidth ?? 200;
-
-    let left: number;
-    if (align === 'start') left = rect.left;
-    else if (align === 'end') left = rect.right - panelW;
-    else left = rect.left + rect.width / 2 - panelW / 2;
-
-    let top = rect.bottom + 8;
-
-    // Clamp within viewport.
-    const pad = 8;
-    if (left < pad) left = pad;
-    if (left + panelW > window.innerWidth - pad) {
-      left = window.innerWidth - pad - panelW;
-    }
-    const panelH = panel?.offsetHeight ?? 0;
-    if (panelH && top + panelH > window.innerHeight - pad) {
-      top = rect.top - panelH - 8;
-    }
-
-    setPos({ top, left });
+    setPos(computePopoverPlacement({
+      anchor: anchor.getBoundingClientRect(),
+      panelWidth: panel?.offsetWidth ?? 200,
+      // Altura natural do conteúdo (ignora o maxHeight aplicado num reposition anterior).
+      panelHeight: panel ? panel.scrollHeight + (panel.offsetHeight - panel.clientHeight) : 0,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      align,
+    }));
   };
 
   // Position before paint and whenever opened.
@@ -107,7 +96,7 @@ function Popover({
       ref={panelRef}
       role="dialog"
       className={`${styles.popover} ${glow ? '' : styles.noGlow} ${className ?? ''}`.trim()}
-      style={{ top: pos.top, left: pos.left }}
+      style={{ top: pos?.top ?? 0, left: pos?.left ?? 0, maxHeight: pos?.maxHeight }}
     >
       {children}
     </div>,
