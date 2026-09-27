@@ -23,4 +23,4 @@ export interface PartyFile {
 /** O que o `<input type="file">` do upload aceita — o server valida o mesmo conjunto. */
 export const PARTY_FILE_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,application/pdf';
 
-export const PARTY_FILE_MAX_BYTES = 20 * 1024 * 1024;
+export const PARTY_FILE_MAX_BYTES = 100 * 1024 * 1024;

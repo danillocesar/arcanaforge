@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { ApiError } from '../api/http';
 import { PartyFileKind, type PartyFile } from '../types/partyFile';
 import { formatFileSize, rejectReason, splitPartyFiles, uploadErrorMessage } from './partyFiles';
 
@@ -47,8 +48,8 @@ describe('rejectReason', () => {
     expect(rejectReason({ name: 'a.docx', type: 'application/msword', size: 10 })).toMatch(/só imagens/);
   });
 
-  it('recusa acima de 20 MB', () => {
-    expect(rejectReason({ name: 'a.pdf', type: 'application/pdf', size: 21 * 1024 * 1024 })).toMatch(/20 MB/);
+  it('recusa acima de 100 MB', () => {
+    expect(rejectReason({ name: 'a.pdf', type: 'application/pdf', size: 101 * 1024 * 1024 })).toMatch(/100 MB/);
   });
 });
 
@@ -57,6 +58,10 @@ describe('uploadErrorMessage', () => {
     expect(uploadErrorMessage(new Error('{"error":"Só o mestre do grupo pode enviar arquivos"}'))).toBe(
       'Só o mestre do grupo pode enviar arquivos',
     );
+  });
+
+  it('troca o 413 (HTML do Cloudflare) por uma mensagem legível', () => {
+    expect(uploadErrorMessage(new ApiError(413, '<html>413 Request Entity Too Large</html>'))).toMatch(/100 MB/);
   });
 
   it('usa o texto cru quando não é JSON', () => {

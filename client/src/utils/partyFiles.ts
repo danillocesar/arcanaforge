@@ -1,3 +1,4 @@
+import { ApiError } from '../api/http';
 import { PARTY_FILE_ACCEPT, PARTY_FILE_MAX_BYTES, PartyFileKind, type PartyFile } from '../types/partyFile';
 
 /** "812 KB", "3,4 MB" — tamanho para a lista de documentos. */
@@ -19,16 +20,19 @@ const ACCEPTED = new Set(PARTY_FILE_ACCEPT.split(','));
 
 /**
  * Motivo para recusar o arquivo antes de enviar, ou null se pode seguir.
- * O server valida o mesmo; aqui é só para não gastar um upload de 20 MB à toa.
+ * O server valida o mesmo; aqui é só para não gastar um upload de 100 MB à toa.
  */
 export function rejectReason(file: Pick<File, 'type' | 'size' | 'name'>): string | null {
   if (!ACCEPTED.has(file.type)) return `${file.name}: só imagens (PNG, JPEG, WebP, GIF) ou PDF.`;
-  if (file.size > PARTY_FILE_MAX_BYTES) return `${file.name}: passa de 20 MB.`;
+  if (file.size > PARTY_FILE_MAX_BYTES) return `${file.name}: passa de 100 MB.`;
   return null;
 }
 
 /** Mensagem legível de um erro da API (o server responde `{ "error": "..." }`). */
 export function uploadErrorMessage(err: unknown): string {
+  // 413 pode vir do Cloudflare (túnel), que barra corpos perto de 100 MB antes do server
+  // e responde com uma página HTML — não dá para mostrar isso cru no toast.
+  if (err instanceof ApiError && err.status === 413) return 'Arquivo grande demais para enviar (máx. 100 MB)';
   const raw = err instanceof Error ? err.message : String(err);
   try {
     const parsed = JSON.parse(raw) as { error?: unknown };

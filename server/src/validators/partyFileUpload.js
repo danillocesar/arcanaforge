@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { kindFromMimetype } = require('../utils/partyFileKind');
 
-const MAX_BYTES = 20 * 1024 * 1024;
+const MAX_BYTES = 100 * 1024 * 1024;
 
 const partyFileUpload = multer({
   storage: multer.memoryStorage(),
@@ -19,7 +19,7 @@ function partyFileUploadMiddleware(req, res, next) {
     if (!err) return next();
     const msg =
       err.code === 'LIMIT_FILE_SIZE'
-        ? 'Arquivo grande demais (máx. 20 MB)'
+        ? 'Arquivo grande demais (máx. 100 MB)'
         : err.message || 'Upload inválido';
     return res.status(400).json({ error: msg });
   });
