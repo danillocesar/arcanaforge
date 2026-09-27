@@ -1,0 +1,56 @@
+.pop {
+  width: 240px;
+}
+
+.head {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Draft-string (nunca type=number controlado), seleciona no foco. */
+.amount {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.amount:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.preview {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.preview b {
+  color: var(--ink);
+}
+
+.warn {
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.flex {
+  flex: 1;
+}

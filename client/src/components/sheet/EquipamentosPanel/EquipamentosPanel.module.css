@@ -262,3 +262,22 @@
   outline: none;
   border-color: var(--accent);
 }
+
+/* Sigla da moeda clicável: abre o "Gastar". */
+.coinSpend {
+  padding: 3px 6px;
+  margin: -3px -6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.coinSpend:hover,
+.coinSpend[aria-expanded='true'] {
+  background: var(--line-2);
+  color: var(--ink);
+}

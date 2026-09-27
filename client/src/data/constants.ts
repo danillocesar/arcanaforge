@@ -101,6 +101,7 @@ export const LOG_ICONS: Record<string, string> = {
   buff_on: '▲',
   buff_off: '▼',
   damage: '💥',
+  spend: '🪙',
   rest: '🌅',
 };
 

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useCharacterContext } from '../../../contexts/CharacterContext';
 import { formatMod, calcCarryCapacity, calcUsedLoad, isWeaponAttack, isItemEquipped } from '../../../utils/calculations';
 import type { Coins, InventoryItem } from '../../../types/character';
@@ -6,6 +7,7 @@ import SectionHeader from '../../ui/SectionHeader/SectionHeader';
 import Stepper from '../../ui/Stepper/Stepper';
 import EmptyState from '../../ui/EmptyState/EmptyState';
 import AddButton from '../AddButton/AddButton';
+import CoinSpendPopover from '../CoinSpendPopover/CoinSpendPopover';
 import { useSheetForm } from '../SheetForm/SheetFormProvider';
 import type { EntityKind } from '../SheetForm/entityForms';
 import styles from './EquipamentosPanel.module.css';
@@ -24,6 +26,9 @@ function isComum(item: InventoryItem): boolean {
 function EquipamentosPanel() {
   const { character, updateCharacter, readOnly } = useCharacterContext();
   const { openEdit, openCreate } = useSheetForm();
+  const [spending, setSpending] = useState<keyof Coins | null>(null);
+  const coinRefs = useRef<Partial<Record<keyof Coins, HTMLButtonElement | null>>>({});
+  const spendingRef = useRef<HTMLButtonElement | null>(null);
 
   if (!character) return null;
 
@@ -106,7 +111,24 @@ function EquipamentosPanel() {
       <Card className={styles.coins}>
         {COIN_ROWS.map(({ key, label }) => (
           <div key={key} className={styles.coinItem}>
-            <span className={styles.coinLabel}>{label}</span>
+            {!readOnly ? (
+              <button
+                type="button"
+                ref={(el) => { coinRefs.current[key] = el; }}
+                className={`${styles.coinLabel} ${styles.coinSpend}`}
+                title={`Gastar ${label}`}
+                aria-haspopup="dialog"
+                aria-expanded={spending === key}
+                onClick={() => {
+                  spendingRef.current = coinRefs.current[key] ?? null;
+                  setSpending((cur) => (cur === key ? null : key));
+                }}
+              >
+                {label}
+              </button>
+            ) : (
+              <span className={styles.coinLabel}>{label}</span>
+            )}
             {!readOnly ? (
               <Stepper
                 value={coins[key]}
@@ -120,6 +142,16 @@ function EquipamentosPanel() {
           </div>
         ))}
       </Card>
+      {spending && (
+        <CoinSpendPopover
+          key={spending}
+          open
+          anchorRef={spendingRef}
+          onClose={() => setSpending(null)}
+          coin={spending}
+          label={COIN_ROWS.find((c) => c.key === spending)?.label ?? ''}
+        />
+      )}
 
       {/* ─── CARGA ─── */}
       <SectionHeader title="Carga" className={styles.gap} />
