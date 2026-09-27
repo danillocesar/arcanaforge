@@ -142,8 +142,8 @@
 }
 
 .sheet.modal.wide {
-  width: min(780px, 94%);
-  max-height: 88%;
+  width: min(1080px, 94%);
+  max-height: 94%;
 }
 
 .sheet.modal .sheetHead::before {

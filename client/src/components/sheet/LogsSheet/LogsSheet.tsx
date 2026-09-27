@@ -40,6 +40,7 @@ function formatDetails(details: unknown): string | null {
     if (Array.isArray(modifiers) && modifiers.length > 0) {
       parts.push(`Modificadores: ${modifiers.join(', ')}`);
     }
+    if (Number(d.mpReduction) > 0) parts.push(`Redução de ${d.mpReduction} PM`);
     return parts.join(' · ') || null;
   }
   return String(details);

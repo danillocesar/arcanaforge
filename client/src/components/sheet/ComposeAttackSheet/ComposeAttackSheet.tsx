@@ -6,6 +6,8 @@ import { playSwordSound, playArrowSound } from '../../../utils/sounds';
 import { triggerAttackAnim } from '../../../utils/animations';
 import type { Attack } from '../../../types/character';
 import Sheet from '../../ui/Sheet/Sheet';
+import MpTotalRow from '../MpTotalRow/MpTotalRow';
+import { applyMpReduction } from '../../../utils/mpReduction';
 import styles from './ComposeAttackSheet.module.css';
 
 interface ComposeAttackSheetProps {
@@ -25,6 +27,8 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
   // vezes (ex.: Smite Divino 1d8/1 PM marcado 3× = 3d8/3 PM).
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [lastAttack, setLastAttack] = useState<Attack | null>(null);
+  // PM que o jogador tira pelos próprios redutores de custo; volta a 0 a cada abertura.
+  const [reduction, setReduction] = useState(0);
 
   const activeAttack = attack ?? lastAttack;
 
@@ -35,6 +39,7 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
         .filter((item) => item.defaultChecked)
         .map((item) => [item.key, 1] as const);
       setCounts(new Map(checked));
+      setReduction(0);
     }
     // Re-seed only on the open transition (null -> Attack), not on every re-render
     // that happens to hand us a new `attack` object with the same identity's worth
@@ -48,6 +53,7 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
 
   const checklist = buildAttackChecklist(character, activeAttack);
   const result = composeAttack(character, activeAttack, checklist, counts);
+  const { final: mpCost, applied: mpReduction } = applyMpReduction(result.mpTotal, reduction);
   const rangeLabel = activeAttack.rangeType === 'ranged' ? 'À distância' : 'Corpo a corpo';
 
   const toggleItem = (key: string) => {
@@ -70,19 +76,20 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
   const confirm = () => {
     updateCharacter((f) => ({
       ...f,
-      mp: { ...f.mp, current: Math.max(0, f.mp.current - result.mpTotal) },
+      mp: { ...f.mp, current: Math.max(0, f.mp.current - mpCost) },
       logs: [
         ...f.logs,
         {
           type: 'attack',
           name: activeAttack.name || 'Ataque',
-          mpSpent: result.mpTotal,
+          mpSpent: mpCost,
           timestamp: Date.now(),
           details: {
             attackRoll: result.attackRoll,
             damage: result.damage,
             rangeType: rangeLabel,
             modifiers: result.usedLabels,
+            ...(mpReduction > 0 ? { mpReduction } : {}),
           },
         },
       ],
@@ -97,21 +104,25 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
     triggerAttackAnim('toast', {
       type: activeAttack.rangeType === 'ranged' ? 'ranged' : 'melee',
       name: activeAttack.name || 'Ataque',
-      mpCost: result.mpTotal,
+      mpCost,
     });
 
     onClose();
   };
 
+  // Total no rodapé fixo: com muitos modificadores o corpo rola e ele continua à vista.
   const footer = (
-    <>
-      <button type="button" className={styles.btnCancel} onClick={onClose}>
-        Cancelar
-      </button>
-      <button type="button" className={styles.btnConfirm} onClick={confirm}>
-        ⚔ Atacar
-      </button>
-    </>
+    <div className={styles.footStack}>
+      <MpTotalRow total={result.mpTotal} reduction={reduction} onReductionChange={setReduction} />
+      <div className={styles.footActions}>
+        <button type="button" className={styles.btnCancel} onClick={onClose}>
+          Cancelar
+        </button>
+        <button type="button" className={styles.btnConfirm} onClick={confirm}>
+          ⚔ Atacar
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -184,11 +195,6 @@ function ComposeAttackSheet({ attack, onClose }: ComposeAttackSheetProps) {
             </label>
           );
         })}
-      </div>
-
-      <div className={styles.totalRow}>
-        <span className={styles.totalLabel}>Custo Total</span>
-        <span className={styles.totalVal}>{result.mpTotal} PM</span>
       </div>
     </Sheet>
   );

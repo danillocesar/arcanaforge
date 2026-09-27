@@ -1,0 +1,71 @@
+/* Vive no rodapé fixo do Sheet (que já tem a borda de cima), acima dos botões. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.hint {
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.value {
+  min-width: 58px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.reduced {
+  color: var(--accent);
+}
+
+.btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line-2);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--line-2);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

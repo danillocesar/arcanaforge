@@ -10,6 +10,8 @@ import { getInitials } from '../../../utils/formatters';
 import { showToast } from '../../../services/toastService';
 import Sheet from '../../ui/Sheet/Sheet';
 import Stepper from '../../ui/Stepper/Stepper';
+import MpTotalRow from '../MpTotalRow/MpTotalRow';
+import { applyMpReduction } from '../../../utils/mpReduction';
 import styles from './CastActionSheet.module.css';
 
 export type CastActionEnhancement = CastEnhancement;
@@ -46,6 +48,8 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   const [selectedTargets, setSelectedTargets] = useState<Set<string>>(new Set());
   const [lastAction, setLastAction] = useState<CastActionSpec | null>(null);
   const [busy, setBusy] = useState(false);
+  // PM que o jogador tira pelos próprios redutores de custo; volta a 0 a cada abertura.
+  const [reduction, setReduction] = useState(0);
 
   const activeAction = action ?? lastAction;
   const enhancements = activeAction?.enhancements ?? [];
@@ -55,6 +59,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
       setLastAction(action);
       setEnhCounts(new Array((action.enhancements ?? []).length).fill(0));
       setStep('config');
+      setReduction(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [action]);
@@ -62,7 +67,8 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
   if (!character || !activeAction) return null;
 
   const baseCost = Number(activeAction.mpCost) || 0;
-  const { totalCost, effects: combinedBuffs } = composeCast(activeAction, enhCounts);
+  const { totalCost: composedCost, effects: combinedBuffs } = composeCast(activeAction, enhCounts);
+  const { final: totalCost, applied: mpReduction } = applyMpReduction(composedCost, reduction);
   const level = getTotalLevel(character);
 
   // A CD sai do conjurador, mas quem precisa dela na ficha é quem recebeu o buff —
@@ -105,7 +111,7 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
           name: activeAction.name || 'Ação',
           mpSpent: totalCost,
           timestamp: Date.now(),
-          details: { baseMpCost: baseCost, totalCost },
+          details: { baseMpCost: baseCost, totalCost, ...(mpReduction > 0 ? { mpReduction } : {}) },
         },
       ],
     }));
@@ -254,15 +260,22 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
     );
   }
 
+  // Total e aviso ficam no rodapé fixo: com muitos aprimoramentos o corpo rola e eles continuam à vista.
   const footer = (
-    <>
-      <button type="button" className={styles.btnCancel} onClick={handleClose} disabled={busy}>
-        Cancelar
-      </button>
-      <button type="button" className={styles.btnConfirm} onClick={() => { void goToTargetsOrFinish(); }} disabled={busy}>
-        {busy ? 'Aguarde…' : '✦ Conjurar'}
-      </button>
-    </>
+    <div className={styles.footStack}>
+      <MpTotalRow total={composedCost} reduction={reduction} onReductionChange={setReduction} />
+      {totalCost > level && (
+        <div className={styles.warn}>Custo excede o nível do personagem ({level})</div>
+      )}
+      <div className={styles.footActions}>
+        <button type="button" className={styles.btnCancel} onClick={handleClose} disabled={busy}>
+          Cancelar
+        </button>
+        <button type="button" className={styles.btnConfirm} onClick={() => { void goToTargetsOrFinish(); }} disabled={busy}>
+          {busy ? 'Aguarde…' : '✦ Conjurar'}
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -301,14 +314,6 @@ function CastActionSheet({ action, onClose }: CastActionSheetProps) {
         </div>
       )}
 
-      <div className={styles.totalRow}>
-        <span className={styles.totalLabel}>Custo Total</span>
-        <span className={styles.totalVal}>{totalCost} PM</span>
-      </div>
-
-      {totalCost > level && (
-        <div className={styles.warn}>Custo excede o nível do personagem ({level})</div>
-      )}
     </Sheet>
   );
 }
