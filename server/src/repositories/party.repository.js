@@ -112,7 +112,27 @@ async function removeProposal(partyId, proposalId) {
   );
 }
 
+/** Anexa um arquivo ao grupo, só se `uid` for o dono. Retorna o grupo atualizado ou null. */
+async function pushOwnedPartyFile(partyId, uid, file) {
+  return Party.findOneAndUpdate(
+    { _id: partyId, ownerUid: uid },
+    { $push: { files: file } },
+    { returnDocument: 'after', runValidators: true },
+  ).lean();
+}
+
+/** Tira um arquivo do grupo, só se `uid` for o dono. Retorna o grupo ANTES da remoção, ou null. */
+async function pullOwnedPartyFile(partyId, uid, fileId) {
+  return Party.findOneAndUpdate(
+    { _id: partyId, ownerUid: uid, 'files.id': fileId },
+    { $pull: { files: { id: fileId } } },
+    { returnDocument: 'before' },
+  ).lean();
+}
+
 module.exports = {
+  pushOwnedPartyFile,
+  pullOwnedPartyFile,
   existsInviteCode,
   createParty,
   findVisibleToUser,

@@ -7,6 +7,7 @@ import PartySelectPage from './pages/PartySelectPage/PartySelectPage';
 import PartyMembersPage from './pages/PartyMembersPage/PartyMembersPage';
 import PartyCalendarPage from './pages/PartyCalendarPage/PartyCalendarPage';
 import ViewCharacterPage from './pages/ViewCharacterPage/ViewCharacterPage';
+import PartyFilesPage from './pages/PartyFilesPage/PartyFilesPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <Route path="/:system/party/:partyId" element={<RequireAuth><GameMasterPage /></RequireAuth>} />
       <Route path="/:system/party/:partyId/members" element={<RequireAuth><PartyMembersPage /></RequireAuth>} />
       <Route path="/:system/party/:partyId/calendar" element={<RequireAuth><PartyCalendarPage /></RequireAuth>} />
+      <Route path="/:system/party/:partyId/files" element={<RequireAuth><PartyFilesPage /></RequireAuth>} />
       <Route path="/:system/party/:partyId/char/:characterId" element={<RequireAuth><ViewCharacterPage /></RequireAuth>} />
       <Route path="/" element={<Navigate to="/auth" replace />} />
       <Route path="*" element={<Navigate to="/auth" replace />} />

@@ -15,7 +15,9 @@
  * - members[].joinedAt: só no tipo, nenhum componente exibe
  */
 function toPartyDTO(doc, viewerUid) {
-  const { _id, __v, createdAt, updatedAt, ownerEmail, ...rest } = doc;
+  // `files` tem endpoint próprio (GET /api/parties/:id/files) e carrega a chave do R2.
+  // eslint-disable-next-line no-unused-vars
+  const { _id, __v, createdAt, updatedAt, ownerEmail, files, ...rest } = doc;
 
   const members = (rest.members || []).map(({ uid, email, characterIds }) => ({
     uid,

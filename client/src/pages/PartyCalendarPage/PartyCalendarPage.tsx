@@ -12,6 +12,7 @@ import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import Skeleton from '../../components/ui/Skeleton/Skeleton';
 import SegmentedControl from '../../components/ui/SegmentedControl/SegmentedControl';
 import GroupInfoCard from '../../components/party/GroupInfoCard/GroupInfoCard';
+import { buildPartyNavItems, PartySection } from '../../components/party/partyNav';
 import MonthAgenda from '../../components/party/MonthAgenda/MonthAgenda';
 import SessionAgenda from '../../components/party/SessionAgenda/SessionAgenda';
 import ProposalList from '../../components/party/ProposalList/ProposalList';
@@ -193,11 +194,7 @@ export default function PartyCalendarPage() {
   // na coluna estreita.
   const isWideView = view !== 'lista';
 
-  const navItems = [
-    { id: 'members', label: 'Membros', onClick: () => navigate(`/${system}/party/${partyId}/members`) },
-    { id: 'combat', label: 'Combate', onClick: () => navigate(`/${system}/party/${partyId}`) },
-    { id: 'calendar', label: 'Calendário', active: true },
-  ];
+  const navItems = buildPartyNavItems(system ?? '', partyId ?? party.id, PartySection.CALENDAR, navigate);
 
   const viewSwitch = <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={(v) => changeView(v as CalendarView)} />;
 

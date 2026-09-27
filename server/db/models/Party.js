@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { PartyFileKind } = require('../../src/utils/partyFileKind');
 
 const partyMemberSchema = new mongoose.Schema(
   {
@@ -43,6 +44,20 @@ const sessionProposalSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const partyFileSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    kind: { type: String, enum: Object.values(PartyFileKind), required: true },
+    name: { type: String, required: true },
+    url: { type: String, required: true },
+    key: { type: String, required: true }, // chave no R2; nunca sai no DTO
+    contentType: { type: String, default: '' },
+    size: { type: Number, default: 0 },
+    uploadedAt: { type: Date, default: Date.now },
+  },
+  { _id: false },
+);
+
 const partySchema = new mongoose.Schema(
   {
     _id: { type: String, required: true },
@@ -53,6 +68,8 @@ const partySchema = new mongoose.Schema(
     ownerUid: { type: String, index: true },
     ownerEmail: { type: String, index: true },
     sessionProposals: { type: [sessionProposalSchema], default: [] },
+    // Arquivos que o mestre compartilha com o grupo (imagens e PDFs).
+    files: { type: [partyFileSchema], default: [] },
   },
   {
     timestamps: true,

@@ -17,6 +17,8 @@ import Button from '../../components/ui/Button/Button';
 import EmptyState from '../../components/ui/EmptyState/EmptyState';
 import SegmentedControl from '../../components/ui/SegmentedControl/SegmentedControl';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
+import PartyFileUploadButton from '../../components/party/PartyFileUploadButton/PartyFileUploadButton';
+import { buildPartyNavItems, partySectionPath, PartySection } from '../../components/party/partyNav';
 import styles from './GameMasterPage.module.css';
 
 function GameMasterContent({ party, system }: { party: Party; system: string }) {
@@ -117,11 +119,7 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
   };
 
   const navItems = useMemo(
-    () => [
-      { id: 'members', label: 'Membros', onClick: () => navigate(`/${system}/party/${party.id}/members`) },
-      { id: 'combat', label: 'Combate', active: true },
-      { id: 'calendar', label: 'Calendário', onClick: () => navigate(`/${system}/party/${party.id}/calendar`) },
-    ],
+    () => buildPartyNavItems(system, party.id, PartySection.COMBAT, navigate),
     [navigate, party.id, system],
   );
 
@@ -155,6 +153,23 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
           <div className={styles.gmBadge}>
             <span className={styles.gmBadgeDot} aria-hidden />
             MESTRE
+          </div>
+        )}
+        {showGm && (
+          <div className={styles.gmFiles}>
+            <span className={styles.gmFilesText}>
+              Imagens e PDFs para o grupo — os jogadores veem na aba Arquivos.
+            </span>
+            <div className={styles.gmFilesActions}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate(partySectionPath(system, party.id, PartySection.FILES))}
+              >
+                Ver arquivos
+              </Button>
+              <PartyFileUploadButton partyId={party.id} />
+            </div>
           </div>
         )}
         <div className={styles.gmSection}>

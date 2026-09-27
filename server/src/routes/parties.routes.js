@@ -2,10 +2,14 @@ const { Router } = require('express');
 const { asyncHandler } = require('../middlewares/asyncHandler');
 const { createPartyService } = require('../services/party.service');
 const { createPartyController } = require('../controllers/party.controller');
+const { createPartyFilesService } = require('../services/partyFiles.service');
+const { createPartyFilesController } = require('../controllers/partyFiles.controller');
+const { partyFileUploadMiddleware } = require('../validators/partyFileUpload');
 
 function createPartyRoutes(refs) {
   const router = Router();
   const partyController = createPartyController(createPartyService(refs));
+  const partyFilesController = createPartyFilesController(createPartyFilesService(refs));
 
   router.get('/api/parties', asyncHandler(partyController.listParties));
   router.post('/api/parties', asyncHandler(partyController.createParty));
@@ -23,6 +27,9 @@ function createPartyRoutes(refs) {
   router.post('/api/parties/:id/sessions', asyncHandler(partyController.proposeSession));
   router.post('/api/parties/:id/sessions/:proposalId/respond', asyncHandler(partyController.respondToSession));
   router.delete('/api/parties/:id/sessions/:proposalId', asyncHandler(partyController.cancelSession));
+  router.get('/api/parties/:id/files', asyncHandler(partyFilesController.listFiles));
+  router.post('/api/parties/:id/files', partyFileUploadMiddleware, asyncHandler(partyFilesController.uploadFile));
+  router.delete('/api/parties/:id/files/:fileId', asyncHandler(partyFilesController.deleteFile));
   return router;
 }
 

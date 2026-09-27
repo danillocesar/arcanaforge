@@ -23,6 +23,7 @@ import Skeleton from '../../components/ui/Skeleton/Skeleton';
 import EmptyState from '../../components/ui/EmptyState/EmptyState';
 import Button from '../../components/ui/Button/Button';
 import GroupInfoCard from '../../components/party/GroupInfoCard/GroupInfoCard';
+import { buildPartyNavItems, PartySection } from '../../components/party/partyNav';
 import AccessDeniedPage from '../AccessDeniedPage/AccessDeniedPage';
 import styles from './PartyMembersPage.module.css';
 
@@ -107,15 +108,7 @@ export default function PartyMembersPage() {
   };
 
   const navItems = useMemo(
-    () => [
-      { id: 'members', label: 'Membros', active: true },
-      { id: 'combat', label: 'Combate', onClick: () => {
-        if (system && partyId) navigate(`/${system}/party/${partyId}`);
-      }},
-      { id: 'calendar', label: 'Calendário', onClick: () => {
-        if (system && partyId) navigate(`/${system}/party/${partyId}/calendar`);
-      }},
-    ],
+    () => (system && partyId ? buildPartyNavItems(system, partyId, PartySection.MEMBERS, navigate) : []),
     [navigate, system, partyId],
   );
 

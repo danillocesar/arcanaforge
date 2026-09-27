@@ -229,3 +229,26 @@
     height: 48px;
   }
 }
+
+/* Arquivos do grupo: atalho do mestre para enviar imagens/PDFs sem sair do combate. */
+.gmFiles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-sm);
+}
+
+.gmFilesText {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.gmFilesActions {
+  display: flex;
+  gap: 8px;
+}

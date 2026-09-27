@@ -13,6 +13,7 @@ const { sendSessionProposalEmail } = require('./email.service');
 const { mergeBuffIntoCharacter, isTempHpType, isTempMpType } = require('../utils/buffMerge');
 const { syncProposal } = require('./google/calendarSync');
 const { isConfirmed } = require('./google/syncPlan');
+const { createPartyFilesService } = require('./partyFiles.service');
 
 const VALID_SYSTEMS = ['tormenta'];
 
@@ -26,6 +27,8 @@ async function uniqueInviteCode() {
 }
 
 function createPartyService(refs) {
+  const partyFilesService = createPartyFilesService(refs);
+
   async function listParties(uid) {
     const docs = await partyRepository.findVisibleToUser(uid);
     return docs.map((doc) => toPartyDTO(doc, uid));
@@ -68,8 +71,9 @@ function createPartyService(refs) {
   }
 
   async function deleteParty(id, uid) {
-    await partyRepository.deleteOwnedParty(id, uid);
+    const deleted = await partyRepository.deleteOwnedParty(id, uid);
     await combatRepository.deleteCombat(id);
+    if (deleted) await partyFilesService.deleteAllFiles(id, deleted.files);
     return { ok: true };
   }
 

@@ -170,6 +170,70 @@ async function uploadAvatarBuffer(opts) {
   return { publicUrl, key };
 }
 
+/** Extensão pelo mimetype, para arquivos do grupo (imagens e PDF). */
+function partyFileExt(contentType) {
+  const t = (contentType || '').toLowerCase().split(';')[0].trim();
+  if (t === 'application/pdf') return '.pdf';
+  return extFromContentType(t);
+}
+
+/** `filename*` do Content-Disposition (RFC 5987), para nomes com acento. */
+function contentDisposition(type, filename) {
+  const ascii = String(filename).replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
+  return `${type}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+}
+
+/**
+ * Arquivo compartilhado pelo mestre com o grupo: `parties/<partyId>/<uuid>_<nome>.<ext>`.
+ * Documento sai com `attachment` (o navegador baixa); imagem com `inline` (abre no sistema).
+ *
+ * @param {object} opts
+ * @param {string} opts.partyId
+ * @param {string} opts.originalFilename
+ * @param {Buffer} opts.buffer
+ * @param {string} opts.contentType
+ * @param {boolean} opts.download - true para servir como download
+ * @returns {Promise<{ publicUrl: string, key: string } | null>}
+ */
+async function uploadPartyFileBuffer(opts) {
+  const { partyId, originalFilename, buffer, contentType, download } = opts;
+  const cfg = getR2Config();
+  const client = getClient();
+  if (!cfg || !client || !buffer?.length || !partyId) return null;
+
+  const ext = partyFileExt(contentType);
+  const base = sanitizeFileSegment(path.parse(originalFilename || 'arquivo').name, 60);
+  const key = `parties/${sanitizeFileSegment(partyId, 64)}/${crypto.randomUUID()}_${base}${ext}`;
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: cfg.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ContentDisposition: contentDisposition(download ? 'attachment' : 'inline', originalFilename || `arquivo${ext}`),
+    }),
+  );
+
+  return { publicUrl: `${cfg.publicBase}/${key}`, key };
+}
+
+/** Apaga um arquivo do grupo, só se a chave estiver na pasta desse grupo. */
+async function deletePartyFileByKey(partyId, key) {
+  const cfg = getR2Config();
+  const client = getClient();
+  if (!cfg || !client || !key) return;
+  if (!key.startsWith(`parties/${sanitizeFileSegment(partyId, 64)}/`)) {
+    console.warn('[r2] deletePartyFileByKey: chave fora da pasta do grupo');
+    return;
+  }
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }));
+  } catch (err) {
+    console.warn('[r2] deletePartyFileByKey:', err.message);
+  }
+}
+
 function isR2Configured() {
   return getR2Config() !== null;
 }
@@ -177,5 +241,7 @@ function isR2Configured() {
 module.exports = {
   uploadAvatarBuffer,
   deleteAvatarByPublicUrl,
+  uploadPartyFileBuffer,
+  deletePartyFileByKey,
   isR2Configured,
 };
