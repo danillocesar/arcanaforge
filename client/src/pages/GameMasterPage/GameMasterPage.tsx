@@ -132,22 +132,22 @@ function GameMasterContent({ party, system }: { party: Party; system: string }) 
     <>
       {showGm && <div className={styles.gmStrip} aria-hidden />}
       <Topbar title={party.name ? `Grupo - ${party.name}` : 'Grupo'} />
-      {!spectatorMode && (
-        <SectionNav
-          items={navItems}
-          rightSlot={
-            isMaster && party.inviteCode ? (
-              <span
-                className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
-                onClick={copyInviteCode}
-                title="Clique para copiar"
-              >
-                {codeCopied ? 'Copiado!' : party.inviteCode}
-              </span>
-            ) : undefined
-          }
-        />
-      )}
+      {/* As abas ficam no Modo Espectador: ele só esconde os PVs e as ferramentas do mestre. */}
+      <SectionNav
+        items={navItems}
+        rightSlot={
+          isMaster && party.inviteCode ? (
+            <span
+              className={`${styles.inviteCode} ${codeCopied ? styles.inviteCodeCopied : ''}`}
+              onClick={copyInviteCode}
+              title="Clique para copiar"
+            >
+              {codeCopied ? 'Copiado!' : party.inviteCode}
+            </span>
+          ) : undefined
+        }
+      />
+
       <div className={styles.gmContainer}>
         {showGm && (
           <div className={styles.gmBadge}>
