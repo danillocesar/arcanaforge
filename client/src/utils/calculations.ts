@@ -214,13 +214,11 @@ export function calcTotalSkill(character: Character, skillId: string): number {
   const miscBonus = skill.misc || 0;
   // "+ atributo" direto na perícia (E3/H3.4): segundo atributo somado, via atributo-guia.
   const bonusAttr = skill.bonusAttribute ? guideAttribute(character, skill.bonusAttribute) : 0;
-  // Penalidade de armadura vale pra toda perícia usada com Força ou Destreza
-  // (inclusive Luta/Pontaria e atributo trocado pelo jogador), exceto Iniciativa.
-  let armorPenalty = 0;
-  const penalized = (usedAttribute === 'str' || usedAttribute === 'dex') && skillId !== 'iniciativa';
-  if (penalized) {
-    armorPenalty = calcArmorPenalty(character);
-  }
+  // T20: a penalidade de armadura (armadura + escudo, somadas) só entra nas perícias que
+  // exigem liberdade de movimento — Acrobacia, Furtividade e Ladinagem, marcadas com
+  // `armorPenalty` em SKILLS_CONFIG. Não vale para Luta/Pontaria (ataque) nem para outras
+  // perícias de Força/Destreza. (Atletismo para nadar também sofre, mas é situacional.)
+  const armorPenalty = cfg.armorPenalty ? calcArmorPenalty(character) : 0;
   let buffBonus = 0;
   getActiveBuffs(character).forEach((b) => {
     (b.effects || []).forEach((eff) => {

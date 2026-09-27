@@ -505,17 +505,20 @@ describe('armor penalty on skills', () => {
       defense: { base: 10, items: [{ name: 'Cota', value: 5, penalty, equipped }] },
     });
 
-  it('applies the penalty to every Força/Destreza-based skill', () => {
+  // T20: só as perícias que exigem liberdade de movimento sofrem a penalidade.
+  it('applies the penalty only to Acrobacia, Furtividade and Ladinagem', () => {
     const character = armored(-2);
     const halfLevel = 1;
-    expect(calcTotalSkill(character, 'luta')).toBe(halfLevel + 2 - 2);
-    expect(calcTotalSkill(character, 'pontaria')).toBe(halfLevel + 3 - 2);
     expect(calcTotalSkill(character, 'acrobacia')).toBe(halfLevel + 3 - 2);
+    expect(calcTotalSkill(character, 'furtividade')).toBe(halfLevel + 3 - 2);
   });
 
-  it('never applies the penalty to Iniciativa nor to non-str/dex skills', () => {
+  it('never applies the penalty to attacks (Luta/Pontaria), Iniciativa or other skills', () => {
     const character = armored(-2);
     const halfLevel = 1;
+    expect(calcTotalSkill(character, 'luta')).toBe(halfLevel + 2);
+    expect(calcTotalSkill(character, 'pontaria')).toBe(halfLevel + 3);
+    expect(calcTotalSkill(character, 'atletismo')).toBe(halfLevel + 2);
     expect(calcTotalSkill(character, 'iniciativa')).toBe(halfLevel + 3);
     expect(calcTotalSkill(character, 'cura')).toBe(halfLevel + 1);
   });
@@ -523,7 +526,7 @@ describe('armor penalty on skills', () => {
   it('ignores the penalty of an unequipped armor', () => {
     const character = armored(-2, false);
     const halfLevel = 1;
-    expect(calcTotalSkill(character, 'luta')).toBe(halfLevel + 2);
+    expect(calcTotalSkill(character, 'acrobacia')).toBe(halfLevel + 3);
   });
 });
 
